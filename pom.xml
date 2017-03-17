@@ -128,5 +128,9 @@ Jean-Yves Tinevez and Michael Zinsmaier.</license.copyrightOwners>
 			<artifactId>junit</artifactId>
 			<scope>test</scope>
 		</dependency>
+		<dependency>
+			<groupId>net.imagej</groupId>
+			<artifactId>imagej-ops</artifactId>
+		</dependency>
 	</dependencies>
 </project>
