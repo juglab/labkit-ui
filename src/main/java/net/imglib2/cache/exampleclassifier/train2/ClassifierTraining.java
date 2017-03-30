@@ -165,8 +165,8 @@ public class ClassifierTraining
 	{
 		System.setProperty( "apple.laf.useScreenMenuBar", "true" );
 
-		final int[] cellDimensions = new int[] { 64, 64 };
-		final long[] dimensions = new long[] { 1640, 1640 };
+		final int[] cellDimensions = new int[] { 64, 64, 64 };
+		final long[] dimensions = new long[] { 640, 640, 640 };
 
 		final UnsignedShortType type = new UnsignedShortType();
 
@@ -197,11 +197,11 @@ public class ClassifierTraining
 
 
 		final double[][] sigmas = {
-				{ 1.0, 1.0 },
-				{ 2.0, 2.0 },
-				{ 5.0, 5.0 },
-				{ 1.0, 9.0 },
-				{ 16.0, 16.0 },
+				{ 1.0, 1.0, 1.0 },
+				{ 2.0, 2.0, 2.0 },
+				{ 5.0, 5.0, 5.0 },
+				{ 1.0, 9.0, 1.0 },
+				{ 16.0, 16.0, 16.0 },
 		};
 
 		final Pair< Img< FloatType >, Img< VolatileFloatType > >[] gaussians = new Pair[ sigmas.length ];
@@ -280,6 +280,7 @@ public class ClassifierTraining
 		BdvFunctions.show( features.getB(), "features", options );
 
 		final long[] trainingDimensions = Arrays.stream( cellDimensions ).mapToLong( i -> 2 * i ).toArray();
+		trainingDimensions[ 2 ] = 1;
 		final FinalInterval trainingInterval = new FinalInterval( trainingDimensions );
 		final ArrayList< Attribute > attributes = new ArrayList<>();
 		for ( int i = 0; i < numFeatures; ++i )
