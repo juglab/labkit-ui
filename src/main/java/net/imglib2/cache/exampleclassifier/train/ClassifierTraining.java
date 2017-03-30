@@ -50,6 +50,7 @@ import net.imglib2.img.basictypeaccess.volatiles.array.VolatileShortArray;
 import net.imglib2.img.cell.Cell;
 import net.imglib2.img.cell.CellGrid;
 import net.imglib2.img.cell.LazyCellImg;
+import net.imglib2.type.numeric.IntegerType;
 import net.imglib2.type.numeric.RealType;
 import net.imglib2.type.numeric.integer.UnsignedShortType;
 import net.imglib2.type.numeric.real.FloatType;
@@ -189,6 +190,15 @@ public class ClassifierTraining
 		final Bdv bdv = BdvFunctions.show( img, "Cached", options );
 		bdv.getBdvHandle().getViewerPanel().setDisplayMode( SINGLE );
 
+		run( img, cellDimensions );
+
+	}
+
+	public static < T extends IntegerType< T > > void run( final RandomAccessibleInterval< T > img, final int[] cellDimensions ) throws Exception
+	{
+
+		final long[] dimensions = Intervals.dimensionsAsLongArray( img );
+		final BdvOptions options = img.numDimensions() == 2 ? BdvOptions.options().is2D() : BdvOptions.options();
 
 		final int maxNumLevels = 1;
 		final int numFetcherThreads = 7;
@@ -291,9 +301,9 @@ public class ClassifierTraining
 		attributes.add( new Attribute( "class", classes ) );
 		final Instances instances = new Instances( "training", attributes, ( int ) Intervals.numElements( trainingDimensions ) );
 		instances.setClassIndex( numFeatures );
-		for ( final Pair< UnsignedShortType, RealComposite< VolatileFloatType > > pair : Views.interval( Views.pair( img, Views.collapseReal( features.getB() ) ), trainingInterval ) )
+		for ( final Pair< T, RealComposite< VolatileFloatType > > pair : Views.interval( Views.pair( img, Views.collapseReal( features.getB() ) ), trainingInterval ) )
 		{
-			final int label = pair.getA().get() > 0 ? 1 : 0;
+			final int label = pair.getA().getInteger() > 0 ? 1 : 0;
 			final RealComposite< VolatileFloatType > feat = pair.getB();
 			final double[] values = new double[ numFeatures + 1 ];
 			for ( int f = 0; f < numFeatures; ++f )
@@ -305,6 +315,7 @@ public class ClassifierTraining
 		final RandomForest classifier = new RandomForest();
 		classifier.buildClassifier( instances );
 
+		final CellGrid grid = new CellGrid( dimensions, cellDimensions );
 		final Pair< Img< UnsignedShortType >, Img< VolatileUnsignedShortType > > classified = createClassifier( features.getA(), classifier, 2, grid, queue );
 		final BdvStackSource< VolatileUnsignedShortType > classifiedBdv = BdvFunctions.show( classified.getB(), "classified", options );
 		classifiedBdv.getBdvHandle().getSetupAssignments().getMinMaxGroups().get( 0 ).setRange( 0, 1 );
