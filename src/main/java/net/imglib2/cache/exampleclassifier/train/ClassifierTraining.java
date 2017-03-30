@@ -10,6 +10,7 @@ import java.io.IOException;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.concurrent.Callable;
 import java.util.concurrent.Executors;
 import java.util.stream.IntStream;
@@ -21,7 +22,12 @@ import bdv.util.Bdv;
 import bdv.util.BdvFunctions;
 import bdv.util.BdvOptions;
 import bdv.util.BdvStackSource;
+import hr.irb.fastRandomForest.FastRandomForest;
+import net.imglib2.Cursor;
 import net.imglib2.FinalInterval;
+import net.imglib2.Localizable;
+import net.imglib2.Point;
+import net.imglib2.RandomAccess;
 import net.imglib2.RandomAccessibleInterval;
 import net.imglib2.algorithm.gauss3.Gauss3;
 import net.imglib2.algorithm.gradient.PartialDerivative;
@@ -52,6 +58,7 @@ import net.imglib2.img.cell.CellGrid;
 import net.imglib2.img.cell.LazyCellImg;
 import net.imglib2.type.numeric.IntegerType;
 import net.imglib2.type.numeric.RealType;
+import net.imglib2.type.numeric.integer.UnsignedByteType;
 import net.imglib2.type.numeric.integer.UnsignedShortType;
 import net.imglib2.type.numeric.real.FloatType;
 import net.imglib2.type.volatiles.VolatileFloatType;
@@ -62,7 +69,6 @@ import net.imglib2.util.ValuePair;
 import net.imglib2.view.Views;
 import net.imglib2.view.composite.RealComposite;
 import weka.classifiers.Classifier;
-import weka.classifiers.trees.RandomForest;
 import weka.core.Attribute;
 import weka.core.DenseInstance;
 import weka.core.Instances;
@@ -189,19 +195,42 @@ public class ClassifierTraining
 		final BdvOptions options = dimensions.length == 2 ? BdvOptions.options().is2D() : BdvOptions.options();
 		final Bdv bdv = BdvFunctions.show( img, "Cached", options );
 		bdv.getBdvHandle().getViewerPanel().setDisplayMode( SINGLE );
+		final FastRandomForest classifier = new FastRandomForest();
 
-		run( img, cellDimensions );
+		final long[] trainingDimensions = Arrays.stream( cellDimensions ).mapToLong( i -> 2 * i ).toArray();
+		trainingDimensions[ 2 ] = 1;
+		final FinalInterval trainingInterval = new FinalInterval( trainingDimensions );
+		final ArrayList< Point > trainingLocations = new ArrayList<>();
+		for ( final Cursor< UnsignedShortType > cursor = Views.interval( img, trainingInterval ).cursor(); cursor.hasNext(); )
+		{
+			cursor.fwd();
+			trainingLocations.add( new Point( cursor ) );
+		}
+
+		final RandomAccessibleInterval< UnsignedByteType > groundTruth = Converters.convert( ( RandomAccessibleInterval< UnsignedShortType > ) img, ( s, t ) -> {
+			t.set( s.get() == 0 ? ( byte ) 1 : ( byte ) 0 );
+		}, new UnsignedByteType() );
+		final ArrayList< String > classes = new ArrayList<>();
+		classes.add( "1" );
+		classes.add( "2" );
+		run( img, groundTruth, classifier, trainingLocations, classes, cellDimensions );
 
 	}
 
-	public static < T extends IntegerType< T > > void run( final RandomAccessibleInterval< T > img, final int[] cellDimensions ) throws Exception
+	public static < R extends RealType< R >, I extends IntegerType< I > > void run(
+			final RandomAccessibleInterval< R > img,
+			final RandomAccessibleInterval< I > groundTruth,
+			final Classifier classifier,
+			final Collection< ? extends Localizable > trainingLocations,
+			final ArrayList< String > classes,
+			final int[] cellDimensions ) throws Exception
 	{
 
 		final long[] dimensions = Intervals.dimensionsAsLongArray( img );
 		final BdvOptions options = img.numDimensions() == 2 ? BdvOptions.options().is2D() : BdvOptions.options();
 
 		final int maxNumLevels = 1;
-		final int numFetcherThreads = 7;
+		final int numFetcherThreads = Runtime.getRuntime().availableProcessors() - 1;
 		final BlockingFetchQueues< Callable< ? > > queue = new BlockingFetchQueues<>( maxNumLevels );
 		new FetcherThreads( queue, numFetcherThreads );
 
@@ -210,8 +239,8 @@ public class ClassifierTraining
 				{ 1.0, 1.0, 1.0 },
 				{ 2.0, 2.0, 2.0 },
 				{ 5.0, 5.0, 5.0 },
-				{ 1.0, 9.0, 1.0 },
-				{ 16.0, 16.0, 16.0 },
+//				{ 1.0, 9.0, 1.0 },
+//				{ 16.0, 16.0, 16.0 },
 		};
 
 		final Pair< Img< FloatType >, Img< VolatileFloatType > >[] gaussians = new Pair[ sigmas.length ];
@@ -289,22 +318,20 @@ public class ClassifierTraining
 
 		BdvFunctions.show( features.getB(), "features", options );
 
-		final long[] trainingDimensions = Arrays.stream( cellDimensions ).mapToLong( i -> 2 * i ).toArray();
-		trainingDimensions[ 2 ] = 1;
-		final FinalInterval trainingInterval = new FinalInterval( trainingDimensions );
 		final ArrayList< Attribute > attributes = new ArrayList<>();
 		for ( int i = 0; i < numFeatures; ++i )
 			attributes.add( new Attribute( "" + i ) );
-		final ArrayList< String > classes = new ArrayList<>();
-		classes.add( "0" );
-		classes.add( "1" );
 		attributes.add( new Attribute( "class", classes ) );
-		final Instances instances = new Instances( "training", attributes, ( int ) Intervals.numElements( trainingDimensions ) );
+		final Instances instances = new Instances( "training", attributes, trainingLocations.size() );
 		instances.setClassIndex( numFeatures );
-		for ( final Pair< T, RealComposite< VolatileFloatType > > pair : Views.interval( Views.pair( img, Views.collapseReal( features.getB() ) ), trainingInterval ) )
+		final RandomAccess< RealComposite< VolatileFloatType > > featAccess = Views.collapseReal( features.getB() ).randomAccess();
+		final RandomAccess< I > gtAccess = groundTruth.randomAccess();
+		for ( final Localizable loc : trainingLocations )
 		{
-			final int label = pair.getA().getInteger() > 0 ? 1 : 0;
-			final RealComposite< VolatileFloatType > feat = pair.getB();
+			featAccess.setPosition( loc );
+			gtAccess.setPosition( loc );
+			final int label = gtAccess.get().getInteger();
+			final RealComposite< VolatileFloatType > feat = featAccess.get();
 			final double[] values = new double[ numFeatures + 1 ];
 			for ( int f = 0; f < numFeatures; ++f )
 				values[ f ] = feat.get( f ).getRealDouble();
@@ -312,7 +339,6 @@ public class ClassifierTraining
 			instances.add( new DenseInstance( 1.0, values ) );
 		}
 
-		final RandomForest classifier = new RandomForest();
 		classifier.buildClassifier( instances );
 
 		final CellGrid grid = new CellGrid( dimensions, cellDimensions );
