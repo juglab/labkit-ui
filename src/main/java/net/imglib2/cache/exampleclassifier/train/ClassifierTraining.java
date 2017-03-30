@@ -324,14 +324,14 @@ public class ClassifierTraining
 		attributes.add( new Attribute( "class", classes ) );
 		final Instances instances = new Instances( "training", attributes, trainingLocations.size() );
 		instances.setClassIndex( numFeatures );
-		final RandomAccess< RealComposite< VolatileFloatType > > featAccess = Views.collapseReal( features.getB() ).randomAccess();
+		final RandomAccess< RealComposite< FloatType > > featAccess = Views.collapseReal( features.getA() ).randomAccess();
 		final RandomAccess< I > gtAccess = groundTruth.randomAccess();
 		for ( final Localizable loc : trainingLocations )
 		{
 			featAccess.setPosition( loc );
 			gtAccess.setPosition( loc );
 			final int label = gtAccess.get().getInteger();
-			final RealComposite< VolatileFloatType > feat = featAccess.get();
+			final RealComposite< FloatType > feat = featAccess.get();
 			final double[] values = new double[ numFeatures + 1 ];
 			for ( int f = 0; f < numFeatures; ++f )
 				values[ f ] = feat.get( f ).getRealDouble();
@@ -339,7 +339,9 @@ public class ClassifierTraining
 			instances.add( new DenseInstance( 1.0, values ) );
 		}
 
+		System.out.print( "Building classifier... " );
 		classifier.buildClassifier( instances );
+		System.out.println( " done " );
 
 		final CellGrid grid = new CellGrid( dimensions, cellDimensions );
 		final Pair< Img< UnsignedShortType >, Img< VolatileUnsignedShortType > > classified = createClassifier( features.getA(), classifier, 2, grid, queue );
