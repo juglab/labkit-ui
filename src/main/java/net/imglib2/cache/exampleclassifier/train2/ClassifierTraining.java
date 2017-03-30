@@ -24,6 +24,7 @@ import bdv.util.BdvStackSource;
 import net.imglib2.FinalInterval;
 import net.imglib2.RandomAccessibleInterval;
 import net.imglib2.algorithm.gauss3.Gauss3;
+import net.imglib2.algorithm.gradient.PartialDerivative;
 import net.imglib2.cache.Cache;
 import net.imglib2.cache.CacheLoader;
 import net.imglib2.cache.IoSync;
@@ -131,13 +132,13 @@ public class ClassifierTraining
 	}
 
 	public static < T extends RealType< T > > Pair< Img< FloatType >, Img< VolatileFloatType > >
-	createFeature( final FeatureGenerator< T, FloatType > generator, final CellGrid grid, final BlockingFetchQueues< Callable< ? > > queue )
+	createFeature( final FeatureGenerator< T, FloatType > generator, final CellGrid grid, final BlockingFetchQueues< Callable< ? > > queue, final String cacheName )
 			throws IOException
 	{
 		final FloatType type = new FloatType();
 		final VolatileFloatType vtype = new VolatileFloatType();
 
-		final Path blockcache = DiskCellCache.createTempDirectory( "Features", true );
+		final Path blockcache = DiskCellCache.createTempDirectory( cacheName, true );
 		final DiskCellCache< VolatileFloatArray > diskcache = new DiskCellCache<>(
 				blockcache,
 				grid,
@@ -165,7 +166,7 @@ public class ClassifierTraining
 		System.setProperty( "apple.laf.useScreenMenuBar", "true" );
 
 		final int[] cellDimensions = new int[] { 64, 64 };
-		final long[] dimensions = new long[] { 640, 640 };
+		final long[] dimensions = new long[] { 1640, 1640 };
 
 		final UnsignedShortType type = new UnsignedShortType();
 
@@ -196,10 +197,11 @@ public class ClassifierTraining
 
 
 		final double[][] sigmas = {
-				{ 1.0, 1.0 }
-//				{ 2.0, 2.0 },
-//				{ 5.0, 5.0 },
-//				{ 1.0, 9.0 },
+				{ 1.0, 1.0 },
+				{ 2.0, 2.0 },
+				{ 5.0, 5.0 },
+				{ 1.0, 9.0 },
+				{ 16.0, 16.0 },
 		};
 
 		final Pair< Img< FloatType >, Img< VolatileFloatType > >[] gaussians = new Pair[ sigmas.length ];
@@ -224,19 +226,23 @@ public class ClassifierTraining
 			final long[] extendedDims = LongStream.concat( Arrays.stream( dimensions ), LongStream.of( gaussGen.numFeatures() ) ).toArray();
 			final int[] extendedCellDims = IntStream.concat( Arrays.stream( cellDimensions ), IntStream.of( gaussGen.numFeatures() ) ).toArray();
 			final CellGrid gaussGrid = new CellGrid( extendedDims.clone(), extendedCellDims.clone() );
-			gaussians[ sI ] = createFeature( gaussGen, gaussGrid, queue );
+			gaussians[ sI ] = createFeature( gaussGen, gaussGrid, queue, "gauss-" + Arrays.toString( sigmas[ sI ] ) );
 
 			final Pair< Img< FloatType >, Img< VolatileFloatType > >[] gradientsForSigma = new Pair[ dimensions.length ];
-			for ( int d = 0; d < gradientsForSigma.length; ++d ) {
-				final FunctionFeatureGenerator< VolatileFloatType, FloatType > gradientGen = new FunctionFeatureGenerator<>( ( s, t ) -> {
+			for ( int d = 0; d < gradientsForSigma.length; ++d )
+			{
+				final int fd = d;
+				final FunctionFeatureGenerator< FloatType, FloatType > gradientGen = new FunctionFeatureGenerator<>( ( s, t ) -> {
+					PartialDerivative.gradientCentralDifference2( s, t, fd );
 					return null;
 				},
-						gaussians[ sI ].getB() );
+						Views.extendBorder( Views.hyperSlice( gaussians[ sI ].getA(), dimensions.length, 0l ) ) );
 				extendedDims[ extendedDims.length - 1 ] = gradientGen.numFeatures();
 				extendedCellDims[ extendedCellDims.length - 1 ] = gradientGen.numFeatures();
 				final CellGrid gradientGrid = new CellGrid( extendedDims.clone(), extendedCellDims.clone() );
-				gradientsForSigma[ d ] = createFeature( gradientGen, gradientGrid, queue );
+				gradientsForSigma[ d ] = createFeature( gradientGen, gradientGrid, queue, "gradient-" + d + "-" + Arrays.toString( sigmas[ sI ] ) );
 			}
+			gradients[ sI ] = gradientsForSigma;
 		}
 
 		final ArrayList< RandomAccessibleInterval< FloatType > > featuresList = new ArrayList<>();
@@ -271,15 +277,13 @@ public class ClassifierTraining
 		final ValuePair< RandomAccessibleInterval< FloatType >, RandomAccessibleInterval< VolatileFloatType > > features = new ValuePair<>( Views.stack( featuresList ), Views.stack( vfeaturesList ) );
 		final int numFeatures = ( int ) features.getA().dimension( features.getA().numDimensions() - 1 );
 
-		// currently works only if I calculate all features before displaying
-		// them
 		BdvFunctions.show( features.getB(), "features", options );
 
 		final long[] trainingDimensions = Arrays.stream( cellDimensions ).mapToLong( i -> 2 * i ).toArray();
 		final FinalInterval trainingInterval = new FinalInterval( trainingDimensions );
 		final ArrayList< Attribute > attributes = new ArrayList<>();
 		for ( int i = 0; i < numFeatures; ++i )
-			attributes.add( new Attribute( "" + i  ) );
+			attributes.add( new Attribute( "" + i ) );
 		final ArrayList< String > classes = new ArrayList<>();
 		classes.add( "0" );
 		classes.add( "1" );
@@ -296,7 +300,6 @@ public class ClassifierTraining
 			values[ numFeatures ] = label;
 			instances.add( new DenseInstance( 1.0, values ) );
 		}
-
 
 		final RandomForest classifier = new RandomForest();
 		classifier.buildClassifier( instances );
