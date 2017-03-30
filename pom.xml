@@ -126,6 +126,10 @@ Jean-Yves Tinevez and Michael Zinsmaier.</license.copyrightOwners>
 			<artifactId>weka-stable</artifactId>
 			<version>3.8.0</version>
 		</dependency>
+		<dependency>
+			<groupId>sc.fiji</groupId>
+			<artifactId>Trainable_Segmentation</artifactId>
+		</dependency>
 
 		<!-- Test dependencies -->
 		<dependency>
