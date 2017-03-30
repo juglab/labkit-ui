@@ -1,4 +1,4 @@
-package net.imglib2.cache.exampleclassifier.train2;
+package net.imglib2.cache.exampleclassifier.train;
 
 import net.imglib2.cache.CacheLoader;
 import net.imglib2.img.Img;

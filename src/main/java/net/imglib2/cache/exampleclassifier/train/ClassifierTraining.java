@@ -1,4 +1,4 @@
-package net.imglib2.cache.exampleclassifier.train2;
+package net.imglib2.cache.exampleclassifier.train;
 
 import static bdv.viewer.DisplayMode.SINGLE;
 import static net.imglib2.cache.img.AccessFlags.DIRTY;
