@@ -1,5 +1,6 @@
 package net.imglib2.cache.exampleclassifier.train;
 
+import java.util.Arrays;
 import java.util.stream.IntStream;
 
 import net.imglib2.Cursor;
@@ -18,10 +19,11 @@ import net.imglib2.util.Intervals;
 import net.imglib2.util.Util;
 import net.imglib2.view.Views;
 import net.imglib2.view.composite.Composite;
+import net.imglib2.view.composite.RealComposite;
 import weka.classifiers.Classifier;
 import weka.core.Instance;
 
-public class ClassifyingCellLoader< T extends RealType< T > > implements CacheLoader< Long, Cell< VolatileShortArray > >
+public class ProbabilityMapLoader< T extends RealType< T > > implements CacheLoader< Long, Cell< VolatileShortArray > >
 {
 	private final CellGrid grid;
 
@@ -38,7 +40,7 @@ public class ClassifyingCellLoader< T extends RealType< T > > implements CacheLo
 		this.classifier = classifier;
 	}
 
-	public ClassifyingCellLoader(
+	public ProbabilityMapLoader(
 			final CellGrid grid,
 			final RandomAccessible< ? extends Composite< T > > features,
 					final Classifier classifier,
@@ -61,8 +63,10 @@ public class ClassifyingCellLoader< T extends RealType< T > > implements CacheLo
 		final long[] cellMin = new long[ n ];
 		final int[] cellDims = new int[ n ];
 		grid.getCellDimensions( index, cellMin, cellDims );
+
+		assert cellDims[ cellDims.length - 1 ] == this.numClasses;
+
 		final long[] cellMax = IntStream.range( 0, n ).mapToLong( d -> cellMin[ d ] + cellDims[ d ] - 1 ).toArray();
-		final FinalInterval cellInterval = new FinalInterval( cellMin, cellMax );
 
 		final int blocksize = ( int ) Intervals.numElements( cellDims );
 		final VolatileShortArray array = new VolatileShortArray( blocksize, true );
@@ -71,10 +75,18 @@ public class ClassifyingCellLoader< T extends RealType< T > > implements CacheLo
 
 		final InstanceView< T, ? > instances = new InstanceView<>( features, InstanceView.makeDefaultAttributes( numFeatures, numClasses ) );
 
-		final Cursor< Instance > instancesCursor = Views.interval( instances, cellInterval ).cursor();
-		final Cursor< UnsignedShortType > imgCursor = img.cursor();
+		final long[] sourceMin = Arrays.stream( cellMin ).limit( cellMin.length - 1 ).toArray();
+		final long[] sourceMax = Arrays.stream( cellMax ).limit( cellMax.length - 1 ).toArray();
+		final FinalInterval sourceCellInterval = new FinalInterval( sourceMin, sourceMax );
+		final Cursor< Instance > instancesCursor = Views.flatIterable( Views.interval( instances, sourceCellInterval ) ).cursor();
+		final Cursor< RealComposite< UnsignedShortType > > imgCursor = Views.flatIterable( Views.interval( Views.collapseReal( img ), img ) ).cursor();
 		while ( imgCursor.hasNext() )
-			imgCursor.next().set( 1 - ( int ) classifier.classifyInstance( instancesCursor.next() ) );
+		{
+			final double[] pred = classifier.distributionForInstance( instancesCursor.next() );
+			final RealComposite< UnsignedShortType > target = imgCursor.next();
+			for ( int d = 0; d < pred.length; ++d )
+				target.get( d ).setReal( pred[ d ] );
+		}
 
 		return new Cell<>( cellDims, cellMin, array );
 	}

@@ -2,6 +2,7 @@ package net.imglib2.cache.exampleclassifier.train;
 
 import java.awt.event.ActionEvent;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.stream.IntStream;
 
 import org.scijava.ui.behaviour.util.AbstractNamedAction;
@@ -24,11 +25,17 @@ import weka.core.Instances;
 public class TrainClassifier< F extends RealType< F > > extends AbstractNamedAction
 {
 
+	public static interface Listener
+	{
+		public void notify( Classifier classifier, boolean trainingSuccess ) throws Exception;
+	}
+
 	public TrainClassifier(
 			final Classifier classifier,
 			final LabelBrushController< ? > controller,
 			final RandomAccessibleInterval< F > features,
-			final ArrayList< String > classes
+			final ArrayList< String > classes,
+			final Listener... listeners
 			)
 	{
 		super( "train classifier" );
@@ -36,6 +43,7 @@ public class TrainClassifier< F extends RealType< F > > extends AbstractNamedAct
 		this.controller = controller;
 		this.features = features;
 		this.classes = classes;
+		this.listeners = new ArrayList<>( Arrays.asList( listeners ) );
 	}
 
 	private final Classifier classifier;
@@ -46,11 +54,23 @@ public class TrainClassifier< F extends RealType< F > > extends AbstractNamedAct
 
 	private final ArrayList< String > classes;
 
+	private final ArrayList< Listener > listeners;
+
 	private boolean trainingSuccess = false;
 
 	public boolean getTrainingSuccess()
 	{
 		return trainingSuccess;
+	}
+
+	public void addListener( final Listener listener )
+	{
+		this.listeners.add( listener );
+	}
+
+	public boolean removeListener( final Listener listener )
+	{
+		return this.listeners.remove( listener );
 	}
 
 	@Override
@@ -71,7 +91,10 @@ public class TrainClassifier< F extends RealType< F > > extends AbstractNamedAct
 		final CompositeIntervalView< F, RealComposite< F > > collapsedFeatures = Views.collapseReal( features );
 		final RandomAccess< RealComposite< F > > featAccess = collapsedFeatures.randomAccess();
 
+		System.out.println( "Collecting training examples." );
 		for ( int i = 1; i <= classes.size(); ++i )
+		{
+			System.out.println( "Collecting " + samples.get( i ).size() + " samples for label " + i );
 			for ( final TLongIterator it = samples.get( i ).iterator(); it.hasNext(); ) {
 				final long pos = it.next();
 				IntervalIndexer.indexToPosition( pos, collapsedFeatures, featAccess );
@@ -83,6 +106,8 @@ public class TrainClassifier< F extends RealType< F > > extends AbstractNamedAct
 				values[ numFeatures ] = label;
 				instances.add( new DenseInstance( 1.0, values ) );
 			}
+		}
+		System.out.println( "Starting training!" );
 		try
 		{
 			classifier.buildClassifier( instances );
@@ -92,6 +117,18 @@ public class TrainClassifier< F extends RealType< F > > extends AbstractNamedAct
 		{
 			trainingSuccess = false;
 		}
+		listeners.forEach( l -> {
+
+			try
+			{
+				l.notify( classifier, trainingSuccess );
+			}
+			catch ( final Exception e1 )
+			{
+				// TODO Auto-generated catch block
+				e1.printStackTrace();
+			}
+		} );
 	}
 
 }

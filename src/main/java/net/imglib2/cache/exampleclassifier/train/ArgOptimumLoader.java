@@ -1,12 +1,12 @@
 package net.imglib2.cache.exampleclassifier.train;
 
+import java.util.Comparator;
 import java.util.stream.IntStream;
 
 import net.imglib2.Cursor;
 import net.imglib2.FinalInterval;
 import net.imglib2.RandomAccessible;
 import net.imglib2.cache.CacheLoader;
-import net.imglib2.cache.exampleclassifier.InstanceView;
 import net.imglib2.img.Img;
 import net.imglib2.img.array.ArrayImgs;
 import net.imglib2.img.basictypeaccess.volatiles.array.VolatileShortArray;
@@ -18,38 +18,40 @@ import net.imglib2.util.Intervals;
 import net.imglib2.util.Util;
 import net.imglib2.view.Views;
 import net.imglib2.view.composite.Composite;
-import weka.classifiers.Classifier;
-import weka.core.Instance;
 
-public class ClassifyingCellLoader< T extends RealType< T > > implements CacheLoader< Long, Cell< VolatileShortArray > >
+public class ArgOptimumLoader< T extends RealType< T > > implements CacheLoader< Long, Cell< VolatileShortArray > >
 {
 	private final CellGrid grid;
 
-	private final RandomAccessible< ? extends Composite< T > > features;
+	private final RandomAccessible< ? extends Composite< T > > map;
 
-	private Classifier classifier;
+	private final int size;
 
-	private final int numFeatures;
+	private final Comparator< T > comp;
 
-	private final int numClasses;
+	private final T worstVal;
 
-	public void setClassifier( final Classifier classifier )
-	{
-		this.classifier = classifier;
-	}
-
-	public ClassifyingCellLoader(
+	public ArgOptimumLoader(
 			final CellGrid grid,
 			final RandomAccessible< ? extends Composite< T > > features,
-					final Classifier classifier,
-					final int numFeatures,
-					final int numClasses )
+					final int size,
+					final Comparator< T > comp,
+					final T worstVal )
 	{
 		this.grid = grid;
-		this.features = features;
-		this.classifier = classifier;
-		this.numFeatures = numFeatures;
-		this.numClasses = numClasses;
+		this.map = features;
+		this.size = size;
+		this.comp = comp;
+		this.worstVal = worstVal;
+	}
+
+	public ArgOptimumLoader(
+			final CellGrid grid,
+			final RandomAccessible< ? extends Composite< T > > features,
+			final int size,
+					final T worstVal )
+	{
+		this( grid, features, size, Comparator.reverseOrder(), worstVal );
 	}
 
 	@Override
@@ -62,19 +64,33 @@ public class ClassifyingCellLoader< T extends RealType< T > > implements CacheLo
 		final int[] cellDims = new int[ n ];
 		grid.getCellDimensions( index, cellMin, cellDims );
 		final long[] cellMax = IntStream.range( 0, n ).mapToLong( d -> cellMin[ d ] + cellDims[ d ] - 1 ).toArray();
-		final FinalInterval cellInterval = new FinalInterval( cellMin, cellMax );
 
 		final int blocksize = ( int ) Intervals.numElements( cellDims );
 		final VolatileShortArray array = new VolatileShortArray( blocksize, true );
 
 		final Img< UnsignedShortType > img = ArrayImgs.unsignedShorts( array.getCurrentStorageArray(), Util.int2long( cellDims ) );
 
-		final InstanceView< T, ? > instances = new InstanceView<>( features, InstanceView.makeDefaultAttributes( numFeatures, numClasses ) );
-
-		final Cursor< Instance > instancesCursor = Views.interval( instances, cellInterval ).cursor();
-		final Cursor< UnsignedShortType > imgCursor = img.cursor();
+		final FinalInterval sourceCellInterval = new FinalInterval( cellMin, cellMax );
+		final Cursor< ? extends Composite< T > > instancesCursor = Views.flatIterable( Views.interval( map, sourceCellInterval ) ).cursor();
+		final Cursor< UnsignedShortType > imgCursor = Views.flatIterable( img ).cursor();
+		final T argOptimum = worstVal.copy();
 		while ( imgCursor.hasNext() )
-			imgCursor.next().set( 1 - ( int ) classifier.classifyInstance( instancesCursor.next() ) );
+		{
+			argOptimum.set( worstVal );
+			final Composite< T > pred = instancesCursor.next();
+			final UnsignedShortType target = imgCursor.next();
+			int arg = 0;
+			for ( int d = 0; d < size; ++d )
+			{
+				final T comparison = pred.get( d );
+				if ( comp.compare( comparison, argOptimum ) < 0 )
+				{
+					arg = d;
+					argOptimum.set( comparison );
+				}
+			}
+			target.set( arg );
+		}
 
 		return new Cell<>( cellDims, cellMin, array );
 	}
