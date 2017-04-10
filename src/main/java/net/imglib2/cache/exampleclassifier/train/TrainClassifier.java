@@ -1,0 +1,97 @@
+package net.imglib2.cache.exampleclassifier.train;
+
+import java.awt.event.ActionEvent;
+import java.util.ArrayList;
+import java.util.stream.IntStream;
+
+import org.scijava.ui.behaviour.util.AbstractNamedAction;
+
+import gnu.trove.iterator.TLongIterator;
+import gnu.trove.map.hash.TIntObjectHashMap;
+import gnu.trove.set.hash.TLongHashSet;
+import net.imglib2.RandomAccess;
+import net.imglib2.RandomAccessibleInterval;
+import net.imglib2.type.numeric.RealType;
+import net.imglib2.util.IntervalIndexer;
+import net.imglib2.view.Views;
+import net.imglib2.view.composite.CompositeIntervalView;
+import net.imglib2.view.composite.RealComposite;
+import weka.classifiers.Classifier;
+import weka.core.Attribute;
+import weka.core.DenseInstance;
+import weka.core.Instances;
+
+public class TrainClassifier< F extends RealType< F > > extends AbstractNamedAction
+{
+
+	public TrainClassifier(
+			final Classifier classifier,
+			final LabelBrushController< ? > controller,
+			final RandomAccessibleInterval< F > features,
+			final ArrayList< String > classes
+			)
+	{
+		super( "train classifier" );
+		this.classifier = classifier;
+		this.controller = controller;
+		this.features = features;
+		this.classes = classes;
+	}
+
+	private final Classifier classifier;
+
+	private final LabelBrushController< ? > controller;
+
+	private final RandomAccessibleInterval< F > features;
+
+	private final ArrayList< String > classes;
+
+	private boolean trainingSuccess = false;
+
+	public boolean getTrainingSuccess()
+	{
+		return trainingSuccess;
+	}
+
+	@Override
+	public void actionPerformed( final ActionEvent e )
+	{
+		trainingSuccess = false;
+		final TIntObjectHashMap< TLongHashSet > samples = controller.getGroundTruth();
+		final int numFeatures = ( int ) features.dimension( features.numDimensions() - 1 );
+		final ArrayList< Attribute > attributes = new ArrayList<>();
+		for ( int i = 0; i < numFeatures; ++i )
+			attributes.add( new Attribute( "" + i ) );
+		attributes.add( new Attribute( "class", classes ) );
+
+		final int nSamples = IntStream.range( 1, classes.size() + 1 ).map( i -> samples.get( i ).size() ).sum();
+
+		final Instances instances = new Instances( "training", attributes, nSamples );
+		instances.setClassIndex( numFeatures );
+		final CompositeIntervalView< F, RealComposite< F > > collapsedFeatures = Views.collapseReal( features );
+		final RandomAccess< RealComposite< F > > featAccess = collapsedFeatures.randomAccess();
+
+		for ( int i = 1; i <= classes.size(); ++i )
+			for ( final TLongIterator it = samples.get( i ).iterator(); it.hasNext(); ) {
+				final long pos = it.next();
+				IntervalIndexer.indexToPosition( pos, collapsedFeatures, featAccess );
+				final int label = i - 1;
+				final RealComposite< F > feat = featAccess.get();
+				final double[] values = new double[ numFeatures + 1 ];
+				for ( int f = 0; f < numFeatures; ++f )
+					values[ f ] = feat.get( f ).getRealDouble();
+				values[ numFeatures ] = label;
+				instances.add( new DenseInstance( 1.0, values ) );
+			}
+		try
+		{
+			classifier.buildClassifier( instances );
+			trainingSuccess = true;
+		}
+		catch ( final Exception e1 )
+		{
+			trainingSuccess = false;
+		}
+	}
+
+}
