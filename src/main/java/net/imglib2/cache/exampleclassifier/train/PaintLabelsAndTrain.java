@@ -62,7 +62,7 @@ public class PaintLabelsAndTrain
 		final int[] cellDimensions = new int[] { 32, 32, 4 };
 		final CellGrid grid = new CellGrid( dimensions, cellDimensions );
 		final int maxNumLevels = 1;
-		final int numFetcherThreads = 47;
+		final int numFetcherThreads = Runtime.getRuntime().availableProcessors();
 		final BlockingFetchQueues< Callable< ? > > queue = new BlockingFetchQueues<>( maxNumLevels );
 		new FetcherThreads( queue, numFetcherThreads );
 
