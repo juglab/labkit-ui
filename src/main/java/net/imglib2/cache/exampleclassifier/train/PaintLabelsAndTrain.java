@@ -166,6 +166,8 @@ public class PaintLabelsAndTrain
 
 		final MouseWheelSelector mouseWheelSelector = new MouseWheelSelector( selectingVFeatures, viewer );
 		behaviors.behaviour( mouseWheelSelector, "mouseweheel selector", "shift F scroll" );
+		behaviors.behaviour( mouseWheelSelector.getOverlay(), "feature selector overlay", "shift F" );
+		viewer.getDisplay().addOverlayRenderer( mouseWheelSelector.getOverlay() );
 
 		final LazyCellImg< IntType, DirtyIntArray > labels = LabelLoader.createImg( new LabelLoader( grid, LabelBrushController.BACKGROUND ), "labels-", 1000 );
 //		final ArrayImg< IntType, IntArray > labels = ArrayImgs.ints( Intervals.dimensionsAsLongArray( rawData ) );
