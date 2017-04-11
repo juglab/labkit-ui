@@ -74,7 +74,7 @@ public class ClassifyingCellLoader< T extends RealType< T > > implements CacheLo
 		final Cursor< Instance > instancesCursor = Views.interval( instances, cellInterval ).cursor();
 		final Cursor< UnsignedShortType > imgCursor = img.cursor();
 		while ( imgCursor.hasNext() )
-			imgCursor.next().set( 1 - ( int ) classifier.classifyInstance( instancesCursor.next() ) );
+			imgCursor.next().set( ( int ) classifier.classifyInstance( instancesCursor.next() ) );
 
 		return new Cell<>( cellDims, cellMin, array );
 	}

@@ -32,13 +32,15 @@ import net.imglib2.img.Img;
 import net.imglib2.img.array.ArrayImg;
 import net.imglib2.img.array.ArrayImgs;
 import net.imglib2.img.basictypeaccess.array.ByteArray;
+import net.imglib2.img.basictypeaccess.array.DirtyIntArray;
 import net.imglib2.img.cell.CellGrid;
+import net.imglib2.img.cell.LazyCellImg;
 import net.imglib2.img.display.imagej.ImageJFunctions;
 import net.imglib2.realtransform.AffineTransform3D;
 import net.imglib2.type.numeric.ARGBType;
 import net.imglib2.type.numeric.RealType;
+import net.imglib2.type.numeric.integer.IntType;
 import net.imglib2.type.numeric.integer.UnsignedByteType;
-import net.imglib2.type.numeric.integer.UnsignedShortType;
 import net.imglib2.type.numeric.real.FloatType;
 import net.imglib2.type.volatiles.VolatileFloatType;
 import net.imglib2.util.Intervals;
@@ -78,7 +80,7 @@ public class PaintLabelsAndTrain
 			output.setValid( true );
 			output.set( input.get() );
 		}, new VolatileFloatType() ) );
-		final double[] sigmas = { 1.0, 3.0, 5.0, 7.0 };
+		final double[] sigmas = { 1.0 }; // , 3.0, 5.0, 7.0 };
 		@SuppressWarnings( "unchecked" )
 		final Pair< Img< FloatType >, Img< VolatileFloatType > >[] gausses = new Pair[ sigmas.length ];
 		for ( int sigmaIndex = 0; sigmaIndex < sigmas.length; ++sigmaIndex )
@@ -141,14 +143,14 @@ public class PaintLabelsAndTrain
 			final int nLabels,
 			final CellGrid grid,
 			final BlockingFetchQueues< Callable< ? > > queue,
-			final Random rng )
+			final Random rng ) throws IOException
 	{
 
 		final long nFeatures = features.dimension( features.numDimensions() - 1 );
 		final TIntIntHashMap cmap = new TIntIntHashMap();
 		cmap.put( 0, 0 );
 
-		final Converter< UnsignedShortType, ARGBType > conv = ( input, output ) -> {
+		final Converter< IntType, ARGBType > conv = ( input, output ) -> {
 			output.set( cmap.get( input.getInteger() ) );
 		};
 
@@ -158,17 +160,23 @@ public class PaintLabelsAndTrain
 		final BdvStackSource< ? extends RealType< ? > > bdv = BdvFunctions.show( rawData, "raw" );
 		final ViewerPanel viewer = bdv.getBdvHandle().getViewerPanel();
 
+		final LazyCellImg< IntType, DirtyIntArray > labels = LabelLoader.createImg( new LabelLoader( grid, LabelBrushController.BACKGROUND ), "labels-", 1000 );
+//		final ArrayImg< IntType, IntArray > labels = ArrayImgs.ints( Intervals.dimensionsAsLongArray( rawData ) );
+		for ( final IntType l : labels )
+			l.set( LabelBrushController.BACKGROUND );
+
 		final LabelBrushController brushController = new LabelBrushController(
 				viewer,
-				rawData,
+				labels,
 				new AffineTransform3D(),
 				behaviors,
-				nLabels );
+				nLabels,
+				LabelBrushController.emptyGroundTruth() );
 		final UpdateColormap cmapUpdater = new UpdateColormap( cmap, nLabels, rng, viewer, 1.0f );
 		cmapUpdater.updateColormap();
 		bdv.getBdvHandle().getViewerPanel().setDisplayMode( DisplayMode.FUSED );
-		final SparseIntRandomAccessibleInterval< UnsignedShortType > labels = new SparseIntRandomAccessibleInterval<>( brushController.getGroundTruth(), rawData, new UnsignedShortType(), LabelBrushController.BACKGROUND );
-		BdvFunctions.show( Converters.convert( labels, conv, new ARGBType() ), "labels", BdvOptions.options().addTo( bdv ) );
+//		final SparseIntRandomAccessibleInterval< UnsignedShortType > labels = new SparseIntRandomAccessibleInterval<>( brushController.getGroundTruth(), rawData, new UnsignedShortType(), LabelBrushController.BACKGROUND );
+		BdvFunctions.show( Converters.convert( ( RandomAccessibleInterval< IntType > ) labels, conv, new ARGBType() ), "labels", BdvOptions.options().addTo( bdv ) );
 		behaviors.install( bdv.getBdvHandle().getTriggerbindings(), "paint ground truth" );
 		bdv.getBdvHandle().getViewerPanel().getDisplay().addOverlayRenderer( brushController.getBrushOverlay() );
 		final BdvStackSource< VF > featuresBdv = BdvFunctions.show( volatileFeatures, "features" );

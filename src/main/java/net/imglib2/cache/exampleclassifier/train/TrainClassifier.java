@@ -90,14 +90,13 @@ public class TrainClassifier< F extends RealType< F > > extends AbstractNamedAct
 		final CompositeIntervalView< F, RealComposite< F > > collapsedFeatures = Views.collapseReal( features );
 		final RandomAccess< RealComposite< F > > featAccess = collapsedFeatures.randomAccess();
 
-		System.out.println( "Collecting training examples." );
-//		for ( int i = 1; i <= classes.size(); ++i )
+		System.out.println( "Collecting training examples. " + samples.size() );
 		for ( final TLongIntIterator it = samples.iterator(); it.hasNext(); )
 		{
 			it.advance();
 			final long pos = it.key();
 			IntervalIndexer.indexToPosition( pos, collapsedFeatures, featAccess );
-			final int label = it.value() - 1;
+			final int label = it.value();
 			final RealComposite< F > feat = featAccess.get();
 			final double[] values = new double[ numFeatures + 1 ];
 			for ( int f = 0; f < numFeatures; ++f )

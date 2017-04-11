@@ -49,7 +49,7 @@ public class UpdateColormap extends AbstractNamedAction
 	public void updateColormap()
 	{
 		System.out.println( Integer.toBinaryString( ALPHA_BITS ) + " " + Integer.toBinaryString( alphaMask ) );
-		for ( int i = 1; i <= nLabels; ++i )
+		for ( int i = 0; i < nLabels; ++i )
 			//			final double saturation = 1.0;
 //			final double value = 1.0;
 //			final double hue = rng.nextDouble();

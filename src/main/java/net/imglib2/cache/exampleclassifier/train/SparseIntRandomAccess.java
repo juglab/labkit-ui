@@ -30,9 +30,12 @@ public class SparseIntRandomAccess< I extends IntegerType< I > > extends Point i
 	@Override
 	public I get()
 	{
-		final long index = IntervalIndexer.positionToIndex( this, interval );
-		type.setInteger( values.contains( index ) ? values.get( index ) : background );
-		return type;
+		synchronized ( values )
+		{
+			final long index = IntervalIndexer.positionToIndex( this, interval );
+			type.setInteger( values.contains( index ) ? values.get( index ) : background );
+			return type;
+		}
 	}
 
 	@Override
