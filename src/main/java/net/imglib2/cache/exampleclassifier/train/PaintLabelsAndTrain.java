@@ -59,7 +59,7 @@ public class PaintLabelsAndTrain
 		final Img< UnsignedByteType > rawImg = ImageJFunctions.wrapByte( new ImagePlus( imgPath ) );
 		final long[] dimensions = Intervals.dimensionsAsLongArray( rawImg );
 
-		final int[] cellDimensions = new int[] { 64, 64, 4 };
+		final int[] cellDimensions = new int[] { 32, 32, 4 };
 		final CellGrid grid = new CellGrid( dimensions, cellDimensions );
 		final int maxNumLevels = 1;
 		final int numFetcherThreads = 47;
@@ -157,8 +157,15 @@ public class PaintLabelsAndTrain
 		final InputTriggerConfig config = new InputTriggerConfig();
 		final Behaviours behaviors = new Behaviours( config );
 
-		final BdvStackSource< ? extends RealType< ? > > bdv = BdvFunctions.show( rawData, "raw" );
+		final MouseWheelSelectorRandomAccessibleInterval< VF > selectingVFeatures = new MouseWheelSelectorRandomAccessibleInterval<>( volatileFeatures, volatileFeatures.numDimensions() - 1 );
+
+//		final BdvStackSource< ? extends RealType< ? > > bdv = BdvFunctions.show( rawData, "raw" );
+		final BdvStackSource< VF > bdv = BdvFunctions.show( selectingVFeatures, "features" );
+		bdv.getBdvHandle().getSetupAssignments().getMinMaxGroups().get( 0 ).setRange( 0, 255 );
 		final ViewerPanel viewer = bdv.getBdvHandle().getViewerPanel();
+
+		final MouseWheelSelector mouseWheelSelector = new MouseWheelSelector( selectingVFeatures, viewer );
+		behaviors.behaviour( mouseWheelSelector, "mouseweheel selector", "shift F scroll" );
 
 		final LazyCellImg< IntType, DirtyIntArray > labels = LabelLoader.createImg( new LabelLoader( grid, LabelBrushController.BACKGROUND ), "labels-", 1000 );
 //		final ArrayImg< IntType, IntArray > labels = ArrayImgs.ints( Intervals.dimensionsAsLongArray( rawData ) );
@@ -179,8 +186,8 @@ public class PaintLabelsAndTrain
 		BdvFunctions.show( Converters.convert( ( RandomAccessibleInterval< IntType > ) labels, conv, new ARGBType() ), "labels", BdvOptions.options().addTo( bdv ) );
 		behaviors.install( bdv.getBdvHandle().getTriggerbindings(), "paint ground truth" );
 		bdv.getBdvHandle().getViewerPanel().getDisplay().addOverlayRenderer( brushController.getBrushOverlay() );
-		final BdvStackSource< VF > featuresBdv = BdvFunctions.show( volatileFeatures, "features" );
-		featuresBdv.getBdvHandle().getSetupAssignments().getMinMaxGroups().get( 0 ).setRange( 0, 255 );
+//		final BdvStackSource< VF > featuresBdv = BdvFunctions.show( volatileFeatures, "features" );
+//		featuresBdv.getBdvHandle().getSetupAssignments().getMinMaxGroups().get( 0 ).setRange( 0, 255 );
 
 		final Actions actions = new Actions( config );
 		actions.install( bdv.getBdvHandle().getKeybindings(), "paint ground truth" );

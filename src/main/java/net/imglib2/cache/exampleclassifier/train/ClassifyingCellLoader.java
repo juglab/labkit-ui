@@ -13,7 +13,7 @@ import net.imglib2.img.basictypeaccess.volatiles.array.VolatileShortArray;
 import net.imglib2.img.cell.Cell;
 import net.imglib2.img.cell.CellGrid;
 import net.imglib2.type.numeric.RealType;
-import net.imglib2.type.numeric.integer.UnsignedShortType;
+import net.imglib2.type.numeric.integer.ShortType;
 import net.imglib2.util.Intervals;
 import net.imglib2.util.Util;
 import net.imglib2.view.Views;
@@ -67,14 +67,14 @@ public class ClassifyingCellLoader< T extends RealType< T > > implements CacheLo
 		final int blocksize = ( int ) Intervals.numElements( cellDims );
 		final VolatileShortArray array = new VolatileShortArray( blocksize, true );
 
-		final Img< UnsignedShortType > img = ArrayImgs.unsignedShorts( array.getCurrentStorageArray(), Util.int2long( cellDims ) );
+		final Img< ShortType > img = ArrayImgs.shorts( array.getCurrentStorageArray(), Util.int2long( cellDims ) );
 
 		final InstanceView< T, ? > instances = new InstanceView<>( features, InstanceView.makeDefaultAttributes( numFeatures, numClasses ) );
 
 		final Cursor< Instance > instancesCursor = Views.interval( instances, cellInterval ).cursor();
-		final Cursor< UnsignedShortType > imgCursor = img.cursor();
+		final Cursor< ShortType > imgCursor = img.cursor();
 		while ( imgCursor.hasNext() )
-			imgCursor.next().set( ( int ) classifier.classifyInstance( instancesCursor.next() ) );
+			imgCursor.next().setInteger( ( int ) classifier.classifyInstance( instancesCursor.next() ) );
 
 		return new Cell<>( cellDims, cellMin, array );
 	}

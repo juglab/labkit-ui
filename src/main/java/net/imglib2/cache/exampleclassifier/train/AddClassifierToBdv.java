@@ -12,6 +12,7 @@ import bdv.util.BdvOptions;
 import bdv.util.BdvStackSource;
 import bdv.viewer.SourceAndConverter;
 import gnu.trove.map.hash.TIntIntHashMap;
+import net.imglib2.RealRandomAccessible;
 import net.imglib2.cache.Cache;
 import net.imglib2.cache.IoSync;
 import net.imglib2.cache.img.AccessFlags;
@@ -31,10 +32,12 @@ import net.imglib2.img.basictypeaccess.volatiles.array.VolatileShortArray;
 import net.imglib2.img.cell.Cell;
 import net.imglib2.img.cell.CellGrid;
 import net.imglib2.img.cell.LazyCellImg;
+import net.imglib2.interpolation.randomaccess.NearestNeighborInterpolatorFactory;
 import net.imglib2.type.numeric.ARGBType;
 import net.imglib2.type.numeric.RealType;
-import net.imglib2.type.numeric.integer.UnsignedShortType;
-import net.imglib2.type.volatiles.VolatileUnsignedShortType;
+import net.imglib2.type.numeric.integer.ShortType;
+import net.imglib2.type.volatiles.VolatileShortType;
+import net.imglib2.view.Views;
 import weka.classifiers.Classifier;
 
 public class AddClassifierToBdv< T extends RealType< T > > implements TrainClassifier.Listener
@@ -83,19 +86,19 @@ public class AddClassifierToBdv< T extends RealType< T > > implements TrainClass
 
 	private VolatileCache< Long, Cell< VolatileShortArray > > volatileCache = null;
 
-	private VolatileCachedCellImg< VolatileUnsignedShortType, ? > vimg;
+	private VolatileCachedCellImg< VolatileShortType, ? > vimg;
 
-	private SourceAndConverter< VolatileUnsignedShortType > spimSourceAndConverter = null;
+	private SourceAndConverter< VolatileShortType > spimSourceAndConverter = null;
 
-	public Img< UnsignedShortType > getLazyImg()
+	public Img< ShortType > getLazyImg()
 	{
 		if ( wasTrainedAtLeastOnce )
-			return new LazyCellImg<>( cacheOptions.grid, new UnsignedShortType(), cache.unchecked()::get );
+			return new LazyCellImg<>( cacheOptions.grid, new ShortType(), cache.unchecked()::get );
 		else
 			return null;
 	}
 
-	public Img< VolatileUnsignedShortType > getVolatileImg()
+	public Img< VolatileShortType > getVolatileImg()
 	{
 		return vimg;
 	}
@@ -106,8 +109,8 @@ public class AddClassifierToBdv< T extends RealType< T > > implements TrainClass
 		if ( trainingSuccess )
 			synchronized( source.getBdvHandle().getViewerPanel() ) {
 				loader.setClassifier( classifier );
-				final UnsignedShortType type = new UnsignedShortType();
-				final VolatileUnsignedShortType vtype = new VolatileUnsignedShortType();
+				final ShortType type = new ShortType();
+				final VolatileShortType vtype = new VolatileShortType();
 				final Path blockcache = DiskCellCache.createTempDirectory( cacheOptions.cacheTempName, true );
 				final DiskCellCache< VolatileShortArray > diskcache = new DiskCellCache<>(
 						blockcache,
@@ -124,10 +127,10 @@ public class AddClassifierToBdv< T extends RealType< T > > implements TrainClass
 				final WeakRefVolatileCache< Long, Cell< VolatileShortArray > > volatileCache = new WeakRefVolatileCache<>( cache, cacheOptions.queue, createInvalid );
 
 				final CacheHints hints = new CacheHints( LoadingStrategy.VOLATILE, 0, false );
-				final VolatileCachedCellImg< VolatileUnsignedShortType, VolatileShortArray > vimg = new VolatileCachedCellImg<>( cacheOptions.grid, vtype, hints, volatileCache.unchecked()::get );
+				final VolatileCachedCellImg< VolatileShortType, VolatileShortArray > vimg = new VolatileCachedCellImg<>( cacheOptions.grid, vtype, hints, volatileCache.unchecked()::get );
 
 
-				final Converter< VolatileUnsignedShortType, ARGBType > conv = ( input, output ) -> {
+				final Converter< VolatileShortType, ARGBType > conv = ( input, output ) -> {
 					final boolean isValid = input.isValid();
 					if ( isValid )
 						output.set( cmap.get( input.get().get() ) );
@@ -136,11 +139,12 @@ public class AddClassifierToBdv< T extends RealType< T > > implements TrainClass
 				if ( wasTrainedAtLeastOnce )
 					source.getBdvHandle().getViewerPanel().removeSource( spimSourceAndConverter.getSpimSource() );
 
-				final BdvStackSource< VolatileUnsignedShortType > stackSource = BdvFunctions.show( vimg, "prediction", BdvOptions.options().addTo( source ) );
-				final List< SourceAndConverter< VolatileUnsignedShortType > > sources = stackSource.getSources();
+				final RealRandomAccessible< VolatileShortType > real = Views.interpolate( Views.extendValue( vimg, new VolatileShortType( ( short ) LabelBrushController.BACKGROUND ) ), new NearestNeighborInterpolatorFactory<>() );
+				final BdvStackSource< VolatileShortType > stackSource = BdvFunctions.show( real, vimg, "prediction", BdvOptions.options().addTo( source ) );
+				final List< SourceAndConverter< VolatileShortType > > sources = stackSource.getSources();
 				final int lastSourceIndex = sources.size() - 1;
-				final SourceAndConverter< VolatileUnsignedShortType > lastSource = sources.remove( lastSourceIndex );
-				final SourceAndConverter< VolatileUnsignedShortType > newSourceAndConverter = new SourceAndConverter<>( lastSource.getSpimSource(), conv );
+				final SourceAndConverter< VolatileShortType > lastSource = sources.remove( lastSourceIndex );
+				final SourceAndConverter< VolatileShortType > newSourceAndConverter = new SourceAndConverter<>( lastSource.getSpimSource(), conv );
 
 				System.out.println( "TRAIN!" );
 				sources.add( newSourceAndConverter );
