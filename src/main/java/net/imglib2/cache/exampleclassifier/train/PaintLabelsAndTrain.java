@@ -32,15 +32,13 @@ import net.imglib2.img.Img;
 import net.imglib2.img.array.ArrayImg;
 import net.imglib2.img.array.ArrayImgs;
 import net.imglib2.img.basictypeaccess.array.ByteArray;
-import net.imglib2.img.basictypeaccess.array.IntArray;
 import net.imglib2.img.cell.CellGrid;
 import net.imglib2.img.display.imagej.ImageJFunctions;
 import net.imglib2.realtransform.AffineTransform3D;
 import net.imglib2.type.numeric.ARGBType;
-import net.imglib2.type.numeric.IntegerType;
 import net.imglib2.type.numeric.RealType;
-import net.imglib2.type.numeric.integer.IntType;
 import net.imglib2.type.numeric.integer.UnsignedByteType;
+import net.imglib2.type.numeric.integer.UnsignedShortType;
 import net.imglib2.type.numeric.real.FloatType;
 import net.imglib2.type.volatiles.VolatileFloatType;
 import net.imglib2.util.Intervals;
@@ -71,7 +69,6 @@ public class PaintLabelsAndTrain
 		final ArrayImg< UnsignedByteType, ByteArray > rawData = ArrayImgs.unsignedBytes( dimensions );
 		for ( final Pair< UnsignedByteType, UnsignedByteType > p : Views.interval( Views.pair( rawImg, rawData ), rawImg ) )
 			p.getB().set( p.getA() );
-		final ArrayImg< IntType, IntArray > labels = ArrayImgs.ints( dimensions );
 		final FastRandomForest classifier = new FastRandomForest();
 		final ArrayList< RandomAccessibleInterval< FloatType > > featuresList = new ArrayList<>();
 		final ArrayList< RandomAccessibleInterval< VolatileFloatType > > vfeaturesList = new ArrayList<>();
@@ -132,15 +129,14 @@ public class PaintLabelsAndTrain
 		final RandomAccessibleInterval< VolatileFloatType > vfeatures = Views.concatenate( 3, vfeaturesList );
 
 
-		trainClassifier( rawData, features, vfeatures, labels, classifier, nLabels, grid, queue, rng );
+		trainClassifier( rawData, features, vfeatures, classifier, nLabels, grid, queue, rng );
 	}
 
-	public static < R extends RealType< R >, F extends RealType< F >, VF extends Volatile< F >, L extends IntegerType< L > >
+	public static < R extends RealType< R >, F extends RealType< F >, VF extends Volatile< F > >
 	void trainClassifier(
 			final RandomAccessibleInterval< R > rawData,
 			final RandomAccessibleInterval< F > features,
 			final RandomAccessibleInterval< VF > volatileFeatures,
-			final RandomAccessibleInterval< L > labels,
 			final Classifier classifier,
 			final int nLabels,
 			final CellGrid grid,
@@ -152,31 +148,34 @@ public class PaintLabelsAndTrain
 		final TIntIntHashMap cmap = new TIntIntHashMap();
 		cmap.put( 0, 0 );
 
-		final Converter< L, ARGBType > conv = ( input, output ) -> {
+		final Converter< UnsignedShortType, ARGBType > conv = ( input, output ) -> {
 			output.set( cmap.get( input.getInteger() ) );
 		};
 
-		final BdvStackSource< ? extends RealType< ? > > bdv = BdvFunctions.show( rawData, "raw" );
-		final ViewerPanel viewer = bdv.getBdvHandle().getViewerPanel();
-		final UpdateColormap cmapUpdater = new UpdateColormap( cmap, nLabels, rng, viewer, 1.0f );
-		cmapUpdater.updateColormap();
-		bdv.getBdvHandle().getViewerPanel().setDisplayMode( DisplayMode.FUSED );
-		BdvFunctions.show( Converters.convert( labels, conv, new ARGBType() ), "labels", BdvOptions.options().addTo( bdv ) );
-		final BdvStackSource< VF > featuresBdv = BdvFunctions.show( volatileFeatures, "features" );
-		featuresBdv.getBdvHandle().getSetupAssignments().getMinMaxGroups().get( 0 ).setRange( 0, 255 );
-
 		final InputTriggerConfig config = new InputTriggerConfig();
 		final Behaviours behaviors = new Behaviours( config );
-		behaviors.install( bdv.getBdvHandle().getTriggerbindings(), "paint ground truth" );
-		final Actions actions = new Actions( config );
-		actions.install( bdv.getBdvHandle().getKeybindings(), "paint ground truth" );
-		final LabelBrushController< ? extends IntegerType< ? > > brushController = new LabelBrushController<>(
+
+		final BdvStackSource< ? extends RealType< ? > > bdv = BdvFunctions.show( rawData, "raw" );
+		final ViewerPanel viewer = bdv.getBdvHandle().getViewerPanel();
+
+		final LabelBrushController brushController = new LabelBrushController(
 				viewer,
-				labels,
+				rawData,
 				new AffineTransform3D(),
 				behaviors,
 				nLabels );
+		final UpdateColormap cmapUpdater = new UpdateColormap( cmap, nLabels, rng, viewer, 1.0f );
+		cmapUpdater.updateColormap();
+		bdv.getBdvHandle().getViewerPanel().setDisplayMode( DisplayMode.FUSED );
+		final SparseIntRandomAccessibleInterval< UnsignedShortType > labels = new SparseIntRandomAccessibleInterval<>( brushController.getGroundTruth(), rawData, new UnsignedShortType(), LabelBrushController.BACKGROUND );
+		BdvFunctions.show( Converters.convert( labels, conv, new ARGBType() ), "labels", BdvOptions.options().addTo( bdv ) );
+		behaviors.install( bdv.getBdvHandle().getTriggerbindings(), "paint ground truth" );
 		bdv.getBdvHandle().getViewerPanel().getDisplay().addOverlayRenderer( brushController.getBrushOverlay() );
+		final BdvStackSource< VF > featuresBdv = BdvFunctions.show( volatileFeatures, "features" );
+		featuresBdv.getBdvHandle().getSetupAssignments().getMinMaxGroups().get( 0 ).setRange( 0, 255 );
+
+		final Actions actions = new Actions( config );
+		actions.install( bdv.getBdvHandle().getKeybindings(), "paint ground truth" );
 		brushController.getBrushOverlay().setCmap( cmap );
 
 		final ArrayList< String > classes = new ArrayList<>();

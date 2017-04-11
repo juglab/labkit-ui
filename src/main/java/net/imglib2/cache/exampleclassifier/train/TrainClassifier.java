@@ -1,15 +1,14 @@
 package net.imglib2.cache.exampleclassifier.train;
 
 import java.awt.event.ActionEvent;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.stream.IntStream;
 
 import org.scijava.ui.behaviour.util.AbstractNamedAction;
 
-import gnu.trove.iterator.TLongIterator;
-import gnu.trove.map.hash.TIntObjectHashMap;
-import gnu.trove.set.hash.TLongHashSet;
+import gnu.trove.iterator.TLongIntIterator;
+import gnu.trove.map.hash.TLongIntHashMap;
 import net.imglib2.RandomAccess;
 import net.imglib2.RandomAccessibleInterval;
 import net.imglib2.type.numeric.RealType;
@@ -27,12 +26,12 @@ public class TrainClassifier< F extends RealType< F > > extends AbstractNamedAct
 
 	public static interface Listener
 	{
-		public void notify( Classifier classifier, boolean trainingSuccess ) throws Exception;
+		public void notify( Classifier classifier, boolean trainingSuccess ) throws IOException;
 	}
 
 	public TrainClassifier(
 			final Classifier classifier,
-			final LabelBrushController< ? > controller,
+			final LabelBrushController controller,
 			final RandomAccessibleInterval< F > features,
 			final ArrayList< String > classes,
 			final Listener... listeners
@@ -48,7 +47,7 @@ public class TrainClassifier< F extends RealType< F > > extends AbstractNamedAct
 
 	private final Classifier classifier;
 
-	private final LabelBrushController< ? > controller;
+	private final LabelBrushController controller;
 
 	private final RandomAccessibleInterval< F > features;
 
@@ -77,14 +76,14 @@ public class TrainClassifier< F extends RealType< F > > extends AbstractNamedAct
 	public void actionPerformed( final ActionEvent e )
 	{
 		trainingSuccess = false;
-		final TIntObjectHashMap< TLongHashSet > samples = controller.getGroundTruth();
+		final TLongIntHashMap samples = controller.getGroundTruth();
 		final int numFeatures = ( int ) features.dimension( features.numDimensions() - 1 );
 		final ArrayList< Attribute > attributes = new ArrayList<>();
 		for ( int i = 0; i < numFeatures; ++i )
 			attributes.add( new Attribute( "" + i ) );
 		attributes.add( new Attribute( "class", classes ) );
 
-		final int nSamples = IntStream.range( 1, classes.size() + 1 ).map( i -> samples.get( i ).size() ).sum();
+		final int nSamples = samples.size();
 
 		final Instances instances = new Instances( "training", attributes, nSamples );
 		instances.setClassIndex( numFeatures );
@@ -92,20 +91,19 @@ public class TrainClassifier< F extends RealType< F > > extends AbstractNamedAct
 		final RandomAccess< RealComposite< F > > featAccess = collapsedFeatures.randomAccess();
 
 		System.out.println( "Collecting training examples." );
-		for ( int i = 1; i <= classes.size(); ++i )
+//		for ( int i = 1; i <= classes.size(); ++i )
+		for ( final TLongIntIterator it = samples.iterator(); it.hasNext(); )
 		{
-			System.out.println( "Collecting " + samples.get( i ).size() + " samples for label " + i );
-			for ( final TLongIterator it = samples.get( i ).iterator(); it.hasNext(); ) {
-				final long pos = it.next();
-				IntervalIndexer.indexToPosition( pos, collapsedFeatures, featAccess );
-				final int label = i - 1;
-				final RealComposite< F > feat = featAccess.get();
-				final double[] values = new double[ numFeatures + 1 ];
-				for ( int f = 0; f < numFeatures; ++f )
-					values[ f ] = feat.get( f ).getRealDouble();
-				values[ numFeatures ] = label;
-				instances.add( new DenseInstance( 1.0, values ) );
-			}
+			it.advance();
+			final long pos = it.key();
+			IntervalIndexer.indexToPosition( pos, collapsedFeatures, featAccess );
+			final int label = it.value() - 1;
+			final RealComposite< F > feat = featAccess.get();
+			final double[] values = new double[ numFeatures + 1 ];
+			for ( int f = 0; f < numFeatures; ++f )
+				values[ f ] = feat.get( f ).getRealDouble();
+			values[ numFeatures ] = label;
+			instances.add( new DenseInstance( 1.0, values ) );
 		}
 		System.out.println( "Starting training!" );
 		try

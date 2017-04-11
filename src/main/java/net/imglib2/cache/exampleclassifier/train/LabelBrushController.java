@@ -9,20 +9,21 @@ import org.scijava.ui.behaviour.util.Behaviours;
 
 import bdv.util.Affine3DHelpers;
 import bdv.viewer.ViewerPanel;
-import gnu.trove.map.hash.TIntObjectHashMap;
-import gnu.trove.set.hash.TLongHashSet;
+import gnu.trove.impl.Constants;
+import gnu.trove.map.hash.TLongIntHashMap;
+import net.imglib2.Interval;
 import net.imglib2.Point;
 import net.imglib2.RandomAccess;
-import net.imglib2.RandomAccessible;
-import net.imglib2.RandomAccessibleInterval;
 import net.imglib2.RealLocalizable;
 import net.imglib2.RealPoint;
 import net.imglib2.algorithm.neighborhood.HyperSphereNeighborhood;
 import net.imglib2.algorithm.neighborhood.Neighborhood;
+import net.imglib2.img.array.ArrayImgs;
 import net.imglib2.realtransform.AffineTransform3D;
-import net.imglib2.type.numeric.IntegerType;
+import net.imglib2.type.numeric.integer.ByteType;
 import net.imglib2.ui.TransformEventHandler;
 import net.imglib2.util.IntervalIndexer;
+import net.imglib2.util.Intervals;
 import net.imglib2.util.LinAlgHelpers;
 import net.imglib2.view.Views;
 
@@ -33,29 +34,30 @@ import net.imglib2.view.Views;
  * @author Stephan Saalfeld &lt;saalfelds@janelia.hhmi.org&gt;
  * @author Tobias Pietzsch &lt;tobias.pietzsch@gmail.com&gt;
  */
-public class LabelBrushController< I extends IntegerType< I > >
+public class LabelBrushController
 {
 
-	public static int BACKGROUND = 0;
+	public static int BACKGROUND = -1;
 
 	final protected ViewerPanel viewer;
 
-	final protected RandomAccessibleInterval< I > labels;
+	private final Interval domain;
 
-	private final Behaviours behaviors;
-
-	final protected RandomAccessible< I > extendedLabels;
 	final protected AffineTransform3D labelTransform;
+
 	final protected RealPoint labelLocation;
+
 	final protected BrushOverlay brushOverlay;
+
+	private final RandomAccess< ByteType > dummyAccess = Views.extendBorder( ArrayImgs.bytes( 1, 1 ) ).randomAccess();
+
+	private final TLongIntHashMap groundTruth;
 
 	final int brushNormalAxis;
 
 	protected int brushRadius = 5;
 
 	private final int nLabels;
-
-	private final TIntObjectHashMap< TLongHashSet > groundTruth;
 
 	private int currentLabel = 1;
 
@@ -64,11 +66,6 @@ public class LabelBrushController< I extends IntegerType< I > >
 	public BrushOverlay getBrushOverlay()
 	{
 		return brushOverlay;
-	}
-
-	public TIntObjectHashMap< TLongHashSet > getGroundTruth()
-	{
-		return groundTruth;
 	}
 
 	public int getCurrentLabel()
@@ -81,6 +78,11 @@ public class LabelBrushController< I extends IntegerType< I > >
 		this.currentLabel = label;
 	}
 
+	public TLongIntHashMap getGroundTruth()
+	{
+		return groundTruth;
+	}
+
 	/**
 	 * Coordinates where mouse dragging started.
 	 */
@@ -88,26 +90,19 @@ public class LabelBrushController< I extends IntegerType< I > >
 
 	public LabelBrushController(
 			final ViewerPanel viewer,
-			final RandomAccessibleInterval< I > labels,
+			final Interval domain,
 			final AffineTransform3D labelTransform,
 			final Behaviours behaviors,
 			final int brushNormalAxis,
 			final int nLabels )
 	{
 		this.viewer = viewer;
-		this.labels = labels;
-		final RandomAccess< I > ra = labels.randomAccess();
-		labels.min( ra );
-		final I ext = ra.get().copy();
-		ext.setInteger( BACKGROUND );
-		extendedLabels = Views.extendValue( this.labels, ext );
+		this.domain = domain;
 		this.labelTransform = labelTransform;
 		this.brushNormalAxis = brushNormalAxis;
 		brushOverlay = new BrushOverlay( viewer );
 
 		labelLocation = new RealPoint( 3 );
-
-		this.behaviors = behaviors;
 
 		behaviors.behaviour( new Paint(), "paint", "SPACE button1" );
 		behaviors.behaviour( new Erase(), "erase", "SPACE button2", "SPACE button3" );
@@ -115,20 +110,17 @@ public class LabelBrushController< I extends IntegerType< I > >
 		behaviors.behaviour( new ChangeLabel(), "change label", "SPACE shift scroll" );
 		behaviors.behaviour( new MoveBrush(), "move brush", "SPACE" );
 		this.nLabels = nLabels;
-		groundTruth = new TIntObjectHashMap<>();
-		for ( int i = 1; i <= nLabels; ++i )
-			groundTruth.put( i, new TLongHashSet() );
-
+		this.groundTruth = new TLongIntHashMap( Constants.DEFAULT_CAPACITY, Constants.DEFAULT_LOAD_FACTOR, Long.MAX_VALUE, BACKGROUND );
 	}
 
 	public LabelBrushController(
 			final ViewerPanel viewer,
-			final RandomAccessibleInterval< I > labels,
+			final Interval domain,
 			final AffineTransform3D labelTransform,
 			final Behaviours behaviors,
 			final int nLabels )
 	{
-		this( viewer, labels, labelTransform, behaviors, 2, nLabels );
+		this( viewer, domain, labelTransform, behaviors, 2, nLabels );
 	}
 
 	private void setCoordinates( final int x, final int y )
@@ -146,33 +138,33 @@ public class LabelBrushController< I extends IntegerType< I > >
 	{
 		protected void paint( final RealLocalizable coords)
 		{
-			final RandomAccessible< I > labelSource = Views.hyperSlice( extendedLabels, brushNormalAxis, Math.round( coords.getDoublePosition( 2 ) ) );
-
-			final Neighborhood< I > sphere =
-					HyperSphereNeighborhood.< I >factory().create(
+			final Neighborhood< ByteType > sphere =
+					HyperSphereNeighborhood.< ByteType >factory().create(
 							new long[]{
 									Math.round( coords.getDoublePosition( brushNormalAxis == 0 ? 1 : 0 ) ),
 									Math.round( coords.getDoublePosition( brushNormalAxis == 2 ? 1 : 2 ) ) },
 							Math.round( brushRadius / Affine3DHelpers.extractScale( labelTransform, brushNormalAxis == 0 ? 1 : 0 ) ),
-							labelSource.randomAccess() );
+							dummyAccess.copyRandomAccess() );
 
 			pos.setPosition( Math.round( coords.getDoublePosition( 2 ) ), brushNormalAxis );
 
-			for ( final net.imglib2.Cursor< I > it = sphere.cursor(); it.hasNext(); )
+//			synchronized ( groundTruth )
 			{
-				final I t = it.next();
-				final int previous = t.getInteger();
-				final int v = getValue();
-				if ( previous != v ) {
-					pos.setPosition( it.getLongPosition( 0 ), brushNormalAxis == 0 ? 1 : 0 );
-					pos.setPosition( it.getLongPosition( 0 ), brushNormalAxis == 2 ? 1 : 2 );
-					final long index = IntervalIndexer.positionToIndex( pos, labels );
-					t.setInteger( v );
 
-					if ( previous != BACKGROUND )
-						getGroundTruth().get( previous ).remove( index );
-					if ( v != BACKGROUND )
-						getGroundTruth().get( v ).add( index );
+				final int v = getValue();
+				for ( final net.imglib2.Cursor< ByteType > it = sphere.cursor(); it.hasNext(); )
+				{
+					it.fwd();
+					pos.setPosition( it.getLongPosition( 0 ), brushNormalAxis == 0 ? 1 : 0 );
+					pos.setPosition( it.getLongPosition( 1 ), brushNormalAxis == 2 ? 1 : 2 );
+					if ( Intervals.contains( domain, pos ) )
+					{
+						final long index = IntervalIndexer.positionToIndex( pos, domain );
+						if ( v == BACKGROUND )
+							groundTruth.remove( index );
+						else
+							groundTruth.put( index, v );
+					}
 				}
 			}
 
