@@ -103,7 +103,7 @@ public class LabelBrushController
 		this.labels = labels;
 		this.labelTransform = labelTransform;
 		this.brushNormalAxis = brushNormalAxis;
-		brushOverlay = new BrushOverlay( viewer );
+		brushOverlay = new BrushOverlay( viewer, currentLabel );
 
 		labelLocation = new RealPoint( 3 );
 

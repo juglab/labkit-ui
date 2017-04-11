@@ -30,7 +30,7 @@ public class BrushOverlay implements OverlayRenderer
 	protected boolean visible = false;
 	final AffineTransform3D viewerTransform = new AffineTransform3D();
 
-	private int label = 1;
+	private int label;
 
 	private TIntIntHashMap cmap = new TIntIntHashMap();
 
@@ -54,9 +54,10 @@ public class BrushOverlay implements OverlayRenderer
 		this.label = label;
 	}
 
-	public BrushOverlay( final ViewerPanel viewer )
+	public BrushOverlay( final ViewerPanel viewer, final int label )
 	{
 		this.viewer = viewer;
+		this.label = label;
 	}
 
 	public void setPosition( final int x, final int y )
