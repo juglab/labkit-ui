@@ -2,8 +2,11 @@ package net.imglib2.cache.exampleclassifier.train;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Random;
 import java.util.concurrent.Callable;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 import org.scijava.ui.behaviour.io.InputTriggerConfig;
 import org.scijava.ui.behaviour.util.Actions;
@@ -21,9 +24,16 @@ import net.imglib2.RandomAccessibleInterval;
 import net.imglib2.Volatile;
 import net.imglib2.algorithm.gauss3.Gauss3;
 import net.imglib2.algorithm.gradient.PartialDerivative;
-import net.imglib2.cache.exampleclassifier.train.AddClassifierToBdv.CacheOptions;
+import net.imglib2.cache.exampleclassifier.train.classification.AddClassifierToBdv;
+import net.imglib2.cache.exampleclassifier.train.classification.Classifier;
+import net.imglib2.cache.exampleclassifier.train.classification.ClassifyingCacheLoader;
+import net.imglib2.cache.exampleclassifier.train.classification.ClassifyingCacheLoader.ShortAccessGenerator;
+import net.imglib2.cache.exampleclassifier.train.classification.weka.WekaClassifier;
+import net.imglib2.cache.exampleclassifier.train.classification.TrainClassifier;
+import net.imglib2.cache.exampleclassifier.train.classification.AddClassifierToBdv.CacheOptions;
 import net.imglib2.cache.exampleclassifier.train.color.ColorMapColorProvider;
 import net.imglib2.cache.exampleclassifier.train.color.IntegerARGBConverters;
+import net.imglib2.cache.exampleclassifier.train.color.UpdateColormap;
 import net.imglib2.cache.queue.BlockingFetchQueues;
 import net.imglib2.cache.queue.FetcherThreads;
 import net.imglib2.converter.Converter;
@@ -35,6 +45,7 @@ import net.imglib2.img.array.ArrayImg;
 import net.imglib2.img.array.ArrayImgs;
 import net.imglib2.img.basictypeaccess.array.ByteArray;
 import net.imglib2.img.basictypeaccess.array.DirtyIntArray;
+import net.imglib2.img.basictypeaccess.volatiles.array.VolatileShortArray;
 import net.imglib2.img.cell.CellGrid;
 import net.imglib2.img.cell.LazyCellImg;
 import net.imglib2.img.display.imagej.ImageJFunctions;
@@ -42,13 +53,14 @@ import net.imglib2.realtransform.AffineTransform3D;
 import net.imglib2.type.numeric.ARGBType;
 import net.imglib2.type.numeric.RealType;
 import net.imglib2.type.numeric.integer.IntType;
+import net.imglib2.type.numeric.integer.ShortType;
 import net.imglib2.type.numeric.integer.UnsignedByteType;
 import net.imglib2.type.numeric.real.FloatType;
 import net.imglib2.type.volatiles.VolatileFloatType;
 import net.imglib2.util.Intervals;
 import net.imglib2.util.Pair;
 import net.imglib2.view.Views;
-import weka.classifiers.Classifier;
+import net.imglib2.view.composite.Composite;
 
 public class PaintLabelsAndTrain
 {
@@ -61,7 +73,7 @@ public class PaintLabelsAndTrain
 		final Img< UnsignedByteType > rawImg = ImageJFunctions.wrapByte( new ImagePlus( imgPath ) );
 		final long[] dimensions = Intervals.dimensionsAsLongArray( rawImg );
 
-		final int[] cellDimensions = new int[] { 128, 128, 4 };
+		final int[] cellDimensions = new int[] { 128, 128, 2 };
 		final CellGrid grid = new CellGrid( dimensions, cellDimensions );
 		final int maxNumLevels = 1;
 		final int numFetcherThreads = Runtime.getRuntime().availableProcessors();
@@ -69,11 +81,11 @@ public class PaintLabelsAndTrain
 		new FetcherThreads( queue, numFetcherThreads );
 
 		final int nLabels = 2;
+		final List< String > classLabels = IntStream.range( 0, nLabels ).mapToObj( l -> "class " + l ).collect( Collectors.toList() );
 
 		final ArrayImg< UnsignedByteType, ByteArray > rawData = ArrayImgs.unsignedBytes( dimensions );
 		for ( final Pair< UnsignedByteType, UnsignedByteType > p : Views.interval( Views.pair( rawImg, rawData ), rawImg ) )
 			p.getB().set( p.getA() );
-		final FastRandomForest classifier = new FastRandomForest();
 		final ArrayList< RandomAccessibleInterval< FloatType > > featuresList = new ArrayList<>();
 		final ArrayList< RandomAccessibleInterval< VolatileFloatType > > vfeaturesList = new ArrayList<>();
 		final RandomAccessibleInterval< FloatType > converted = Converters.convert( ( RandomAccessibleInterval< UnsignedByteType > ) rawData, new RealFloatConverter<>(), new FloatType() );
@@ -132,19 +144,25 @@ public class PaintLabelsAndTrain
 		final RandomAccessibleInterval< FloatType > features = Views.concatenate( 3, featuresList );
 		final RandomAccessibleInterval< VolatileFloatType > vfeatures = Views.concatenate( 3, vfeaturesList );
 
+		final FastRandomForest wekaClassifier = new FastRandomForest();
+		final WekaClassifier< FloatType, ShortType > classifier = new WekaClassifier<>( wekaClassifier, classLabels, ( int ) features.dimension( features.numDimensions() - 1 ) );
 
-		trainClassifier( rawData, features, vfeatures, classifier, nLabels, grid, queue, rng );
+		final ShortAccessGenerator< VolatileShortArray > accessGenerator = ( n, valid ) -> new VolatileShortArray( ( int ) n, valid );
+		trainClassifier( rawData, features, vfeatures, classifier, nLabels, grid, queue, accessGenerator, rng );
 	}
 
+	// change the accessGenerator once I can use something different than
+	// VolatileFloatArray
 	public static < R extends RealType< R >, F extends RealType< F >, VF extends Volatile< F > >
 	void trainClassifier(
 			final RandomAccessibleInterval< R > rawData,
 			final RandomAccessibleInterval< F > features,
 			final RandomAccessibleInterval< VF > volatileFeatures,
-			final Classifier classifier,
+			final Classifier< Composite< F >, RandomAccessibleInterval< F >, RandomAccessibleInterval< ShortType > > classifier,
 			final int nLabels,
 			final CellGrid grid,
 			final BlockingFetchQueues< Callable< ? > > queue,
+			final ShortAccessGenerator< VolatileShortArray > accessGenerator,
 			final Random rng ) throws IOException
 	{
 
@@ -203,9 +221,11 @@ public class PaintLabelsAndTrain
 		actions.namedAction( colormapUpdater, "ctrl shift C" );
 
 		final CacheOptions cacheOptions = new AddClassifierToBdv.CacheOptions( "prediction", grid, 1000, queue );
-		final AddClassifierToBdv< F > predictionAdder = new AddClassifierToBdv<>( bdv, new ClassifyingCellLoader<>( grid, Views.collapseReal( features ), classifier, ( int ) nFeatures, nLabels ), colorProvider, cacheOptions );
+		final ClassifyingCacheLoader< F, VolatileShortArray > classifyingLoader = new ClassifyingCacheLoader<>( grid, features, classifier, ( int ) nFeatures, accessGenerator );
+		final AddClassifierToBdv< F > predictionAdder = new AddClassifierToBdv<>( bdv, classifyingLoader, colorProvider, cacheOptions );
 		trainer.addListener( predictionAdder );
 
 	}
+
 
 }

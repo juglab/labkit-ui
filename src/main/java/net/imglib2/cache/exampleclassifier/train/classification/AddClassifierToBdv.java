@@ -1,4 +1,4 @@
-package net.imglib2.cache.exampleclassifier.train;
+package net.imglib2.cache.exampleclassifier.train.classification;
 
 import java.io.IOException;
 import java.nio.file.Path;
@@ -12,6 +12,7 @@ import bdv.util.BdvStackSource;
 import net.imglib2.RealRandomAccessible;
 import net.imglib2.cache.Cache;
 import net.imglib2.cache.IoSync;
+import net.imglib2.cache.exampleclassifier.train.LabelBrushController;
 import net.imglib2.cache.exampleclassifier.train.color.IntegerColorProvider;
 import net.imglib2.cache.img.AccessFlags;
 import net.imglib2.cache.img.AccessIo;
@@ -37,9 +38,9 @@ import net.imglib2.type.numeric.integer.ShortType;
 import net.imglib2.type.volatiles.VolatileARGBType;
 import net.imglib2.type.volatiles.VolatileShortType;
 import net.imglib2.view.Views;
-import weka.classifiers.Classifier;
+import net.imglib2.view.composite.Composite;
 
-public class AddClassifierToBdv< T extends RealType< T > > implements TrainClassifier.Listener
+public class AddClassifierToBdv< T extends RealType< T > > implements TrainClassifier.Listener< T >
 {
 
 	public static class CacheOptions
@@ -64,7 +65,7 @@ public class AddClassifierToBdv< T extends RealType< T > > implements TrainClass
 
 	private final BdvStackSource< ? > source;
 
-	private final ClassifyingCellLoader< T > loader;
+	private final ClassifyingCacheLoader< T, VolatileShortArray > loader;
 
 	private final IntegerColorProvider colorProvider;
 
@@ -72,7 +73,7 @@ public class AddClassifierToBdv< T extends RealType< T > > implements TrainClass
 
 	public AddClassifierToBdv(
 			final BdvStackSource< ? > source,
-			final ClassifyingCellLoader< T > loader,
+			final ClassifyingCacheLoader< T, VolatileShortArray > loader,
 			final IntegerColorProvider colorProvider,
 			final CacheOptions cacheOptions )
 	{
@@ -107,11 +108,11 @@ public class AddClassifierToBdv< T extends RealType< T > > implements TrainClass
 	}
 
 	@Override
-	public void notify( final Classifier classifier, final boolean trainingSuccess ) throws IOException
+	public void notify( final Classifier< Composite< T >, ?, ? > classifier, final boolean trainingSuccess ) throws IOException
 	{
 		if ( trainingSuccess )
 			synchronized( source.getBdvHandle().getViewerPanel() ) {
-				loader.setClassifier( classifier );
+//				loader.setClassifier( classifier );
 				final ShortType type = new ShortType();
 				final VolatileShortType vtype = new VolatileShortType();
 				final Path blockcache = DiskCellCache.createTempDirectory( cacheOptions.cacheTempName, true );

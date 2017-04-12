@@ -1,36 +1,33 @@
-package net.imglib2.cache.exampleclassifier.train;
+package net.imglib2.cache.exampleclassifier.train.classification;
 
 import java.awt.event.ActionEvent;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.stream.Stream;
 
 import org.scijava.ui.behaviour.util.AbstractNamedAction;
 
-import gnu.trove.iterator.TLongIntIterator;
 import gnu.trove.map.hash.TLongIntHashMap;
-import net.imglib2.RandomAccess;
 import net.imglib2.RandomAccessibleInterval;
+import net.imglib2.cache.exampleclassifier.train.LabelBrushController;
 import net.imglib2.type.numeric.RealType;
 import net.imglib2.util.IntervalIndexer;
 import net.imglib2.view.Views;
-import net.imglib2.view.composite.CompositeIntervalView;
+import net.imglib2.view.composite.Composite;
+import net.imglib2.view.composite.CompositeView;
 import net.imglib2.view.composite.RealComposite;
-import weka.classifiers.Classifier;
-import weka.core.Attribute;
-import weka.core.DenseInstance;
-import weka.core.Instances;
 
 public class TrainClassifier< F extends RealType< F > > extends AbstractNamedAction
 {
 
-	public static interface Listener
+	public static interface Listener< F extends RealType< F > >
 	{
-		public void notify( Classifier classifier, boolean trainingSuccess ) throws IOException;
+		public void notify( Classifier< Composite< F >, ?, ? > classifier, boolean trainingSuccess ) throws IOException;
 	}
 
 	public TrainClassifier(
-			final Classifier classifier,
+			final Classifier< Composite< F >, ?, ? > classifier,
 			final LabelBrushController controller,
 			final RandomAccessibleInterval< F > features,
 			final ArrayList< String > classes,
@@ -45,7 +42,7 @@ public class TrainClassifier< F extends RealType< F > > extends AbstractNamedAct
 		this.listeners = new ArrayList<>( Arrays.asList( listeners ) );
 	}
 
-	private final Classifier classifier;
+	private final Classifier< Composite< F >, ?, ? > classifier;
 
 	private final LabelBrushController controller;
 
@@ -77,37 +74,20 @@ public class TrainClassifier< F extends RealType< F > > extends AbstractNamedAct
 	{
 		trainingSuccess = false;
 		final TLongIntHashMap samples = controller.getGroundTruth();
-		final int numFeatures = ( int ) features.dimension( features.numDimensions() - 1 );
-		final ArrayList< Attribute > attributes = new ArrayList<>();
-		for ( int i = 0; i < numFeatures; ++i )
-			attributes.add( new Attribute( "" + i ) );
-		attributes.add( new Attribute( "class", classes ) );
-
-		final int nSamples = samples.size();
-
-		final Instances instances = new Instances( "training", attributes, nSamples );
-		instances.setClassIndex( numFeatures );
-		final CompositeIntervalView< F, RealComposite< F > > collapsedFeatures = Views.collapseReal( features );
-		final RandomAccess< RealComposite< F > > featAccess = collapsedFeatures.randomAccess();
-
-		System.out.println( "Collecting training examples. " + samples.size() );
-		for ( final TLongIntIterator it = samples.iterator(); it.hasNext(); )
-		{
-			it.advance();
-			final long pos = it.key();
-			IntervalIndexer.indexToPosition( pos, collapsedFeatures, featAccess );
-			final int label = it.value();
-			final RealComposite< F > feat = featAccess.get();
-			final double[] values = new double[ numFeatures + 1 ];
-			for ( int f = 0; f < numFeatures; ++f )
-				values[ f ] = feat.get( f ).getRealDouble();
-			values[ numFeatures ] = label;
-			instances.add( new DenseInstance( 1.0, values ) );
-		}
-		System.out.println( "Starting training!" );
 		try
 		{
-			classifier.buildClassifier( instances );
+//			classifier.buildClassifier( instances );
+//			synchronized ( samples )
+//			{
+			final long[] locations = samples.keys();
+			final int[] labels = samples.values();
+//			}
+			final CompositeView< F, RealComposite< F > >.CompositeRandomAccess access = Views.collapseReal( features ).randomAccess();
+			final Stream< Composite< F > > featuresStream = Arrays.stream( locations ).mapToObj( loc -> {
+				IntervalIndexer.indexToPosition( loc, features, access );
+				return access.get();
+			} );
+			classifier.trainClassifier( featuresStream::iterator, labels );
 			trainingSuccess = true;
 		}
 		catch ( final Exception e1 )

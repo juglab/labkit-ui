@@ -1,4 +1,4 @@
-package net.imglib2.cache.exampleclassifier.train;
+package net.imglib2.cache.exampleclassifier.train.color;
 
 import java.awt.event.ActionEvent;
 import java.util.Random;
@@ -7,7 +7,6 @@ import java.util.stream.IntStream;
 import org.scijava.ui.behaviour.util.AbstractNamedAction;
 
 import bdv.viewer.ViewerPanel;
-import net.imglib2.cache.exampleclassifier.train.color.ColorMapColorProvider;
 
 public class UpdateColormap extends AbstractNamedAction
 {
