@@ -2,7 +2,6 @@ package net.imglib2.cache.exampleclassifier.train;
 
 import java.io.IOException;
 import java.nio.file.Path;
-import java.util.List;
 import java.util.concurrent.Callable;
 
 import bdv.img.cache.CreateInvalidVolatileCell;
@@ -10,7 +9,6 @@ import bdv.img.cache.VolatileCachedCellImg;
 import bdv.util.BdvFunctions;
 import bdv.util.BdvOptions;
 import bdv.util.BdvStackSource;
-import bdv.viewer.SourceAndConverter;
 import net.imglib2.RealRandomAccessible;
 import net.imglib2.cache.Cache;
 import net.imglib2.cache.IoSync;
@@ -27,15 +25,16 @@ import net.imglib2.cache.volatiles.CreateInvalid;
 import net.imglib2.cache.volatiles.LoadingStrategy;
 import net.imglib2.cache.volatiles.VolatileCache;
 import net.imglib2.converter.Converter;
+import net.imglib2.converter.Converters;
 import net.imglib2.img.Img;
 import net.imglib2.img.basictypeaccess.volatiles.array.VolatileShortArray;
 import net.imglib2.img.cell.Cell;
 import net.imglib2.img.cell.CellGrid;
 import net.imglib2.img.cell.LazyCellImg;
 import net.imglib2.interpolation.randomaccess.NearestNeighborInterpolatorFactory;
-import net.imglib2.type.numeric.ARGBType;
 import net.imglib2.type.numeric.RealType;
 import net.imglib2.type.numeric.integer.ShortType;
+import net.imglib2.type.volatiles.VolatileARGBType;
 import net.imglib2.type.volatiles.VolatileShortType;
 import net.imglib2.view.Views;
 import weka.classifiers.Classifier;
@@ -92,7 +91,7 @@ public class AddClassifierToBdv< T extends RealType< T > > implements TrainClass
 
 	private VolatileCachedCellImg< VolatileShortType, ? > vimg;
 
-	private SourceAndConverter< VolatileShortType > spimSourceAndConverter = null;
+	private BdvStackSource< VolatileARGBType > stackSource = null;
 
 	public Img< ShortType > getLazyImg()
 	{
@@ -134,33 +133,28 @@ public class AddClassifierToBdv< T extends RealType< T > > implements TrainClass
 				final VolatileCachedCellImg< VolatileShortType, VolatileShortArray > vimg = new VolatileCachedCellImg<>( cacheOptions.grid, vtype, hints, volatileCache.unchecked()::get );
 
 
-				final Converter< VolatileShortType, ARGBType > conv = ( input, output ) -> {
+				final Converter< VolatileShortType, VolatileARGBType > conv = ( input, output ) -> {
 					final boolean isValid = input.isValid();
+					output.setValid( isValid );
 					if ( isValid )
 						output.set( colorProvider.getColor( input.get().get() ) );
 				};
 
+				final RealRandomAccessible< VolatileShortType > real = Views.interpolate(
+						Views.extendValue( vimg, new VolatileShortType( ( short ) LabelBrushController.BACKGROUND ) ),
+						new NearestNeighborInterpolatorFactory<>() );
+				final RealRandomAccessible< VolatileARGBType > convertedReal = Converters.convert( real, conv, new VolatileARGBType() );
+
 				if ( wasTrainedAtLeastOnce )
-					source.getBdvHandle().getViewerPanel().removeSource( spimSourceAndConverter.getSpimSource() );
+					stackSource.removeFromBdv();
 
-				final RealRandomAccessible< VolatileShortType > real = Views.interpolate( Views.extendValue( vimg, new VolatileShortType( ( short ) LabelBrushController.BACKGROUND ) ), new NearestNeighborInterpolatorFactory<>() );
-				final BdvStackSource< VolatileShortType > stackSource = BdvFunctions.show( real, vimg, "prediction", BdvOptions.options().addTo( source ) );
-				final List< SourceAndConverter< VolatileShortType > > sources = stackSource.getSources();
-				final int lastSourceIndex = sources.size() - 1;
-				final SourceAndConverter< VolatileShortType > lastSource = sources.remove( lastSourceIndex );
-				final SourceAndConverter< VolatileShortType > newSourceAndConverter = new SourceAndConverter<>( lastSource.getSpimSource(), conv );
-
-				System.out.println( "TRAIN!" );
-				sources.add( newSourceAndConverter );
-				stackSource.getBdvHandle().getViewerPanel().removeSource( lastSource.getSpimSource() );
-				stackSource.getBdvHandle().getViewerPanel().addSource( newSourceAndConverter );
+				stackSource = BdvFunctions.show( convertedReal, vimg, "prediction", BdvOptions.options().addTo( source ) );
+				System.out.println( stackSource );
 				stackSource.getBdvHandle().getViewerPanel().requestRepaint();
-
 				this.cache = cache;
 				this.volatileCache = volatileCache;
 				this.vimg = vimg;
 				wasTrainedAtLeastOnce = true;
-				spimSourceAndConverter = lastSource;
 			}
 
 	}
