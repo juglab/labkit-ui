@@ -18,6 +18,7 @@ import net.imglib2.RealLocalizable;
 import net.imglib2.RealPoint;
 import net.imglib2.algorithm.neighborhood.HyperSphereNeighborhood;
 import net.imglib2.algorithm.neighborhood.Neighborhood;
+import net.imglib2.cache.exampleclassifier.train.color.IntegerColorProvider;
 import net.imglib2.realtransform.AffineTransform3D;
 import net.imglib2.type.numeric.integer.IntType;
 import net.imglib2.ui.TransformEventHandler;
@@ -97,13 +98,14 @@ public class LabelBrushController
 			final Behaviours behaviors,
 			final int brushNormalAxis,
 			final int nLabels,
-			final TLongIntHashMap groundTruth )
+			final TLongIntHashMap groundTruth,
+			final IntegerColorProvider< ? > colorProvider )
 	{
 		this.viewer = viewer;
 		this.labels = labels;
 		this.labelTransform = labelTransform;
 		this.brushNormalAxis = brushNormalAxis;
-		brushOverlay = new BrushOverlay( viewer, currentLabel );
+		brushOverlay = new BrushOverlay( viewer, currentLabel, colorProvider );
 
 		labelLocation = new RealPoint( 3 );
 
@@ -122,9 +124,10 @@ public class LabelBrushController
 			final AffineTransform3D labelTransform,
 			final Behaviours behaviors,
 			final int nLabels,
-			final TLongIntHashMap groundTruth )
+			final TLongIntHashMap groundTruth,
+			final IntegerColorProvider< ? > colorProvider )
 	{
-		this( viewer, labels, labelTransform, behaviors, 2, nLabels, groundTruth );
+		this( viewer, labels, labelTransform, behaviors, 2, nLabels, groundTruth, colorProvider );
 	}
 
 	private void setCoordinates( final int x, final int y )

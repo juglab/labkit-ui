@@ -14,7 +14,7 @@ import java.awt.geom.Rectangle2D;
 
 import bdv.util.Affine3DHelpers;
 import bdv.viewer.ViewerPanel;
-import gnu.trove.map.hash.TIntIntHashMap;
+import net.imglib2.cache.exampleclassifier.train.color.IntegerColorProvider;
 import net.imglib2.realtransform.AffineTransform3D;
 import net.imglib2.ui.OverlayRenderer;
 
@@ -32,17 +32,7 @@ public class BrushOverlay implements OverlayRenderer
 
 	private int label;
 
-	private TIntIntHashMap cmap = new TIntIntHashMap();
-
-	public TIntIntHashMap getCmap()
-	{
-		return cmap;
-	}
-
-	public void setCmap( final TIntIntHashMap cmap )
-	{
-		this.cmap = cmap;
-	}
+	private final IntegerColorProvider< ? > colorProvider;
 
 	public int getLabel()
 	{
@@ -54,10 +44,11 @@ public class BrushOverlay implements OverlayRenderer
 		this.label = label;
 	}
 
-	public BrushOverlay( final ViewerPanel viewer, final int label )
+	public BrushOverlay( final ViewerPanel viewer, final int label, final IntegerColorProvider< ? > colorProvider )
 	{
 		this.viewer = viewer;
 		this.label = label;
+		this.colorProvider = colorProvider;
 	}
 
 	public void setPosition( final int x, final int y )
@@ -106,7 +97,7 @@ public class BrushOverlay implements OverlayRenderer
 				final Rectangle2D rect = fm.getStringBounds( str, g );
 				g2d.setColor( Color.WHITE );
 				g2d.fillRect( x + roundScaledRadius, y + roundScaledRadius - fm.getAscent(), ( int ) rect.getWidth(), ( int ) rect.getHeight() );
-				g2d.setColor( new Color( cmap.get( label ) ) );
+				g2d.setColor( new Color( colorProvider.getColor( label ) ) );
 				g2d.setStroke( stroke );
 				g2d.drawOval( x - roundScaledRadius, y - roundScaledRadius, 2 * roundScaledRadius + 1, 2 * roundScaledRadius + 1 );
 				g2d.drawString( str, x + roundScaledRadius, y + roundScaledRadius );

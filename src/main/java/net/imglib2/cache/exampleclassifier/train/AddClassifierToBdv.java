@@ -11,10 +11,10 @@ import bdv.util.BdvFunctions;
 import bdv.util.BdvOptions;
 import bdv.util.BdvStackSource;
 import bdv.viewer.SourceAndConverter;
-import gnu.trove.map.hash.TIntIntHashMap;
 import net.imglib2.RealRandomAccessible;
 import net.imglib2.cache.Cache;
 import net.imglib2.cache.IoSync;
+import net.imglib2.cache.exampleclassifier.train.color.IntegerColorProvider;
 import net.imglib2.cache.img.AccessFlags;
 import net.imglib2.cache.img.AccessIo;
 import net.imglib2.cache.img.DiskCellCache;
@@ -67,16 +67,20 @@ public class AddClassifierToBdv< T extends RealType< T > > implements TrainClass
 
 	private final ClassifyingCellLoader< T > loader;
 
-	private final TIntIntHashMap cmap;
+	private final IntegerColorProvider< ? > colorProvider;
 
 	private final CacheOptions cacheOptions;
 
-	public AddClassifierToBdv( final BdvStackSource< ? > source, final ClassifyingCellLoader< T > loader, final TIntIntHashMap cmap, final CacheOptions cacheOptions )
+	public AddClassifierToBdv(
+			final BdvStackSource< ? > source,
+			final ClassifyingCellLoader< T > loader,
+			final IntegerColorProvider< ? > colorProvider,
+			final CacheOptions cacheOptions )
 	{
 		super();
 		this.source = source;
 		this.loader = loader;
-		this.cmap = cmap;
+		this.colorProvider = colorProvider;
 		this.cacheOptions = cacheOptions;
 	}
 
@@ -133,7 +137,7 @@ public class AddClassifierToBdv< T extends RealType< T > > implements TrainClass
 				final Converter< VolatileShortType, ARGBType > conv = ( input, output ) -> {
 					final boolean isValid = input.isValid();
 					if ( isValid )
-						output.set( cmap.get( input.get().get() ) );
+						output.set( colorProvider.getColor( input.get().get() ) );
 				};
 
 				if ( wasTrainedAtLeastOnce )
