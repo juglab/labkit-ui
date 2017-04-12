@@ -8,12 +8,12 @@
 		<version>9.0.0</version>
 	</parent>
 
-	<artifactId>imglib2-cache-examples</artifactId>
-	<version>1.0.0-SNAPSHOT</version>
+	<artifactId>imglib2-atlas</artifactId>
+	<version>0.0.1-SNAPSHOT</version>
 
-	<name>ImgLib2 Cache Examples</name>
-	<description>ImgLib2 Cache Examples</description>
-	<url>https://github.com/tpietzsch/imglib2-cache-examples</url>
+	<name>ImgLib2 ATLAS</name>
+	<description>ImgLib2 ATLAS</description>
+	<url>https://github.com/hanslovsky/imglib2-atlas</url>
 	<inceptionYear>2017</inceptionYear>
 	<organization>
 		<name>ImgLib2</name>
