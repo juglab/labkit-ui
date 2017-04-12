@@ -66,14 +66,14 @@ public class AddClassifierToBdv< T extends RealType< T > > implements TrainClass
 
 	private final ClassifyingCellLoader< T > loader;
 
-	private final IntegerColorProvider< ? > colorProvider;
+	private final IntegerColorProvider colorProvider;
 
 	private final CacheOptions cacheOptions;
 
 	public AddClassifierToBdv(
 			final BdvStackSource< ? > source,
 			final ClassifyingCellLoader< T > loader,
-			final IntegerColorProvider< ? > colorProvider,
+			final IntegerColorProvider colorProvider,
 			final CacheOptions cacheOptions )
 	{
 		super();

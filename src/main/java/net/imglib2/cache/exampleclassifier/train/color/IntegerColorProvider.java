@@ -1,8 +1,6 @@
 package net.imglib2.cache.exampleclassifier.train.color;
 
-import net.imglib2.type.numeric.IntegerType;
-
-public interface IntegerColorProvider< I extends IntegerType< I > > extends ColorProvider< I >
+public interface IntegerColorProvider
 {
 	default public int getColor( final int i )
 	{
@@ -10,11 +8,5 @@ public interface IntegerColorProvider< I extends IntegerType< I > > extends Colo
 	}
 
 	public int getColor( long l );
-
-	@Override
-	default public int getColor( final I i )
-	{
-		return getColor( i.getIntegerLong() );
-	}
 
 }

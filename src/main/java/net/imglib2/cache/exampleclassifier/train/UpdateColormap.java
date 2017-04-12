@@ -24,7 +24,7 @@ public class UpdateColormap extends AbstractNamedAction
 		return alpha( alpha ) | 255 << 16 | 255 << 8 | 255 << 0;
 	}
 
-	private final ColorMapColorProvider< ? > colorProvider;
+	private final ColorMapColorProvider colorProvider;
 
 	private final int nLabels;
 
@@ -33,7 +33,7 @@ public class UpdateColormap extends AbstractNamedAction
 	private final ViewerPanel viewer;
 
 
-	public UpdateColormap( final ColorMapColorProvider< ? > colorProvider, final int nLabels, final Random rng, final ViewerPanel viewer, final float alpha )
+	public UpdateColormap( final ColorMapColorProvider colorProvider, final int nLabels, final Random rng, final ViewerPanel viewer, final float alpha )
 	{
 		super( "color map updater" );
 		this.colorProvider = colorProvider;

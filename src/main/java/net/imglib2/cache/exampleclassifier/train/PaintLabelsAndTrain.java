@@ -23,6 +23,7 @@ import net.imglib2.algorithm.gauss3.Gauss3;
 import net.imglib2.algorithm.gradient.PartialDerivative;
 import net.imglib2.cache.exampleclassifier.train.AddClassifierToBdv.CacheOptions;
 import net.imglib2.cache.exampleclassifier.train.color.ColorMapColorProvider;
+import net.imglib2.cache.exampleclassifier.train.color.IntegerARGBConverters;
 import net.imglib2.cache.queue.BlockingFetchQueues;
 import net.imglib2.cache.queue.FetcherThreads;
 import net.imglib2.converter.Converter;
@@ -60,7 +61,7 @@ public class PaintLabelsAndTrain
 		final Img< UnsignedByteType > rawImg = ImageJFunctions.wrapByte( new ImagePlus( imgPath ) );
 		final long[] dimensions = Intervals.dimensionsAsLongArray( rawImg );
 
-		final int[] cellDimensions = new int[] { 32, 32, 1 };
+		final int[] cellDimensions = new int[] { 128, 128, 4 };
 		final CellGrid grid = new CellGrid( dimensions, cellDimensions );
 		final int maxNumLevels = 1;
 		final int numFetcherThreads = Runtime.getRuntime().availableProcessors();
@@ -150,7 +151,7 @@ public class PaintLabelsAndTrain
 		final long nFeatures = features.dimension( features.numDimensions() - 1 );
 		final TIntIntHashMap cmap = new TIntIntHashMap();
 		cmap.put( 0, 0 );
-		final ColorMapColorProvider< IntType > colorProvider = new ColorMapColorProvider<>( cmap );
+		final ColorMapColorProvider colorProvider = new ColorMapColorProvider( cmap );
 
 		final InputTriggerConfig config = new InputTriggerConfig();
 		final Behaviours behaviors = new Behaviours( config );
@@ -184,7 +185,7 @@ public class PaintLabelsAndTrain
 		colormapUpdater.updateColormap();
 		bdv.getBdvHandle().getViewerPanel().setDisplayMode( DisplayMode.FUSED );
 //		final SparseIntRandomAccessibleInterval< UnsignedShortType > labels = new SparseIntRandomAccessibleInterval<>( brushController.getGroundTruth(), rawData, new UnsignedShortType(), LabelBrushController.BACKGROUND );
-		BdvFunctions.show( Converters.convert( ( RandomAccessibleInterval< IntType > ) labels, colorProvider, new ARGBType() ), "labels", BdvOptions.options().addTo( bdv ) );
+		BdvFunctions.show( Converters.convert( ( RandomAccessibleInterval< IntType > ) labels, new IntegerARGBConverters.ARGB<>( colorProvider ), new ARGBType() ), "labels", BdvOptions.options().addTo( bdv ) );
 		behaviors.install( bdv.getBdvHandle().getTriggerbindings(), "paint ground truth" );
 		bdv.getBdvHandle().getViewerPanel().getDisplay().addOverlayRenderer( brushController.getBrushOverlay() );
 //		final BdvStackSource< VF > featuresBdv = BdvFunctions.show( volatileFeatures, "features" );

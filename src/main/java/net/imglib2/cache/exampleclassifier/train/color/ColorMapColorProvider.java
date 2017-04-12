@@ -7,9 +7,8 @@ import java.util.stream.IntStream;
 import gnu.trove.impl.Constants;
 import gnu.trove.map.TIntIntMap;
 import gnu.trove.map.hash.TIntIntHashMap;
-import net.imglib2.type.numeric.IntegerType;
 
-public class ColorMapColorProvider< I extends IntegerType< I > > implements IntegerColorProvider< I >
+public class ColorMapColorProvider implements IntegerColorProvider
 {
 	public static int RGB_BITS = 255 << 16 | 255 << 8 | 255 << 0;
 

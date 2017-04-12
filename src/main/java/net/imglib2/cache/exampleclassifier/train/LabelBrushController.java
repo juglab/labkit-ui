@@ -99,7 +99,7 @@ public class LabelBrushController
 			final int brushNormalAxis,
 			final int nLabels,
 			final TLongIntHashMap groundTruth,
-			final IntegerColorProvider< ? > colorProvider )
+			final IntegerColorProvider colorProvider )
 	{
 		this.viewer = viewer;
 		this.labels = labels;
@@ -125,7 +125,7 @@ public class LabelBrushController
 			final Behaviours behaviors,
 			final int nLabels,
 			final TLongIntHashMap groundTruth,
-			final IntegerColorProvider< ? > colorProvider )
+			final IntegerColorProvider colorProvider )
 	{
 		this( viewer, labels, labelTransform, behaviors, 2, nLabels, groundTruth, colorProvider );
 	}

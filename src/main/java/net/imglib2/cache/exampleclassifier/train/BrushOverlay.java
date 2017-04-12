@@ -32,7 +32,7 @@ public class BrushOverlay implements OverlayRenderer
 
 	private int label;
 
-	private final IntegerColorProvider< ? > colorProvider;
+	private final IntegerColorProvider colorProvider;
 
 	public int getLabel()
 	{
@@ -44,7 +44,7 @@ public class BrushOverlay implements OverlayRenderer
 		this.label = label;
 	}
 
-	public BrushOverlay( final ViewerPanel viewer, final int label, final IntegerColorProvider< ? > colorProvider )
+	public BrushOverlay( final ViewerPanel viewer, final int label, final IntegerColorProvider colorProvider )
 	{
 		this.viewer = viewer;
 		this.label = label;
