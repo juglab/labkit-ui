@@ -22,6 +22,7 @@ import net.imglib2.Volatile;
 import net.imglib2.algorithm.gauss3.Gauss3;
 import net.imglib2.algorithm.gradient.PartialDerivative;
 import net.imglib2.cache.exampleclassifier.train.AddClassifierToBdv.CacheOptions;
+import net.imglib2.cache.exampleclassifier.train.color.ColorMapColorProvider;
 import net.imglib2.cache.queue.BlockingFetchQueues;
 import net.imglib2.cache.queue.FetcherThreads;
 import net.imglib2.converter.Converter;
@@ -59,7 +60,7 @@ public class PaintLabelsAndTrain
 		final Img< UnsignedByteType > rawImg = ImageJFunctions.wrapByte( new ImagePlus( imgPath ) );
 		final long[] dimensions = Intervals.dimensionsAsLongArray( rawImg );
 
-		final int[] cellDimensions = new int[] { 32, 32, 4 };
+		final int[] cellDimensions = new int[] { 32, 32, 1 };
 		final CellGrid grid = new CellGrid( dimensions, cellDimensions );
 		final int maxNumLevels = 1;
 		final int numFetcherThreads = Runtime.getRuntime().availableProcessors();
@@ -149,10 +150,7 @@ public class PaintLabelsAndTrain
 		final long nFeatures = features.dimension( features.numDimensions() - 1 );
 		final TIntIntHashMap cmap = new TIntIntHashMap();
 		cmap.put( 0, 0 );
-
-		final Converter< IntType, ARGBType > conv = ( input, output ) -> {
-			output.set( cmap.get( input.getInteger() ) );
-		};
+		final ColorMapColorProvider< IntType > colorProvider = new ColorMapColorProvider<>( cmap );
 
 		final InputTriggerConfig config = new InputTriggerConfig();
 		final Behaviours behaviors = new Behaviours( config );
@@ -178,12 +176,13 @@ public class PaintLabelsAndTrain
 				new AffineTransform3D(),
 				behaviors,
 				nLabels,
-				LabelBrushController.emptyGroundTruth() );
-		final UpdateColormap cmapUpdater = new UpdateColormap( cmap, nLabels, rng, viewer, 1.0f );
-		cmapUpdater.updateColormap();
+				LabelBrushController.emptyGroundTruth(),
+				colorProvider );
+		final UpdateColormap colormapUpdater = new UpdateColormap( colorProvider, nLabels, rng, viewer, 1.0f );
+		colormapUpdater.updateColormap();
 		bdv.getBdvHandle().getViewerPanel().setDisplayMode( DisplayMode.FUSED );
 //		final SparseIntRandomAccessibleInterval< UnsignedShortType > labels = new SparseIntRandomAccessibleInterval<>( brushController.getGroundTruth(), rawData, new UnsignedShortType(), LabelBrushController.BACKGROUND );
-		BdvFunctions.show( Converters.convert( ( RandomAccessibleInterval< IntType > ) labels, conv, new ARGBType() ), "labels", BdvOptions.options().addTo( bdv ) );
+		BdvFunctions.show( Converters.convert( ( RandomAccessibleInterval< IntType > ) labels, colorProvider, new ARGBType() ), "labels", BdvOptions.options().addTo( bdv ) );
 		behaviors.install( bdv.getBdvHandle().getTriggerbindings(), "paint ground truth" );
 		bdv.getBdvHandle().getViewerPanel().getDisplay().addOverlayRenderer( brushController.getBrushOverlay() );
 //		final BdvStackSource< VF > featuresBdv = BdvFunctions.show( volatileFeatures, "features" );
@@ -191,7 +190,6 @@ public class PaintLabelsAndTrain
 
 		final Actions actions = new Actions( config );
 		actions.install( bdv.getBdvHandle().getKeybindings(), "paint ground truth" );
-		brushController.getBrushOverlay().setCmap( cmap );
 
 		final ArrayList< String > classes = new ArrayList<>();
 		for ( int i = 1; i <= nLabels; ++i )
@@ -199,10 +197,10 @@ public class PaintLabelsAndTrain
 
 		final TrainClassifier< F > trainer = new TrainClassifier<>( classifier, brushController, features, classes );
 		actions.namedAction( trainer, "ctrl shift T" );
-		actions.namedAction( cmapUpdater, "ctrl shift C" );
+		actions.namedAction( colormapUpdater, "ctrl shift C" );
 
 		final CacheOptions cacheOptions = new AddClassifierToBdv.CacheOptions( "prediction", grid, 1000, queue );
-		final AddClassifierToBdv< F > predictionAdder = new AddClassifierToBdv<>( bdv, new ClassifyingCellLoader<>( grid, Views.collapseReal( features ), classifier, ( int ) nFeatures, nLabels ), cmap, cacheOptions );
+		final AddClassifierToBdv< F > predictionAdder = new AddClassifierToBdv<>( bdv, new ClassifyingCellLoader<>( grid, Views.collapseReal( features ), classifier, ( int ) nFeatures, nLabels ), colorProvider, cacheOptions );
 		trainer.addListener( predictionAdder );
 
 	}
