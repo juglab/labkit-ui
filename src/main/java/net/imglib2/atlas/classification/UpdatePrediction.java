@@ -23,7 +23,6 @@ import net.imglib2.cache.ref.WeakRefVolatileCache;
 import net.imglib2.cache.volatiles.CacheHints;
 import net.imglib2.cache.volatiles.CreateInvalid;
 import net.imglib2.cache.volatiles.LoadingStrategy;
-import net.imglib2.cache.volatiles.VolatileCache;
 import net.imglib2.converter.Converter;
 import net.imglib2.converter.Converters;
 import net.imglib2.img.Img;
@@ -91,8 +90,6 @@ public class UpdatePrediction< T extends RealType< T > > implements TrainClassif
 
 	private Cache< Long, Cell< VolatileShortArray > > cache = null;
 
-	private VolatileCache< Long, Cell< VolatileShortArray > > volatileCache = null;
-
 	private VolatileCachedCellImg< VolatileShortType, ? > vimg;
 
 	public Img< ShortType > getLazyImg()
@@ -151,7 +148,6 @@ public class UpdatePrediction< T extends RealType< T > > implements TrainClassif
 
 				viewer.requestRepaint();
 				this.cache = cache;
-				this.volatileCache = volatileCache;
 				this.vimg = vimg;
 				wasTrainedAtLeastOnce = true;
 			}
