@@ -15,7 +15,7 @@ import bdv.viewer.ViewerPanel;
 import bdv.viewer.VisibilityAndGrouping;
 import net.imglib2.ui.OverlayRenderer;
 
-public class MouseWheelSelector implements ScrollBehaviour
+public class MouseWheelChannelSelector implements ScrollBehaviour
 {
 
 	private final ViewerPanel viewer;
@@ -26,7 +26,7 @@ public class MouseWheelSelector implements ScrollBehaviour
 
 	private final Overlay overlay;
 
-	public MouseWheelSelector( final ViewerPanel viewer, final int numChannels )
+	public MouseWheelChannelSelector( final ViewerPanel viewer, final int numChannels )
 	{
 		super();
 		this.viewer = viewer;

@@ -190,7 +190,7 @@ public class PaintLabelsAndTrain
 //		final BdvStackSource< VF > bdv = BdvFunctions.show( selectingVFeatures, "features" );
 		final ViewerPanel viewer = bdv.getBdvHandle().getViewerPanel();
 
-		final MouseWheelSelector mouseWheelSelector = new MouseWheelSelector( viewer, nFeatures );
+		final MouseWheelChannelSelector mouseWheelSelector = new MouseWheelChannelSelector( viewer, nFeatures );
 		behaviors.behaviour( mouseWheelSelector, "mouseweheel selector", "shift F scroll" );
 		behaviors.behaviour( mouseWheelSelector.getOverlay(), "feature selector overlay", "shift F" );
 		viewer.getDisplay().addOverlayRenderer( mouseWheelSelector.getOverlay() );
