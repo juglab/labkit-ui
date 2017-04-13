@@ -35,9 +35,9 @@
 
 	<developers>
 		<developer>
-			<id>tpietzsch</id>
-			<name>Tobias Pietzsch</name>
-			<url>http://imagej.net/User:Pietzsch</url>
+			<id>hanslovsky</id>
+			<name>Philipp Hanslovsky</name>
+			<url>http://imagej.net/User:Hanslovsky</url>
 			<roles>
 				<role>founder</role>
 				<role>lead</role>
@@ -67,22 +67,22 @@
 	</repositories>
 
 	<scm>
-		<connection>scm:git:git://github.com/imglib/imglib2-cache-examples</connection>
-		<developerConnection>scm:git:git@github.com:imglib/imglib2-cache-examples</developerConnection>
+		<connection>scm:git:git://github.com/hanslovsky/imglib2-atlas</connection>
+		<developerConnection>scm:git:git@github.com:hanslovsky/imglib2-atlas</developerConnection>
 		<tag>HEAD</tag>
-		<url>https://github.com/tpietzsch/imglib2-cache-examples</url>
+		<url>https://github.com/hanslovsky/imglib2-atlas</url>
 	</scm>
 	<issueManagement>
 		<system>GitHub</system>
-		<url>https://github.com/tpietzsch/imglib2-cachei-examples/issues</url>
+		<url>https://github.com/hanslovsky/imglib2-atlas/issues</url>
 	</issueManagement>
 	<ciManagement>
 		<system>Travis CI</system>
-		<url>https://travis-ci.org/tpietzsch/imglib2-cache-examples</url>
+		<url>https://travis-ci.org/hanslovsky/imglib2-atlas</url>
 	</ciManagement>
 
 	<properties>
-		<package-name>net.imglib2.cache.examples</package-name>
+		<package-name>net.imglib2.atlas</package-name>
 
 		<license.licenseName>bsd_2</license.licenseName>
 		<license.projectName>ImgLib2: a general-purpose, multidimensional image processing library.</license.projectName>
