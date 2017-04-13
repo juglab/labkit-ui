@@ -124,7 +124,7 @@ public class UpdatePrediction< T extends RealType< T > > implements TrainClassif
 						AccessIo.get( PrimitiveType.SHORT, AccessFlags.VOLATILE ),
 						type.getEntitiesPerPixel() );
 				final IoSync< Long, Cell< VolatileShortArray > > iosync = new IoSync<>( diskcache );
-				final Cache< Long, Cell< VolatileShortArray > > cache = new GuardedStrongRefLoaderRemoverCache< Long, Cell< VolatileShortArray > >( 1000 )
+				final Cache< Long, Cell< VolatileShortArray > > cache = new GuardedStrongRefLoaderRemoverCache< Long, Cell< VolatileShortArray > >( cacheOptions.entries )
 						.withRemover( iosync )
 						.withLoader( iosync );
 
