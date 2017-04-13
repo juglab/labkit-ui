@@ -17,7 +17,6 @@ import bdv.util.BdvOptions;
 import bdv.util.BdvStackSource;
 import bdv.viewer.DisplayMode;
 import bdv.viewer.ViewerPanel;
-import gnu.trove.map.hash.TIntIntHashMap;
 import hr.irb.fastRandomForest.FastRandomForest;
 import ij.ImagePlus;
 import net.imglib2.RandomAccessibleInterval;
@@ -25,12 +24,12 @@ import net.imglib2.RealRandomAccessible;
 import net.imglib2.Volatile;
 import net.imglib2.algorithm.gauss3.Gauss3;
 import net.imglib2.algorithm.gradient.PartialDerivative;
-import net.imglib2.atlas.classification.UpdatePrediction;
-import net.imglib2.atlas.classification.UpdatePrediction.CacheOptions;
 import net.imglib2.atlas.classification.Classifier;
 import net.imglib2.atlas.classification.ClassifyingCacheLoader;
 import net.imglib2.atlas.classification.ClassifyingCacheLoader.ShortAccessGenerator;
 import net.imglib2.atlas.classification.TrainClassifier;
+import net.imglib2.atlas.classification.UpdatePrediction;
+import net.imglib2.atlas.classification.UpdatePrediction.CacheOptions;
 import net.imglib2.atlas.classification.weka.WekaClassifier;
 import net.imglib2.atlas.color.ColorMapColorProvider;
 import net.imglib2.atlas.color.IntegerARGBConverters;
@@ -154,8 +153,6 @@ public class PaintLabelsAndTrain
 		trainClassifier( rawData, features, vfeatures, classifier, nLabels, grid, queue, accessGenerator, rng );
 	}
 
-	// change the accessGenerator once I can use something different than
-	// VolatileFloatArray
 	public static < R extends RealType< R >, F extends RealType< F >, VF extends Volatile< F > >
 	void trainClassifier(
 			final RandomAccessibleInterval< R > rawData,
@@ -168,41 +165,16 @@ public class PaintLabelsAndTrain
 			final ShortAccessGenerator< VolatileShortArray > accessGenerator,
 			final Random rng ) throws IOException
 	{
-
-		final int nFeatures = ( int ) features.dimension( features.numDimensions() - 1 );
-		final TIntIntHashMap cmap = new TIntIntHashMap();
-		cmap.put( LabelBrushController.BACKGROUND, 0 );
-		final ColorMapColorProvider colorProvider = new ColorMapColorProvider( cmap );
-
 		final InputTriggerConfig config = new InputTriggerConfig();
 		final Behaviours behaviors = new Behaviours( config );
+		final Actions actions = new Actions( config );
 
-//		final BdvStackSource< ? extends RealType< ? > > bdv = BdvFunctions.show( rawData, "raw" );
+		final ColorMapColorProvider colorProvider = new ColorMapColorProvider( rng, LabelBrushController.BACKGROUND, 0 );
 
-		final BdvStackSource< VF > bdv = BdvFunctions.show( Views.hyperSlice( volatileFeatures, volatileFeatures.numDimensions() - 1, 0 ), "feature 1" );
-		bdv.getBdvHandle().getSetupAssignments().getMinMaxGroups().get( 0 ).setRange( 0, 255 );
-		bdv.getBdvHandle().getViewerPanel().setDisplayMode( DisplayMode.GROUP );
-		bdv.getBdvHandle().getViewerPanel().getVisibilityAndGrouping().addSourceToGroup( 0, 0 );
-		for ( int feat = 1; feat < nFeatures; ++feat )
-		{
-			BdvFunctions.show( Views.hyperSlice( volatileFeatures, volatileFeatures.numDimensions() - 1, feat ), "feature " + ( feat + 1 ), BdvOptions.options().addTo( bdv ) );
-			bdv.getBdvHandle().getSetupAssignments().getMinMaxGroups().get( feat ).setRange( 0, 255 );
-			bdv.getBdvHandle().getViewerPanel().getVisibilityAndGrouping().addSourceToGroup( feat, feat );
-		}
-
-//		final BdvStackSource< VF > bdv = BdvFunctions.show( selectingVFeatures, "features" );
-		final ViewerPanel viewer = bdv.getBdvHandle().getViewerPanel();
-
-		final MouseWheelChannelSelector mouseWheelSelector = new MouseWheelChannelSelector( viewer, nFeatures );
-		behaviors.behaviour( mouseWheelSelector, "mouseweheel selector", "shift F scroll" );
-		behaviors.behaviour( mouseWheelSelector.getOverlay(), "feature selector overlay", "shift F" );
-		viewer.getDisplay().addOverlayRenderer( mouseWheelSelector.getOverlay() );
-
+		// add labels layer
 		final LazyCellImg< IntType, DirtyIntArray > labels = LabelLoader.createImg( new LabelLoader( grid, LabelBrushController.BACKGROUND ), "labels-", 1000 );
-//		final ArrayImg< IntType, IntArray > labels = ArrayImgs.ints( Intervals.dimensionsAsLongArray( rawData ) );
-//		for ( final IntType l : labels )
-//			l.set( LabelBrushController.BACKGROUND );
-
+		final BdvStackSource< ARGBType > bdv = BdvFunctions.show( Converters.convert( ( RandomAccessibleInterval< IntType > ) labels, new IntegerARGBConverters.ARGB<>( colorProvider ), new ARGBType() ), "labels" );
+		final ViewerPanel viewer = bdv.getBdvHandle().getViewerPanel();
 		final LabelBrushController brushController = new LabelBrushController(
 				viewer,
 				labels,
@@ -213,39 +185,47 @@ public class PaintLabelsAndTrain
 				colorProvider );
 		final UpdateColormap colormapUpdater = new UpdateColormap( colorProvider, nLabels, rng, viewer, 1.0f );
 		colormapUpdater.updateColormap();
-//		final SparseIntRandomAccessibleInterval< UnsignedShortType > labels = new SparseIntRandomAccessibleInterval<>( brushController.getGroundTruth(), rawData, new UnsignedShortType(), LabelBrushController.BACKGROUND );
-		BdvFunctions.show( Converters.convert( ( RandomAccessibleInterval< IntType > ) labels, new IntegerARGBConverters.ARGB<>( colorProvider ), new ARGBType() ), "labels", BdvOptions.options().addTo( bdv ) );
 
+		// set up viewer
+		viewer.getDisplay().addOverlayRenderer( brushController.getBrushOverlay() );
+		viewer.setDisplayMode( DisplayMode.FUSED );
+
+		// add prediction layer
 		final RealRandomAccessible< VolatileARGBType > emptyPrediction = ConstantUtils.constantRealRandomAccessible( new VolatileARGBType( 0 ), labels.numDimensions() );
 		final RealRandomAccessibleContainer< VolatileARGBType > container = new RealRandomAccessibleContainer<>( emptyPrediction );
 		BdvFunctions.show( container, labels, "prediction", BdvOptions.options().addTo( bdv ) );
-		for ( int n = 0; n < nFeatures; ++n )
-		{
-			bdv.getBdvHandle().getViewerPanel().getVisibilityAndGrouping().addSourceToGroup( nFeatures, n );
-			bdv.getBdvHandle().getViewerPanel().getVisibilityAndGrouping().addSourceToGroup( nFeatures + 1, n );
-		}
-		behaviors.install( bdv.getBdvHandle().getTriggerbindings(), "paint ground truth" );
-		bdv.getBdvHandle().getViewerPanel().getDisplay().addOverlayRenderer( brushController.getBrushOverlay() );
-//		final BdvStackSource< VF > featuresBdv = BdvFunctions.show( volatileFeatures, "features" );
-//		featuresBdv.getBdvHandle().getSetupAssignments().getMinMaxGroups().get( 0 ).setRange( 0, 255 );
 
-		final Actions actions = new Actions( config );
-		actions.install( bdv.getBdvHandle().getKeybindings(), "paint ground truth" );
-
+		final int nFeatures = ( int ) features.dimension( features.numDimensions() - 1 );
+		final CacheOptions cacheOptions = new UpdatePrediction.CacheOptions( "prediction", grid, 1000, queue );
+		final ClassifyingCacheLoader< F, VolatileShortArray > classifyingLoader = new ClassifyingCacheLoader<>( grid, features, classifier, nFeatures, accessGenerator );
+		final UpdatePrediction< F > predictionAdder = new UpdatePrediction<>( viewer, classifyingLoader, colorProvider, cacheOptions, container );
 		final ArrayList< String > classes = new ArrayList<>();
 		for ( int i = 1; i <= nLabels; ++i )
 			classes.add( "" + i );
 
 		final TrainClassifier< F > trainer = new TrainClassifier<>( classifier, brushController, features, classes );
+		trainer.addListener( predictionAdder );
 		actions.namedAction( trainer, "ctrl shift T" );
 		actions.namedAction( colormapUpdater, "ctrl shift C" );
 
-		final CacheOptions cacheOptions = new UpdatePrediction.CacheOptions( "prediction", grid, 1000, queue );
-		final ClassifyingCacheLoader< F, VolatileShortArray > classifyingLoader = new ClassifyingCacheLoader<>( grid, features, classifier, nFeatures, accessGenerator );
 
+		// add features
+		BdvFunctions.show( Views.hyperSlice( volatileFeatures, volatileFeatures.numDimensions() - 1, 0 ), "feature 1", BdvOptions.options().addTo( bdv ) );
+		bdv.getBdvHandle().getSetupAssignments().getMinMaxGroups().get( 2 ).setRange( 0, 255 );
+		for ( int feat = 1; feat < nFeatures; ++feat )
+		{
+			BdvFunctions.show( Views.hyperSlice( volatileFeatures, volatileFeatures.numDimensions() - 1, feat ), "feature " + ( feat + 1 ), BdvOptions.options().addTo( bdv ) );
+			bdv.getBdvHandle().getSetupAssignments().getMinMaxGroups().get( feat + 2 ).setRange( 0, 255 );
+		}
 
-		final UpdatePrediction< F > predictionAdder = new UpdatePrediction<>( viewer, classifyingLoader, colorProvider, cacheOptions, container );
-		trainer.addListener( predictionAdder );
+		final MouseWheelChannelSelector mouseWheelSelector = new MouseWheelChannelSelector( viewer, nFeatures );
+		behaviors.behaviour( mouseWheelSelector, "mouseweheel selector", "shift F scroll" );
+		behaviors.behaviour( mouseWheelSelector.getOverlay(), "feature selector overlay", "shift F" );
+		viewer.getDisplay().addOverlayRenderer( mouseWheelSelector.getOverlay() );
+
+		// install actions and behaviors
+		actions.install( bdv.getBdvHandle().getKeybindings(), "classifier training" );
+		behaviors.install( bdv.getBdvHandle().getTriggerbindings(), "classifier training" );
 
 	}
 
