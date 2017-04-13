@@ -1,4 +1,4 @@
-package net.imglib2.cache.exampleclassifier.train.classification;
+package net.imglib2.atlas.classification;
 
 import java.util.Arrays;
 import java.util.stream.IntStream;

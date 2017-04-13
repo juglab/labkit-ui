@@ -1,4 +1,4 @@
-package net.imglib2.cache.exampleclassifier.train.classification;
+package net.imglib2.atlas.classification;
 
 import java.io.IOException;
 import java.nio.file.Path;
@@ -10,10 +10,10 @@ import bdv.util.BdvFunctions;
 import bdv.util.BdvOptions;
 import bdv.util.BdvStackSource;
 import net.imglib2.RealRandomAccessible;
+import net.imglib2.atlas.LabelBrushController;
+import net.imglib2.atlas.color.IntegerColorProvider;
 import net.imglib2.cache.Cache;
 import net.imglib2.cache.IoSync;
-import net.imglib2.cache.exampleclassifier.train.LabelBrushController;
-import net.imglib2.cache.exampleclassifier.train.color.IntegerColorProvider;
 import net.imglib2.cache.img.AccessFlags;
 import net.imglib2.cache.img.AccessIo;
 import net.imglib2.cache.img.DiskCellCache;

@@ -1,4 +1,4 @@
-package net.imglib2.cache.exampleclassifier.train.classification.weka;
+package net.imglib2.atlas.classification.weka;
 
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;

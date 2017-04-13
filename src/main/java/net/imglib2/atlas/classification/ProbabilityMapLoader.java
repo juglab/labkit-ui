@@ -1,4 +1,4 @@
-package net.imglib2.cache.exampleclassifier.train.classification;
+package net.imglib2.atlas.classification;
 
 import java.util.Arrays;
 import java.util.stream.IntStream;
@@ -6,8 +6,8 @@ import java.util.stream.IntStream;
 import net.imglib2.Cursor;
 import net.imglib2.FinalInterval;
 import net.imglib2.RandomAccessible;
+import net.imglib2.atlas.classification.weka.InstanceView;
 import net.imglib2.cache.CacheLoader;
-import net.imglib2.cache.exampleclassifier.train.classification.weka.InstanceView;
 import net.imglib2.img.Img;
 import net.imglib2.img.array.ArrayImgs;
 import net.imglib2.img.basictypeaccess.volatiles.array.VolatileShortArray;

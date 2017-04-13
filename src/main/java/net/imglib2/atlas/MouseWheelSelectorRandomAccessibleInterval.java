@@ -1,4 +1,4 @@
-package net.imglib2.cache.exampleclassifier.train;
+package net.imglib2.atlas;
 
 import net.imglib2.AbstractWrappedInterval;
 import net.imglib2.FinalInterval;

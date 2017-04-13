@@ -1,4 +1,4 @@
-package net.imglib2.cache.exampleclassifier.train.color;
+package net.imglib2.atlas.color;
 
 import java.awt.event.ActionEvent;
 import java.util.Random;

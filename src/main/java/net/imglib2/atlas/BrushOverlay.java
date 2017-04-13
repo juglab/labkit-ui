@@ -1,7 +1,7 @@
 /**
  *
  */
-package net.imglib2.cache.exampleclassifier.train;
+package net.imglib2.atlas;
 
 import java.awt.AlphaComposite;
 import java.awt.BasicStroke;
@@ -14,7 +14,7 @@ import java.awt.geom.Rectangle2D;
 
 import bdv.util.Affine3DHelpers;
 import bdv.viewer.ViewerPanel;
-import net.imglib2.cache.exampleclassifier.train.color.IntegerColorProvider;
+import net.imglib2.atlas.color.IntegerColorProvider;
 import net.imglib2.realtransform.AffineTransform3D;
 import net.imglib2.ui.OverlayRenderer;
 

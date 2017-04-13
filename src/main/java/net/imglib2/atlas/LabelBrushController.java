@@ -1,4 +1,4 @@
-package net.imglib2.cache.exampleclassifier.train;
+package net.imglib2.atlas;
 
 import java.awt.Cursor;
 
@@ -18,7 +18,7 @@ import net.imglib2.RealLocalizable;
 import net.imglib2.RealPoint;
 import net.imglib2.algorithm.neighborhood.HyperSphereNeighborhood;
 import net.imglib2.algorithm.neighborhood.Neighborhood;
-import net.imglib2.cache.exampleclassifier.train.color.IntegerColorProvider;
+import net.imglib2.atlas.color.IntegerColorProvider;
 import net.imglib2.realtransform.AffineTransform3D;
 import net.imglib2.type.numeric.integer.IntType;
 import net.imglib2.ui.TransformEventHandler;

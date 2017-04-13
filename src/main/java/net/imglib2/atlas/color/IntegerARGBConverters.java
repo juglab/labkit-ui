@@ -1,4 +1,4 @@
-package net.imglib2.cache.exampleclassifier.train.color;
+package net.imglib2.atlas.color;
 
 import net.imglib2.Volatile;
 import net.imglib2.converter.Converter;

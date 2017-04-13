@@ -1,11 +1,11 @@
-package net.imglib2.cache.exampleclassifier.train.classification.weka;
+package net.imglib2.atlas.classification.weka;
 
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
 import net.imglib2.RandomAccessibleInterval;
-import net.imglib2.cache.exampleclassifier.train.classification.Classifier;
+import net.imglib2.atlas.classification.Classifier;
 import net.imglib2.type.numeric.IntegerType;
 import net.imglib2.type.numeric.RealType;
 import net.imglib2.util.Pair;

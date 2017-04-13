@@ -1,4 +1,4 @@
-package net.imglib2.cache.exampleclassifier.train.classification;
+package net.imglib2.atlas.classification;
 
 import java.awt.event.ActionEvent;
 import java.io.IOException;
@@ -10,7 +10,7 @@ import org.scijava.ui.behaviour.util.AbstractNamedAction;
 
 import gnu.trove.map.hash.TLongIntHashMap;
 import net.imglib2.RandomAccessibleInterval;
-import net.imglib2.cache.exampleclassifier.train.LabelBrushController;
+import net.imglib2.atlas.LabelBrushController;
 import net.imglib2.type.numeric.RealType;
 import net.imglib2.util.IntervalIndexer;
 import net.imglib2.view.Views;
