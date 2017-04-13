@@ -9,6 +9,7 @@ import bdv.img.cache.VolatileCachedCellImg;
 import bdv.util.BdvFunctions;
 import bdv.util.BdvOptions;
 import bdv.util.BdvStackSource;
+import bdv.viewer.VisibilityAndGrouping;
 import net.imglib2.RealRandomAccessible;
 import net.imglib2.atlas.LabelBrushController;
 import net.imglib2.atlas.color.IntegerColorProvider;
@@ -71,17 +72,21 @@ public class AddClassifierToBdv< T extends RealType< T > > implements TrainClass
 
 	private final CacheOptions cacheOptions;
 
+	private final int numChannels;
+
 	public AddClassifierToBdv(
 			final BdvStackSource< ? > source,
 			final ClassifyingCacheLoader< T, VolatileShortArray > loader,
 			final IntegerColorProvider colorProvider,
-			final CacheOptions cacheOptions )
+			final CacheOptions cacheOptions,
+			final int numChannels )
 	{
 		super();
 		this.source = source;
 		this.loader = loader;
 		this.colorProvider = colorProvider;
 		this.cacheOptions = cacheOptions;
+		this.numChannels = numChannels;
 	}
 
 	private boolean wasTrainedAtLeastOnce = false;
@@ -150,7 +155,12 @@ public class AddClassifierToBdv< T extends RealType< T > > implements TrainClass
 					stackSource.removeFromBdv();
 
 				stackSource = BdvFunctions.show( convertedReal, vimg, "prediction", BdvOptions.options().addTo( source ) );
-				System.out.println( stackSource );
+
+				final VisibilityAndGrouping vag = stackSource.getBdvHandle().getViewerPanel().getVisibilityAndGrouping();
+				final int predictionSource = vag.numSources() - 1;
+				for ( int i = 0; i < numChannels; ++i )
+					vag.addSourceToGroup( predictionSource, i );
+
 				stackSource.getBdvHandle().getViewerPanel().requestRepaint();
 				this.cache = cache;
 				this.volatileCache = volatileCache;

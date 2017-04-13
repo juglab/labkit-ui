@@ -12,31 +12,26 @@ import org.scijava.ui.behaviour.DragBehaviour;
 import org.scijava.ui.behaviour.ScrollBehaviour;
 
 import bdv.viewer.ViewerPanel;
-import net.imglib2.RandomAccessibleInterval;
+import bdv.viewer.VisibilityAndGrouping;
 import net.imglib2.ui.OverlayRenderer;
 
 public class MouseWheelSelector implements ScrollBehaviour
 {
 
-	private final MouseWheelSelectorRandomAccessibleInterval< ? > rai;
-
 	private final ViewerPanel viewer;
+
+	private final int numChannels;
 
 	private boolean visible = false;
 
 	private final Overlay overlay;
 
-	public MouseWheelSelector( final RandomAccessibleInterval< ? > rai, final int d, final ViewerPanel viewer )
-	{
-		this( new MouseWheelSelectorRandomAccessibleInterval<>( rai, d ), viewer );
-	}
-
-	public MouseWheelSelector( final MouseWheelSelectorRandomAccessibleInterval< ? > rai, final ViewerPanel viewer )
+	public MouseWheelSelector( final ViewerPanel viewer, final int numChannels )
 	{
 		super();
-		this.rai = rai;
 		this.viewer = viewer;
 		this.overlay = new Overlay();
+		this.numChannels = numChannels;
 	}
 
 	public Overlay getOverlay()
@@ -49,10 +44,12 @@ public class MouseWheelSelector implements ScrollBehaviour
 	{
 		if ( !isHorizontal )
 			synchronized( viewer ) {
+				final VisibilityAndGrouping vag = viewer.getVisibilityAndGrouping();
+				final int currentGroup = vag.getCurrentGroup();
 				if ( wheelRotation < 0 )
-					rai.setsSlice( Math.min( rai.getSliceIndex() + 1, rai.getMaxSlice() ) );
+					vag.setCurrentGroup( Math.min( currentGroup + 1, numChannels - 1 ) );
 				else if ( wheelRotation > 0 )
-					rai.setsSlice( Math.max( rai.getSliceIndex() - 1, rai.getMinSlice() ) );
+					vag.setCurrentGroup( Math.max( currentGroup - 1, 0 ) );
 
 				viewer.requestRepaint();
 			}
@@ -82,8 +79,10 @@ public class MouseWheelSelector implements ScrollBehaviour
 				final int y = this.y + yOff;
 
 				{
+					final VisibilityAndGrouping vag = viewer.getVisibilityAndGrouping();
+					final int currentGroup = vag.getCurrentGroup();
 					final FontMetrics fm = g.getFontMetrics();
-					final String str = "Feature " + ( rai.getSliceIndex() - rai.getMinSlice() + 1 );
+					final String str = vag.getSourceGroups().get( currentGroup ).getName();
 					final Rectangle2D rect = fm.getStringBounds( str, g );
 					g2d.setColor( Color.WHITE );
 					g2d.fillRect( x, y - fm.getAscent(), ( int ) rect.getWidth(), ( int ) rect.getHeight() );

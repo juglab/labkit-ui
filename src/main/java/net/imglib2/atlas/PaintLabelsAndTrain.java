@@ -25,11 +25,11 @@ import net.imglib2.Volatile;
 import net.imglib2.algorithm.gauss3.Gauss3;
 import net.imglib2.algorithm.gradient.PartialDerivative;
 import net.imglib2.atlas.classification.AddClassifierToBdv;
+import net.imglib2.atlas.classification.AddClassifierToBdv.CacheOptions;
 import net.imglib2.atlas.classification.Classifier;
 import net.imglib2.atlas.classification.ClassifyingCacheLoader;
-import net.imglib2.atlas.classification.TrainClassifier;
-import net.imglib2.atlas.classification.AddClassifierToBdv.CacheOptions;
 import net.imglib2.atlas.classification.ClassifyingCacheLoader.ShortAccessGenerator;
+import net.imglib2.atlas.classification.TrainClassifier;
 import net.imglib2.atlas.classification.weka.WekaClassifier;
 import net.imglib2.atlas.color.ColorMapColorProvider;
 import net.imglib2.atlas.color.IntegerARGBConverters;
@@ -166,30 +166,39 @@ public class PaintLabelsAndTrain
 			final Random rng ) throws IOException
 	{
 
-		final long nFeatures = features.dimension( features.numDimensions() - 1 );
+		final int nFeatures = ( int ) features.dimension( features.numDimensions() - 1 );
 		final TIntIntHashMap cmap = new TIntIntHashMap();
-		cmap.put( 0, 0 );
+		cmap.put( LabelBrushController.BACKGROUND, 0 );
 		final ColorMapColorProvider colorProvider = new ColorMapColorProvider( cmap );
 
 		final InputTriggerConfig config = new InputTriggerConfig();
 		final Behaviours behaviors = new Behaviours( config );
 
-		final MouseWheelSelectorRandomAccessibleInterval< VF > selectingVFeatures = new MouseWheelSelectorRandomAccessibleInterval<>( volatileFeatures, volatileFeatures.numDimensions() - 1 );
-
 //		final BdvStackSource< ? extends RealType< ? > > bdv = BdvFunctions.show( rawData, "raw" );
-		final BdvStackSource< VF > bdv = BdvFunctions.show( selectingVFeatures, "features" );
+
+		final BdvStackSource< VF > bdv = BdvFunctions.show( Views.hyperSlice( volatileFeatures, volatileFeatures.numDimensions() - 1, 0 ), "feature 1" );
 		bdv.getBdvHandle().getSetupAssignments().getMinMaxGroups().get( 0 ).setRange( 0, 255 );
+		bdv.getBdvHandle().getViewerPanel().setDisplayMode( DisplayMode.GROUP );
+		bdv.getBdvHandle().getViewerPanel().getVisibilityAndGrouping().addSourceToGroup( 0, 0 );
+		for ( int feat = 1; feat < nFeatures; ++feat )
+		{
+			BdvFunctions.show( Views.hyperSlice( volatileFeatures, volatileFeatures.numDimensions() - 1, feat ), "feature " + ( feat + 1 ), BdvOptions.options().addTo( bdv ) );
+			bdv.getBdvHandle().getSetupAssignments().getMinMaxGroups().get( feat ).setRange( 0, 255 );
+			bdv.getBdvHandle().getViewerPanel().getVisibilityAndGrouping().addSourceToGroup( feat, feat );
+		}
+
+//		final BdvStackSource< VF > bdv = BdvFunctions.show( selectingVFeatures, "features" );
 		final ViewerPanel viewer = bdv.getBdvHandle().getViewerPanel();
 
-		final MouseWheelSelector mouseWheelSelector = new MouseWheelSelector( selectingVFeatures, viewer );
+		final MouseWheelSelector mouseWheelSelector = new MouseWheelSelector( viewer, nFeatures );
 		behaviors.behaviour( mouseWheelSelector, "mouseweheel selector", "shift F scroll" );
 		behaviors.behaviour( mouseWheelSelector.getOverlay(), "feature selector overlay", "shift F" );
 		viewer.getDisplay().addOverlayRenderer( mouseWheelSelector.getOverlay() );
 
 		final LazyCellImg< IntType, DirtyIntArray > labels = LabelLoader.createImg( new LabelLoader( grid, LabelBrushController.BACKGROUND ), "labels-", 1000 );
 //		final ArrayImg< IntType, IntArray > labels = ArrayImgs.ints( Intervals.dimensionsAsLongArray( rawData ) );
-		for ( final IntType l : labels )
-			l.set( LabelBrushController.BACKGROUND );
+//		for ( final IntType l : labels )
+//			l.set( LabelBrushController.BACKGROUND );
 
 		final LabelBrushController brushController = new LabelBrushController(
 				viewer,
@@ -201,9 +210,10 @@ public class PaintLabelsAndTrain
 				colorProvider );
 		final UpdateColormap colormapUpdater = new UpdateColormap( colorProvider, nLabels, rng, viewer, 1.0f );
 		colormapUpdater.updateColormap();
-		bdv.getBdvHandle().getViewerPanel().setDisplayMode( DisplayMode.FUSED );
 //		final SparseIntRandomAccessibleInterval< UnsignedShortType > labels = new SparseIntRandomAccessibleInterval<>( brushController.getGroundTruth(), rawData, new UnsignedShortType(), LabelBrushController.BACKGROUND );
 		BdvFunctions.show( Converters.convert( ( RandomAccessibleInterval< IntType > ) labels, new IntegerARGBConverters.ARGB<>( colorProvider ), new ARGBType() ), "labels", BdvOptions.options().addTo( bdv ) );
+		for ( int n = 0; n < nFeatures; ++n )
+			bdv.getBdvHandle().getViewerPanel().getVisibilityAndGrouping().addSourceToGroup( nFeatures, n );
 		behaviors.install( bdv.getBdvHandle().getTriggerbindings(), "paint ground truth" );
 		bdv.getBdvHandle().getViewerPanel().getDisplay().addOverlayRenderer( brushController.getBrushOverlay() );
 //		final BdvStackSource< VF > featuresBdv = BdvFunctions.show( volatileFeatures, "features" );
@@ -221,8 +231,8 @@ public class PaintLabelsAndTrain
 		actions.namedAction( colormapUpdater, "ctrl shift C" );
 
 		final CacheOptions cacheOptions = new AddClassifierToBdv.CacheOptions( "prediction", grid, 1000, queue );
-		final ClassifyingCacheLoader< F, VolatileShortArray > classifyingLoader = new ClassifyingCacheLoader<>( grid, features, classifier, ( int ) nFeatures, accessGenerator );
-		final AddClassifierToBdv< F > predictionAdder = new AddClassifierToBdv<>( bdv, classifyingLoader, colorProvider, cacheOptions );
+		final ClassifyingCacheLoader< F, VolatileShortArray > classifyingLoader = new ClassifyingCacheLoader<>( grid, features, classifier, nFeatures, accessGenerator );
+		final AddClassifierToBdv< F > predictionAdder = new AddClassifierToBdv<>( bdv, classifyingLoader, colorProvider, cacheOptions, nFeatures );
 		trainer.addListener( predictionAdder );
 
 	}
