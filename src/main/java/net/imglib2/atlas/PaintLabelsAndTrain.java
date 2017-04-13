@@ -25,8 +25,8 @@ import net.imglib2.RealRandomAccessible;
 import net.imglib2.Volatile;
 import net.imglib2.algorithm.gauss3.Gauss3;
 import net.imglib2.algorithm.gradient.PartialDerivative;
-import net.imglib2.atlas.classification.AddClassifierToBdv;
-import net.imglib2.atlas.classification.AddClassifierToBdv.CacheOptions;
+import net.imglib2.atlas.classification.UpdatePrediction;
+import net.imglib2.atlas.classification.UpdatePrediction.CacheOptions;
 import net.imglib2.atlas.classification.Classifier;
 import net.imglib2.atlas.classification.ClassifyingCacheLoader;
 import net.imglib2.atlas.classification.ClassifyingCacheLoader.ShortAccessGenerator;
@@ -240,11 +240,11 @@ public class PaintLabelsAndTrain
 		actions.namedAction( trainer, "ctrl shift T" );
 		actions.namedAction( colormapUpdater, "ctrl shift C" );
 
-		final CacheOptions cacheOptions = new AddClassifierToBdv.CacheOptions( "prediction", grid, 1000, queue );
+		final CacheOptions cacheOptions = new UpdatePrediction.CacheOptions( "prediction", grid, 1000, queue );
 		final ClassifyingCacheLoader< F, VolatileShortArray > classifyingLoader = new ClassifyingCacheLoader<>( grid, features, classifier, nFeatures, accessGenerator );
 
 
-		final AddClassifierToBdv< F > predictionAdder = new AddClassifierToBdv<>( viewer, classifyingLoader, colorProvider, cacheOptions, container );
+		final UpdatePrediction< F > predictionAdder = new UpdatePrediction<>( viewer, classifyingLoader, colorProvider, cacheOptions, container );
 		trainer.addListener( predictionAdder );
 
 	}

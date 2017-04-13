@@ -39,7 +39,7 @@ import net.imglib2.type.volatiles.VolatileShortType;
 import net.imglib2.view.Views;
 import net.imglib2.view.composite.Composite;
 
-public class AddClassifierToBdv< T extends RealType< T > > implements TrainClassifier.Listener< T >
+public class UpdatePrediction< T extends RealType< T > > implements TrainClassifier.Listener< T >
 {
 
 	public static class CacheOptions
@@ -72,7 +72,7 @@ public class AddClassifierToBdv< T extends RealType< T > > implements TrainClass
 
 	private final RealRandomAccessibleContainer< VolatileARGBType > predictionContainer;
 
-	public AddClassifierToBdv(
+	public UpdatePrediction(
 			final ViewerPanel viewer,
 			final ClassifyingCacheLoader< T, VolatileShortArray > loader,
 			final IntegerColorProvider colorProvider,
