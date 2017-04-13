@@ -21,6 +21,7 @@ import gnu.trove.map.hash.TIntIntHashMap;
 import hr.irb.fastRandomForest.FastRandomForest;
 import ij.ImagePlus;
 import net.imglib2.RandomAccessibleInterval;
+import net.imglib2.RealRandomAccessible;
 import net.imglib2.Volatile;
 import net.imglib2.algorithm.gauss3.Gauss3;
 import net.imglib2.algorithm.gradient.PartialDerivative;
@@ -56,7 +57,9 @@ import net.imglib2.type.numeric.integer.IntType;
 import net.imglib2.type.numeric.integer.ShortType;
 import net.imglib2.type.numeric.integer.UnsignedByteType;
 import net.imglib2.type.numeric.real.FloatType;
+import net.imglib2.type.volatiles.VolatileARGBType;
 import net.imglib2.type.volatiles.VolatileFloatType;
+import net.imglib2.util.ConstantUtils;
 import net.imglib2.util.Intervals;
 import net.imglib2.util.Pair;
 import net.imglib2.view.Views;
@@ -212,8 +215,15 @@ public class PaintLabelsAndTrain
 		colormapUpdater.updateColormap();
 //		final SparseIntRandomAccessibleInterval< UnsignedShortType > labels = new SparseIntRandomAccessibleInterval<>( brushController.getGroundTruth(), rawData, new UnsignedShortType(), LabelBrushController.BACKGROUND );
 		BdvFunctions.show( Converters.convert( ( RandomAccessibleInterval< IntType > ) labels, new IntegerARGBConverters.ARGB<>( colorProvider ), new ARGBType() ), "labels", BdvOptions.options().addTo( bdv ) );
+
+		final RealRandomAccessible< VolatileARGBType > emptyPrediction = ConstantUtils.constantRealRandomAccessible( new VolatileARGBType( 0 ), labels.numDimensions() );
+		final RealRandomAccessibleContainer< VolatileARGBType > container = new RealRandomAccessibleContainer<>( emptyPrediction );
+		BdvFunctions.show( container, labels, "prediction", BdvOptions.options().addTo( bdv ) );
 		for ( int n = 0; n < nFeatures; ++n )
+		{
 			bdv.getBdvHandle().getViewerPanel().getVisibilityAndGrouping().addSourceToGroup( nFeatures, n );
+			bdv.getBdvHandle().getViewerPanel().getVisibilityAndGrouping().addSourceToGroup( nFeatures + 1, n );
+		}
 		behaviors.install( bdv.getBdvHandle().getTriggerbindings(), "paint ground truth" );
 		bdv.getBdvHandle().getViewerPanel().getDisplay().addOverlayRenderer( brushController.getBrushOverlay() );
 //		final BdvStackSource< VF > featuresBdv = BdvFunctions.show( volatileFeatures, "features" );
@@ -232,7 +242,9 @@ public class PaintLabelsAndTrain
 
 		final CacheOptions cacheOptions = new AddClassifierToBdv.CacheOptions( "prediction", grid, 1000, queue );
 		final ClassifyingCacheLoader< F, VolatileShortArray > classifyingLoader = new ClassifyingCacheLoader<>( grid, features, classifier, nFeatures, accessGenerator );
-		final AddClassifierToBdv< F > predictionAdder = new AddClassifierToBdv<>( bdv, classifyingLoader, colorProvider, cacheOptions, nFeatures );
+
+
+		final AddClassifierToBdv< F > predictionAdder = new AddClassifierToBdv<>( viewer, classifyingLoader, colorProvider, cacheOptions, container );
 		trainer.addListener( predictionAdder );
 
 	}

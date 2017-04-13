@@ -6,12 +6,10 @@ import java.util.concurrent.Callable;
 
 import bdv.img.cache.CreateInvalidVolatileCell;
 import bdv.img.cache.VolatileCachedCellImg;
-import bdv.util.BdvFunctions;
-import bdv.util.BdvOptions;
-import bdv.util.BdvStackSource;
-import bdv.viewer.VisibilityAndGrouping;
+import bdv.viewer.ViewerPanel;
 import net.imglib2.RealRandomAccessible;
 import net.imglib2.atlas.LabelBrushController;
+import net.imglib2.atlas.RealRandomAccessibleContainer;
 import net.imglib2.atlas.color.IntegerColorProvider;
 import net.imglib2.cache.Cache;
 import net.imglib2.cache.IoSync;
@@ -64,7 +62,7 @@ public class AddClassifierToBdv< T extends RealType< T > > implements TrainClass
 		}
 	}
 
-	private final BdvStackSource< ? > source;
+	private final ViewerPanel viewer;
 
 	private final ClassifyingCacheLoader< T, VolatileShortArray > loader;
 
@@ -72,21 +70,21 @@ public class AddClassifierToBdv< T extends RealType< T > > implements TrainClass
 
 	private final CacheOptions cacheOptions;
 
-	private final int numChannels;
+	private final RealRandomAccessibleContainer< VolatileARGBType > predictionContainer;
 
 	public AddClassifierToBdv(
-			final BdvStackSource< ? > source,
+			final ViewerPanel viewer,
 			final ClassifyingCacheLoader< T, VolatileShortArray > loader,
 			final IntegerColorProvider colorProvider,
 			final CacheOptions cacheOptions,
-			final int numChannels )
+			final RealRandomAccessibleContainer< VolatileARGBType > predictionContainer )
 	{
 		super();
-		this.source = source;
+		this.viewer = viewer;
 		this.loader = loader;
 		this.colorProvider = colorProvider;
 		this.cacheOptions = cacheOptions;
-		this.numChannels = numChannels;
+		this.predictionContainer = predictionContainer;
 	}
 
 	private boolean wasTrainedAtLeastOnce = false;
@@ -96,8 +94,6 @@ public class AddClassifierToBdv< T extends RealType< T > > implements TrainClass
 	private VolatileCache< Long, Cell< VolatileShortArray > > volatileCache = null;
 
 	private VolatileCachedCellImg< VolatileShortType, ? > vimg;
-
-	private BdvStackSource< VolatileARGBType > stackSource = null;
 
 	public Img< ShortType > getLazyImg()
 	{
@@ -116,8 +112,8 @@ public class AddClassifierToBdv< T extends RealType< T > > implements TrainClass
 	public void notify( final Classifier< Composite< T >, ?, ? > classifier, final boolean trainingSuccess ) throws IOException
 	{
 		if ( trainingSuccess )
-			synchronized( source.getBdvHandle().getViewerPanel() ) {
-//				loader.setClassifier( classifier );
+			synchronized ( viewer )
+			{
 				final ShortType type = new ShortType();
 				final VolatileShortType vtype = new VolatileShortType();
 				final Path blockcache = DiskCellCache.createTempDirectory( cacheOptions.cacheTempName, true );
@@ -151,17 +147,9 @@ public class AddClassifierToBdv< T extends RealType< T > > implements TrainClass
 						new NearestNeighborInterpolatorFactory<>() );
 				final RealRandomAccessible< VolatileARGBType > convertedReal = Converters.convert( real, conv, new VolatileARGBType() );
 
-				if ( wasTrainedAtLeastOnce )
-					stackSource.removeFromBdv();
+				predictionContainer.setSource( convertedReal );
 
-				stackSource = BdvFunctions.show( convertedReal, vimg, "prediction", BdvOptions.options().addTo( source ) );
-
-				final VisibilityAndGrouping vag = stackSource.getBdvHandle().getViewerPanel().getVisibilityAndGrouping();
-				final int predictionSource = vag.numSources() - 1;
-				for ( int i = 0; i < numChannels; ++i )
-					vag.addSourceToGroup( predictionSource, i );
-
-				stackSource.getBdvHandle().getViewerPanel().requestRepaint();
+				viewer.requestRepaint();
 				this.cache = cache;
 				this.volatileCache = volatileCache;
 				this.vimg = vimg;
