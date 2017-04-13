@@ -214,11 +214,12 @@ public class PaintLabelsAndTrain
 		bdv.getBdvHandle().getSetupAssignments().getMinMaxGroups().get( 2 ).setRange( 0, 255 );
 		for ( int feat = 1; feat < nFeatures; ++feat )
 		{
-			BdvFunctions.show( Views.hyperSlice( volatileFeatures, volatileFeatures.numDimensions() - 1, feat ), "feature " + ( feat + 1 ), BdvOptions.options().addTo( bdv ) );
+			final BdvStackSource< VF > source = BdvFunctions.show( Views.hyperSlice( volatileFeatures, volatileFeatures.numDimensions() - 1, feat ), "feature " + ( feat + 1 ), BdvOptions.options().addTo( bdv ) );
 			bdv.getBdvHandle().getSetupAssignments().getMinMaxGroups().get( feat + 2 ).setRange( 0, 255 );
+			source.setActive( false );
 		}
 
-		final MouseWheelChannelSelector mouseWheelSelector = new MouseWheelChannelSelector( viewer, nFeatures );
+		final MouseWheelChannelSelector mouseWheelSelector = new MouseWheelChannelSelector( viewer, 2, nFeatures );
 		behaviors.behaviour( mouseWheelSelector, "mouseweheel selector", "shift F scroll" );
 		behaviors.behaviour( mouseWheelSelector.getOverlay(), "feature selector overlay", "shift F" );
 		viewer.getDisplay().addOverlayRenderer( mouseWheelSelector.getOverlay() );

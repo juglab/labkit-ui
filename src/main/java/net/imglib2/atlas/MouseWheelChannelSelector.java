@@ -12,7 +12,6 @@ import org.scijava.ui.behaviour.DragBehaviour;
 import org.scijava.ui.behaviour.ScrollBehaviour;
 
 import bdv.viewer.ViewerPanel;
-import bdv.viewer.VisibilityAndGrouping;
 import net.imglib2.ui.OverlayRenderer;
 
 public class MouseWheelChannelSelector implements ScrollBehaviour
@@ -20,18 +19,24 @@ public class MouseWheelChannelSelector implements ScrollBehaviour
 
 	private final ViewerPanel viewer;
 
-	private final int numChannels;
+	private final int minChannelIndex;
+
+	private final int maxChannelIndex;
 
 	private boolean visible = false;
 
 	private final Overlay overlay;
 
-	public MouseWheelChannelSelector( final ViewerPanel viewer, final int numChannels )
+	private int activeChannel;
+
+	public MouseWheelChannelSelector( final ViewerPanel viewer, final int minChannelIndex, final int numChannels )
 	{
 		super();
 		this.viewer = viewer;
 		this.overlay = new Overlay();
-		this.numChannels = numChannels;
+		this.minChannelIndex = minChannelIndex;
+		this.maxChannelIndex = minChannelIndex + numChannels - 1;
+		this.activeChannel = minChannelIndex;
 	}
 
 	public Overlay getOverlay()
@@ -44,12 +49,14 @@ public class MouseWheelChannelSelector implements ScrollBehaviour
 	{
 		if ( !isHorizontal )
 			synchronized( viewer ) {
-				final VisibilityAndGrouping vag = viewer.getVisibilityAndGrouping();
-				final int currentGroup = vag.getCurrentGroup();
+				viewer.getVisibilityAndGrouping().getSources().get( activeChannel ).setActive( false );
+
 				if ( wheelRotation < 0 )
-					vag.setCurrentGroup( Math.min( currentGroup + 1, numChannels - 1 ) );
+					this.activeChannel = Math.min( activeChannel + 1, maxChannelIndex );
 				else if ( wheelRotation > 0 )
-					vag.setCurrentGroup( Math.max( currentGroup - 1, 0 ) );
+					this.activeChannel = Math.max( activeChannel - 1, minChannelIndex );
+
+				viewer.getVisibilityAndGrouping().getSources().get( activeChannel ).setActive( true );
 
 				viewer.requestRepaint();
 			}
@@ -79,10 +86,8 @@ public class MouseWheelChannelSelector implements ScrollBehaviour
 				final int y = this.y + yOff;
 
 				{
-					final VisibilityAndGrouping vag = viewer.getVisibilityAndGrouping();
-					final int currentGroup = vag.getCurrentGroup();
 					final FontMetrics fm = g.getFontMetrics();
-					final String str = vag.getSourceGroups().get( currentGroup ).getName();
+					final String str = viewer.getState().getSources().get( activeChannel ).getSpimSource().getName();
 					final Rectangle2D rect = fm.getStringBounds( str, g );
 					g2d.setColor( Color.WHITE );
 					g2d.fillRect( x, y - fm.getAscent(), ( int ) rect.getWidth(), ( int ) rect.getHeight() );
