@@ -154,7 +154,21 @@ public class PaintLabelsAndTrain
 	}
 
 	public static < R extends RealType< R >, F extends RealType< F >, VF extends Volatile< F > >
-	void trainClassifier(
+	BdvStackSource< ARGBType > trainClassifier(
+			final RandomAccessibleInterval< R > rawData,
+			final RandomAccessibleInterval< F > features,
+			final RandomAccessibleInterval< VF > volatileFeatures,
+			final Classifier< Composite< F >, RandomAccessibleInterval< F >, RandomAccessibleInterval< ShortType > > classifier,
+			final int nLabels,
+			final CellGrid grid,
+			final BlockingFetchQueues< Callable< ? > > queue ) throws IOException
+	{
+		final ShortAccessGenerator< VolatileShortArray > accessGenerator = ( n, valid ) -> new VolatileShortArray( ( int ) n, valid );
+		return trainClassifier( rawData, features, volatileFeatures, classifier, nLabels, grid, queue, accessGenerator, new Random( 100 ) );
+	}
+
+	public static < R extends RealType< R >, F extends RealType< F >, VF extends Volatile< F > >
+	BdvStackSource< ARGBType > trainClassifier(
 			final RandomAccessibleInterval< R > rawData,
 			final RandomAccessibleInterval< F > features,
 			final RandomAccessibleInterval< VF > volatileFeatures,
@@ -165,6 +179,7 @@ public class PaintLabelsAndTrain
 			final ShortAccessGenerator< VolatileShortArray > accessGenerator,
 			final Random rng ) throws IOException
 	{
+		System.out.println( "Entering train method" );
 		final InputTriggerConfig config = new InputTriggerConfig();
 		final Behaviours behaviors = new Behaviours( config );
 		final Actions actions = new Actions( config );
@@ -172,6 +187,7 @@ public class PaintLabelsAndTrain
 		final ColorMapColorProvider colorProvider = new ColorMapColorProvider( rng, LabelBrushController.BACKGROUND, 0 );
 
 		// add labels layer
+		System.out.println( "Adding labels layer" );
 		final LazyCellImg< IntType, DirtyIntArray > labels = LabelLoader.createImg( new LabelLoader( grid, LabelBrushController.BACKGROUND ), "labels-", 1000 );
 		final BdvStackSource< ARGBType > bdv = BdvFunctions.show( Converters.convert( ( RandomAccessibleInterval< IntType > ) labels, new IntegerARGBConverters.ARGB<>( colorProvider ), new ARGBType() ), "labels" );
 		final ViewerPanel viewer = bdv.getBdvHandle().getViewerPanel();
@@ -188,13 +204,16 @@ public class PaintLabelsAndTrain
 		actions.namedAction( new ToggleVisibility( "toggle labels", viewer, 0 ), "L" );
 
 		// set up viewer
+		System.out.println( "Setting up viewer" );
 		viewer.getDisplay().addOverlayRenderer( brushController.getBrushOverlay() );
 		viewer.setDisplayMode( DisplayMode.FUSED );
 
 		// add prediction layer
+		System.out.println( "Adding prediction layer" );
 		final RealRandomAccessible< VolatileARGBType > emptyPrediction = ConstantUtils.constantRealRandomAccessible( new VolatileARGBType( 0 ), labels.numDimensions() );
 		final RealRandomAccessibleContainer< VolatileARGBType > container = new RealRandomAccessibleContainer<>( emptyPrediction );
-		BdvFunctions.show( container, labels, "prediction", BdvOptions.options().addTo( bdv ) );
+		final BdvStackSource< VolatileARGBType > bdvPrediction = BdvFunctions.show( container, labels, "prediction", BdvOptions.options().addTo( bdv ) );
+		System.out.println( "bdvPrediction: " + bdvPrediction );
 
 		final int nFeatures = ( int ) features.dimension( features.numDimensions() - 1 );
 		final CacheOptions cacheOptions = new UpdatePrediction.CacheOptions( "prediction", grid, 1000, queue );
@@ -212,7 +231,9 @@ public class PaintLabelsAndTrain
 
 
 		// add features
-		BdvFunctions.show( Views.hyperSlice( volatileFeatures, volatileFeatures.numDimensions() - 1, 0 ), "feature 1", BdvOptions.options().addTo( bdv ) );
+		System.out.println( "Adding features" );
+		final BdvStackSource< VF > featBdv = BdvFunctions.show( Views.hyperSlice( volatileFeatures, volatileFeatures.numDimensions() - 1, 0 ), "feature 1", BdvOptions.options().addTo( bdv ) );
+		System.out.println( "added first feature: " + bdv.getBdvHandle().getSetupAssignments().getMinMaxGroups().size() + " " + featBdv );
 		bdv.getBdvHandle().getSetupAssignments().getMinMaxGroups().get( 2 ).setRange( 0, 255 );
 		for ( int feat = 1; feat < nFeatures; ++feat )
 		{
@@ -227,9 +248,10 @@ public class PaintLabelsAndTrain
 		viewer.getDisplay().addOverlayRenderer( mouseWheelSelector.getOverlay() );
 
 		// install actions and behaviors
+		System.out.println( "Installing actions and behaviors" );
 		actions.install( bdv.getBdvHandle().getKeybindings(), "classifier training" );
 		behaviors.install( bdv.getBdvHandle().getTriggerbindings(), "classifier training" );
-
+		return bdv;
 	}
 
 
