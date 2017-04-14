@@ -34,6 +34,9 @@ import net.imglib2.atlas.classification.weka.WekaClassifier;
 import net.imglib2.atlas.color.ColorMapColorProvider;
 import net.imglib2.atlas.color.IntegerARGBConverters;
 import net.imglib2.atlas.color.UpdateColormap;
+import net.imglib2.atlas.control.brush.LabelBrushController;
+import net.imglib2.atlas.control.brush.Neighborhood3DPixelsGenerator;
+import net.imglib2.atlas.control.brush.NeighborhoodFactories;
 import net.imglib2.cache.queue.BlockingFetchQueues;
 import net.imglib2.cache.queue.FetcherThreads;
 import net.imglib2.converter.Converter;
@@ -191,10 +194,15 @@ public class PaintLabelsAndTrain
 		final LazyCellImg< IntType, DirtyIntArray > labels = LabelLoader.createImg( new LabelLoader( grid, LabelBrushController.BACKGROUND ), "labels-", 1000 );
 		final BdvStackSource< ARGBType > bdv = BdvFunctions.show( Converters.convert( ( RandomAccessibleInterval< IntType > ) labels, new IntegerARGBConverters.ARGB<>( colorProvider ), new ARGBType() ), "labels" );
 		final ViewerPanel viewer = bdv.getBdvHandle().getViewerPanel();
+		final AffineTransform3D labelTransform = new AffineTransform3D();
 		final LabelBrushController brushController = new LabelBrushController(
 				viewer,
 				labels,
-				new AffineTransform3D(),
+				new Neighborhood3DPixelsGenerator<>( NeighborhoodFactories.hyperSphere(), new AffineTransform3D() ),
+				// new Neighborhood2Din3DPixelsGenerator<>(
+				// NeighborhoodFactories.hyperSphere(), 2, new
+				// AffineTransform3D() ),
+				labelTransform,
 				behaviors,
 				nLabels,
 				LabelBrushController.emptyGroundTruth(),

@@ -1,23 +1,21 @@
-package net.imglib2.atlas;
+package net.imglib2.atlas.control.brush;
 
 import java.awt.Cursor;
+import java.util.Iterator;
 
 import org.scijava.ui.behaviour.Behaviour;
 import org.scijava.ui.behaviour.DragBehaviour;
 import org.scijava.ui.behaviour.ScrollBehaviour;
 import org.scijava.ui.behaviour.util.Behaviours;
 
-import bdv.util.Affine3DHelpers;
 import bdv.viewer.ViewerPanel;
 import gnu.trove.impl.Constants;
 import gnu.trove.map.hash.TLongIntHashMap;
-import net.imglib2.Point;
-import net.imglib2.RandomAccess;
+import net.imglib2.Localizable;
 import net.imglib2.RandomAccessibleInterval;
 import net.imglib2.RealLocalizable;
 import net.imglib2.RealPoint;
-import net.imglib2.algorithm.neighborhood.HyperSphereNeighborhood;
-import net.imglib2.algorithm.neighborhood.Neighborhood;
+import net.imglib2.atlas.BrushOverlay;
 import net.imglib2.atlas.color.IntegerColorProvider;
 import net.imglib2.realtransform.AffineTransform3D;
 import net.imglib2.type.numeric.integer.IntType;
@@ -26,7 +24,6 @@ import net.imglib2.util.IntervalIndexer;
 import net.imglib2.util.Intervals;
 import net.imglib2.util.LinAlgHelpers;
 import net.imglib2.view.ExtendedRandomAccessibleInterval;
-import net.imglib2.view.MixedTransformView;
 import net.imglib2.view.Views;
 
 /**
@@ -35,6 +32,7 @@ import net.imglib2.view.Views;
  *
  * @author Stephan Saalfeld &lt;saalfelds@janelia.hhmi.org&gt;
  * @author Tobias Pietzsch &lt;tobias.pietzsch@gmail.com&gt;
+ * @author Philipp Hanslovsky
  */
 public class LabelBrushController
 {
@@ -44,6 +42,8 @@ public class LabelBrushController
 	final protected ViewerPanel viewer;
 
 	private final RandomAccessibleInterval< IntType > labels;
+
+	private final PaintPixelsGenerator< IntType, ? extends Iterator< IntType > > pixelsGenerator;
 
 	final protected AffineTransform3D labelTransform;
 
@@ -94,15 +94,17 @@ public class LabelBrushController
 	public LabelBrushController(
 			final ViewerPanel viewer,
 			final RandomAccessibleInterval< IntType > labels,
-			final AffineTransform3D labelTransform,
-			final Behaviours behaviors,
-			final int brushNormalAxis,
-			final int nLabels,
-			final TLongIntHashMap groundTruth,
-			final IntegerColorProvider colorProvider )
+			final PaintPixelsGenerator< IntType, ? extends Iterator< IntType > > pixelsGenerator,
+					final AffineTransform3D labelTransform,
+					final Behaviours behaviors,
+					final int brushNormalAxis,
+					final int nLabels,
+					final TLongIntHashMap groundTruth,
+					final IntegerColorProvider colorProvider )
 	{
 		this.viewer = viewer;
 		this.labels = labels;
+		this.pixelsGenerator = pixelsGenerator;
 		this.labelTransform = labelTransform;
 		this.brushNormalAxis = brushNormalAxis;
 		brushOverlay = new BrushOverlay( viewer, currentLabel, colorProvider );
@@ -121,13 +123,14 @@ public class LabelBrushController
 	public LabelBrushController(
 			final ViewerPanel viewer,
 			final RandomAccessibleInterval< IntType > labels,
-			final AffineTransform3D labelTransform,
-			final Behaviours behaviors,
-			final int nLabels,
-			final TLongIntHashMap groundTruth,
-			final IntegerColorProvider colorProvider )
+			final PaintPixelsGenerator< IntType, ? extends Iterator< IntType > > pixelsGenerator,
+					final AffineTransform3D labelTransform,
+					final Behaviours behaviors,
+					final int nLabels,
+					final TLongIntHashMap groundTruth,
+					final IntegerColorProvider colorProvider )
 	{
-		this( viewer, labels, labelTransform, behaviors, 2, nLabels, groundTruth, colorProvider );
+		this( viewer, labels, pixelsGenerator, labelTransform, behaviors, 2, nLabels, groundTruth, colorProvider );
 	}
 
 	private void setCoordinates( final int x, final int y )
@@ -148,33 +151,17 @@ public class LabelBrushController
 			synchronized ( viewer )
 			{
 				final ExtendedRandomAccessibleInterval< IntType, RandomAccessibleInterval< IntType > > extended = Views.extendValue( labels, new IntType( BACKGROUND ) );
-				final MixedTransformView< IntType > labelSource = Views.hyperSlice( extended, brushNormalAxis, Math.round( coords.getDoublePosition( 2 ) ) );
-				final RandomAccess< IntType > access = labelSource.randomAccess();
-				final Point pos = new Point( 3 );
-
-				final Neighborhood< IntType > sphere =
-						HyperSphereNeighborhood.< IntType >factory().create(
-								new long[]{
-										Math.round( coords.getDoublePosition( brushNormalAxis == 0 ? 1 : 0 ) ),
-										Math.round( coords.getDoublePosition( brushNormalAxis == 2 ? 1 : 2 ) ) },
-								Math.round( brushRadius / Affine3DHelpers.extractScale( labelTransform, brushNormalAxis == 0 ? 1 : 0 ) ),
-								access );
-
-				pos.setPosition( Math.round( coords.getDoublePosition( 2 ) ), brushNormalAxis );
-
-
+				final Iterator< IntType > it = pixelsGenerator.getPaintPixels( extended, coords, viewer.getState().getCurrentTimepoint(), brushRadius );
 				final int v = getValue();
 				synchronized ( groundTruth )
 				{
-					for ( final net.imglib2.Cursor< IntType > it = sphere.cursor(); it.hasNext(); )
+					while ( it.hasNext() )
 					{
 						final IntType val = it.next();
-						val.set( v );
-						pos.setPosition( it.getLongPosition( 0 ), brushNormalAxis == 0 ? 1 : 0 );
-						pos.setPosition( it.getLongPosition( 1 ), brushNormalAxis == 2 ? 1 : 2 );
-						if ( Intervals.contains( labels, pos ) )
+						if ( Intervals.contains( labels, ( Localizable ) it ) )
+							val.set( v );
 						{
-							final long index = IntervalIndexer.positionToIndex( pos, labels );
+							final long index = IntervalIndexer.positionToIndex( ( Localizable ) it, labels );
 							if ( v == BACKGROUND )
 								groundTruth.remove( index );
 							else

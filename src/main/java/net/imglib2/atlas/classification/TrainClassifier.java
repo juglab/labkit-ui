@@ -10,7 +10,7 @@ import org.scijava.ui.behaviour.util.AbstractNamedAction;
 
 import gnu.trove.map.hash.TLongIntHashMap;
 import net.imglib2.RandomAccessibleInterval;
-import net.imglib2.atlas.LabelBrushController;
+import net.imglib2.atlas.control.brush.LabelBrushController;
 import net.imglib2.type.numeric.RealType;
 import net.imglib2.util.IntervalIndexer;
 import net.imglib2.view.Views;
