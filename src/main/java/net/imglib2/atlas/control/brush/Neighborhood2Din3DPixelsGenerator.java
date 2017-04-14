@@ -1,6 +1,7 @@
 package net.imglib2.atlas.control.brush;
 
 import bdv.util.Affine3DHelpers;
+import net.imglib2.Cursor;
 import net.imglib2.RandomAccess;
 import net.imglib2.RandomAccessible;
 import net.imglib2.RealLocalizable;
@@ -11,7 +12,7 @@ import net.imglib2.view.MixedTransformView;
 import net.imglib2.view.Views;
 
 public class Neighborhood2Din3DPixelsGenerator< T extends Type< T > >
-implements PaintPixelsGenerator< T, IteratorOverBackMappingPoints< T > >
+		implements PaintPixelsGenerator< T, IteratorOverBackMappingPoints< T, Cursor< T > > >
 {
 
 	private final NeighborhoodFactory< T > fac;
@@ -34,7 +35,7 @@ implements PaintPixelsGenerator< T, IteratorOverBackMappingPoints< T > >
 	}
 
 	@Override
-	public IteratorOverBackMappingPoints< T > getPaintPixels( final RandomAccessible< T > accessible, final RealLocalizable position, final int timestep, final int size )
+	public IteratorOverBackMappingPoints< T, Cursor< T > > getPaintPixels( final RandomAccessible< T > accessible, final RealLocalizable position, final int timestep, final int size )
 	{
 		assert accessible.numDimensions() == 3;
 		final long alongNormalPosition = Math.round( position.getDoublePosition( normalAxis ) );
@@ -50,8 +51,6 @@ implements PaintPixelsGenerator< T, IteratorOverBackMappingPoints< T > >
 		final long scaledSize = Math.round( size / Affine3DHelpers.extractScale( transform, normalAxis == 0 ? 1 : 0 ) );
 
 		final Neighborhood< T > neighborhood = fac.create( access, neighborhoodPosition, scaledSize );
-
-
 
 		final RandomAccess< T > backMappedPosition = accessible.randomAccess();
 		backMappedPosition.setPosition( alongNormalPosition, normalAxis );
