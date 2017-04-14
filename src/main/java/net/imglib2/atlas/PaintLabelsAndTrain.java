@@ -35,7 +35,7 @@ import net.imglib2.atlas.color.ColorMapColorProvider;
 import net.imglib2.atlas.color.IntegerARGBConverters;
 import net.imglib2.atlas.color.UpdateColormap;
 import net.imglib2.atlas.control.brush.LabelBrushController;
-import net.imglib2.atlas.control.brush.Neighborhood3DPixelsGenerator;
+import net.imglib2.atlas.control.brush.NeighborhoodPixelsGenerator;
 import net.imglib2.atlas.control.brush.NeighborhoodFactories;
 import net.imglib2.cache.queue.BlockingFetchQueues;
 import net.imglib2.cache.queue.FetcherThreads;
@@ -198,7 +198,7 @@ public class PaintLabelsAndTrain
 		final LabelBrushController brushController = new LabelBrushController(
 				viewer,
 				labels,
-				new Neighborhood3DPixelsGenerator<>( NeighborhoodFactories.hyperSphere(), new AffineTransform3D() ),
+				new NeighborhoodPixelsGenerator<>( NeighborhoodFactories.hyperSphere(), 1.0 ),
 				labelTransform,
 				behaviors,
 				nLabels,
