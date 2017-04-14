@@ -199,9 +199,6 @@ public class PaintLabelsAndTrain
 				viewer,
 				labels,
 				new Neighborhood3DPixelsGenerator<>( NeighborhoodFactories.hyperSphere(), new AffineTransform3D() ),
-				// new Neighborhood2Din3DPixelsGenerator<>(
-				// NeighborhoodFactories.hyperSphere(), 2, new
-				// AffineTransform3D() ),
 				labelTransform,
 				behaviors,
 				nLabels,
