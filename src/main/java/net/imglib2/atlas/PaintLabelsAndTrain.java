@@ -185,6 +185,7 @@ public class PaintLabelsAndTrain
 				colorProvider );
 		final UpdateColormap colormapUpdater = new UpdateColormap( colorProvider, nLabels, rng, viewer, 1.0f );
 		colormapUpdater.updateColormap();
+		actions.namedAction( new ToggleVisibility( "toggle labels", viewer, 0 ), "L" );
 
 		// set up viewer
 		viewer.getDisplay().addOverlayRenderer( brushController.getBrushOverlay() );
@@ -207,6 +208,7 @@ public class PaintLabelsAndTrain
 		trainer.addListener( predictionAdder );
 		actions.namedAction( trainer, "ctrl shift T" );
 		actions.namedAction( colormapUpdater, "ctrl shift C" );
+		actions.namedAction( new ToggleVisibility( "toggle classification", viewer, 1 ), "C" );
 
 
 		// add features
