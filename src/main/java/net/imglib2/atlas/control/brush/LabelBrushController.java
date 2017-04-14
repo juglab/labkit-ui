@@ -159,8 +159,8 @@ public class LabelBrushController
 					{
 						final IntType val = it.next();
 						if ( Intervals.contains( labels, ( Localizable ) it ) )
-							val.set( v );
 						{
+							val.set( v );
 							final long index = IntervalIndexer.positionToIndex( ( Localizable ) it, labels );
 							if ( v == BACKGROUND )
 								groundTruth.remove( index );
