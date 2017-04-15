@@ -2,6 +2,7 @@ package net.imglib2.atlas;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Random;
 import java.util.concurrent.Callable;
@@ -19,8 +20,8 @@ import bdv.viewer.DisplayMode;
 import bdv.viewer.ViewerPanel;
 import hr.irb.fastRandomForest.FastRandomForest;
 import ij.ImagePlus;
+import net.imglib2.RandomAccessible;
 import net.imglib2.RandomAccessibleInterval;
-import net.imglib2.RealRandomAccessible;
 import net.imglib2.Volatile;
 import net.imglib2.algorithm.gauss3.Gauss3;
 import net.imglib2.algorithm.gradient.PartialDerivative;
@@ -35,8 +36,10 @@ import net.imglib2.atlas.color.ColorMapColorProvider;
 import net.imglib2.atlas.color.IntegerARGBConverters;
 import net.imglib2.atlas.color.UpdateColormap;
 import net.imglib2.atlas.control.brush.LabelBrushController;
-import net.imglib2.atlas.control.brush.NeighborhoodPixelsGenerator;
 import net.imglib2.atlas.control.brush.NeighborhoodFactories;
+import net.imglib2.atlas.control.brush.NeighborhoodPixelsGenerator;
+import net.imglib2.atlas.control.brush.NeighborhoodPixelsGeneratorForTimeSeries;
+import net.imglib2.atlas.control.brush.PaintPixelsGenerator;
 import net.imglib2.cache.queue.BlockingFetchQueues;
 import net.imglib2.cache.queue.FetcherThreads;
 import net.imglib2.converter.Converter;
@@ -153,21 +156,7 @@ public class PaintLabelsAndTrain
 		final WekaClassifier< FloatType, ShortType > classifier = new WekaClassifier<>( wekaClassifier, classLabels, ( int ) features.dimension( features.numDimensions() - 1 ) );
 
 		final ShortAccessGenerator< VolatileShortArray > accessGenerator = ( n, valid ) -> new VolatileShortArray( ( int ) n, valid );
-		trainClassifier( rawData, features, vfeatures, classifier, nLabels, grid, queue, accessGenerator, rng );
-	}
-
-	public static < R extends RealType< R >, F extends RealType< F >, VF extends Volatile< F > >
-	BdvStackSource< ARGBType > trainClassifier(
-			final RandomAccessibleInterval< R > rawData,
-			final RandomAccessibleInterval< F > features,
-			final RandomAccessibleInterval< VF > volatileFeatures,
-			final Classifier< Composite< F >, RandomAccessibleInterval< F >, RandomAccessibleInterval< ShortType > > classifier,
-			final int nLabels,
-			final CellGrid grid,
-			final BlockingFetchQueues< Callable< ? > > queue ) throws IOException
-	{
-		final ShortAccessGenerator< VolatileShortArray > accessGenerator = ( n, valid ) -> new VolatileShortArray( ( int ) n, valid );
-		return trainClassifier( rawData, features, volatileFeatures, classifier, nLabels, grid, queue, accessGenerator, new Random( 100 ) );
+		trainClassifier( rawData, features, vfeatures, classifier, nLabels, grid, queue, true, accessGenerator, rng );
 	}
 
 	public static < R extends RealType< R >, F extends RealType< F >, VF extends Volatile< F > >
@@ -179,6 +168,22 @@ public class PaintLabelsAndTrain
 			final int nLabels,
 			final CellGrid grid,
 			final BlockingFetchQueues< Callable< ? > > queue,
+			final boolean isTimeSeries ) throws IOException
+	{
+		final ShortAccessGenerator< VolatileShortArray > accessGenerator = ( n, valid ) -> new VolatileShortArray( ( int ) n, valid );
+		return trainClassifier( rawData, features, volatileFeatures, classifier, nLabels, grid, queue, isTimeSeries, accessGenerator, new Random( 100 ) );
+	}
+
+	public static < R extends RealType< R >, F extends RealType< F >, VF extends Volatile< F > >
+	BdvStackSource< ARGBType > trainClassifier(
+			final RandomAccessibleInterval< R > rawData,
+			final RandomAccessibleInterval< F > features,
+			final RandomAccessibleInterval< VF > volatileFeatures,
+			final Classifier< Composite< F >, RandomAccessibleInterval< F >, RandomAccessibleInterval< ShortType > > classifier,
+			final int nLabels,
+			final CellGrid grid,
+			final BlockingFetchQueues< Callable< ? > > queue,
+			final boolean isTimeSeries,
 			final ShortAccessGenerator< VolatileShortArray > accessGenerator,
 			final Random rng ) throws IOException
 	{
@@ -187,18 +192,29 @@ public class PaintLabelsAndTrain
 		final Behaviours behaviors = new Behaviours( config );
 		final Actions actions = new Actions( config );
 
+		final BdvOptions options = BdvOptions.options();
+		options.frameTitle( "ATLAS" );
+		if ( isTimeSeries && features.numDimensions() == 4 )
+			options.is2D();
+
+		PaintPixelsGenerator< IntType, ? extends Iterator< IntType > > pixelGenerator;
+		if ( isTimeSeries )
+			pixelGenerator = new NeighborhoodPixelsGeneratorForTimeSeries<>( features.numDimensions() - 2, new NeighborhoodPixelsGenerator< IntType >( NeighborhoodFactories.hyperSphere(), 1.0 ) );
+		else
+			pixelGenerator = new NeighborhoodPixelsGenerator<>( NeighborhoodFactories.hyperSphere(), 1.0 );
+
 		final ColorMapColorProvider colorProvider = new ColorMapColorProvider( rng, LabelBrushController.BACKGROUND, 0 );
 
 		// add labels layer
 		System.out.println( "Adding labels layer" );
 		final LazyCellImg< IntType, DirtyIntArray > labels = LabelLoader.createImg( new LabelLoader( grid, LabelBrushController.BACKGROUND ), "labels-", 1000 );
-		final BdvStackSource< ARGBType > bdv = BdvFunctions.show( Converters.convert( ( RandomAccessibleInterval< IntType > ) labels, new IntegerARGBConverters.ARGB<>( colorProvider ), new ARGBType() ), "labels" );
+		final BdvStackSource< ARGBType > bdv = BdvFunctions.show( Converters.convert( ( RandomAccessibleInterval< IntType > ) labels, new IntegerARGBConverters.ARGB<>( colorProvider ), new ARGBType() ), "labels", options );
 		final ViewerPanel viewer = bdv.getBdvHandle().getViewerPanel();
 		final AffineTransform3D labelTransform = new AffineTransform3D();
 		final LabelBrushController brushController = new LabelBrushController(
 				viewer,
 				labels,
-				new NeighborhoodPixelsGenerator<>( NeighborhoodFactories.hyperSphere(), 1.0 ),
+				pixelGenerator,
 				labelTransform,
 				behaviors,
 				nLabels,
@@ -215,8 +231,8 @@ public class PaintLabelsAndTrain
 
 		// add prediction layer
 		System.out.println( "Adding prediction layer" );
-		final RealRandomAccessible< VolatileARGBType > emptyPrediction = ConstantUtils.constantRealRandomAccessible( new VolatileARGBType( 0 ), labels.numDimensions() );
-		final RealRandomAccessibleContainer< VolatileARGBType > container = new RealRandomAccessibleContainer<>( emptyPrediction );
+		final RandomAccessible< VolatileARGBType > emptyPrediction = ConstantUtils.constantRandomAccessible( new VolatileARGBType( 0 ), labels.numDimensions() );
+		final RandomAccessibleContainer< VolatileARGBType > container = new RandomAccessibleContainer<>( emptyPrediction );
 		final BdvStackSource< VolatileARGBType > bdvPrediction = BdvFunctions.show( container, labels, "prediction", BdvOptions.options().addTo( bdv ) );
 		System.out.println( "bdvPrediction: " + bdvPrediction );
 

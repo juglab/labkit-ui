@@ -7,8 +7,8 @@ import java.util.concurrent.Callable;
 import bdv.img.cache.CreateInvalidVolatileCell;
 import bdv.img.cache.VolatileCachedCellImg;
 import bdv.viewer.ViewerPanel;
-import net.imglib2.RealRandomAccessible;
-import net.imglib2.atlas.RealRandomAccessibleContainer;
+import net.imglib2.RandomAccessible;
+import net.imglib2.atlas.RandomAccessibleContainer;
 import net.imglib2.atlas.color.IntegerColorProvider;
 import net.imglib2.atlas.control.brush.LabelBrushController;
 import net.imglib2.cache.Cache;
@@ -30,7 +30,6 @@ import net.imglib2.img.basictypeaccess.volatiles.array.VolatileShortArray;
 import net.imglib2.img.cell.Cell;
 import net.imglib2.img.cell.CellGrid;
 import net.imglib2.img.cell.LazyCellImg;
-import net.imglib2.interpolation.randomaccess.NearestNeighborInterpolatorFactory;
 import net.imglib2.type.numeric.RealType;
 import net.imglib2.type.numeric.integer.ShortType;
 import net.imglib2.type.volatiles.VolatileARGBType;
@@ -69,14 +68,14 @@ public class UpdatePrediction< T extends RealType< T > > implements TrainClassif
 
 	private final CacheOptions cacheOptions;
 
-	private final RealRandomAccessibleContainer< VolatileARGBType > predictionContainer;
+	private final RandomAccessibleContainer< VolatileARGBType > predictionContainer;
 
 	public UpdatePrediction(
 			final ViewerPanel viewer,
 			final ClassifyingCacheLoader< T, VolatileShortArray > loader,
 			final IntegerColorProvider colorProvider,
 			final CacheOptions cacheOptions,
-			final RealRandomAccessibleContainer< VolatileARGBType > predictionContainer )
+			final RandomAccessibleContainer< VolatileARGBType > predictionContainer )
 	{
 		super();
 		this.viewer = viewer;
@@ -139,12 +138,11 @@ public class UpdatePrediction< T extends RealType< T > > implements TrainClassif
 						output.set( colorProvider.getColor( input.get().get() ) );
 				};
 
-				final RealRandomAccessible< VolatileShortType > real = Views.interpolate(
-						Views.extendValue( vimg, new VolatileShortType( ( short ) LabelBrushController.BACKGROUND ) ),
-						new NearestNeighborInterpolatorFactory<>() );
-				final RealRandomAccessible< VolatileARGBType > convertedReal = Converters.convert( real, conv, new VolatileARGBType() );
+				final RandomAccessible< VolatileShortType > extended =
+						Views.extendValue( vimg, new VolatileShortType( ( short ) LabelBrushController.BACKGROUND ) );
+				final RandomAccessible< VolatileARGBType > converted = Converters.convert( extended, conv, new VolatileARGBType() );
 
-				predictionContainer.setSource( convertedReal );
+				predictionContainer.setSource( converted );
 
 				viewer.requestRepaint();
 				this.cache = cache;

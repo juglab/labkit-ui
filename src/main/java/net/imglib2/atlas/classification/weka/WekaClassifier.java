@@ -18,7 +18,7 @@ import weka.core.Instance;
 import weka.core.Instances;
 
 public class WekaClassifier< R extends RealType< R >, I extends IntegerType< I > >
-		implements Classifier< Composite< R >, RandomAccessibleInterval< R >, RandomAccessibleInterval< I > >
+implements Classifier< Composite< R >, RandomAccessibleInterval< R >, RandomAccessibleInterval< I > >
 {
 
 	private final weka.classifiers.Classifier classifier;
@@ -85,6 +85,7 @@ public class WekaClassifier< R extends RealType< R >, I extends IntegerType< I >
 		}
 		System.out.println( "Starting training!" );
 		classifier.buildClassifier( instances );
+		System.out.println( "Training successful!" );
 	}
 
 }
