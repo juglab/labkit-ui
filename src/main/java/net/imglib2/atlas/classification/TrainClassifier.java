@@ -26,6 +26,16 @@ public class TrainClassifier< F extends RealType< F > > extends AbstractNamedAct
 		public void notify( Classifier< Composite< F >, ?, ? > classifier, boolean trainingSuccess ) throws IOException;
 	}
 
+	public static < F extends RealType< F > > Iterable< Composite< F > > toSamples( final RandomAccessibleInterval< F > features, final long[] indices )
+	{
+		final CompositeView< F, RealComposite< F > >.CompositeRandomAccess access = Views.collapseReal( features ).randomAccess();
+		final Stream< Composite< F > > featuresStream = Arrays.stream( indices ).mapToObj( loc -> {
+			IntervalIndexer.indexToPosition( loc, features, access );
+			return access.get();
+		} );
+		return featuresStream::iterator;
+	}
+
 	public TrainClassifier(
 			final Classifier< Composite< F >, ?, ? > classifier,
 			final LabelBrushController controller,
@@ -82,12 +92,7 @@ public class TrainClassifier< F extends RealType< F > > extends AbstractNamedAct
 			final long[] locations = samples.keys();
 			final int[] labels = samples.values();
 //			}
-			final CompositeView< F, RealComposite< F > >.CompositeRandomAccess access = Views.collapseReal( features ).randomAccess();
-			final Stream< Composite< F > > featuresStream = Arrays.stream( locations ).mapToObj( loc -> {
-				IntervalIndexer.indexToPosition( loc, features, access );
-				return access.get();
-			} );
-			classifier.trainClassifier( featuresStream::iterator, labels );
+			classifier.trainClassifier( toSamples( features, locations ), labels );
 			trainingSuccess = true;
 		}
 		catch ( final Exception e1 )
