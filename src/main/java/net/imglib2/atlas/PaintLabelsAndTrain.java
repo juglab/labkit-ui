@@ -201,7 +201,7 @@ public class PaintLabelsAndTrain
 		if ( isTimeSeries )
 			pixelGenerator = new NeighborhoodPixelsGeneratorForTimeSeries<>( features.numDimensions() - 2, new NeighborhoodPixelsGenerator< IntType >( NeighborhoodFactories.hyperSphere(), 1.0 ) );
 		else
-			pixelGenerator = new NeighborhoodPixelsGenerator<>( NeighborhoodFactories.hyperSphere(), 1.0 );
+			pixelGenerator = new NeighborhoodPixelsGenerator<>( NeighborhoodFactories.< IntType >hyperSphere(), 1.0 );
 
 		final ColorMapColorProvider colorProvider = new ColorMapColorProvider( rng, LabelBrushController.BACKGROUND, 0 );
 
