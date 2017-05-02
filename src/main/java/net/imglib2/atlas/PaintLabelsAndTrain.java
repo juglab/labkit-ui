@@ -268,6 +268,12 @@ public class PaintLabelsAndTrain
 		behaviors.behaviour( mouseWheelSelector.getOverlay(), "feature selector overlay", "shift F" );
 		viewer.getDisplay().addOverlayRenderer( mouseWheelSelector.getOverlay() );
 
+		final SerializeClassifier saveDialogAction = new SerializeClassifier( "classifier-serializer", viewer, classifier );
+		actions.namedAction( saveDialogAction, "ctrl S" );
+
+		final DeserializeClassifier loadDialogAction = new DeserializeClassifier( "classifier-deserializer", viewer, classifier, trainer.getListeners() );
+		actions.namedAction( loadDialogAction, "ctrl O" );
+
 		// install actions and behaviors
 		System.out.println( "Installing actions and behaviors" );
 		actions.install( bdv.getBdvHandle().getKeybindings(), "classifier training" );

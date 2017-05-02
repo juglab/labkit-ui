@@ -1,5 +1,7 @@
 package net.imglib2.atlas.classification.weka;
 
+import java.io.File;
+import java.nio.file.FileAlreadyExistsException;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -16,16 +18,24 @@ import weka.core.Attribute;
 import weka.core.DenseInstance;
 import weka.core.Instance;
 import weka.core.Instances;
+import weka.core.SerializationHelper;
 
 public class WekaClassifier< R extends RealType< R >, I extends IntegerType< I > >
 implements Classifier< Composite< R >, RandomAccessibleInterval< R >, RandomAccessibleInterval< I > >
 {
 
-	private final weka.classifiers.Classifier classifier;
+	public static class NotTrainedYet extends Exception
+	{
+
+	}
+
+	private weka.classifiers.Classifier classifier;
 
 	private List< String > classLabels;
 
 	private int numFeatures;
+
+	private boolean classifierTrainedSuccessfully;
 
 	public WekaClassifier( final weka.classifiers.Classifier classifier, final List< String > classLabels, final int numFeatures )
 	{
@@ -52,7 +62,7 @@ implements Classifier< Composite< R >, RandomAccessibleInterval< R >, RandomAcce
 	}
 
 	@Override
-	public void predictLabels( final RandomAccessibleInterval< R > instances, final RandomAccessibleInterval< I > labels ) throws Exception
+	synchronized public void predictLabels( final RandomAccessibleInterval< R > instances, final RandomAccessibleInterval< I > labels ) throws Exception
 	{
 		final InstanceView< R, RealComposite< R > > wekaInstances = new InstanceView<>( Views.collapseReal( instances ), InstanceView.makeDefaultAttributes( numFeatures, classLabels.size() ) );
 		for ( final Pair< Instance, I > p : Views.interval( Views.pair( wekaInstances, labels ), labels ) )
@@ -83,9 +93,35 @@ implements Classifier< Composite< R >, RandomAccessibleInterval< R >, RandomAcce
 			values[ numFeatures ] = label;
 			instances.add( new DenseInstance( 1.0, values ) );
 		}
-		System.out.println( "Starting training!" );
-		classifier.buildClassifier( instances );
-		System.out.println( "Training successful!" );
+		synchronized ( this )
+		{
+			System.out.println( "Starting training!" );
+			classifier.buildClassifier( instances );
+			System.out.println( "Training successful!" );
+			this.classifierTrainedSuccessfully = true;
+		}
+	}
+
+	@Override
+	synchronized public void saveClassifier( final String path, final boolean overwrite ) throws Exception
+	{
+		{
+			if ( !classifierTrainedSuccessfully )
+				throw new NotTrainedYet();
+			if ( new File( path ).exists() && !overwrite )
+				throw new FileAlreadyExistsException( path );
+			SerializationHelper.write( path, this.classifier );
+		}
+	}
+
+	@Override
+	public void loadClassifier( final String path ) throws Exception
+	{
+		synchronized ( classifier )
+		{
+			this.classifier = ( weka.classifiers.Classifier ) SerializationHelper.read( path );
+			this.classifierTrainedSuccessfully = true;
+		}
 	}
 
 }

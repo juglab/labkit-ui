@@ -4,6 +4,7 @@ import java.awt.event.ActionEvent;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 import java.util.stream.Stream;
 
 import org.scijava.ui.behaviour.util.AbstractNamedAction;
@@ -77,6 +78,11 @@ public class TrainClassifier< F extends RealType< F > > extends AbstractNamedAct
 	public boolean removeListener( final Listener listener )
 	{
 		return this.listeners.remove( listener );
+	}
+
+	public List< Listener > getListeners()
+	{
+		return listeners;
 	}
 
 	@Override
