@@ -22,7 +22,6 @@ import hr.irb.fastRandomForest.FastRandomForest;
 import ij.ImagePlus;
 import net.imglib2.RandomAccessible;
 import net.imglib2.RandomAccessibleInterval;
-import net.imglib2.Volatile;
 import net.imglib2.algorithm.gauss3.Gauss3;
 import net.imglib2.algorithm.gradient.PartialDerivative;
 import net.imglib2.atlas.classification.Classifier;
@@ -62,6 +61,7 @@ import net.imglib2.type.numeric.integer.IntType;
 import net.imglib2.type.numeric.integer.ShortType;
 import net.imglib2.type.numeric.integer.UnsignedByteType;
 import net.imglib2.type.numeric.real.FloatType;
+import net.imglib2.type.volatiles.AbstractVolatileRealType;
 import net.imglib2.type.volatiles.VolatileARGBType;
 import net.imglib2.type.volatiles.VolatileFloatType;
 import net.imglib2.util.ConstantUtils;
@@ -159,7 +159,7 @@ public class PaintLabelsAndTrain
 		trainClassifier( rawData, features, vfeatures, classifier, nLabels, grid, queue, true, accessGenerator, rng );
 	}
 
-	public static < R extends RealType< R >, F extends RealType< F >, VF extends Volatile< F > >
+	public static < R extends RealType< R >, F extends RealType< F >, VF extends AbstractVolatileRealType< F, VF > >
 	BdvStackSource< ARGBType > trainClassifier(
 			final RandomAccessibleInterval< R > rawData,
 			final RandomAccessibleInterval< F > features,
@@ -174,7 +174,7 @@ public class PaintLabelsAndTrain
 		return trainClassifier( rawData, features, volatileFeatures, classifier, nLabels, grid, queue, isTimeSeries, accessGenerator, new Random( 100 ) );
 	}
 
-	public static < R extends RealType< R >, F extends RealType< F >, VF extends Volatile< F > >
+	public static < R extends RealType< R >, F extends RealType< F >, VF extends AbstractVolatileRealType< F, VF > >
 	BdvStackSource< ARGBType > trainClassifier(
 			final RandomAccessibleInterval< R > rawData,
 			final RandomAccessibleInterval< F > features,
