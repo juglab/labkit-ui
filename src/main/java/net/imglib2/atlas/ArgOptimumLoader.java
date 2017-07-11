@@ -1,25 +1,20 @@
 package net.imglib2.atlas;
 
 import java.util.Comparator;
-import java.util.stream.IntStream;
 
 import net.imglib2.Cursor;
 import net.imglib2.FinalInterval;
 import net.imglib2.RandomAccessible;
-import net.imglib2.cache.CacheLoader;
+import net.imglib2.cache.img.CellLoader;
 import net.imglib2.img.Img;
-import net.imglib2.img.array.ArrayImgs;
-import net.imglib2.img.basictypeaccess.volatiles.array.VolatileShortArray;
-import net.imglib2.img.cell.Cell;
 import net.imglib2.img.cell.CellGrid;
 import net.imglib2.type.numeric.RealType;
 import net.imglib2.type.numeric.integer.UnsignedShortType;
 import net.imglib2.util.Intervals;
-import net.imglib2.util.Util;
 import net.imglib2.view.Views;
 import net.imglib2.view.composite.Composite;
 
-public class ArgOptimumLoader< T extends RealType< T > > implements CacheLoader< Long, Cell< VolatileShortArray > >
+public class ArgOptimumLoader< T extends RealType< T > > implements CellLoader< UnsignedShortType >
 {
 	private final CellGrid grid;
 
@@ -48,28 +43,18 @@ public class ArgOptimumLoader< T extends RealType< T > > implements CacheLoader<
 	public ArgOptimumLoader(
 			final CellGrid grid,
 			final RandomAccessible< ? extends Composite< T > > features,
-			final int size,
+					final int size,
 					final T worstVal )
 	{
 		this( grid, features, size, Comparator.reverseOrder(), worstVal );
 	}
 
 	@Override
-	public Cell< VolatileShortArray > get( final Long key ) throws Exception
+	public void load( final Img< UnsignedShortType > img ) throws Exception
 	{
-		final long index = key;
 
-		final int n = grid.numDimensions();
-		final long[] cellMin = new long[ n ];
-		final int[] cellDims = new int[ n ];
-		grid.getCellDimensions( index, cellMin, cellDims );
-		final long[] cellMax = IntStream.range( 0, n ).mapToLong( d -> cellMin[ d ] + cellDims[ d ] - 1 ).toArray();
-
-		final int blocksize = ( int ) Intervals.numElements( cellDims );
-		final VolatileShortArray array = new VolatileShortArray( blocksize, true );
-
-		final Img< UnsignedShortType > img = ArrayImgs.unsignedShorts( array.getCurrentStorageArray(), Util.int2long( cellDims ) );
-
+		final long[] cellMin = Intervals.minAsLongArray( img );
+		final long[] cellMax = Intervals.maxAsLongArray( img );
 		final FinalInterval sourceCellInterval = new FinalInterval( cellMin, cellMax );
 		final Cursor< ? extends Composite< T > > instancesCursor = Views.flatIterable( Views.interval( map, sourceCellInterval ) ).cursor();
 		final Cursor< UnsignedShortType > imgCursor = Views.flatIterable( img ).cursor();
@@ -92,6 +77,5 @@ public class ArgOptimumLoader< T extends RealType< T > > implements CacheLoader<
 			target.set( arg );
 		}
 
-		return new Cell<>( cellDims, cellMin, array );
 	}
 }

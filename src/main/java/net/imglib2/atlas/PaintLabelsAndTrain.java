@@ -25,8 +25,7 @@ import net.imglib2.RandomAccessibleInterval;
 import net.imglib2.algorithm.gauss3.Gauss3;
 import net.imglib2.algorithm.gradient.PartialDerivative;
 import net.imglib2.atlas.classification.Classifier;
-import net.imglib2.atlas.classification.ClassifyingCacheLoader;
-import net.imglib2.atlas.classification.ClassifyingCacheLoader.ShortAccessGenerator;
+import net.imglib2.atlas.classification.ClassifyingCellLoader;
 import net.imglib2.atlas.classification.TrainClassifier;
 import net.imglib2.atlas.classification.UpdatePrediction;
 import net.imglib2.atlas.classification.UpdatePrediction.CacheOptions;
@@ -50,7 +49,6 @@ import net.imglib2.img.array.ArrayImg;
 import net.imglib2.img.array.ArrayImgs;
 import net.imglib2.img.basictypeaccess.array.ByteArray;
 import net.imglib2.img.basictypeaccess.array.DirtyIntArray;
-import net.imglib2.img.basictypeaccess.volatiles.array.VolatileShortArray;
 import net.imglib2.img.cell.CellGrid;
 import net.imglib2.img.cell.LazyCellImg;
 import net.imglib2.img.display.imagej.ImageJFunctions;
@@ -112,7 +110,7 @@ public class PaintLabelsAndTrain
 //			final ArrayImg< FloatType, FloatArray > gauss = ArrayImgs.floats( Intervals.dimensionsAsLongArray( converted ) );
 //			Gauss3.gauss( sigma, Views.extendBorder( converted ), gauss );
 			final RandomAccessibleInterval< FloatType > gaussSource = sigmaIndex == 0 ? converted : gausses[ sigmaIndex - 1 ].getA();
-			final FeatureGeneratorLoader< FloatType > gaussLoader = new FeatureGeneratorLoader<>( grid, target -> {
+			final FeatureGeneratorLoader< FloatType, FloatType > gaussLoader = new FeatureGeneratorLoader<>( grid, target -> {
 				Gauss3.gauss( sigmaDiff, Views.extendBorder( gaussSource ), target );
 			} );
 			final Pair< Img< FloatType >, Img< VolatileFloatType > > gauss = FeatureGeneratorLoader.createFeatures( gaussLoader, "gauss-" + sigma + "-", 1000, queue );
@@ -125,14 +123,14 @@ public class PaintLabelsAndTrain
 			for ( int d = 0; d < converted.numDimensions(); ++d )
 			{
 				final int finalD = d;
-				final FeatureGeneratorLoader< FloatType > gradientLoader = new FeatureGeneratorLoader<>( grid, target -> {
+				final FeatureGeneratorLoader< FloatType, FloatType > gradientLoader = new FeatureGeneratorLoader<>( grid, target -> {
 					PartialDerivative.gradientCentralDifference2( Views.extendBorder( gauss.getA() ), target, finalD );
 				} );
 				final Pair< Img< FloatType >, Img< VolatileFloatType > > grad = FeatureGeneratorLoader.createFeatures( gradientLoader, "gradient-" + d + "-" + sigma + "-", 1000, queue );
 				gradients[ d ] = grad;
 			}
 
-			final FeatureGeneratorLoader< FloatType > gradientMagnitudeLoader = new FeatureGeneratorLoader<>( grid, target -> {
+			final FeatureGeneratorLoader< FloatType, FloatType > gradientMagnitudeLoader = new FeatureGeneratorLoader<>( grid, target -> {
 				final FloatType ft = new FloatType();
 				for ( int d = 0; d < gradients.length; ++d )
 					for ( final Pair< FloatType, FloatType > p : Views.interval( Views.pair( gradients[ d ].getA(), target ), target ) )
@@ -155,8 +153,7 @@ public class PaintLabelsAndTrain
 		final FastRandomForest wekaClassifier = new FastRandomForest();
 		final WekaClassifier< FloatType, ShortType > classifier = new WekaClassifier<>( wekaClassifier, classLabels, ( int ) features.dimension( features.numDimensions() - 1 ) );
 
-		final ShortAccessGenerator< VolatileShortArray > accessGenerator = ( n, valid ) -> new VolatileShortArray( ( int ) n, valid );
-		trainClassifier( rawData, features, vfeatures, classifier, nLabels, grid, queue, true, accessGenerator, rng );
+		trainClassifier( rawData, features, vfeatures, classifier, nLabels, grid, queue, true, rng );
 	}
 
 	public static < R extends RealType< R >, F extends RealType< F >, VF extends AbstractVolatileRealType< F, VF > >
@@ -170,8 +167,7 @@ public class PaintLabelsAndTrain
 			final BlockingFetchQueues< Callable< ? > > queue,
 			final boolean isTimeSeries ) throws IOException
 	{
-		final ShortAccessGenerator< VolatileShortArray > accessGenerator = ( n, valid ) -> new VolatileShortArray( ( int ) n, valid );
-		return trainClassifier( rawData, features, volatileFeatures, classifier, nLabels, grid, queue, isTimeSeries, accessGenerator, new Random( 100 ) );
+		return trainClassifier( rawData, features, volatileFeatures, classifier, nLabels, grid, queue, isTimeSeries, new Random( 100 ) );
 	}
 
 	public static < R extends RealType< R >, F extends RealType< F >, VF extends AbstractVolatileRealType< F, VF > >
@@ -184,7 +180,6 @@ public class PaintLabelsAndTrain
 			final CellGrid grid,
 			final BlockingFetchQueues< Callable< ? > > queue,
 			final boolean isTimeSeries,
-			final ShortAccessGenerator< VolatileShortArray > accessGenerator,
 			final Random rng ) throws IOException
 	{
 		System.out.println( "Entering train method" );
@@ -238,7 +233,7 @@ public class PaintLabelsAndTrain
 
 		final int nFeatures = ( int ) features.dimension( features.numDimensions() - 1 );
 		final CacheOptions cacheOptions = new UpdatePrediction.CacheOptions( "prediction", grid, 1000, queue );
-		final ClassifyingCacheLoader< F, VolatileShortArray > classifyingLoader = new ClassifyingCacheLoader<>( grid, features, classifier, nFeatures, accessGenerator );
+		final ClassifyingCellLoader< F > classifyingLoader = new ClassifyingCellLoader<>( grid, features, classifier, nFeatures );
 		final UpdatePrediction< F > predictionAdder = new UpdatePrediction<>( viewer, classifyingLoader, colorProvider, cacheOptions, container );
 		final ArrayList< String > classes = new ArrayList<>();
 		for ( int i = 1; i <= nLabels; ++i )

@@ -62,7 +62,7 @@ public class UpdatePrediction< T extends RealType< T > > implements TrainClassif
 
 	private final ViewerPanel viewer;
 
-	private final ClassifyingCacheLoader< T, VolatileShortArray > loader;
+	private final ClassifyingCellLoader< T > loader;
 
 	private final IntegerColorProvider colorProvider;
 
@@ -72,7 +72,7 @@ public class UpdatePrediction< T extends RealType< T > > implements TrainClassif
 
 	public UpdatePrediction(
 			final ViewerPanel viewer,
-			final ClassifyingCacheLoader< T, VolatileShortArray > loader,
+			final ClassifyingCellLoader< T > loader,
 			final IntegerColorProvider colorProvider,
 			final CacheOptions cacheOptions,
 			final RandomAccessibleContainer< VolatileARGBType > predictionContainer )
