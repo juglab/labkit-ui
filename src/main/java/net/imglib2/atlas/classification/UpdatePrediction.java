@@ -1,35 +1,23 @@
 package net.imglib2.atlas.classification;
 
 import java.io.IOException;
-import java.nio.file.Path;
-import java.util.concurrent.Callable;
 
-import bdv.img.cache.CreateInvalidVolatileCell;
-import bdv.img.cache.VolatileCachedCellImg;
+import bdv.util.volatiles.SharedQueue;
+import bdv.util.volatiles.VolatileViews;
 import bdv.viewer.ViewerPanel;
 import net.imglib2.RandomAccessible;
 import net.imglib2.atlas.RandomAccessibleContainer;
 import net.imglib2.atlas.color.IntegerColorProvider;
 import net.imglib2.atlas.control.brush.LabelBrushController;
 import net.imglib2.cache.Cache;
-import net.imglib2.cache.IoSync;
-import net.imglib2.cache.img.AccessFlags;
-import net.imglib2.cache.img.AccessIo;
-import net.imglib2.cache.img.DiskCellCache;
-import net.imglib2.cache.img.PrimitiveType;
-import net.imglib2.cache.queue.BlockingFetchQueues;
-import net.imglib2.cache.ref.GuardedStrongRefLoaderRemoverCache;
-import net.imglib2.cache.ref.WeakRefVolatileCache;
-import net.imglib2.cache.volatiles.CacheHints;
-import net.imglib2.cache.volatiles.CreateInvalid;
-import net.imglib2.cache.volatiles.LoadingStrategy;
+import net.imglib2.cache.img.DiskCachedCellImg;
+import net.imglib2.cache.img.DiskCachedCellImgFactory;
+import net.imglib2.cache.img.DiskCachedCellImgOptions;
+import net.imglib2.cache.img.DiskCachedCellImgOptions.CacheType;
 import net.imglib2.converter.Converter;
 import net.imglib2.converter.Converters;
 import net.imglib2.img.Img;
-import net.imglib2.img.basictypeaccess.volatiles.array.VolatileShortArray;
-import net.imglib2.img.cell.Cell;
 import net.imglib2.img.cell.CellGrid;
-import net.imglib2.img.cell.LazyCellImg;
 import net.imglib2.type.numeric.RealType;
 import net.imglib2.type.numeric.integer.ShortType;
 import net.imglib2.type.volatiles.VolatileARGBType;
@@ -46,16 +34,13 @@ public class UpdatePrediction< T extends RealType< T > > implements TrainClassif
 
 		private final CellGrid grid;
 
-		private final int entries;
+		private final SharedQueue queue;
 
-		private final BlockingFetchQueues< Callable< ? > > queue;
-
-		public CacheOptions( final String cacheTempName, final CellGrid grid, final int entries, final BlockingFetchQueues< Callable< ? > > queue )
+		public CacheOptions( final String cacheTempName, final CellGrid grid, final SharedQueue queue )
 		{
 			super();
 			this.cacheTempName = cacheTempName;
 			this.grid = grid;
-			this.entries = entries;
 			this.queue = queue;
 		}
 	}
@@ -87,21 +72,16 @@ public class UpdatePrediction< T extends RealType< T > > implements TrainClassif
 
 	private boolean wasTrainedAtLeastOnce = false;
 
-	private Cache< Long, Cell< VolatileShortArray > > cache = null;
+	private Cache< Long, ? > cache = null;
 
-	private VolatileCachedCellImg< VolatileShortType, ? > vimg;
+	private DiskCachedCellImg< ShortType, ? > img = null;
 
 	public Img< ShortType > getLazyImg()
 	{
 		if ( wasTrainedAtLeastOnce )
-			return new LazyCellImg<>( cacheOptions.grid, new ShortType(), cache.unchecked()::get );
+			return img;
 		else
 			return null;
-	}
-
-	public Img< VolatileShortType > getVolatileImg()
-	{
-		return vimg;
 	}
 
 	@Override
@@ -110,25 +90,17 @@ public class UpdatePrediction< T extends RealType< T > > implements TrainClassif
 		if ( trainingSuccess )
 			synchronized ( viewer )
 			{
-				final ShortType type = new ShortType();
-				final VolatileShortType vtype = new VolatileShortType();
-				final Path blockcache = DiskCellCache.createTempDirectory( cacheOptions.cacheTempName, true );
-				final DiskCellCache< VolatileShortArray > diskcache = new DiskCellCache<>(
-						blockcache,
-						cacheOptions.grid,
-						loader,
-						AccessIo.get( PrimitiveType.SHORT, AccessFlags.VOLATILE ),
-						type.getEntitiesPerPixel() );
-				final IoSync< Long, Cell< VolatileShortArray > > iosync = new IoSync<>( diskcache );
-				final Cache< Long, Cell< VolatileShortArray > > cache = new GuardedStrongRefLoaderRemoverCache< Long, Cell< VolatileShortArray > >( cacheOptions.entries )
-						.withRemover( iosync )
-						.withLoader( iosync );
+				final int[] cellDimensions = new int[ cacheOptions.grid.numDimensions() ];
+				cacheOptions.grid.cellDimensions( cellDimensions );
+				final DiskCachedCellImgOptions factoryOptions = DiskCachedCellImgOptions.options()
+						.cacheType( CacheType.BOUNDED )
+						.maxCacheSize( 1000 )
+						.cellDimensions( cellDimensions );
+				final DiskCachedCellImgFactory< ShortType > factory = new DiskCachedCellImgFactory<>( factoryOptions );
 
-				final CreateInvalid< Long, Cell< VolatileShortArray > > createInvalid = CreateInvalidVolatileCell.get( cacheOptions.grid, type );
-				final WeakRefVolatileCache< Long, Cell< VolatileShortArray > > volatileCache = new WeakRefVolatileCache<>( cache, cacheOptions.queue, createInvalid );
 
-				final CacheHints hints = new CacheHints( LoadingStrategy.VOLATILE, 0, false );
-				final VolatileCachedCellImg< VolatileShortType, VolatileShortArray > vimg = new VolatileCachedCellImg<>( cacheOptions.grid, vtype, hints, volatileCache.unchecked()::get );
+				final DiskCachedCellImg< ShortType, ? > img = factory.create( cacheOptions.grid.getImgDimensions(), new ShortType() );
+//				final VolatileCachedCellImg< VolatileShortType, VolatileShortArray > vimg = new VolatileCachedCellImg<>( cacheOptions.grid, vtype, hints, volatileCache.unchecked()::get );
 
 
 				final Converter< VolatileShortType, VolatileARGBType > conv = ( input, output ) -> {
@@ -139,14 +111,14 @@ public class UpdatePrediction< T extends RealType< T > > implements TrainClassif
 				};
 
 				final RandomAccessible< VolatileShortType > extended =
-						Views.extendValue( vimg, new VolatileShortType( ( short ) LabelBrushController.BACKGROUND ) );
+						Views.extendValue( VolatileViews.wrapAsVolatile( img, cacheOptions.queue ), new VolatileShortType( ( short ) LabelBrushController.BACKGROUND ) );
 				final RandomAccessible< VolatileARGBType > converted = Converters.convert( extended, conv, new VolatileARGBType() );
 
 				predictionContainer.setSource( converted );
 
 				viewer.requestRepaint();
-				this.cache = cache;
-				this.vimg = vimg;
+				this.cache = img.getCache();
+				this.img = img;
 				wasTrainedAtLeastOnce = true;
 			}
 
