@@ -99,7 +99,7 @@ public class UpdatePrediction< T extends RealType< T > > implements TrainClassif
 				final DiskCachedCellImgFactory< ShortType > factory = new DiskCachedCellImgFactory<>( factoryOptions );
 
 
-				final DiskCachedCellImg< ShortType, ? > img = factory.create( cacheOptions.grid.getImgDimensions(), new ShortType() );
+				final DiskCachedCellImg< ShortType, ? > img = factory.create( cacheOptions.grid.getImgDimensions(), new ShortType(), loader );
 //				final VolatileCachedCellImg< VolatileShortType, VolatileShortArray > vimg = new VolatileCachedCellImg<>( cacheOptions.grid, vtype, hints, volatileCache.unchecked()::get );
 
 
