@@ -56,7 +56,7 @@ public class ClassifyingCellLoader< T extends RealType< T > > implements CellLoa
 		final long[] cellMax = Intervals.maxAsLongArray( img );
 		final long[] featureMin = LongStream.concat( Arrays.stream( cellMin ), LongStream.of( 0 ) ).toArray();
 		final long[] featureMax = LongStream.concat( Arrays.stream( cellMax ), LongStream.of( numFeatures - 1 ) ).toArray();
-		final IntervalView< T > featuresBlock = Views.offsetInterval( features, new FinalInterval( featureMin, featureMax ) );
+		final IntervalView< T > featuresBlock = Views.interval( features, new FinalInterval( featureMin, featureMax ) );
 
 		classifier.predictLabels( featuresBlock, img );
 
