@@ -231,7 +231,7 @@ public class PaintLabelsAndTrain
 
 		final int nFeatures = ( int ) featuresConcatenated.dimension( nDim );
 		final CacheOptions cacheOptions = new UpdatePrediction.CacheOptions( "prediction", grid, queue );
-		final ClassifyingCellLoader< F > classifyingLoader = new ClassifyingCellLoader<>( grid, featuresConcatenated, classifier, nFeatures );
+		final ClassifyingCellLoader< F > classifyingLoader = new ClassifyingCellLoader<>( featuresConcatenated, classifier, nFeatures );
 		final UpdatePrediction< F > predictionAdder = new UpdatePrediction<>( viewer, classifyingLoader, colorProvider, cacheOptions, container );
 		final ArrayList< String > classes = new ArrayList<>();
 		for ( int i = 1; i <= nLabels; ++i )

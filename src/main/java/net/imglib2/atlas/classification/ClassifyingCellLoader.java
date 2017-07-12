@@ -9,7 +9,6 @@ import net.imglib2.RandomAccessibleInterval;
 import net.imglib2.cache.img.CellLoader;
 import net.imglib2.img.Img;
 import net.imglib2.img.basictypeaccess.volatiles.VolatileShortAccess;
-import net.imglib2.img.cell.CellGrid;
 import net.imglib2.type.numeric.RealType;
 import net.imglib2.type.numeric.integer.ShortType;
 import net.imglib2.util.Intervals;
@@ -23,8 +22,6 @@ public class ClassifyingCellLoader< T extends RealType< T > > implements CellLoa
 		public A create( long numEntities, boolean isValid );
 	}
 
-	private final CellGrid grid;
-
 	private final RandomAccessible< T > features;
 
 	private Classifier< ?, RandomAccessibleInterval< T >, RandomAccessibleInterval< ShortType > > classifier;
@@ -37,12 +34,10 @@ public class ClassifyingCellLoader< T extends RealType< T > > implements CellLoa
 	}
 
 	public ClassifyingCellLoader(
-			final CellGrid grid,
 			final RandomAccessible< T > features,
 			final Classifier< ?, RandomAccessibleInterval< T >, RandomAccessibleInterval< ShortType > > classifier,
 					final int numFeatures )
 	{
-		this.grid = grid;
 		this.features = features;
 		this.classifier = classifier;
 		this.numFeatures = numFeatures;
