@@ -73,7 +73,6 @@ public class PaintLabelsAndTrain
 	public static void main( final String[] args ) throws IncompatibleTypeException, IOException
 	{
 
-		final Random rng = new Random();
 		final String imgPath = System.getProperty( "user.home" ) + "/Downloads/epfl-em/training.tif";
 		final Img< UnsignedByteType > rawImg = ImageJFunctions.wrapByte( new ImagePlus( imgPath ) );
 		final long[] dimensions = Intervals.dimensionsAsLongArray( rawImg );
@@ -96,7 +95,7 @@ public class PaintLabelsAndTrain
 		final FastRandomForest wekaClassifier = new FastRandomForest();
 		final WekaClassifier< FloatType, ShortType > classifier = new WekaClassifier<>( wekaClassifier, classLabels, ( int ) features.dimension( features.numDimensions() - 1 ) );
 
-		trainClassifier( rawData, featuresList, classifier, nLabels, grid, true, rng );
+		trainClassifier( rawData, featuresList, classifier, nLabels, grid, true);
 	}
 
 	private static ArrayList<RandomAccessibleInterval<FloatType>> initFeatures(CellGrid grid, RandomAccessibleInterval<FloatType> original) {
@@ -154,18 +153,6 @@ public class PaintLabelsAndTrain
 		return featuresList;
 	}
 
-	public static < R extends RealType< R >, F extends RealType< F > >
-	BdvStackSource< ARGBType > trainClassifier(
-			final RandomAccessibleInterval<R> rawData,
-			final List<? extends RandomAccessibleInterval<F>> features,
-			final Classifier<Composite<F>, RandomAccessibleInterval<F>, RandomAccessibleInterval<ShortType>> classifier,
-			final int nLabels,
-			final CellGrid grid,
-			final boolean isTimeSeries) throws IOException
-	{
-		return trainClassifier( rawData, features, classifier, nLabels, grid, isTimeSeries, new Random( 100 ) );
-	}
-
 	@SuppressWarnings( { "rawtypes" } )
 	public static < R extends RealType< R >, F extends RealType< F > >
 	BdvStackSource< ARGBType > trainClassifier(
@@ -174,8 +161,7 @@ public class PaintLabelsAndTrain
 			final Classifier<Composite<F>, RandomAccessibleInterval<F>, RandomAccessibleInterval<ShortType>> classifier,
 			final int nLabels,
 			final CellGrid grid,
-			final boolean isTimeSeries,
-			final Random rng) throws IOException
+			final boolean isTimeSeries) throws IOException
 	{
 		final int numFetcherThreads = Runtime.getRuntime().availableProcessors();
 		final SharedQueue queue = new SharedQueue( numFetcherThreads );
@@ -201,6 +187,7 @@ public class PaintLabelsAndTrain
 		else
 			pixelGenerator = new NeighborhoodPixelsGenerator<>( NeighborhoodFactories.< IntType >hyperSphere(), 1.0 );
 
+		final Random rng = new Random();
 		final ColorMapColorProvider colorProvider = new ColorMapColorProvider( rng, LabelBrushController.BACKGROUND, 0 );
 
 		// add labels layer
@@ -291,7 +278,7 @@ public class PaintLabelsAndTrain
 	{
 		try
 		{
-			return BdvFunctions.show( VolatileViews.< T, V >wrapAsVolatile( rai, queue ), name, opts );
+			return BdvFunctions.show( VolatileViews.<T, V>wrapAsVolatile( rai, queue ), name, opts );
 		}
 		catch ( final IllegalArgumentException e )
 		{
