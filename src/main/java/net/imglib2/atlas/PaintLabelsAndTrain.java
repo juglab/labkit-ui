@@ -118,7 +118,7 @@ public class PaintLabelsAndTrain
 //			final ArrayImg< FloatType, FloatArray > gauss = ArrayImgs.floats( Intervals.dimensionsAsLongArray( original ) );
 //			Gauss3.gauss( sigma, Views.extendBorder( converted ), gauss );
 			final RandomAccessibleInterval< FloatType > gaussSource = sigmaIndex == 0 ? original : gausses[ sigmaIndex - 1 ];
-			final FeatureGeneratorLoader< FloatType, FloatType > gaussLoader = new FeatureGeneratorLoader<>( grid, target -> {
+			final FeatureGeneratorLoader< FloatType, FloatType > gaussLoader = new FeatureGeneratorLoader<>(target -> {
 				Gauss3.gauss( sigmaDiff, Views.extendBorder( gaussSource ), target );
 			} );
 			final DiskCachedCellImg< FloatType, ? > gauss = featureFactory.create( dimensions, new FloatType(), gaussLoader );
@@ -130,14 +130,14 @@ public class PaintLabelsAndTrain
 			for (int d = 0; d < original.numDimensions(); ++d )
 			{
 				final int finalD = d;
-				final FeatureGeneratorLoader< FloatType, FloatType > gradientLoader = new FeatureGeneratorLoader<>( grid, target -> {
+				final FeatureGeneratorLoader< FloatType, FloatType > gradientLoader = new FeatureGeneratorLoader<>(target -> {
 					PartialDerivative.gradientCentralDifference2( Views.extendBorder( gauss ), target, finalD );
 				} );
 				final DiskCachedCellImg< FloatType, ? > grad = featureFactory.create( dimensions, new FloatType(), gradientLoader );
 				gradients[ d ] = grad;
 			}
 
-			final FeatureGeneratorLoader< FloatType, FloatType > gradientMagnitudeLoader = new FeatureGeneratorLoader<>( grid, target -> {
+			final FeatureGeneratorLoader< FloatType, FloatType > gradientMagnitudeLoader = new FeatureGeneratorLoader<>(target -> {
 				final FloatType ft = new FloatType();
 				for ( int d = 0; d < gradients.length; ++d )
 					for ( final Pair< FloatType, FloatType > p : Views.interval( Views.pair( gradients[ d ], target ), target ) )
