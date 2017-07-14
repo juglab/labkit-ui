@@ -76,7 +76,6 @@ public class PaintLabelsAndTrain
 		final String imgPath = System.getProperty( "user.home" ) + "/Downloads/epfl-em/training.tif";
 		final Img< UnsignedByteType > rawImg = ImageJFunctions.wrapByte( new ImagePlus( imgPath ) );
 		final long[] dimensions = Intervals.dimensionsAsLongArray( rawImg );
-
 		final int[] cellDimensions = new int[] { 128, 128, 2 };
 		final CellGrid grid = new CellGrid( dimensions, cellDimensions );
 		final int numFetcherThreads = Runtime.getRuntime().availableProcessors();
@@ -89,9 +88,24 @@ public class PaintLabelsAndTrain
 		final ArrayImg< UnsignedByteType, ByteArray > rawData = ArrayImgs.unsignedBytes( dimensions );
 		for ( final Pair< UnsignedByteType, UnsignedByteType > p : Views.interval( Views.pair( rawImg, rawData ), rawImg ) )
 			p.getB().set( p.getA() );
-		final ArrayList< RandomAccessibleInterval< FloatType > > featuresList = new ArrayList<>();
 		final RandomAccessibleInterval< FloatType > converted = Converters.convert( ( RandomAccessibleInterval< UnsignedByteType > ) rawData, new RealFloatConverter<>(), new FloatType() );
-		featuresList.add( Views.addDimension( converted, 0, 0 ) );
+
+		final ArrayList<RandomAccessibleInterval<FloatType>> featuresList = initFeatures(grid, converted);
+
+		final RandomAccessibleInterval< FloatType > features = Views.concatenate( 3, featuresList );
+
+		final FastRandomForest wekaClassifier = new FastRandomForest();
+		final WekaClassifier< FloatType, ShortType > classifier = new WekaClassifier<>( wekaClassifier, classLabels, ( int ) features.dimension( features.numDimensions() - 1 ) );
+
+		trainClassifier( rawData, featuresList, classifier, nLabels, grid, queue, true, rng );
+	}
+
+	private static ArrayList<RandomAccessibleInterval<FloatType>> initFeatures(CellGrid grid, RandomAccessibleInterval<FloatType> original) {
+		long[] dimensions = Intervals.dimensionsAsLongArray(original);
+		int[] cellDimensions = new int[grid.numDimensions()];
+		grid.cellDimensions(cellDimensions);
+		final ArrayList< RandomAccessibleInterval< FloatType > > featuresList = new ArrayList<>();
+		featuresList.add( Views.addDimension(original, 0, 0 ) );
 		final double[] sigmas = { 1.0 }; // , 3.0, 5.0, 7.0 };
 		@SuppressWarnings( "unchecked" )
 		final DiskCachedCellImg< FloatType, ? >[] gausses = new DiskCachedCellImg[ sigmas.length ];
@@ -101,9 +115,9 @@ public class PaintLabelsAndTrain
 		{
 			final double sigma = sigmas[ sigmaIndex ];
 			final double sigmaDiff = sigmaIndex == 0 ? sigma : Math.sqrt( sigma * sigma - sigmas[ sigmaIndex - 1 ] * sigmas[ sigmaIndex - 1 ] );
-//			final ArrayImg< FloatType, FloatArray > gauss = ArrayImgs.floats( Intervals.dimensionsAsLongArray( converted ) );
+//			final ArrayImg< FloatType, FloatArray > gauss = ArrayImgs.floats( Intervals.dimensionsAsLongArray( original ) );
 //			Gauss3.gauss( sigma, Views.extendBorder( converted ), gauss );
-			final RandomAccessibleInterval< FloatType > gaussSource = sigmaIndex == 0 ? converted : gausses[ sigmaIndex - 1 ];
+			final RandomAccessibleInterval< FloatType > gaussSource = sigmaIndex == 0 ? original : gausses[ sigmaIndex - 1 ];
 			final FeatureGeneratorLoader< FloatType, FloatType > gaussLoader = new FeatureGeneratorLoader<>( grid, target -> {
 				Gauss3.gauss( sigmaDiff, Views.extendBorder( gaussSource ), target );
 			} );
@@ -112,8 +126,8 @@ public class PaintLabelsAndTrain
 			featuresList.add( Views.addDimension( gauss, 0, 0 ) );
 
 			@SuppressWarnings( "unchecked" )
-			final Img< FloatType >[] gradients = new Img[ converted.numDimensions() ];
-			for ( int d = 0; d < converted.numDimensions(); ++d )
+			final Img< FloatType >[] gradients = new Img[ original.numDimensions() ];
+			for (int d = 0; d < original.numDimensions(); ++d )
 			{
 				final int finalD = d;
 				final FeatureGeneratorLoader< FloatType, FloatType > gradientLoader = new FeatureGeneratorLoader<>( grid, target -> {
@@ -138,13 +152,7 @@ public class PaintLabelsAndTrain
 
 			featuresList.add( Views.addDimension( gradientMagnitude, 0, 0 ) );
 		}
-
-		final RandomAccessibleInterval< FloatType > features = Views.concatenate( 3, featuresList );
-
-		final FastRandomForest wekaClassifier = new FastRandomForest();
-		final WekaClassifier< FloatType, ShortType > classifier = new WekaClassifier<>( wekaClassifier, classLabels, ( int ) features.dimension( features.numDimensions() - 1 ) );
-
-		trainClassifier( rawData, featuresList, classifier, nLabels, grid, queue, true, rng );
+		return featuresList;
 	}
 
 	public static < R extends RealType< R >, F extends RealType< F > >
