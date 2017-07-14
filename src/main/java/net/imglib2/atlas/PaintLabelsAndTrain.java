@@ -160,7 +160,7 @@ public class PaintLabelsAndTrain
 		return trainClassifier( rawData, features, classifier, nLabels, grid, queue, isTimeSeries, new Random( 100 ) );
 	}
 
-	@SuppressWarnings( { "rawtypes", "unchecked" } )
+	@SuppressWarnings( { "rawtypes" } )
 	public static < R extends RealType< R >, F extends RealType< F > >
 	BdvStackSource< ARGBType > trainClassifier(
 			final RandomAccessibleInterval< R > rawData,
