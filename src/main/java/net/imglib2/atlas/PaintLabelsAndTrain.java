@@ -79,8 +79,6 @@ public class PaintLabelsAndTrain
 		final long[] dimensions = Intervals.dimensionsAsLongArray( rawImg );
 		final int[] cellDimensions = new int[] { 128, 128, 2 };
 		final CellGrid grid = new CellGrid( dimensions, cellDimensions );
-		final int numFetcherThreads = Runtime.getRuntime().availableProcessors();
-		final SharedQueue queue = new SharedQueue( numFetcherThreads );
 
 
 		final int nLabels = 2;
@@ -98,7 +96,7 @@ public class PaintLabelsAndTrain
 		final FastRandomForest wekaClassifier = new FastRandomForest();
 		final WekaClassifier< FloatType, ShortType > classifier = new WekaClassifier<>( wekaClassifier, classLabels, ( int ) features.dimension( features.numDimensions() - 1 ) );
 
-		trainClassifier( rawData, featuresList, classifier, nLabels, grid, queue, true, rng );
+		trainClassifier( rawData, featuresList, classifier, nLabels, grid, true, rng );
 	}
 
 	private static ArrayList<RandomAccessibleInterval<FloatType>> initFeatures(CellGrid grid, RandomAccessibleInterval<FloatType> original) {
@@ -158,29 +156,29 @@ public class PaintLabelsAndTrain
 
 	public static < R extends RealType< R >, F extends RealType< F > >
 	BdvStackSource< ARGBType > trainClassifier(
-			final RandomAccessibleInterval< R > rawData,
-			final List< ? extends RandomAccessibleInterval< F > > features,
-					final Classifier< Composite< F >, RandomAccessibleInterval< F >, RandomAccessibleInterval< ShortType > > classifier,
-					final int nLabels,
-					final CellGrid grid,
-					final SharedQueue queue,
-					final boolean isTimeSeries ) throws IOException
+			final RandomAccessibleInterval<R> rawData,
+			final List<? extends RandomAccessibleInterval<F>> features,
+			final Classifier<Composite<F>, RandomAccessibleInterval<F>, RandomAccessibleInterval<ShortType>> classifier,
+			final int nLabels,
+			final CellGrid grid,
+			final boolean isTimeSeries) throws IOException
 	{
-		return trainClassifier( rawData, features, classifier, nLabels, grid, queue, isTimeSeries, new Random( 100 ) );
+		return trainClassifier( rawData, features, classifier, nLabels, grid, isTimeSeries, new Random( 100 ) );
 	}
 
 	@SuppressWarnings( { "rawtypes" } )
 	public static < R extends RealType< R >, F extends RealType< F > >
 	BdvStackSource< ARGBType > trainClassifier(
-			final RandomAccessibleInterval< R > rawData,
-			final List< ? extends RandomAccessibleInterval< F > > features,
-					final Classifier< Composite< F >, RandomAccessibleInterval< F >, RandomAccessibleInterval< ShortType > > classifier,
-					final int nLabels,
-					final CellGrid grid,
-					final SharedQueue queue,
-					final boolean isTimeSeries,
-					final Random rng ) throws IOException
+			final RandomAccessibleInterval<R> rawData,
+			final List<? extends RandomAccessibleInterval<F>> features,
+			final Classifier<Composite<F>, RandomAccessibleInterval<F>, RandomAccessibleInterval<ShortType>> classifier,
+			final int nLabels,
+			final CellGrid grid,
+			final boolean isTimeSeries,
+			final Random rng) throws IOException
 	{
+		final int numFetcherThreads = Runtime.getRuntime().availableProcessors();
+		final SharedQueue queue = new SharedQueue( numFetcherThreads );
 
 		final int nDim = rawData.numDimensions();
 		final RandomAccessibleInterval< F > featuresConcatenated = Views.concatenate( nDim, features.stream().map( f -> f.numDimensions() == nDim ? Views.addDimension( f, 0, 0 ) : f ).collect( Collectors.toList() ) );
