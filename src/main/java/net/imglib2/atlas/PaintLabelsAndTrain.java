@@ -247,12 +247,12 @@ public class PaintLabelsAndTrain
 		// add features
 		System.out.println( "Adding features" );
 
-		final BdvStackSource featBdv = tryShowVolatile( features.get( 0 ), "feature 1", BdvOptions.options().addTo( bdv ) );
+		final BdvStackSource featBdv = tryShowVolatile( features.get( 0 ), "feature 1", BdvOptions.options().addTo( bdv ), queue );
 		System.out.println( "added first feature: " + bdv.getBdvHandle().getSetupAssignments().getMinMaxGroups().size() + " " + featBdv );
 		bdv.getBdvHandle().getSetupAssignments().getMinMaxGroups().get( 2 ).setRange( 0, 255 );
 		for ( int feat = 1; feat < features.size(); ++feat )
 		{
-			final BdvStackSource source = tryShowVolatile( features.get( feat ), "feature " + ( feat + 1 ), BdvOptions.options().addTo( bdv ) );
+			final BdvStackSource source = tryShowVolatile( features.get( feat ), "feature " + ( feat + 1 ), BdvOptions.options().addTo( bdv ), queue );
 //					BdvFunctions.show( VolatileViews.wrapAsVolatile( features.get( feat ) ), "feature " + ( feat + 1 ), BdvOptions.options().addTo( bdv ) );
 			bdv.getBdvHandle().getSetupAssignments().getMinMaxGroups().get( feat + 2 ).setRange( 0, 255 );
 			source.setActive( false );
@@ -276,11 +276,15 @@ public class PaintLabelsAndTrain
 		return bdv;
 	}
 
-	public static < T extends RealType< T >, V extends AbstractVolatileRealType< T, V > > BdvStackSource< ? > tryShowVolatile( final RandomAccessibleInterval< T > rai, final String name, final BdvOptions opts )
+	public static < T extends RealType< T >, V extends AbstractVolatileRealType< T, V > > BdvStackSource< ? > tryShowVolatile(
+			final RandomAccessibleInterval< T > rai,
+			final String name,
+			final BdvOptions opts,
+			final SharedQueue queue )
 	{
 		try
 		{
-			return BdvFunctions.show( VolatileViews.< T, V >wrapAsVolatile( rai ), name, opts );
+			return BdvFunctions.show( VolatileViews.< T, V >wrapAsVolatile( rai, queue ), name, opts );
 		}
 		catch ( final IllegalArgumentException e )
 		{
