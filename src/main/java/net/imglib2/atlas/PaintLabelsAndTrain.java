@@ -53,12 +53,12 @@ import net.imglib2.img.cell.CellGrid;
 import net.imglib2.img.display.imagej.ImageJFunctions;
 import net.imglib2.realtransform.AffineTransform3D;
 import net.imglib2.type.numeric.ARGBType;
-import net.imglib2.type.numeric.NumericType;
 import net.imglib2.type.numeric.RealType;
 import net.imglib2.type.numeric.integer.IntType;
 import net.imglib2.type.numeric.integer.ShortType;
 import net.imglib2.type.numeric.integer.UnsignedByteType;
 import net.imglib2.type.numeric.real.FloatType;
+import net.imglib2.type.volatiles.AbstractVolatileRealType;
 import net.imglib2.type.volatiles.VolatileARGBType;
 import net.imglib2.util.ConstantUtils;
 import net.imglib2.util.Intervals;
@@ -276,12 +276,11 @@ public class PaintLabelsAndTrain
 		return bdv;
 	}
 
-	public static < T extends NumericType< T > > BdvStackSource tryShowVolatile( final RandomAccessibleInterval< T > rai, final String name, final BdvOptions opts )
+	public static < T extends RealType< T >, V extends AbstractVolatileRealType< T, V > > BdvStackSource< ? > tryShowVolatile( final RandomAccessibleInterval< T > rai, final String name, final BdvOptions opts )
 	{
-		System.out.println( rai.getClass().toString() );
 		try
 		{
-			return BdvFunctions.show( VolatileViews.wrapAsVolatile( rai ), name, opts );
+			return BdvFunctions.show( VolatileViews.< T, V >wrapAsVolatile( rai ), name, opts );
 		}
 		catch ( final IllegalArgumentException e )
 		{
