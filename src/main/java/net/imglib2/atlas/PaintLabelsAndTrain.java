@@ -1,13 +1,11 @@
 package net.imglib2.atlas;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Random;
+import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
+import net.imglib2.algorithm.features.*;
 import net.imglib2.cache.img.CellLoader;
 import org.scijava.ui.behaviour.io.InputTriggerConfig;
 import org.scijava.ui.behaviour.util.Actions;
@@ -67,6 +65,8 @@ import net.imglib2.util.Pair;
 import net.imglib2.view.Views;
 import net.imglib2.view.composite.Composite;
 
+import static net.imglib2.algorithm.features.SingleFeatures.*;
+
 public class PaintLabelsAndTrain
 {
 
@@ -88,7 +88,7 @@ public class PaintLabelsAndTrain
 			p.getB().set( p.getA() );
 		final RandomAccessibleInterval< FloatType > converted = Converters.convert( ( RandomAccessibleInterval< UnsignedByteType > ) rawData, new RealFloatConverter<>(), new FloatType() );
 
-		final ArrayList<RandomAccessibleInterval<FloatType>> featuresList = initFeatures(grid, converted);
+		final List<RandomAccessibleInterval<FloatType>> featuresList = initFeatures(grid, converted);
 
 		final RandomAccessibleInterval< FloatType > features = Views.concatenate( 3, featuresList );
 
@@ -98,59 +98,42 @@ public class PaintLabelsAndTrain
 		trainClassifier( rawData, featuresList, classifier, nLabels, grid, true);
 	}
 
-	private static ArrayList<RandomAccessibleInterval<FloatType>> initFeatures(CellGrid grid, RandomAccessibleInterval<FloatType> original) {
-		long[] dimensions = Intervals.dimensionsAsLongArray(original);
-		int[] cellDimensions = new int[grid.numDimensions()];
+	private static List<RandomAccessibleInterval<FloatType>> initFeatures(CellGrid grid, RandomAccessibleInterval<FloatType> original) {
+		FeatureGroup featureGroup = Features.group(
+				SingleFeatures.identity(),
+				SingleFeatures.gauss(1.0),
+				SingleFeatures.gradient(1.0)
+		);
+		return featureGroup.features().stream()
+				.map(feature -> cachedFeature(original, grid, feature))
+				.collect(Collectors.toList());
+	}
+
+	private static Img<FloatType> cachedFeature(RandomAccessibleInterval<FloatType> original, CellGrid grid, Feature feature) {
+		long[] dimensions = extend(Intervals.dimensionsAsLongArray(original), feature.count());
+		int[] cellDimensions = extend(new int[grid.numDimensions()], feature.count());
 		grid.cellDimensions(cellDimensions);
-		final ArrayList< RandomAccessibleInterval< FloatType > > featuresList = new ArrayList<>();
-		featuresList.add( Views.addDimension(original, 0, 0 ) );
-		final double[] sigmas = { 1.0 }; // , 3.0, 5.0, 7.0 };
-		@SuppressWarnings( "unchecked" )
-		final DiskCachedCellImg< FloatType, ? >[] gausses = new DiskCachedCellImg[ sigmas.length ];
 		final DiskCachedCellImgOptions featureOpts = DiskCachedCellImgOptions.options().cellDimensions( cellDimensions ).dirtyAccesses( false );
 		final DiskCachedCellImgFactory< FloatType > featureFactory = new DiskCachedCellImgFactory<>( featureOpts );
-		for ( int sigmaIndex = 0; sigmaIndex < sigmas.length; ++sigmaIndex )
-		{
-			final double sigma = sigmas[ sigmaIndex ];
-			final double sigmaDiff = sigmaIndex == 0 ? sigma : Math.sqrt( sigma * sigma - sigmas[ sigmaIndex - 1 ] * sigmas[ sigmaIndex - 1 ] );
-//			final ArrayImg< FloatType, FloatArray > gauss = ArrayImgs.floats( Intervals.dimensionsAsLongArray( original ) );
-//			Gauss3.gauss( sigma, Views.extendBorder( converted ), gauss );
-			final RandomAccessibleInterval< FloatType > gaussSource = sigmaIndex == 0 ? original : gausses[ sigmaIndex - 1 ];
-			final CellLoader< FloatType > gaussLoader = target -> {
-				Gauss3.gauss( sigmaDiff, Views.extendBorder( gaussSource ), target );
-			};
-			final DiskCachedCellImg< FloatType, ? > gauss = featureFactory.create( dimensions, new FloatType(), gaussLoader );
-			gausses[ sigmaIndex ] = gauss;
-			featuresList.add( Views.addDimension( gauss, 0, 0 ) );
+		RandomAccessible<FloatType> extendedOriginal = Views.extendBorder(original);
+		CellLoader<FloatType> loader = target -> feature.apply(extendedOriginal, RevampUtils.slices(target));
+		return featureFactory.create(dimensions, new FloatType(), loader);
+	}
 
-			@SuppressWarnings( "unchecked" )
-			final Img< FloatType >[] gradients = new Img[ original.numDimensions() ];
-			for (int d = 0; d < original.numDimensions(); ++d )
-			{
-				final int finalD = d;
-				final CellLoader< FloatType > gradientLoader = target -> {
-					PartialDerivative.gradientCentralDifference2( Views.extendBorder( gauss ), target, finalD );
-				};
-				final DiskCachedCellImg< FloatType, ? > grad = featureFactory.create( dimensions, new FloatType(), gradientLoader );
-				gradients[ d ] = grad;
-			}
+	private static long[] extend(long[] array, long value) {
+		int length = array.length;
+		long[] result = new long[length + 1];
+		System.arraycopy(array, 0, result, 0, length);
+		result[length] = value;
+		return result;
+	}
 
-			final CellLoader< FloatType > gradientMagnitudeLoader = target -> {
-				final FloatType ft = new FloatType();
-				for ( int d = 0; d < gradients.length; ++d )
-					for ( final Pair< FloatType, FloatType > p : Views.interval( Views.pair( gradients[ d ], target ), target ) )
-					{
-						final float v = p.getA().get();
-						ft.set( v * v );
-						p.getB().add( ft );
-					}
-			};
-
-			final DiskCachedCellImg< FloatType, ? > gradientMagnitude = featureFactory.create( dimensions, new FloatType(), gradientMagnitudeLoader );
-
-			featuresList.add( Views.addDimension( gradientMagnitude, 0, 0 ) );
-		}
-		return featuresList;
+	private static int[] extend(int[] array, int value) {
+		int length = array.length;
+		int[] result = new int[length + 1];
+		System.arraycopy(array, 0, result, 0, length);
+		result[length] = value;
+		return result;
 	}
 
 	@SuppressWarnings( { "rawtypes" } )
@@ -285,6 +268,4 @@ public class PaintLabelsAndTrain
 			return BdvFunctions.show( rai, name, opts );
 		}
 	}
-
-
 }
