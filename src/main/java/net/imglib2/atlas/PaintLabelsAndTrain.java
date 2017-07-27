@@ -220,18 +220,16 @@ public class PaintLabelsAndTrain
 		actions.namedAction( colormapUpdater, "ctrl shift C" );
 		actions.namedAction( new ToggleVisibility( "toggle classification", viewer, 1 ), "C" );
 
+		// add original
+		BdvFunctions.show(rawData, "original", BdvOptions.options().addTo( bdv ));
 
 		// add features
 		System.out.println( "Adding features" );
 
-		final BdvStackSource featBdv = tryShowVolatile( features.get( 0 ), "feature 1", BdvOptions.options().addTo( bdv ), queue );
-		System.out.println( "added first feature: " + bdv.getBdvHandle().getSetupAssignments().getMinMaxGroups().size() + " " + featBdv );
-		bdv.getBdvHandle().getSetupAssignments().getMinMaxGroups().get( 2 ).setRange( 0, 255 );
-		for ( int feat = 1; feat < features.size(); ++feat )
+		for ( int feat = 0; feat < features.size(); ++feat )
 		{
 			final BdvStackSource source = tryShowVolatile( features.get( feat ), "feature " + ( feat + 1 ), BdvOptions.options().addTo( bdv ), queue );
-//					BdvFunctions.show( VolatileViews.wrapAsVolatile( features.get( feat ) ), "feature " + ( feat + 1 ), BdvOptions.options().addTo( bdv ) );
-			bdv.getBdvHandle().getSetupAssignments().getMinMaxGroups().get( feat + 2 ).setRange( 0, 255 );
+			source.setDisplayRange( 0, 255 );
 			source.setActive( false );
 		}
 
