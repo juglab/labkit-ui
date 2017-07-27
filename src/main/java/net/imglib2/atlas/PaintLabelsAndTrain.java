@@ -6,6 +6,7 @@ import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 import net.imglib2.algorithm.features.*;
+import net.imglib2.algorithm.features.gui.FeatureSettingsGui;
 import net.imglib2.cache.img.CellLoader;
 import org.scijava.ui.behaviour.io.InputTriggerConfig;
 import org.scijava.ui.behaviour.util.Actions;
@@ -22,8 +23,6 @@ import hr.irb.fastRandomForest.FastRandomForest;
 import ij.ImagePlus;
 import net.imglib2.RandomAccessible;
 import net.imglib2.RandomAccessibleInterval;
-import net.imglib2.algorithm.gauss3.Gauss3;
-import net.imglib2.algorithm.gradient.PartialDerivative;
 import net.imglib2.atlas.classification.Classifier;
 import net.imglib2.atlas.classification.ClassifyingCellLoader;
 import net.imglib2.atlas.classification.TrainClassifier;
@@ -65,6 +64,7 @@ import net.imglib2.util.Pair;
 import net.imglib2.view.Views;
 import net.imglib2.view.composite.Composite;
 
+import static net.imglib2.algorithm.features.GroupedFeatures.*;
 import static net.imglib2.algorithm.features.SingleFeatures.*;
 
 public class PaintLabelsAndTrain
@@ -99,19 +99,19 @@ public class PaintLabelsAndTrain
 	}
 
 	private static List<RandomAccessibleInterval<FloatType>> initFeatures(CellGrid grid, RandomAccessibleInterval<FloatType> original) {
-		FeatureGroup featureGroup = Features.group(
-				SingleFeatures.identity(),
-				SingleFeatures.gauss(1.0),
-				SingleFeatures.gradient(1.0)
-		);
+		Optional<FeatureGroup> guiResult = FeatureSettingsGui.show();
+		FeatureGroup featureGroup = guiResult.orElse(Features.group(SingleFeatures.identity(), GroupedFeatures.gauss()));
 		return featureGroup.features().stream()
 				.map(feature -> cachedFeature(original, grid, feature))
 				.collect(Collectors.toList());
 	}
 
 	private static Img<FloatType> cachedFeature(RandomAccessibleInterval<FloatType> original, CellGrid grid, Feature feature) {
-		long[] dimensions = extend(Intervals.dimensionsAsLongArray(original), feature.count());
-		int[] cellDimensions = extend(new int[grid.numDimensions()], feature.count());
+		int count = feature.count();
+		if(count <= 0)
+			throw new IllegalArgumentException();
+		long[] dimensions = extend(Intervals.dimensionsAsLongArray(original), count);
+		int[] cellDimensions = extend(new int[grid.numDimensions()], count);
 		grid.cellDimensions(cellDimensions);
 		final DiskCachedCellImgOptions featureOpts = DiskCachedCellImgOptions.options().cellDimensions( cellDimensions ).dirtyAccesses( false );
 		final DiskCachedCellImgFactory< FloatType > featureFactory = new DiskCachedCellImgFactory<>( featureOpts );
