@@ -180,7 +180,8 @@ public class PaintLabelsAndTrain
 		System.out.println( "Adding labels layer" );
 		final DiskCachedCellImgOptions labelsOpt = DiskCachedCellImgOptions.options().cellDimensions( cellDimensions ).dirtyAccesses( true );
 		final DiskCachedCellImgFactory< IntType > labelsFac = new DiskCachedCellImgFactory<>( labelsOpt );
-		final DiskCachedCellImg< IntType, ? > labels = labelsFac.create( grid.getImgDimensions(), new IntType(), new LabelLoader<>( grid, LabelBrushController.BACKGROUND ) );
+		CellLoader<IntType> loader = target -> target.forEach(x -> x.set(LabelBrushController.BACKGROUND));
+		final DiskCachedCellImg< IntType, ? > labels = labelsFac.create( grid.getImgDimensions(), new IntType(), loader);
 		final BdvStackSource< ARGBType > bdv = BdvFunctions.show( Converters.convert( ( RandomAccessibleInterval< IntType > ) labels, new IntegerARGBConverters.ARGB<>( colorProvider ), new ARGBType() ), "labels", options );
 		final ViewerPanel viewer = bdv.getBdvHandle().getViewerPanel();
 		final AffineTransform3D labelTransform = new AffineTransform3D();
