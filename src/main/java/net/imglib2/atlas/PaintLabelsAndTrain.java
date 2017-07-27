@@ -7,6 +7,9 @@ import java.util.stream.IntStream;
 
 import net.imglib2.algorithm.features.*;
 import net.imglib2.algorithm.features.gui.FeatureSettingsGui;
+import net.imglib2.atlas.actions.DeserializeClassifier;
+import net.imglib2.atlas.actions.SerializeClassifier;
+import net.imglib2.atlas.actions.ToggleVisibility;
 import net.imglib2.cache.img.CellLoader;
 import org.scijava.ui.behaviour.io.InputTriggerConfig;
 import org.scijava.ui.behaviour.util.Actions;

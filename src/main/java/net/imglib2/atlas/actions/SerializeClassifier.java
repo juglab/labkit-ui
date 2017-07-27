@@ -1,4 +1,4 @@
-package net.imglib2.atlas;
+package net.imglib2.atlas.actions;
 
 import java.awt.event.ActionEvent;
 
