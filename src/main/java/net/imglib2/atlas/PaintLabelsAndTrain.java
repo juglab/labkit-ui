@@ -113,30 +113,14 @@ public class PaintLabelsAndTrain
 		int count = feature.count();
 		if(count <= 0)
 			throw new IllegalArgumentException();
-		long[] dimensions = extend(Intervals.dimensionsAsLongArray(original), count);
-		int[] cellDimensions = extend(new int[grid.numDimensions()], count);
+		long[] dimensions = AtlasUtils.extend(Intervals.dimensionsAsLongArray(original), count);
+		int[] cellDimensions = AtlasUtils.extend(new int[grid.numDimensions()], count);
 		grid.cellDimensions(cellDimensions);
 		final DiskCachedCellImgOptions featureOpts = DiskCachedCellImgOptions.options().cellDimensions( cellDimensions ).dirtyAccesses( false );
 		final DiskCachedCellImgFactory< FloatType > featureFactory = new DiskCachedCellImgFactory<>( featureOpts );
 		RandomAccessible<FloatType> extendedOriginal = Views.extendBorder(original);
 		CellLoader<FloatType> loader = target -> feature.apply(extendedOriginal, RevampUtils.slices(target));
 		return featureFactory.create(dimensions, new FloatType(), loader);
-	}
-
-	private static long[] extend(long[] array, long value) {
-		int length = array.length;
-		long[] result = new long[length + 1];
-		System.arraycopy(array, 0, result, 0, length);
-		result[length] = value;
-		return result;
-	}
-
-	private static int[] extend(int[] array, int value) {
-		int length = array.length;
-		int[] result = new int[length + 1];
-		System.arraycopy(array, 0, result, 0, length);
-		result[length] = value;
-		return result;
 	}
 
 	@SuppressWarnings( { "rawtypes" } )
