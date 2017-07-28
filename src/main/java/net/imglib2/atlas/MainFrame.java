@@ -35,6 +35,7 @@ import net.imglib2.util.ConstantUtils;
 import net.imglib2.view.Views;
 import net.imglib2.view.composite.Composite;
 import org.scijava.ui.behaviour.io.InputTriggerConfig;
+import org.scijava.ui.behaviour.util.AbstractNamedAction;
 import org.scijava.ui.behaviour.util.Actions;
 import org.scijava.ui.behaviour.util.Behaviours;
 
@@ -59,6 +60,10 @@ public class MainFrame<F extends RealType< F >> {
 
 	private Behaviours behaviors = new Behaviours(config);
 
+	private MenuBar menu = new MenuBar();
+
+	private JFrame frame = initFrame();
+
 	@SuppressWarnings( { "rawtypes" } )
 	public < R extends RealType< R > >
 	BdvHandle trainClassifier(
@@ -76,14 +81,14 @@ public class MainFrame<F extends RealType< F >> {
 
 		final ColorMapColorProvider colorProvider = new ColorMapColorProvider(LabelBrushController.BACKGROUND, 0 );
 
-		initFrame(isTimeSeries, nDim);
+		initBdv(isTimeSeries && nDim == 3);
 
 		final LabelBrushController brushController = initLabelsLayer(nLabels, grid, isTimeSeries, colorProvider);
 
 		final RandomAccessibleInterval<F> featuresConcatenated = concatenateFeatures(features, nDim);
 		final TrainClassifier<F> trainer = initTrainer(nLabels, grid, interval, colorProvider, brushController, featuresConcatenated);
-		actions.namedAction(trainer, "ctrl shift T");
-		actions.namedAction(new ToggleVisibility( "toggle classification", bdvHandle.getViewerPanel(), 1 ), "C");
+		addAction(trainer, "ctrl shift T");
+		addAction(new ToggleVisibility( "Toggle Classification", bdvHandle.getViewerPanel(), 1 ), "C");
 
 		BdvFunctions.show(rawData, "original", BdvOptions.options().addTo( bdvHandle ));
 		bdvAddFeatures(bdvHandle, features);
@@ -95,6 +100,7 @@ public class MainFrame<F extends RealType< F >> {
 
 		behaviors.install( bdvHandle.getTriggerbindings(), "classifier training" );
 		actions.install( bdvHandle.getKeybindings(), "classifier training" );
+		frame.setVisible(true);
 		return bdvHandle;
 	}
 
@@ -113,16 +119,26 @@ public class MainFrame<F extends RealType< F >> {
 		return cellDimensions;
 	}
 
-	private void initFrame(boolean isTimeSeries, int nDim) {
-		final BdvOptions options = BdvOptions.options();
-		options.frameTitle( "ATLAS" );
-		if ( isTimeSeries && nDim == 3 )
-			options.is2D();
+	private JFrame initFrame() {
 		JFrame frame = new JFrame("ATLAS");
+		frame.setJMenuBar(menu);
+		frame.setBounds( 50, 50, 1200, 900 );
+		return frame;
+	}
+
+	private void addAction(AbstractNamedAction action, String keyStroke) {
+		JMenuItem item = new JMenuItem(action);
+		menu.add(action);
+		actions.namedAction(action, keyStroke);
+	}
+
+
+	private void initBdv(boolean is2D) {
+		final BdvOptions options = BdvOptions.options();
+		if (is2D)
+			options.is2D();
 		bdvHandle = new BdvHandlePanel(frame, options);
 		frame.add(bdvHandle.getViewerPanel());
-		frame.setBounds( 50, 50, 1200, 900 );
-		frame.setVisible(true);
 		bdvHandle.getViewerPanel().setDisplayMode( DisplayMode.FUSED );
 	}
 
@@ -153,7 +169,7 @@ public class MainFrame<F extends RealType< F >> {
 				LabelBrushController.emptyGroundTruth(),
 				colorProvider );
 		initColorMapUpdaterAction(nLabels, colorProvider);
-		actions.namedAction(new ToggleVisibility( "toggle labels", bdvHandle.getViewerPanel(), 0 ), "L");
+		addAction(new ToggleVisibility( "Toggle Labels", bdvHandle.getViewerPanel(), 0 ), "L");
 		bdvHandle.getViewerPanel().getDisplay().addOverlayRenderer( brushController.getBrushOverlay() );
 		return brushController;
 	}
@@ -161,7 +177,7 @@ public class MainFrame<F extends RealType< F >> {
 	private void initColorMapUpdaterAction(int nLabels, ColorMapColorProvider colorProvider) {
 		final UpdateColormap colormapUpdater = new UpdateColormap( colorProvider, nLabels, bdvHandle.getViewerPanel(), 1.0f );
 		colormapUpdater.updateColormap();
-		actions.namedAction(colormapUpdater, "ctrl shift C");
+		addAction(colormapUpdater, "ctrl shift C");
 	}
 
 	private RandomAccessibleContainer<VolatileARGBType> initPredictionLayer(Interval interval, int nDim) {
@@ -204,12 +220,12 @@ public class MainFrame<F extends RealType< F >> {
 
 	private void initSaveClassifierAction() {
 		final SerializeClassifier saveDialogAction = new SerializeClassifier( "classifier-serializer", bdvHandle.getViewerPanel(), this.classifier);
-		actions.namedAction(saveDialogAction, "ctrl S");
+		addAction(saveDialogAction, "ctrl S");
 	}
 
 	private void initLoadClassifierAction(TrainClassifier<F> trainer) {
-		final DeserializeClassifier loadDialogAction = new DeserializeClassifier( "classifier-deserializer", bdvHandle.getViewerPanel(), this.classifier, trainer.getListeners() );
-		actions.namedAction(loadDialogAction, "ctrl O");
+		final DeserializeClassifier loadDialogAction = new DeserializeClassifier(bdvHandle.getViewerPanel(), this.classifier, trainer.getListeners() );
+		addAction(loadDialogAction, "ctrl O");
 	}
 
 	public < T extends RealType< T >, V extends AbstractVolatileRealType< T, V >> BdvStackSource< ? > tryShowVolatile(

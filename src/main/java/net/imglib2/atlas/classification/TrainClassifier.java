@@ -45,7 +45,7 @@ public class TrainClassifier< F extends RealType< F > > extends AbstractNamedAct
 			final Listener... listeners
 			)
 	{
-		super( "train classifier" );
+		super( "Train Classifier" );
 		this.classifier = classifier;
 		this.controller = controller;
 		this.features = features;

@@ -32,7 +32,7 @@ public class UpdateColormap extends AbstractNamedAction
 
 	public UpdateColormap(final ColorMapColorProvider colorProvider, final int nLabels, final ViewerPanel viewer, final float alpha)
 	{
-		super( "color map updater" );
+		super( "Update Color Map" );
 		this.colorProvider = colorProvider;
 		this.nLabels = nLabels;
 		this.viewer = viewer;

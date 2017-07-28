@@ -21,9 +21,9 @@ public class DeserializeClassifier extends AbstractNamedAction
 
 	private final List< TrainClassifier.Listener > listeners;
 
-	public DeserializeClassifier( final String name, final ViewerPanel viewer, final Classifier< ?, ?, ? > classifier, final List< TrainClassifier.Listener > listeners )
+	public DeserializeClassifier(final ViewerPanel viewer, final Classifier<?, ?, ?> classifier, final List<TrainClassifier.Listener> listeners)
 	{
-		super( name );
+		super( "Load Classifier" );
 		this.viewer = viewer;
 		this.classifier = classifier;
 		this.listeners = listeners;
