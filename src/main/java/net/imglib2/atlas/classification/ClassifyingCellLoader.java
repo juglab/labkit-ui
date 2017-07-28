@@ -34,13 +34,12 @@ public class ClassifyingCellLoader< T extends RealType< T > > implements CellLoa
 	}
 
 	public ClassifyingCellLoader(
-			final RandomAccessible< T > features,
-			final Classifier< ?, RandomAccessibleInterval< T >, RandomAccessibleInterval< ShortType > > classifier,
-					final int numFeatures )
+			final RandomAccessibleInterval<T> features,
+			final Classifier<?, RandomAccessibleInterval<T>, RandomAccessibleInterval<ShortType>> classifier)
 	{
 		this.features = features;
 		this.classifier = classifier;
-		this.numFeatures = numFeatures;
+		this.numFeatures = (int) features.dimension(features.numDimensions() - 1);
 	}
 
 	@Override

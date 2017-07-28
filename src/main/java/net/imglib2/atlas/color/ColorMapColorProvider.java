@@ -17,16 +17,18 @@ public class ColorMapColorProvider implements IntegerColorProvider
 	// use full opacity for now
 	private final int ALPHA_BITS = 255 << 24;
 
+	private Random rng = new Random(42);
+
 	public ColorMapColorProvider( final TIntIntHashMap colors )
 	{
 		super();
 		this.colors = colors;
 	}
 
-	public ColorMapColorProvider( final Random rng, final int noEntryKey, final int noEntryValue, final int... keys )
+	public ColorMapColorProvider(final int noEntryKey, final int noEntryValue, final int... keys)
 	{
 		this( new TIntIntHashMap( Constants.DEFAULT_CAPACITY, Constants.DEFAULT_LOAD_FACTOR, noEntryKey, noEntryValue ) );
-		setColors( rng, keys );
+		setColors(keys );
 	}
 
 	// will make new copy
@@ -36,7 +38,7 @@ public class ColorMapColorProvider implements IntegerColorProvider
 		this.colors.putAll( colors );
 	}
 
-	public void setColors( final Random rng, final int... keys )
+	public void setColors(final int... keys)
 	{
 		final float step = 1.0f / keys.length;
 		final float start = rng.nextFloat();

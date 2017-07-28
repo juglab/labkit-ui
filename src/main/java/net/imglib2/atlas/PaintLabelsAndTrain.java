@@ -63,7 +63,7 @@ public class PaintLabelsAndTrain
 		final FastRandomForest wekaClassifier = new FastRandomForest();
 		final WekaClassifier< FloatType, ShortType > classifier = new WekaClassifier<>( wekaClassifier, classLabels, ( int ) features.dimension( features.numDimensions() - 1 ) );
 
-		MainFrame.trainClassifier( rawData, featuresList, classifier, nLabels, grid, true);
+		new MainFrame().trainClassifier( rawData, featuresList, classifier, nLabels, grid, true);
 	}
 
 	private static List<RandomAccessibleInterval<FloatType>> initFeatures(CellGrid grid, RandomAccessibleInterval<FloatType> original) {

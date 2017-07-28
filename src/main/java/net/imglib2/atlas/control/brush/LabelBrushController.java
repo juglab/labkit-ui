@@ -45,7 +45,7 @@ public class LabelBrushController
 
 	private final PaintPixelsGenerator< IntType, ? extends Iterator< IntType > > pixelsGenerator;
 
-	final protected AffineTransform3D labelTransform;
+	final protected AffineTransform3D labelTransform = new AffineTransform3D();
 
 	final protected RealPoint labelLocation;
 
@@ -93,19 +93,17 @@ public class LabelBrushController
 
 	public LabelBrushController(
 			final ViewerPanel viewer,
-			final RandomAccessibleInterval< IntType > labels,
-			final PaintPixelsGenerator< IntType, ? extends Iterator< IntType > > pixelsGenerator,
-					final AffineTransform3D labelTransform,
-					final Behaviours behaviors,
-					final int brushNormalAxis,
-					final int nLabels,
-					final TLongIntHashMap groundTruth,
-					final IntegerColorProvider colorProvider )
+			final RandomAccessibleInterval<IntType> labels,
+			final PaintPixelsGenerator<IntType, ? extends Iterator<IntType>> pixelsGenerator,
+			final Behaviours behaviors,
+			final int brushNormalAxis,
+			final int nLabels,
+			final TLongIntHashMap groundTruth,
+			final IntegerColorProvider colorProvider)
 	{
 		this.viewer = viewer;
 		this.labels = labels;
 		this.pixelsGenerator = pixelsGenerator;
-		this.labelTransform = labelTransform;
 		this.brushNormalAxis = brushNormalAxis;
 		brushOverlay = new BrushOverlay( viewer, currentLabel, colorProvider );
 
@@ -122,15 +120,14 @@ public class LabelBrushController
 
 	public LabelBrushController(
 			final ViewerPanel viewer,
-			final RandomAccessibleInterval< IntType > labels,
-			final PaintPixelsGenerator< IntType, ? extends Iterator< IntType > > pixelsGenerator,
-					final AffineTransform3D labelTransform,
-					final Behaviours behaviors,
-					final int nLabels,
-					final TLongIntHashMap groundTruth,
-					final IntegerColorProvider colorProvider )
+			final RandomAccessibleInterval<IntType> labels,
+			final PaintPixelsGenerator<IntType, ? extends Iterator<IntType>> pixelsGenerator,
+			final Behaviours behaviors,
+			final int nLabels,
+			final TLongIntHashMap groundTruth,
+			final IntegerColorProvider colorProvider)
 	{
-		this( viewer, labels, pixelsGenerator, labelTransform, behaviors, 2, nLabels, groundTruth, colorProvider );
+		this( viewer, labels, pixelsGenerator, behaviors, 2, nLabels, groundTruth, colorProvider );
 	}
 
 	private void setCoordinates( final int x, final int y )

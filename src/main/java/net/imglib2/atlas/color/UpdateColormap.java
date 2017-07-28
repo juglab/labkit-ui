@@ -27,23 +27,20 @@ public class UpdateColormap extends AbstractNamedAction
 
 	private final int nLabels;
 
-	private final Random rng;
-
 	private final ViewerPanel viewer;
 
 
-	public UpdateColormap( final ColorMapColorProvider colorProvider, final int nLabels, final Random rng, final ViewerPanel viewer, final float alpha )
+	public UpdateColormap(final ColorMapColorProvider colorProvider, final int nLabels, final ViewerPanel viewer, final float alpha)
 	{
 		super( "color map updater" );
 		this.colorProvider = colorProvider;
 		this.nLabels = nLabels;
-		this.rng = rng;
 		this.viewer = viewer;
 	}
 
 	public void updateColormap()
 	{
-		colorProvider.setColors( rng, IntStream.range( 0, nLabels ).toArray() );
+		colorProvider.setColors(IntStream.range( 0, nLabels ).toArray() );
 	}
 
 	@Override
