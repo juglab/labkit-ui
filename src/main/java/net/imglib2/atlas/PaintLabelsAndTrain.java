@@ -7,6 +7,7 @@ import java.util.stream.IntStream;
 
 import net.imglib2.algorithm.features.*;
 import net.imglib2.algorithm.features.gui.FeatureSettingsGui;
+import net.imglib2.atlas.classification.weka.TrainableSegmentationClassifier;
 import net.imglib2.cache.img.CellLoader;
 
 import hr.irb.fastRandomForest.FastRandomForest;
@@ -25,6 +26,7 @@ import net.imglib2.img.array.ArrayImgs;
 import net.imglib2.img.basictypeaccess.array.ByteArray;
 import net.imglib2.img.cell.CellGrid;
 import net.imglib2.img.display.imagej.ImageJFunctions;
+import net.imglib2.type.numeric.integer.IntType;
 import net.imglib2.type.numeric.integer.ShortType;
 import net.imglib2.type.numeric.integer.UnsignedByteType;
 import net.imglib2.type.numeric.real.FloatType;
@@ -56,22 +58,19 @@ public class PaintLabelsAndTrain
 			p.getB().set( p.getA() );
 		final RandomAccessibleInterval< FloatType > converted = Converters.convert( ( RandomAccessibleInterval< UnsignedByteType > ) rawData, new RealFloatConverter<>(), new FloatType() );
 
-		final List<RandomAccessibleInterval<FloatType>> featuresList = initFeatures(grid, converted);
+		FeatureGroup featureGroup = FeatureSettingsGui.show().orElse(Features.group(SingleFeatures.identity(), GroupedFeatures.gauss()));
+
+		final List<RandomAccessibleInterval<FloatType>> featuresList = featureGroup.features().stream()
+				.map(feature -> cachedFeature(converted, grid, feature))
+				.collect(Collectors.toList());
 
 		final RandomAccessibleInterval< FloatType > features = Views.concatenate( 3, featuresList );
 
 		final FastRandomForest wekaClassifier = new FastRandomForest();
-		final WekaClassifier< FloatType, ShortType > classifier = new WekaClassifier<>( wekaClassifier, classLabels, ( int ) features.dimension( features.numDimensions() - 1 ) );
+
+		final TrainableSegmentationClassifier<ShortType> classifier = new TrainableSegmentationClassifier<>(wekaClassifier, classLabels, featureGroup);
 
 		new MainFrame().trainClassifier( rawData, featuresList, classifier, nLabels, grid, true);
-	}
-
-	private static List<RandomAccessibleInterval<FloatType>> initFeatures(CellGrid grid, RandomAccessibleInterval<FloatType> original) {
-		Optional<FeatureGroup> guiResult = FeatureSettingsGui.show();
-		FeatureGroup featureGroup = guiResult.orElse(Features.group(SingleFeatures.identity(), GroupedFeatures.gauss()));
-		return featureGroup.features().stream()
-				.map(feature -> cachedFeature(original, grid, feature))
-				.collect(Collectors.toList());
 	}
 
 	private static Img<FloatType> cachedFeature(RandomAccessibleInterval<FloatType> original, CellGrid grid, Feature feature) {
