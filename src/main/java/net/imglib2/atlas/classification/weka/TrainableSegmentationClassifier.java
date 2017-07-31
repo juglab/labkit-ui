@@ -5,15 +5,16 @@ import net.imglib2.algorithm.features.FeatureGroup;
 import net.imglib2.algorithm.features.Training;
 import net.imglib2.atlas.classification.Classifier;
 import net.imglib2.type.numeric.IntegerType;
-import net.imglib2.type.numeric.real.FloatType;
+import net.imglib2.type.numeric.RealType;
+import net.imglib2.util.Pair;
 import net.imglib2.view.Views;
 import net.imglib2.view.composite.Composite;
 
 import java.util.Iterator;
 import java.util.List;
 
-public class TrainableSegmentationClassifier<I extends IntegerType< I > >
-implements Classifier< Composite< FloatType >, RandomAccessibleInterval<FloatType>, RandomAccessibleInterval< I > >
+public class TrainableSegmentationClassifier
+implements Classifier
 {
 	private net.imglib2.algorithm.features.Classifier classifier;
 
@@ -26,9 +27,8 @@ implements Classifier< Composite< FloatType >, RandomAccessibleInterval<FloatTyp
 	}
 
 	@Override
-	synchronized public void predictLabels( final RandomAccessibleInterval<FloatType> instances, final RandomAccessibleInterval< I > labels ) throws Exception
-	{
-		this.<IntegerType>copy(classifier.applyOnFeatures(instances), labels);
+	public void predictLabels(RandomAccessibleInterval<? extends Composite<? extends RealType<?>>> instances, RandomAccessibleInterval<? extends IntegerType<?>> labels) throws Exception {
+		this.<IntegerType>copy(classifier.applyOnComposite(instances), labels);
 	}
 
 	private void copy(RandomAccessibleInterval<? extends IntegerType<?>> source, RandomAccessibleInterval<? extends IntegerType<?>> dest) {
@@ -36,17 +36,21 @@ implements Classifier< Composite< FloatType >, RandomAccessibleInterval<FloatTyp
 	}
 
 	@Override
-	public void trainClassifier( final Iterable< Composite< FloatType > > samples, final int[] labels ) throws Exception
-	{
+	public void trainClassifier(Iterator<Pair<Composite<? extends RealType<?>>, ? extends IntegerType<?>>> data) throws Exception {
 		Training<net.imglib2.algorithm.features.Classifier> training = net.imglib2.algorithm.features.Classifier.training(classifier.classNames(), classifier.features(),
 				wekaClassifier);
 
-		int i = 0;
-		Iterator<Composite<FloatType>> sample = samples.iterator();
-		while(sample.hasNext())
-			training.add(sample.next(), labels[i++]);
+		while(data.hasNext()) {
+			Pair<Composite<? extends RealType<?>>, ? extends IntegerType<?>> pair = data.next();
+			training.add(pair.getA(), pair.getB().getInteger());
+		}
 
 		classifier = training.train();
+	}
+
+	@Override
+	public boolean isTrained() {
+		return false;
 	}
 
 	@Override

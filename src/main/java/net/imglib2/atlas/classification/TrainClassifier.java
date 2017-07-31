@@ -4,9 +4,15 @@ import java.awt.event.ActionEvent;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Iterator;
 import java.util.List;
+import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
+import net.imglib2.type.numeric.IntegerType;
+import net.imglib2.type.numeric.integer.IntType;
+import net.imglib2.util.Pair;
+import net.imglib2.util.ValuePair;
 import org.scijava.ui.behaviour.util.AbstractNamedAction;
 
 import gnu.trove.map.hash.TLongIntHashMap;
@@ -24,21 +30,24 @@ public class TrainClassifier< F extends RealType< F > > extends AbstractNamedAct
 
 	public static interface Listener< F extends RealType< F > >
 	{
-		public void notify( Classifier< Composite< F >, ?, ? > classifier, boolean trainingSuccess ) throws IOException;
+		public void notify( Classifier classifier, boolean trainingSuccess ) throws IOException;
 	}
 
-	public static < F extends RealType< F > > Iterable< Composite< F > > toSamples( final RandomAccessibleInterval< F > features, final long[] indices )
-	{
+	private Iterator<Pair<Composite<? extends RealType<?>>,? extends IntegerType<?>>> toSamples(RandomAccessibleInterval<F> features, long[] locations, int[] labels) {
 		final CompositeView< F, RealComposite< F > >.CompositeRandomAccess access = Views.collapseReal( features ).randomAccess();
-		final Stream< Composite< F > > featuresStream = Arrays.stream( indices ).mapToObj( loc -> {
-			IntervalIndexer.indexToPosition( loc, features, access );
-			return access.get();
-		} );
-		return featuresStream::iterator;
+		IntType classIndex = new IntType();
+		Pair<Composite<? extends RealType<?>>, IntType> pair = new ValuePair<>(access.get(), classIndex);
+		final Stream< Pair<Composite< ? extends RealType<?> >, ? extends IntegerType<?>> > featuresStream = IntStream.range(0, locations.length).mapToObj( i-> {
+					classIndex.set(labels[i]);
+					IntervalIndexer.indexToPosition(locations[i], features, access );
+					return pair;
+				}
+		);
+		return featuresStream.iterator();
 	}
 
 	public TrainClassifier(
-			final Classifier< Composite< F >, ?, ? > classifier,
+			final Classifier classifier,
 			final LabelBrushController controller,
 			final RandomAccessibleInterval< F > features,
 			final ArrayList< String > classes,
@@ -53,7 +62,7 @@ public class TrainClassifier< F extends RealType< F > > extends AbstractNamedAct
 		this.listeners = new ArrayList<>( Arrays.asList( listeners ) );
 	}
 
-	private final Classifier< Composite< F >, ?, ? > classifier;
+	private final Classifier classifier;
 
 	private final LabelBrushController controller;
 
@@ -98,7 +107,7 @@ public class TrainClassifier< F extends RealType< F > > extends AbstractNamedAct
 			final long[] locations = samples.keys();
 			final int[] labels = samples.values();
 //			}
-			classifier.trainClassifier( toSamples( features, locations ), labels );
+			classifier.trainClassifier( toSamples( features, locations, labels) );
 			trainingSuccess = true;
 		}
 		catch ( final Exception e1 )

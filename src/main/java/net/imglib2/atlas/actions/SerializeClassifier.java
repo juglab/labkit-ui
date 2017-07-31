@@ -14,9 +14,9 @@ public class SerializeClassifier extends AbstractNamedAction
 
 	private final ViewerPanel viewer;
 
-	private final Classifier< ?, ?, ? > classifier;
+	private final Classifier classifier;
 
-	public SerializeClassifier( final String name, final ViewerPanel viewer, final Classifier< ?, ?, ? > classifier )
+	public SerializeClassifier( final String name, final ViewerPanel viewer, final Classifier classifier )
 	{
 		super( "Save Classifier" );
 		this.viewer = viewer;

@@ -17,11 +17,11 @@ public class DeserializeClassifier extends AbstractNamedAction
 
 	private final ViewerPanel viewer;
 
-	private final Classifier< ?, ?, ? > classifier;
+	private final Classifier classifier;
 
 	private final List< TrainClassifier.Listener > listeners;
 
-	public DeserializeClassifier(final ViewerPanel viewer, final Classifier<?, ?, ?> classifier, final List<TrainClassifier.Listener> listeners)
+	public DeserializeClassifier(final ViewerPanel viewer, final Classifier classifier, final List<TrainClassifier.Listener> listeners)
 	{
 		super( "Load Classifier" );
 		this.viewer = viewer;

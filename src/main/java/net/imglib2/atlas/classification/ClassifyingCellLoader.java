@@ -24,18 +24,18 @@ public class ClassifyingCellLoader< T extends RealType< T > > implements CellLoa
 
 	private final RandomAccessible< T > features;
 
-	private Classifier< ?, RandomAccessibleInterval< T >, RandomAccessibleInterval< ShortType > > classifier;
+	private Classifier classifier;
 
 	private final int numFeatures;
 
-	public void setClassifier( final Classifier< ?, RandomAccessibleInterval< T >, RandomAccessibleInterval< ShortType > > classifier )
+	public void setClassifier( final Classifier classifier )
 	{
 		this.classifier = classifier;
 	}
 
 	public ClassifyingCellLoader(
 			final RandomAccessibleInterval<T> features,
-			final Classifier<?, RandomAccessibleInterval<T>, RandomAccessibleInterval<ShortType>> classifier)
+			final Classifier classifier)
 	{
 		this.features = features;
 		this.classifier = classifier;
@@ -52,7 +52,7 @@ public class ClassifyingCellLoader< T extends RealType< T > > implements CellLoa
 		final long[] featureMax = LongStream.concat( Arrays.stream( cellMax ), LongStream.of( numFeatures - 1 ) ).toArray();
 		final IntervalView< T > featuresBlock = Views.interval( features, new FinalInterval( featureMin, featureMax ) );
 
-		classifier.predictLabels( featuresBlock, img );
+		classifier.predictLabels( Views.collapse(featuresBlock), img );
 
 	}
 }

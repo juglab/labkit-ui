@@ -7,6 +7,7 @@ import java.util.Iterator;
 import java.util.List;
 
 import net.imglib2.RandomAccessibleInterval;
+import net.imglib2.algorithm.features.InstanceView;
 import net.imglib2.atlas.classification.Classifier;
 import net.imglib2.type.numeric.IntegerType;
 import net.imglib2.type.numeric.RealType;
@@ -21,7 +22,7 @@ import weka.core.Instances;
 import weka.core.SerializationHelper;
 
 public class WekaClassifier< R extends RealType< R >, I extends IntegerType< I > >
-implements Classifier< Composite< R >, RandomAccessibleInterval< R >, RandomAccessibleInterval< I > >
+implements Classifier
 {
 
 	public static class NotTrainedYet extends Exception
@@ -62,31 +63,30 @@ implements Classifier< Composite< R >, RandomAccessibleInterval< R >, RandomAcce
 	}
 
 	@Override
-	synchronized public void predictLabels( final RandomAccessibleInterval< R > instances, final RandomAccessibleInterval< I > labels ) throws Exception
+	public void predictLabels(RandomAccessibleInterval<? extends Composite<? extends RealType<?>>> instances, RandomAccessibleInterval<? extends IntegerType<?>> labels) throws Exception
 	{
-		final InstanceView< R, RealComposite< R > > wekaInstances = new InstanceView<>( Views.collapseReal( instances ), InstanceView.makeDefaultAttributes( numFeatures, classLabels.size() ) );
-		for ( final Pair< Instance, I > p : Views.interval( Views.pair( wekaInstances, labels ), labels ) )
+		InstanceView<? extends Composite<? extends RealType<?>>> wekaInstances = new InstanceView<>(instances, InstanceView.makeDefaultAttributes(numFeatures, classLabels.size()));
+		for ( final Pair< Instance, ? extends IntegerType<?> > p : Views.interval( Views.pair( wekaInstances, labels ), labels ) )
 			p.getB().setInteger( ( int ) classifier.classifyInstance( p.getA() ) );
 
 	}
 
 	@Override
-	public void trainClassifier( final Iterable< Composite< R > > samples, final int[] labels ) throws Exception
+	public void trainClassifier(Iterator<Pair<Composite<? extends RealType<?>>, ? extends IntegerType<?>>> data) throws Exception
 	{
 		final ArrayList< Attribute > attributes = new ArrayList<>();
 		for ( int i = 0; i < numFeatures; ++i )
 			attributes.add( new Attribute( "" + i ) );
 		attributes.add( new Attribute( "class", classLabels ) );
-		final int nSamples = labels.length;
-		final Instances instances = new Instances( "training", attributes, nSamples );
+		final Instances instances = new Instances( "training", attributes, 0 );
 		instances.setClassIndex( numFeatures );
 
-		final Iterator< Composite< R > > it = samples.iterator();
-		System.out.println( "Collecting training examples. " + nSamples );
-		for ( int i = 0; it.hasNext(); ++i )
+		System.out.print( "Collecting training examples. " );
+		while ( data.hasNext() )
 		{
-			final Composite< R > feat = it.next();
-			final int label = labels[ i ];
+			Pair<Composite<? extends RealType<?>>, ? extends IntegerType<?>> pair = data.next();
+			final Composite< ? extends RealType<?> > feat = pair.getA();
+			final int label = pair.getB().getInteger();
 			final double[] values = new double[ numFeatures + 1 ];
 			for ( int f = 0; f < numFeatures; ++f )
 				values[ f ] = feat.get( f ).getRealDouble();
@@ -100,6 +100,11 @@ implements Classifier< Composite< R >, RandomAccessibleInterval< R >, RandomAcce
 			System.out.println( "Training successful!" );
 			this.classifierTrainedSuccessfully = true;
 		}
+	}
+
+	@Override
+	public boolean isTrained() {
+		return this.classifierTrainedSuccessfully;
 	}
 
 	@Override

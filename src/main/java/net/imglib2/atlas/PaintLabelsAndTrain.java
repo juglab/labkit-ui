@@ -68,7 +68,7 @@ public class PaintLabelsAndTrain
 
 		final FastRandomForest wekaClassifier = new FastRandomForest();
 
-		final TrainableSegmentationClassifier<ShortType> classifier = new TrainableSegmentationClassifier<>(wekaClassifier, classLabels, featureGroup);
+		final TrainableSegmentationClassifier classifier = new TrainableSegmentationClassifier(wekaClassifier, classLabels, featureGroup);
 
 		new MainFrame().trainClassifier( rawData, featuresList, classifier, nLabels, grid, true);
 	}

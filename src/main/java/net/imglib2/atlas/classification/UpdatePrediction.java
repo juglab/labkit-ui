@@ -85,7 +85,7 @@ public class UpdatePrediction< T extends RealType< T > > implements TrainClassif
 	}
 
 	@Override
-	public void notify( final Classifier< Composite< T >, ?, ? > classifier, final boolean trainingSuccess ) throws IOException
+	public void notify( final Classifier classifier, final boolean trainingSuccess ) throws IOException
 	{
 		if ( trainingSuccess )
 			synchronized ( viewer )

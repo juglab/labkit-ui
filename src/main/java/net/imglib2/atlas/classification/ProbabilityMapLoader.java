@@ -5,7 +5,8 @@ import java.util.Arrays;
 import net.imglib2.Cursor;
 import net.imglib2.FinalInterval;
 import net.imglib2.RandomAccessible;
-import net.imglib2.atlas.classification.weka.InstanceView;
+import net.imglib2.RandomAccessibleInterval;
+import net.imglib2.algorithm.features.InstanceView;
 import net.imglib2.cache.img.CellLoader;
 import net.imglib2.img.Img;
 import net.imglib2.img.cell.CellGrid;
@@ -55,7 +56,7 @@ public class ProbabilityMapLoader< T extends RealType< T > > implements CellLoad
 
 		final long[] cellMin = Intervals.minAsLongArray( img );
 		final long[] cellMax = Intervals.maxAsLongArray( img );
-		final InstanceView< T, ? > instances = new InstanceView<>( features, InstanceView.makeDefaultAttributes( numFeatures, numClasses ) );
+		final InstanceView instances = getInstanceView(features);
 
 		final long[] sourceMin = Arrays.stream( cellMin ).limit( cellMin.length - 1 ).toArray();
 		final long[] sourceMax = Arrays.stream( cellMax ).limit( cellMax.length - 1 ).toArray();
@@ -70,5 +71,9 @@ public class ProbabilityMapLoader< T extends RealType< T > > implements CellLoad
 				target.get( d ).setReal( pred[ d ] );
 		}
 
+	}
+
+	private InstanceView getInstanceView(RandomAccessible<? extends Composite<? extends RealType<?>>> features) {
+		return new InstanceView<>( features, InstanceView.makeDefaultAttributes( numFeatures, numClasses ) );
 	}
 }

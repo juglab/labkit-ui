@@ -48,7 +48,7 @@ import java.util.stream.Collectors;
 
 public class MainFrame<F extends RealType< F >> {
 
-	private Classifier<Composite<F>, RandomAccessibleInterval<F>, RandomAccessibleInterval<ShortType>> classifier;
+	private Classifier classifier;
 
 	private SharedQueue queue = initQueue();
 
@@ -69,7 +69,7 @@ public class MainFrame<F extends RealType< F >> {
 	BdvHandle trainClassifier(
 			final RandomAccessibleInterval<R> rawData,
 			final List<? extends RandomAccessibleInterval<F>> features,
-			final Classifier<Composite<F>, RandomAccessibleInterval<F>, RandomAccessibleInterval<ShortType>> classifier,
+			final Classifier classifier,
 			final int nLabels,
 			final CellGrid grid,
 			final boolean isTimeSeries) throws IOException
