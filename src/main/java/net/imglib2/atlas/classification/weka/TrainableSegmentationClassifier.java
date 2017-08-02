@@ -2,7 +2,7 @@ package net.imglib2.atlas.classification.weka;
 
 import net.imglib2.RandomAccessibleInterval;
 import net.imglib2.algorithm.features.FeatureGroup;
-import net.imglib2.algorithm.features.Training;
+import net.imglib2.algorithm.features.classification.Training;
 import net.imglib2.atlas.classification.Classifier;
 import net.imglib2.type.numeric.IntegerType;
 import net.imglib2.type.numeric.RealType;
@@ -16,19 +16,19 @@ import java.util.List;
 public class TrainableSegmentationClassifier
 implements Classifier
 {
-	private net.imglib2.algorithm.features.Classifier classifier;
+	private net.imglib2.algorithm.features.classification.Classifier classifier;
 
 	private weka.classifiers.Classifier wekaClassifier;
 
 	public TrainableSegmentationClassifier(final weka.classifiers.Classifier wekaClassifier, final List<String> classLabels, FeatureGroup features)
 	{
 		this.wekaClassifier = wekaClassifier;
-		classifier = new net.imglib2.algorithm.features.Classifier(classLabels, features, wekaClassifier);
+		classifier = new net.imglib2.algorithm.features.classification.Classifier(classLabels, features, wekaClassifier);
 	}
 
 	@Override
 	public void predictLabels(RandomAccessibleInterval<? extends Composite<? extends RealType<?>>> instances, RandomAccessibleInterval<? extends IntegerType<?>> labels) throws Exception {
-		this.<IntegerType>copy(classifier.applyOnComposite(instances), labels);
+		this.<IntegerType>copy(classifier.segmentLazyOnComposite(instances), labels);
 	}
 
 	private void copy(RandomAccessibleInterval<? extends IntegerType<?>> source, RandomAccessibleInterval<? extends IntegerType<?>> dest) {
@@ -37,15 +37,12 @@ implements Classifier
 
 	@Override
 	public void trainClassifier(Iterator<Pair<Composite<? extends RealType<?>>, ? extends IntegerType<?>>> data) throws Exception {
-		Training<net.imglib2.algorithm.features.Classifier> training = net.imglib2.algorithm.features.Classifier.training(classifier.classNames(), classifier.features(),
-				wekaClassifier);
-
+		Training training = classifier.training();
 		while(data.hasNext()) {
 			Pair<Composite<? extends RealType<?>>, ? extends IntegerType<?>> pair = data.next();
 			training.add(pair.getA(), pair.getB().getInteger());
 		}
-
-		classifier = training.train();
+		training.train();
 	}
 
 	@Override
@@ -62,6 +59,6 @@ implements Classifier
 	@Override
 	public void loadClassifier( final String path ) throws Exception
 	{
-		classifier = net.imglib2.algorithm.features.Classifier.load(path);
+		classifier = net.imglib2.algorithm.features.classification.Classifier.load(path);
 	}
 }
