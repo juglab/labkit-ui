@@ -14,7 +14,6 @@ import hr.irb.fastRandomForest.FastRandomForest;
 import ij.ImagePlus;
 import net.imglib2.RandomAccessible;
 import net.imglib2.RandomAccessibleInterval;
-import net.imglib2.atlas.classification.weka.WekaClassifier;
 import net.imglib2.cache.img.DiskCachedCellImgFactory;
 import net.imglib2.cache.img.DiskCachedCellImgOptions;
 import net.imglib2.converter.Converters;
@@ -68,7 +67,7 @@ public class PaintLabelsAndTrain
 
 		final TrainableSegmentationClassifier classifier = new TrainableSegmentationClassifier(wekaClassifier, classLabels, featureGroup);
 
-		new LabelingComponent().trainClassifier( rawData, featuresList, classifier, nLabels, grid, true);
+		new MainFrame().trainClassifier( rawData, featuresList, classifier, nLabels, grid, true);
 	}
 
 	private static Img<FloatType> cachedFeature(RandomAccessibleInterval<FloatType> original, CellGrid grid, Feature feature) {
