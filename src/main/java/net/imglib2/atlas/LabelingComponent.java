@@ -46,7 +46,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.stream.Collectors;
 
-public class MainFrame<F extends RealType< F >> {
+public class LabelingComponent<F extends RealType< F >> {
 
 	private Classifier classifier;
 

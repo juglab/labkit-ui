@@ -26,8 +26,6 @@ import net.imglib2.img.array.ArrayImgs;
 import net.imglib2.img.basictypeaccess.array.ByteArray;
 import net.imglib2.img.cell.CellGrid;
 import net.imglib2.img.display.imagej.ImageJFunctions;
-import net.imglib2.type.numeric.integer.IntType;
-import net.imglib2.type.numeric.integer.ShortType;
 import net.imglib2.type.numeric.integer.UnsignedByteType;
 import net.imglib2.type.numeric.real.FloatType;
 import net.imglib2.util.Intervals;
@@ -70,7 +68,7 @@ public class PaintLabelsAndTrain
 
 		final TrainableSegmentationClassifier classifier = new TrainableSegmentationClassifier(wekaClassifier, classLabels, featureGroup);
 
-		new MainFrame().trainClassifier( rawData, featuresList, classifier, nLabels, grid, true);
+		new LabelingComponent().trainClassifier( rawData, featuresList, classifier, nLabels, grid, true);
 	}
 
 	private static Img<FloatType> cachedFeature(RandomAccessibleInterval<FloatType> original, CellGrid grid, Feature feature) {
