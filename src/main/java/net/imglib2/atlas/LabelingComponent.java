@@ -28,18 +28,17 @@ import net.imglib2.img.cell.CellGrid;
 import net.imglib2.type.numeric.ARGBType;
 import net.imglib2.type.numeric.RealType;
 import net.imglib2.type.numeric.integer.IntType;
-import net.imglib2.type.numeric.integer.ShortType;
 import net.imglib2.type.volatiles.AbstractVolatileRealType;
 import net.imglib2.type.volatiles.VolatileARGBType;
 import net.imglib2.util.ConstantUtils;
 import net.imglib2.view.Views;
-import net.imglib2.view.composite.Composite;
 import org.scijava.ui.behaviour.io.InputTriggerConfig;
 import org.scijava.ui.behaviour.util.AbstractNamedAction;
 import org.scijava.ui.behaviour.util.Actions;
 import org.scijava.ui.behaviour.util.Behaviours;
 
 import javax.swing.*;
+import java.awt.*;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -60,9 +59,23 @@ public class LabelingComponent<F extends RealType< F >> {
 
 	private Behaviours behaviors = new Behaviours(config);
 
-	private MenuBar menu = new MenuBar();
+	private JPanel panel = new JPanel();
 
-	private JFrame frame = initFrame();
+	private final JFrame dialogBoxOwner;
+
+	private final List<AbstractNamedAction> actionsList = new ArrayList();
+
+	public LabelingComponent(JFrame dialogBoxOwner) {
+		this.dialogBoxOwner = dialogBoxOwner;
+	}
+
+	public JComponent getComponent() {
+		return panel;
+	}
+
+	public List<AbstractNamedAction> getActions() {
+		return actionsList;
+	}
 
 	@SuppressWarnings( { "rawtypes" } )
 	public < R extends RealType< R > >
@@ -100,7 +113,6 @@ public class LabelingComponent<F extends RealType< F >> {
 
 		behaviors.install( bdvHandle.getTriggerbindings(), "classifier training" );
 		actions.install( bdvHandle.getKeybindings(), "classifier training" );
-		frame.setVisible(true);
 		return bdvHandle;
 	}
 
@@ -119,26 +131,19 @@ public class LabelingComponent<F extends RealType< F >> {
 		return cellDimensions;
 	}
 
-	private JFrame initFrame() {
-		JFrame frame = new JFrame("ATLAS");
-		frame.setJMenuBar(menu);
-		frame.setBounds( 50, 50, 1200, 900 );
-		return frame;
-	}
-
 	private void addAction(AbstractNamedAction action, String keyStroke) {
 		JMenuItem item = new JMenuItem(action);
-		menu.add(action);
+		actionsList.add(action);
 		actions.namedAction(action, keyStroke);
 	}
-
 
 	private void initBdv(boolean is2D) {
 		final BdvOptions options = BdvOptions.options();
 		if (is2D)
 			options.is2D();
-		bdvHandle = new BdvHandlePanel(frame, options);
-		frame.add(bdvHandle.getViewerPanel());
+		bdvHandle = new BdvHandlePanel(dialogBoxOwner, options);
+		panel.setLayout(new BorderLayout());
+		panel.add(bdvHandle.getViewerPanel());
 		bdvHandle.getViewerPanel().setDisplayMode( DisplayMode.FUSED );
 	}
 
