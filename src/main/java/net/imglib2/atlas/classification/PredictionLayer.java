@@ -25,7 +25,7 @@ import net.imglib2.type.volatiles.VolatileShortType;
 import net.imglib2.util.ConstantUtils;
 import net.imglib2.view.Views;
 
-public class UpdatePrediction< T extends RealType< T > > implements Classifier.Listener
+public class PredictionLayer< T extends RealType< T > > implements Classifier.Listener
 {
 
 	public static class CacheOptions
@@ -55,7 +55,7 @@ public class UpdatePrediction< T extends RealType< T > > implements Classifier.L
 
 	private final RandomAccessibleContainer< VolatileARGBType > predictionContainer;
 
-	public UpdatePrediction(CellGrid grid, ColorMapColorProvider colorProvider, Classifier classifier, SharedQueue queue, RandomAccessibleInterval<T> block, ViewerPanel viewerPanel) {
+	public PredictionLayer(CellGrid grid, ColorMapColorProvider colorProvider, Classifier classifier, SharedQueue queue, RandomAccessibleInterval<T> block, ViewerPanel viewerPanel) {
 		super();
 		final RandomAccessible< VolatileARGBType > emptyPrediction = ConstantUtils.constantRandomAccessible( new VolatileARGBType( 0 ), grid.numDimensions());
 		this.viewer = viewerPanel;

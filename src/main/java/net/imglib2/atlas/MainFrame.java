@@ -6,7 +6,6 @@ import bdv.util.BdvOptions;
 import bdv.util.BdvStackSource;
 import bdv.util.volatiles.SharedQueue;
 import bdv.util.volatiles.VolatileViews;
-import bdv.viewer.ViewerPanel;
 import gnu.trove.map.hash.TLongIntHashMap;
 import hr.irb.fastRandomForest.FastRandomForest;
 import net.imglib2.FinalInterval;
@@ -19,7 +18,7 @@ import net.imglib2.atlas.actions.DeserializeClassifier;
 import net.imglib2.atlas.actions.SerializeClassifier;
 import net.imglib2.atlas.classification.Classifier;
 import net.imglib2.atlas.classification.TrainClassifier;
-import net.imglib2.atlas.classification.UpdatePrediction;
+import net.imglib2.atlas.classification.PredictionLayer;
 import net.imglib2.atlas.classification.weka.TrainableSegmentationClassifier;
 import net.imglib2.atlas.color.ColorMapColorProvider;
 import net.imglib2.converter.Converters;
@@ -126,7 +125,7 @@ public class MainFrame {
 
 	private void initPredictionLayer(CellGrid grid, Interval interval, ColorMapColorProvider colorProvider) {
 		// add prediction layer
-		RandomAccessible prediction = new UpdatePrediction(grid, colorProvider, classifier, queue, featureStack.block(), bdvHandle.getViewerPanel()).prediction();
+		RandomAccessible prediction = new PredictionLayer(grid, colorProvider, classifier, queue, featureStack.block(), bdvHandle.getViewerPanel()).prediction();
 		BdvFunctions.show(prediction, interval, "prediction", BdvOptions.options().addTo( bdvHandle ) );
 	}
 
