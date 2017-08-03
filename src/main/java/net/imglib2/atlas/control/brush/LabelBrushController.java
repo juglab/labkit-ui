@@ -51,7 +51,7 @@ public class LabelBrushController
 
 	final protected BrushOverlay brushOverlay;
 
-	private final TLongIntHashMap groundTruth;
+	private final TLongIntHashMap labeling;
 
 	final int brushNormalAxis;
 
@@ -76,12 +76,12 @@ public class LabelBrushController
 		this.currentLabel = label;
 	}
 
-	public TLongIntHashMap getGroundTruth()
+	public TLongIntHashMap getLabeling()
 	{
-		return groundTruth;
+		return labeling;
 	}
 
-	public static TLongIntHashMap emptyGroundTruth()
+	public static TLongIntHashMap emptyLabeling()
 	{
 		return new TLongIntHashMap( Constants.DEFAULT_CAPACITY, Constants.DEFAULT_LOAD_FACTOR, Long.MAX_VALUE, BACKGROUND );
 	}
@@ -98,7 +98,7 @@ public class LabelBrushController
 			final Behaviours behaviors,
 			final int brushNormalAxis,
 			final int nLabels,
-			final TLongIntHashMap groundTruth,
+			final TLongIntHashMap labeling,
 			final IntegerColorProvider colorProvider)
 	{
 		this.viewer = viewer;
@@ -115,7 +115,7 @@ public class LabelBrushController
 		behaviors.behaviour( new ChangeLabel(), "change label", "SPACE shift scroll" );
 		behaviors.behaviour( new MoveBrush(), "move brush", "SPACE" );
 		this.nLabels = nLabels;
-		this.groundTruth = groundTruth;
+		this.labeling = labeling;
 	}
 
 	public LabelBrushController(
@@ -124,10 +124,10 @@ public class LabelBrushController
 			final PaintPixelsGenerator<IntType, ? extends Iterator<IntType>> pixelsGenerator,
 			final Behaviours behaviors,
 			final int nLabels,
-			final TLongIntHashMap groundTruth,
+			final TLongIntHashMap labeling,
 			final IntegerColorProvider colorProvider)
 	{
-		this( viewer, labels, pixelsGenerator, behaviors, 2, nLabels, groundTruth, colorProvider );
+		this( viewer, labels, pixelsGenerator, behaviors, 2, nLabels, labeling, colorProvider );
 	}
 
 	private void setCoordinates( final int x, final int y )
@@ -150,7 +150,7 @@ public class LabelBrushController
 				final ExtendedRandomAccessibleInterval< IntType, RandomAccessibleInterval< IntType > > extended = Views.extendValue( labels, new IntType( BACKGROUND ) );
 				final Iterator< IntType > it = pixelsGenerator.getPaintPixels( extended, coords, viewer.getState().getCurrentTimepoint(), brushRadius );
 				final int v = getValue();
-				synchronized ( groundTruth )
+				synchronized (labeling)
 				{
 					while ( it.hasNext() )
 					{
@@ -160,9 +160,9 @@ public class LabelBrushController
 							val.set( v );
 							final long index = IntervalIndexer.positionToIndex( ( Localizable ) it, labels );
 							if ( v == BACKGROUND )
-								groundTruth.remove( index );
+								labeling.remove( index );
 							else
-								groundTruth.put( index, v );
+								labeling.put( index, v );
 						}
 					}
 				}

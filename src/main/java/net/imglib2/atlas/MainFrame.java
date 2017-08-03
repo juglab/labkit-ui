@@ -6,6 +6,7 @@ import bdv.util.BdvOptions;
 import bdv.util.BdvStackSource;
 import bdv.util.volatiles.SharedQueue;
 import bdv.util.volatiles.VolatileViews;
+import gnu.trove.map.hash.TLongIntHashMap;
 import net.imglib2.FinalInterval;
 import net.imglib2.Interval;
 import net.imglib2.RandomAccessible;
@@ -17,7 +18,6 @@ import net.imglib2.atlas.classification.ClassifyingCellLoader;
 import net.imglib2.atlas.classification.TrainClassifier;
 import net.imglib2.atlas.classification.UpdatePrediction;
 import net.imglib2.atlas.color.ColorMapColorProvider;
-import net.imglib2.atlas.control.brush.LabelBrushController;
 import net.imglib2.img.cell.CellGrid;
 import net.imglib2.type.numeric.RealType;
 import net.imglib2.type.volatiles.AbstractVolatileRealType;
@@ -69,8 +69,8 @@ public class MainFrame< F extends RealType<F> > {
 
 		final RandomAccessibleInterval<F> featuresConcatenated = concatenateFeatures(features, nDim);
 		ColorMapColorProvider colorProvider = labelingComponent.colorProvider();
-		LabelBrushController brushController = labelingComponent.brushController();
-		final TrainClassifier<F> trainer = initTrainer(nLabels, grid, interval, colorProvider, brushController, featuresConcatenated);
+		TLongIntHashMap labelingMap = labelingComponent.labelingMap();
+		final TrainClassifier<F> trainer = initTrainer(nLabels, grid, interval, colorProvider, labelingMap, featuresConcatenated);
 		addAction(trainer, "ctrl shift T");
 		initSaveClassifierAction();
 		initLoadClassifierAction(trainer);
@@ -104,7 +104,7 @@ public class MainFrame< F extends RealType<F> > {
 		frame.setJMenuBar(bar);
 	}
 
-	private TrainClassifier<F> initTrainer(int nLabels, CellGrid grid, Interval interval, ColorMapColorProvider colorProvider, LabelBrushController brushController, RandomAccessibleInterval<F> featuresConcatenated) {
+	private TrainClassifier<F> initTrainer(int nLabels, CellGrid grid, Interval interval, ColorMapColorProvider colorProvider, TLongIntHashMap labelingMap, RandomAccessibleInterval<F> featuresConcatenated) {
 		final RandomAccessibleContainer<VolatileARGBType> container = initPredictionLayer(interval, grid.numDimensions());
 		final UpdatePrediction.CacheOptions cacheOptions = new UpdatePrediction.CacheOptions( "prediction", grid, queue);
 		final ClassifyingCellLoader< F > classifyingLoader = new ClassifyingCellLoader<>(featuresConcatenated, this.classifier);
@@ -113,7 +113,7 @@ public class MainFrame< F extends RealType<F> > {
 		for (int i = 1; i <= nLabels; ++i )
 			classes.add( "" + i );
 
-		final TrainClassifier< F > trainer = new TrainClassifier<>(this.classifier, brushController, featuresConcatenated, classes );
+		final TrainClassifier< F > trainer = new TrainClassifier<F>(this.classifier, labelingMap, featuresConcatenated, classes );
 		trainer.addListener( predictionAdder );
 		return trainer;
 	}
@@ -142,9 +142,8 @@ public class MainFrame< F extends RealType<F> > {
 
 	private void initMouseWheelSelection(int nFeatures) {
 		final MouseWheelChannelSelector mouseWheelSelector = new MouseWheelChannelSelector(bdvHandle.getViewerPanel(), 2, nFeatures );
-		labelingComponent.behaviors().behaviour( mouseWheelSelector, "mouseweheel selector", "shift F scroll" );
-		labelingComponent.behaviors().behaviour( mouseWheelSelector.getOverlay(), "feature selector overlay", "shift F" );
-		labelingComponent.behaviors().install( bdvHandle.getTriggerbindings(), "classifier training" );
+		labelingComponent.addBehaviour(mouseWheelSelector, "mouseweheel selector", "shift F scroll");
+		labelingComponent.addBehaviour(mouseWheelSelector.getOverlay(), "feature selector overlay", "shift F");
 		bdvHandle.getViewerPanel().getDisplay().addOverlayRenderer( mouseWheelSelector.getOverlay() );
 	}
 

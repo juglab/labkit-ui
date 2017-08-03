@@ -17,7 +17,6 @@ import org.scijava.ui.behaviour.util.AbstractNamedAction;
 
 import gnu.trove.map.hash.TLongIntHashMap;
 import net.imglib2.RandomAccessibleInterval;
-import net.imglib2.atlas.control.brush.LabelBrushController;
 import net.imglib2.type.numeric.RealType;
 import net.imglib2.util.IntervalIndexer;
 import net.imglib2.view.Views;
@@ -27,6 +26,8 @@ import net.imglib2.view.composite.RealComposite;
 
 public class TrainClassifier< F extends RealType< F > > extends AbstractNamedAction
 {
+
+	private TLongIntHashMap groundTruth;
 
 	public static interface Listener< F extends RealType< F > >
 	{
@@ -48,7 +49,7 @@ public class TrainClassifier< F extends RealType< F > > extends AbstractNamedAct
 
 	public TrainClassifier(
 			final Classifier classifier,
-			final LabelBrushController controller,
+			final TLongIntHashMap groundTruth,
 			final RandomAccessibleInterval< F > features,
 			final ArrayList< String > classes,
 			final Listener... listeners
@@ -56,15 +57,13 @@ public class TrainClassifier< F extends RealType< F > > extends AbstractNamedAct
 	{
 		super( "Train Classifier" );
 		this.classifier = classifier;
-		this.controller = controller;
+		this.groundTruth = groundTruth;
 		this.features = features;
 		this.classes = classes;
 		this.listeners = new ArrayList<>( Arrays.asList( listeners ) );
 	}
 
 	private final Classifier classifier;
-
-	private final LabelBrushController controller;
 
 	private final RandomAccessibleInterval< F > features;
 
@@ -98,7 +97,7 @@ public class TrainClassifier< F extends RealType< F > > extends AbstractNamedAct
 	public void actionPerformed( final ActionEvent e )
 	{
 		trainingSuccess = false;
-		final TLongIntHashMap samples = controller.getGroundTruth();
+		final TLongIntHashMap samples = groundTruth;
 		try
 		{
 //			classifier.buildClassifier( instances );

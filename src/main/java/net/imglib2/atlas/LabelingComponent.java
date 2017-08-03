@@ -2,6 +2,7 @@ package net.imglib2.atlas;
 
 import bdv.util.*;
 import bdv.viewer.DisplayMode;
+import gnu.trove.map.hash.TLongIntHashMap;
 import net.imglib2.FinalInterval;
 import net.imglib2.Interval;
 import net.imglib2.RandomAccessibleInterval;
@@ -19,6 +20,7 @@ import net.imglib2.img.cell.CellGrid;
 import net.imglib2.type.numeric.ARGBType;
 import net.imglib2.type.numeric.RealType;
 import net.imglib2.type.numeric.integer.IntType;
+import org.scijava.ui.behaviour.Behaviour;
 import org.scijava.ui.behaviour.io.InputTriggerConfig;
 import org.scijava.ui.behaviour.util.AbstractNamedAction;
 import org.scijava.ui.behaviour.util.Actions;
@@ -100,6 +102,11 @@ public class LabelingComponent {
 		actions.install( bdvHandle.getKeybindings(), "classifier training" );
 	}
 
+	public void addBehaviour(Behaviour behaviour, String name, String defaultTriggers) {
+		behaviors.behaviour(behaviour, name, defaultTriggers);
+		behaviors.install( bdvHandle.getTriggerbindings(), "classifier training" );
+	}
+
 	private void initBdv(boolean is2D) {
 		final BdvOptions options = BdvOptions.options();
 		if (is2D)
@@ -134,7 +141,7 @@ public class LabelingComponent {
 				initPixelGenerator(isTimeSeries, labels.numDimensions()),
 				behaviors,
 				nLabels,
-				LabelBrushController.emptyGroundTruth(),
+				LabelBrushController.emptyLabeling(),
 				colorProvider );
 		behaviors.install( bdvHandle.getTriggerbindings(), "classifier training" );
 		initColorMapUpdaterAction(nLabels, colorProvider);
@@ -153,11 +160,7 @@ public class LabelingComponent {
 		return colorProvider;
 	}
 
-	public LabelBrushController brushController() {
-		return brushController;
-	}
-
-	public Behaviours behaviors() {
-		return behaviors;
+	public TLongIntHashMap labelingMap() {
+		return brushController.getLabeling();
 	}
 }
