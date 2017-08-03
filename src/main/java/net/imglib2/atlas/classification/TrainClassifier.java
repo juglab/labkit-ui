@@ -1,11 +1,7 @@
 package net.imglib2.atlas.classification;
 
 import java.awt.event.ActionEvent;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Iterator;
-import java.util.List;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
@@ -28,11 +24,6 @@ public class TrainClassifier< F extends RealType< F > > extends AbstractNamedAct
 {
 
 	private TLongIntHashMap groundTruth;
-
-	public static interface Listener< F extends RealType< F > >
-	{
-		public void notify( Classifier classifier, boolean trainingSuccess ) throws IOException;
-	}
 
 	private Iterator<Pair<Composite<? extends RealType<?>>,? extends IntegerType<?>>> toSamples(RandomAccessibleInterval<F> features, long[] locations, int[] labels) {
 		final CompositeView< F, RealComposite< F > >.CompositeRandomAccess access = Views.collapseReal( features ).randomAccess();
@@ -57,35 +48,17 @@ public class TrainClassifier< F extends RealType< F > > extends AbstractNamedAct
 		this.classifier = classifier;
 		this.groundTruth = groundTruth;
 		this.features = features;
-		this.listeners = new ArrayList<>();
 	}
 
 	private final Classifier classifier;
 
 	private final RandomAccessibleInterval< F > features;
 
-	private final ArrayList< Listener > listeners;
-
 	private boolean trainingSuccess = false;
 
 	public boolean getTrainingSuccess()
 	{
 		return trainingSuccess;
-	}
-
-	public void addListener( final Listener listener )
-	{
-		this.listeners.add( listener );
-	}
-
-	public boolean removeListener( final Listener listener )
-	{
-		return this.listeners.remove( listener );
-	}
-
-	public List< Listener > getListeners()
-	{
-		return listeners;
 	}
 
 	@Override
@@ -95,12 +68,8 @@ public class TrainClassifier< F extends RealType< F > > extends AbstractNamedAct
 		final TLongIntHashMap samples = groundTruth;
 		try
 		{
-//			classifier.buildClassifier( instances );
-//			synchronized ( samples )
-//			{
 			final long[] locations = samples.keys();
 			final int[] labels = samples.values();
-//			}
 			classifier.trainClassifier( toSamples( features, locations, labels) );
 			trainingSuccess = true;
 		}
@@ -108,18 +77,6 @@ public class TrainClassifier< F extends RealType< F > > extends AbstractNamedAct
 		{
 			trainingSuccess = false;
 		}
-		listeners.forEach( l -> {
-
-			try
-			{
-				l.notify( classifier, trainingSuccess );
-			}
-			catch ( final Exception e1 )
-			{
-				// TODO Auto-generated catch block
-				e1.printStackTrace();
-			}
-		} );
 	}
 
 }

@@ -19,14 +19,11 @@ public class DeserializeClassifier extends AbstractNamedAction
 
 	private final Classifier classifier;
 
-	private final List< TrainClassifier.Listener > listeners;
-
-	public DeserializeClassifier(final ViewerPanel viewer, final Classifier classifier, final List<TrainClassifier.Listener> listeners)
+	public DeserializeClassifier(final ViewerPanel viewer, final Classifier classifier)
 	{
 		super( "Load Classifier" );
 		this.viewer = viewer;
 		this.classifier = classifier;
-		this.listeners = listeners;
 	}
 
 	@Override
@@ -40,17 +37,6 @@ public class DeserializeClassifier extends AbstractNamedAction
 				try
 			{
 					classifier.loadClassifier( fileChooser.getSelectedFile().getAbsolutePath() );
-					this.listeners.forEach( listener -> {
-						try
-						{
-							listener.notify( classifier, true );
-						}
-						catch ( final IOException e1 )
-						{
-							// TODO Auto-generated catch block
-							e1.printStackTrace();
-						}
-					} );
 			}
 			catch ( final Exception e1 )
 			{

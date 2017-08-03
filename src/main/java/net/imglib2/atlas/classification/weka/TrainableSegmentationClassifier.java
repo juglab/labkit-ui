@@ -3,6 +3,7 @@ package net.imglib2.atlas.classification.weka;
 import net.imglib2.RandomAccessibleInterval;
 import net.imglib2.algorithm.features.FeatureGroup;
 import net.imglib2.algorithm.features.classification.Training;
+import net.imglib2.atlas.Notifier;
 import net.imglib2.atlas.classification.Classifier;
 import net.imglib2.type.numeric.IntegerType;
 import net.imglib2.type.numeric.RealType;
@@ -19,6 +20,13 @@ implements Classifier
 	private net.imglib2.algorithm.features.classification.Classifier classifier;
 
 	private weka.classifiers.Classifier wekaClassifier;
+
+	private final Notifier< Listener > listeners = new Notifier<>();
+
+	@Override
+	public Notifier<Listener> listeners() {
+		return listeners;
+	}
 
 	public TrainableSegmentationClassifier(final weka.classifiers.Classifier wekaClassifier, final List<String> classLabels, FeatureGroup features)
 	{
@@ -43,6 +51,7 @@ implements Classifier
 			training.add(pair.getA(), pair.getB().getInteger());
 		}
 		training.train();
+		listeners.forEach(l -> l.notify(this, true));
 	}
 
 	@Override
@@ -60,5 +69,6 @@ implements Classifier
 	public void loadClassifier( final String path ) throws Exception
 	{
 		classifier = net.imglib2.algorithm.features.classification.Classifier.load(path);
+		listeners.forEach(l -> l.notify(this, true));
 	}
 }

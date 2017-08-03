@@ -131,7 +131,7 @@ public class MainFrame {
 		final UpdatePrediction.CacheOptions cacheOptions = new UpdatePrediction.CacheOptions( "prediction", grid, queue);
 		final ClassifyingCellLoader<FloatType> classifyingLoader = new ClassifyingCellLoader<>(featureBlock, this.classifier);
 		final TrainClassifier<FloatType> trainer = new TrainClassifier<>(this.classifier, labelingMap, featureBlock);
-		trainer.addListener(new UpdatePrediction<>(bdvHandle.getViewerPanel(), classifyingLoader, colorProvider, cacheOptions, container));
+		classifier.listeners().add( new UpdatePrediction<>(bdvHandle.getViewerPanel(), classifyingLoader, colorProvider, cacheOptions, container));
 		return trainer;
 	}
 
@@ -149,7 +149,7 @@ public class MainFrame {
 	}
 
 	private void initLoadClassifierAction(TrainClassifier<FloatType> trainer) {
-		final DeserializeClassifier loadDialogAction = new DeserializeClassifier(bdvHandle.getViewerPanel(), this.classifier, trainer.getListeners() );
+		final DeserializeClassifier loadDialogAction = new DeserializeClassifier(bdvHandle.getViewerPanel(), this.classifier);
 		labelingComponent.addAction(loadDialogAction, "ctrl O");
 	}
 

@@ -22,7 +22,7 @@ import net.imglib2.type.volatiles.VolatileARGBType;
 import net.imglib2.type.volatiles.VolatileShortType;
 import net.imglib2.view.Views;
 
-public class UpdatePrediction< T extends RealType< T > > implements TrainClassifier.Listener< T >
+public class UpdatePrediction< T extends RealType< T > > implements Classifier.Listener
 {
 
 	public static class CacheOptions
@@ -68,7 +68,7 @@ public class UpdatePrediction< T extends RealType< T > > implements TrainClassif
 	}
 
 	@Override
-	public void notify( final Classifier classifier, final boolean trainingSuccess ) throws IOException
+	public void notify( final Classifier classifier, final boolean trainingSuccess )
 	{
 		if ( trainingSuccess )
 			synchronized ( viewer )
