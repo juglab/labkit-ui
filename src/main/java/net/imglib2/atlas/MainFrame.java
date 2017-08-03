@@ -11,6 +11,7 @@ import net.imglib2.FinalInterval;
 import net.imglib2.Interval;
 import net.imglib2.RandomAccessible;
 import net.imglib2.RandomAccessibleInterval;
+import net.imglib2.algorithm.features.RevampUtils;
 import net.imglib2.atlas.actions.DeserializeClassifier;
 import net.imglib2.atlas.actions.SerializeClassifier;
 import net.imglib2.atlas.classification.Classifier;
@@ -30,6 +31,8 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
+import java.util.stream.IntStream;
+import java.util.stream.Stream;
 
 /**
  * A component that supports labeling an image.
@@ -48,6 +51,10 @@ public class MainFrame< F extends RealType<F> > {
 
 	private LabelingComponent labelingComponent;
 
+	private RandomAccessibleContainer<F> featureContainer;
+
+	private List<RandomAccessibleInterval<F>> slices;
+
 	public < R extends RealType< R > >
 	void trainClassifier(
 			final RandomAccessibleInterval<R> rawData,
@@ -63,6 +70,14 @@ public class MainFrame< F extends RealType<F> > {
 
 		bdvHandle = labelingComponent.trainClassifier(rawData, nLabels, grid, isTimeSeries);
 		// --
+		initClassification(rawData, features, nLabels, grid);
+		// --
+		initMenu(labelingComponent.getActions());
+		frame.add(labelingComponent.getComponent());
+		frame.setVisible(true);
+	}
+
+	private <R extends RealType<R>> void initClassification(RandomAccessibleInterval<R> rawData, List<? extends RandomAccessibleInterval<F>> features, int nLabels, CellGrid grid) {
 		final Interval interval = new FinalInterval(rawData);
 		final int nDim = rawData.numDimensions();
 
@@ -70,20 +85,12 @@ public class MainFrame< F extends RealType<F> > {
 		ColorMapColorProvider colorProvider = labelingComponent.colorProvider();
 		TLongIntHashMap labelingMap = labelingComponent.labelingMap();
 		final TrainClassifier<F> trainer = initTrainer(nLabels, grid, interval, colorProvider, labelingMap, featuresConcatenated);
-		addAction(trainer, "ctrl shift T");
+		labelingComponent.addAction(trainer, "ctrl shift T");
 		initSaveClassifierAction();
 		initLoadClassifierAction(trainer);
 		final int nFeatures = ( int ) featuresConcatenated.dimension( nDim );
 		initMouseWheelSelection(nFeatures);
-		bdvAddFeatures(bdvHandle, features);
-		// --
-		initMenu(labelingComponent.getActions());
-		frame.add(labelingComponent.getComponent());
-		frame.setVisible(true);
-	}
-
-	private void addAction(AbstractNamedAction action, String s) {
-		labelingComponent.addAction(action, s);
+		bdvAddFeatures();
 	}
 
 	private SharedQueue initQueue() {
@@ -99,8 +106,17 @@ public class MainFrame< F extends RealType<F> > {
 
 	private void initMenu(List<AbstractNamedAction> actions) {
 		MenuBar bar = new MenuBar();
+		JMenu others = new JMenu("others");
+		others.add(newMenuItem("Show Feature", () -> selectFeature()));
+		bar.add(others);
 		actions.forEach(bar::add);
 		frame.setJMenuBar(bar);
+	}
+
+	private JMenuItem newMenuItem(String title, Runnable runnable) {
+		JMenuItem item = new JMenuItem(title);
+		item.addActionListener(a -> runnable.run());
+		return item;
 	}
 
 	private TrainClassifier<F> initTrainer(int nLabels, CellGrid grid, Interval interval, ColorMapColorProvider colorProvider, TLongIntHashMap labelingMap, RandomAccessibleInterval<F> featuresConcatenated) {
@@ -126,17 +142,22 @@ public class MainFrame< F extends RealType<F> > {
 	}
 
 	private RandomAccessibleInterval<F> concatenateFeatures(List<? extends RandomAccessibleInterval<F>> features, int nDim) {
-		return Views.concatenate( nDim, features.stream().map(f -> f.numDimensions() == nDim ? Views.addDimension( f, 0, 0 ) : f ).collect( Collectors.toList() ) );
+		slices = features.stream().flatMap(feature ->
+			feature.numDimensions() == nDim ?
+					Stream.of(feature) :
+					RevampUtils.slices(feature).stream()
+		).collect(Collectors.toList());
+		return Views.stack(slices);
 	}
 
 	private void initSaveClassifierAction() {
 		final SerializeClassifier saveDialogAction = new SerializeClassifier( "classifier-serializer", bdvHandle.getViewerPanel(), this.classifier);
-		addAction(saveDialogAction, "ctrl S");
+		labelingComponent.addAction(saveDialogAction, "ctrl S");
 	}
 
 	private void initLoadClassifierAction(TrainClassifier<F> trainer) {
 		final DeserializeClassifier loadDialogAction = new DeserializeClassifier(bdvHandle.getViewerPanel(), this.classifier, trainer.getListeners() );
-		addAction(loadDialogAction, "ctrl O");
+		labelingComponent.addAction(loadDialogAction, "ctrl O");
 	}
 
 	private void initMouseWheelSelection(int nFeatures) {
@@ -146,13 +167,11 @@ public class MainFrame< F extends RealType<F> > {
 		bdvHandle.getViewerPanel().getDisplay().addOverlayRenderer( mouseWheelSelector.getOverlay() );
 	}
 
-	private void bdvAddFeatures(BdvHandle bdv, List<? extends RandomAccessibleInterval<F>> features) {
-		for ( int feat = 0; feat < features.size(); ++feat )
-		{
-			final BdvStackSource source = BdvFunctions.show(tryWrapAsVolatile(features.get(feat)), "feature " + (feat + 1), BdvOptions.options().addTo(bdv));
-			source.setDisplayRange( 0, 255 );
-			source.setActive( false );
-		}
+	private void bdvAddFeatures() {
+		featureContainer = new RandomAccessibleContainer<>(tryWrapAsVolatile(slices.get(0)));
+		final BdvStackSource source = BdvFunctions.show(Views.interval(featureContainer, slices.get(0)), "feature", BdvOptions.options().addTo(bdvHandle));
+		source.setDisplayRange( 0, 255 );
+		source.setActive( false );
 	}
 
 	public <T> RandomAccessibleInterval<T> tryWrapAsVolatile(RandomAccessibleInterval<T> rai) {
@@ -164,5 +183,12 @@ public class MainFrame< F extends RealType<F> > {
 		{
 			return rai;
 		}
+	}
+
+	public void selectFeature() {
+		int index = (Integer) JOptionPane.showInputDialog(null, "Index of Feature", "Select Feature",
+				JOptionPane.PLAIN_MESSAGE, null, IntStream.rangeClosed(0, slices.size() - 1).mapToObj(x -> x).toArray(), 0);
+		featureContainer.setSource(tryWrapAsVolatile(slices.get(index)));
+		bdvHandle.getViewerPanel().requestRepaint();
 	}
 }
