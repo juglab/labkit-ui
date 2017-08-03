@@ -6,6 +6,7 @@ import bdv.util.BdvOptions;
 import bdv.util.BdvStackSource;
 import bdv.util.volatiles.SharedQueue;
 import bdv.util.volatiles.VolatileViews;
+import bdv.viewer.ViewerPanel;
 import gnu.trove.map.hash.TLongIntHashMap;
 import hr.irb.fastRandomForest.FastRandomForest;
 import net.imglib2.FinalInterval;
@@ -17,7 +18,6 @@ import net.imglib2.algorithm.features.Features;
 import net.imglib2.atlas.actions.DeserializeClassifier;
 import net.imglib2.atlas.actions.SerializeClassifier;
 import net.imglib2.atlas.classification.Classifier;
-import net.imglib2.atlas.classification.ClassifyingCellLoader;
 import net.imglib2.atlas.classification.TrainClassifier;
 import net.imglib2.atlas.classification.UpdatePrediction;
 import net.imglib2.atlas.classification.weka.TrainableSegmentationClassifier;
@@ -27,8 +27,6 @@ import net.imglib2.converter.RealFloatConverter;
 import net.imglib2.img.cell.CellGrid;
 import net.imglib2.type.numeric.RealType;
 import net.imglib2.type.numeric.real.FloatType;
-import net.imglib2.type.volatiles.VolatileARGBType;
-import net.imglib2.util.ConstantUtils;
 import net.imglib2.view.Views;
 import org.scijava.ui.behaviour.util.AbstractNamedAction;
 
@@ -127,18 +125,9 @@ public class MainFrame {
 	}
 
 	private void initPredictionLayer(CellGrid grid, Interval interval, ColorMapColorProvider colorProvider) {
-		final RandomAccessibleContainer<VolatileARGBType> container = initPredictionContainer(interval, grid.numDimensions());
-		final UpdatePrediction.CacheOptions cacheOptions = new UpdatePrediction.CacheOptions( "prediction", grid, queue);
-		final ClassifyingCellLoader<FloatType> classifyingLoader = new ClassifyingCellLoader<>(featureStack.block(), classifier);
-		classifier.listeners().add( new UpdatePrediction<>(bdvHandle.getViewerPanel(), classifyingLoader, colorProvider, cacheOptions, container));
-	}
-
-	private RandomAccessibleContainer<VolatileARGBType> initPredictionContainer(Interval interval, int nDim) {
 		// add prediction layer
-		final RandomAccessible< VolatileARGBType > emptyPrediction = ConstantUtils.constantRandomAccessible( new VolatileARGBType( 0 ), nDim );
-		final RandomAccessibleContainer< VolatileARGBType > container = new RandomAccessibleContainer<>( emptyPrediction );
-		BdvFunctions.show( container, interval, "prediction", BdvOptions.options().addTo( bdvHandle ) );
-		return container;
+		RandomAccessible prediction = new UpdatePrediction(grid, colorProvider, classifier, queue, featureStack.block(), bdvHandle.getViewerPanel()).prediction();
+		BdvFunctions.show(prediction, interval, "prediction", BdvOptions.options().addTo( bdvHandle ) );
 	}
 
 	private void initSaveClassifierAction() {

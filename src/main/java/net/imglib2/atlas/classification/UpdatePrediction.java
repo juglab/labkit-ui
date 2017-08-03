@@ -6,7 +6,9 @@ import bdv.util.volatiles.SharedQueue;
 import bdv.util.volatiles.VolatileViews;
 import bdv.viewer.ViewerPanel;
 import net.imglib2.RandomAccessible;
+import net.imglib2.RandomAccessibleInterval;
 import net.imglib2.atlas.RandomAccessibleContainer;
+import net.imglib2.atlas.color.ColorMapColorProvider;
 import net.imglib2.atlas.color.IntegerColorProvider;
 import net.imglib2.atlas.control.brush.LabelBrushController;
 import net.imglib2.cache.img.DiskCachedCellImg;
@@ -20,6 +22,7 @@ import net.imglib2.type.numeric.RealType;
 import net.imglib2.type.numeric.integer.ShortType;
 import net.imglib2.type.volatiles.VolatileARGBType;
 import net.imglib2.type.volatiles.VolatileShortType;
+import net.imglib2.util.ConstantUtils;
 import net.imglib2.view.Views;
 
 public class UpdatePrediction< T extends RealType< T > > implements Classifier.Listener
@@ -52,19 +55,19 @@ public class UpdatePrediction< T extends RealType< T > > implements Classifier.L
 
 	private final RandomAccessibleContainer< VolatileARGBType > predictionContainer;
 
-	public UpdatePrediction(
-			final ViewerPanel viewer,
-			final ClassifyingCellLoader< T > loader,
-			final IntegerColorProvider colorProvider,
-			final CacheOptions cacheOptions,
-			final RandomAccessibleContainer< VolatileARGBType > predictionContainer )
-	{
+	public UpdatePrediction(CellGrid grid, ColorMapColorProvider colorProvider, Classifier classifier, SharedQueue queue, RandomAccessibleInterval<T> block, ViewerPanel viewerPanel) {
 		super();
-		this.viewer = viewer;
-		this.loader = loader;
+		final RandomAccessible< VolatileARGBType > emptyPrediction = ConstantUtils.constantRandomAccessible( new VolatileARGBType( 0 ), grid.numDimensions());
+		this.viewer = viewerPanel;
+		this.loader = new ClassifyingCellLoader<>(block, classifier);
 		this.colorProvider = colorProvider;
-		this.cacheOptions = cacheOptions;
-		this.predictionContainer = predictionContainer;
+		this.cacheOptions = new CacheOptions( "prediction", grid, queue);
+		this.predictionContainer = new RandomAccessibleContainer<>( emptyPrediction );
+		classifier.listeners().add( this );
+	}
+
+	public RandomAccessible< VolatileARGBType > prediction() {
+		return predictionContainer;
 	}
 
 	@Override
