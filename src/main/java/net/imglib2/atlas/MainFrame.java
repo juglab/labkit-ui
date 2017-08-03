@@ -14,8 +14,6 @@ import net.imglib2.RandomAccessible;
 import net.imglib2.RandomAccessibleInterval;
 import net.imglib2.algorithm.features.FeatureGroup;
 import net.imglib2.algorithm.features.Features;
-import net.imglib2.algorithm.features.GroupedFeatures;
-import net.imglib2.algorithm.features.SingleFeatures;
 import net.imglib2.atlas.actions.DeserializeClassifier;
 import net.imglib2.atlas.actions.SerializeClassifier;
 import net.imglib2.atlas.classification.Classifier;
@@ -36,7 +34,6 @@ import org.scijava.ui.behaviour.util.AbstractNamedAction;
 
 import javax.swing.*;
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.stream.IntStream;
@@ -133,13 +130,8 @@ public class MainFrame {
 		final RandomAccessibleContainer<VolatileARGBType> container = initPredictionLayer(interval, grid.numDimensions());
 		final UpdatePrediction.CacheOptions cacheOptions = new UpdatePrediction.CacheOptions( "prediction", grid, queue);
 		final ClassifyingCellLoader<FloatType> classifyingLoader = new ClassifyingCellLoader<>(featureBlock, this.classifier);
-		final UpdatePrediction<FloatType> predictionAdder = new UpdatePrediction<>(bdvHandle.getViewerPanel(), classifyingLoader, colorProvider, cacheOptions, container);
-		final ArrayList< String > classes = new ArrayList<>();
-		for (int i = 1; i <= nLabels; ++i )
-			classes.add( "" + i );
-
-		final TrainClassifier<FloatType> trainer = new TrainClassifier<>(this.classifier, labelingMap, featureBlock, classes );
-		trainer.addListener( predictionAdder );
+		final TrainClassifier<FloatType> trainer = new TrainClassifier<>(this.classifier, labelingMap, featureBlock);
+		trainer.addListener(new UpdatePrediction<>(bdvHandle.getViewerPanel(), classifyingLoader, colorProvider, cacheOptions, container));
 		return trainer;
 	}
 

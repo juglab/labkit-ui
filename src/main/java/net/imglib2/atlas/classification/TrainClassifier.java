@@ -50,24 +50,19 @@ public class TrainClassifier< F extends RealType< F > > extends AbstractNamedAct
 	public TrainClassifier(
 			final Classifier classifier,
 			final TLongIntHashMap groundTruth,
-			final RandomAccessibleInterval< F > features,
-			final ArrayList< String > classes,
-			final Listener... listeners
-			)
+			final RandomAccessibleInterval<F> features
+	)
 	{
 		super( "Train Classifier" );
 		this.classifier = classifier;
 		this.groundTruth = groundTruth;
 		this.features = features;
-		this.classes = classes;
-		this.listeners = new ArrayList<>( Arrays.asList( listeners ) );
+		this.listeners = new ArrayList<>();
 	}
 
 	private final Classifier classifier;
 
 	private final RandomAccessibleInterval< F > features;
-
-	private final ArrayList< String > classes;
 
 	private final ArrayList< Listener > listeners;
 
