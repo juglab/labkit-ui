@@ -47,41 +47,11 @@ public class PaintLabelsAndTrain
 		final CellGrid grid = new CellGrid( dimensions, cellDimensions );
 
 
-		final int nLabels = 2;
-		final List< String > classLabels = IntStream.range( 0, nLabels ).mapToObj( l -> "class " + l ).collect( Collectors.toList() );
-
 		final ArrayImg< UnsignedByteType, ByteArray > rawData = ArrayImgs.unsignedBytes( dimensions );
 		for ( final Pair< UnsignedByteType, UnsignedByteType > p : Views.interval( Views.pair( rawImg, rawData ), rawImg ) )
 			p.getB().set( p.getA() );
-		final RandomAccessibleInterval< FloatType > converted = Converters.convert( ( RandomAccessibleInterval< UnsignedByteType > ) rawData, new RealFloatConverter<>(), new FloatType() );
 
-		FeatureGroup featureGroup = FeatureSettingsGui.show().orElse(Features.group(SingleFeatures.identity(), GroupedFeatures.gauss()));
-
-		final List<RandomAccessibleInterval<FloatType>> featuresList = featureGroup.features().stream()
-				.map(feature -> cachedFeature(converted, grid, feature))
-				.collect(Collectors.toList());
-
-		final RandomAccessibleInterval< FloatType > features = Views.concatenate( 3, featuresList );
-
-		final FastRandomForest wekaClassifier = new FastRandomForest();
-
-		final TrainableSegmentationClassifier classifier = new TrainableSegmentationClassifier(wekaClassifier, classLabels, featureGroup);
-
-		new MainFrame().trainClassifier( rawData, featuresList, classifier, nLabels, grid, true);
-	}
-
-	private static Img<FloatType> cachedFeature(RandomAccessibleInterval<FloatType> original, CellGrid grid, Feature feature) {
-		int count = feature.count();
-		if(count <= 0)
-			throw new IllegalArgumentException();
-		long[] dimensions = AtlasUtils.extend(Intervals.dimensionsAsLongArray(original), count);
-		int[] cellDimensions = AtlasUtils.extend(new int[grid.numDimensions()], count);
-		grid.cellDimensions(cellDimensions);
-		final DiskCachedCellImgOptions featureOpts = DiskCachedCellImgOptions.options().cellDimensions( cellDimensions ).dirtyAccesses( false );
-		final DiskCachedCellImgFactory< FloatType > featureFactory = new DiskCachedCellImgFactory<>( featureOpts );
-		RandomAccessible<FloatType> extendedOriginal = Views.extendBorder(original);
-		CellLoader<FloatType> loader = target -> feature.apply(extendedOriginal, RevampUtils.slices(target));
-		return featureFactory.create(dimensions, new FloatType(), loader);
+		new MainFrame().trainClassifier( rawData, grid, true);
 	}
 
 }
