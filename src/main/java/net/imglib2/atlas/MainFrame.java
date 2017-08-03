@@ -91,7 +91,8 @@ public class MainFrame {
 
 		ColorMapColorProvider colorProvider = labelingComponent.colorProvider();
 		TLongIntHashMap labelingMap = labelingComponent.labelingMap();
-		final TrainClassifier<FloatType> trainer = initTrainer(nLabels, grid, interval, colorProvider, labelingMap);
+		final TrainClassifier<FloatType> trainer = new TrainClassifier<>(this.classifier, labelingMap, featureStack.block());
+		initPredictionLayer(grid, interval, colorProvider);
 		labelingComponent.addAction(trainer, "ctrl shift T");
 		initSaveClassifierAction();
 		initLoadClassifierAction(trainer);
@@ -125,17 +126,14 @@ public class MainFrame {
 		return item;
 	}
 
-	private TrainClassifier<FloatType> initTrainer(int nLabels, CellGrid grid, Interval interval, ColorMapColorProvider colorProvider, TLongIntHashMap labelingMap) {
-		RandomAccessibleInterval<FloatType> featureBlock = featureStack.block();
-		final RandomAccessibleContainer<VolatileARGBType> container = initPredictionLayer(interval, grid.numDimensions());
+	private void initPredictionLayer(CellGrid grid, Interval interval, ColorMapColorProvider colorProvider) {
+		final RandomAccessibleContainer<VolatileARGBType> container = initPredictionContainer(interval, grid.numDimensions());
 		final UpdatePrediction.CacheOptions cacheOptions = new UpdatePrediction.CacheOptions( "prediction", grid, queue);
-		final ClassifyingCellLoader<FloatType> classifyingLoader = new ClassifyingCellLoader<>(featureBlock, this.classifier);
-		final TrainClassifier<FloatType> trainer = new TrainClassifier<>(this.classifier, labelingMap, featureBlock);
+		final ClassifyingCellLoader<FloatType> classifyingLoader = new ClassifyingCellLoader<>(featureStack.block(), classifier);
 		classifier.listeners().add( new UpdatePrediction<>(bdvHandle.getViewerPanel(), classifyingLoader, colorProvider, cacheOptions, container));
-		return trainer;
 	}
 
-	private RandomAccessibleContainer<VolatileARGBType> initPredictionLayer(Interval interval, int nDim) {
+	private RandomAccessibleContainer<VolatileARGBType> initPredictionContainer(Interval interval, int nDim) {
 		// add prediction layer
 		final RandomAccessible< VolatileARGBType > emptyPrediction = ConstantUtils.constantRandomAccessible( new VolatileARGBType( 0 ), nDim );
 		final RandomAccessibleContainer< VolatileARGBType > container = new RandomAccessibleContainer<>( emptyPrediction );
