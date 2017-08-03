@@ -20,7 +20,6 @@ import net.imglib2.atlas.classification.UpdatePrediction;
 import net.imglib2.atlas.color.ColorMapColorProvider;
 import net.imglib2.img.cell.CellGrid;
 import net.imglib2.type.numeric.RealType;
-import net.imglib2.type.volatiles.AbstractVolatileRealType;
 import net.imglib2.type.volatiles.VolatileARGBType;
 import net.imglib2.util.ConstantUtils;
 import net.imglib2.view.Views;
@@ -150,24 +149,20 @@ public class MainFrame< F extends RealType<F> > {
 	private void bdvAddFeatures(BdvHandle bdv, List<? extends RandomAccessibleInterval<F>> features) {
 		for ( int feat = 0; feat < features.size(); ++feat )
 		{
-			final BdvStackSource source = tryShowVolatile( features.get( feat ), "feature " + ( feat + 1 ), BdvOptions.options().addTo( bdv ) );
+			final BdvStackSource source = BdvFunctions.show(tryWrapAsVolatile(features.get(feat)), "feature " + (feat + 1), BdvOptions.options().addTo(bdv));
 			source.setDisplayRange( 0, 255 );
 			source.setActive( false );
 		}
 	}
 
-	public < T extends RealType< T >, V extends AbstractVolatileRealType< T, V >> BdvStackSource< ? > tryShowVolatile(
-			final RandomAccessibleInterval< T > rai,
-			final String name,
-			final BdvOptions opts)
-	{
+	public <T> RandomAccessibleInterval<T> tryWrapAsVolatile(RandomAccessibleInterval<T> rai) {
 		try
 		{
-			return BdvFunctions.show( VolatileViews.<T, V>wrapAsVolatile( rai, queue ), name, opts );
+			return AtlasUtils.uncheckedCast(VolatileViews.wrapAsVolatile(rai, queue));
 		}
 		catch ( final IllegalArgumentException e )
 		{
-			return BdvFunctions.show( rai, name, opts );
+			return rai;
 		}
 	}
 }
