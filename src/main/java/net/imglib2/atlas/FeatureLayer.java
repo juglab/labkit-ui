@@ -1,17 +1,19 @@
 package net.imglib2.atlas;
 
-import bdv.util.BdvHandle;
 import bdv.util.BdvStackSource;
-import bdv.util.volatiles.SharedQueue;
-import bdv.util.volatiles.VolatileViews;
+import net.imglib2.RandomAccessible;
 import net.imglib2.RandomAccessibleInterval;
+import net.imglib2.Volatile;
 import net.imglib2.type.numeric.real.FloatType;
+import net.imglib2.type.volatiles.VolatileFloatType;
+import net.imglib2.util.ConstantUtils;
 import net.imglib2.view.Views;
 import org.scijava.ui.behaviour.util.AbstractNamedAction;
 
 import javax.swing.*;
 import java.awt.event.ActionEvent;
 import java.util.List;
+import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 /**
@@ -21,76 +23,99 @@ public class FeatureLayer {
 
 	private final FeatureStack featureStack;
 
-	private final RandomAccessibleContainer<FloatType> featureContainer;
+	private final RandomAccessibleContainer<VolatileFloatType> featureContainer;
 
 	private final MainFrame.Extensible extensible;
+
+	private Choice selected;
 
 	public FeatureLayer(MainFrame.Extensible extensible, FeatureStack featureStack) {
 		this.extensible = extensible;
 		this.featureStack = featureStack;
-		this.featureContainer = new RandomAccessibleContainer<>(tryWrapAsVolatile(featureStack.slices().get(0)));
+		this.featureContainer = new RandomAccessibleContainer<>(null);
+		setSelected(0);
+		addLayer();
+		addAction();
+		new MouseWheelChannelSelector(extensible, this);
+	}
+
+	private void addAction() {
 		extensible.addAction(new AbstractNamedAction("Show Feature") {
 			@Override
 			public void actionPerformed(ActionEvent actionEvent) {
 				selectFeature();
 			}
 		}, "S");
-		final BdvStackSource source = extensible.addLayer(getRandomAccessibleInterval(), "feature");
+	}
+
+	private void addLayer() {
+		final BdvStackSource source = extensible.addLayer(Views.interval(featureContainer, featureStack.interval()), "feature");
 		source.setDisplayRange( 0, 255 );
 		source.setActive( false );
 	}
 
+	private Choice emptyChoice() {
+		RandomAccessible<FloatType> empty = ConstantUtils.constantRandomAccessible(new FloatType(0.0f), featureStack.interval().numDimensions());
+		return new Choice("no feature", 0, Views.interval(empty, featureStack.interval()));
+	}
+
 	public void selectFeature() {
+		Choice selected = (Choice) JOptionPane.showInputDialog(null, "Index of Feature", "Select Feature",
+						JOptionPane.PLAIN_MESSAGE, null, getChoices().toArray(), 0);
+		setSource(selected);
+	}
+
+	private List<Choice> getChoices() {
 		List<RandomAccessibleInterval<FloatType>> slices = featureStack.slices();
 		List<String> names = featureStack.filter().attributeLabels();
-		Object[] objects = IntStream.range(0, slices.size()).mapToObj(i -> new NamedValue<>(names.get(i), slices.get(i))).toArray();
-		NamedValue<RandomAccessibleInterval<FloatType>> selected =
-				(NamedValue<RandomAccessibleInterval<FloatType>>) JOptionPane.showInputDialog(null, "Index of Feature", "Select Feature",
-						JOptionPane.PLAIN_MESSAGE, null, objects, 0);
-		featureContainer.setSource(tryWrapAsVolatile(selected.get()));
+		return IntStream.range(0, slices.size()).mapToObj(i -> new Choice(names.get(i), i, slices.get(i)))
+				.collect(Collectors.toList());
+	}
+
+	private void setSource(Choice selected) {
+		this.selected = selected;
+		featureContainer.setSource(tryWrapAsVolatile(selected.value));
 		extensible.repaint();
 	}
 
-	public RandomAccessibleInterval<FloatType> getRandomAccessibleInterval() {
-		return Views.interval(featureContainer, featureStack.interval());
+	private  <T, V extends Volatile<T>> RandomAccessibleInterval<V> tryWrapAsVolatile(RandomAccessibleInterval<T> rai) {
+		return AtlasUtils.uncheckedCast(extensible.wrapAsVolatile(rai));
 	}
 
-	private  <T> RandomAccessibleInterval<T> tryWrapAsVolatile(RandomAccessibleInterval<T> rai) {
-		try
-		{
-			return AtlasUtils.uncheckedCast(extensible.wrapAsVolatile(rai));
-		}
-		catch ( final IllegalArgumentException e )
-		{
-			return rai;
-		}
+	private void setSelected(int index) {
+		List<Choice> choices = getChoices();
+		if(choices.isEmpty())
+			setSource(emptyChoice());
+		else
+			setSource(choices.get(Math.max(0, Math.min(choices.size() - 1, index))));
 	}
 
-	public AbstractNamedAction action() {
-		return new AbstractNamedAction("Show Feature") {
-			@Override
-			public void actionPerformed(ActionEvent actionEvent) {
-				selectFeature();
-			}
-		};
+	public void next() {
+		setSelected(selected.index + 1);
 	}
 
-	private static class NamedValue<T> {
+	public void previous() {
+		setSelected(selected.index - 1);
+	}
+
+	public String title() {
+		return selected.toString();
+	}
+
+	private static class Choice {
 		private final String name;
-		private final T value;
+		private final int index;
+		private final RandomAccessibleInterval<FloatType> value;
 
-		NamedValue(String name, T value) {
+		Choice(String name, int index, RandomAccessibleInterval<FloatType> value) {
 			this.name = name;
+			this.index = index;
 			this.value = value;
 		}
 
 		@Override
 		public String toString() {
 			return name;
-		}
-
-		public T get() {
-			return value;
 		}
 	}
 }

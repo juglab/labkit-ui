@@ -18,33 +18,21 @@ public class MouseWheelChannelSelector implements ScrollBehaviour
 
 	private final MainFrame.Extensible extensible;
 
-	private final int minChannelIndex;
-
-	private final int maxChannelIndex;
+	private final FeatureLayer featureLayer;
 
 	private boolean visible = false;
 
 	private final Overlay overlay;
 
-	private int activeChannel;
-
-	public MouseWheelChannelSelector(final MainFrame.Extensible extensible, final int minChannelIndex, final int numChannels )
+	public MouseWheelChannelSelector(final MainFrame.Extensible extensible, final FeatureLayer featureLayer )
 	{
 		super();
 		this.extensible = extensible;
 		this.overlay = new Overlay();
-		this.minChannelIndex = minChannelIndex;
-		this.maxChannelIndex = minChannelIndex + numChannels - 1;
-		this.activeChannel = minChannelIndex;
-
+		this.featureLayer = featureLayer;
 		extensible.addBehaviour(this, "mouseweheel selector", "shift F scroll");
-		extensible.addBehaviour(this.getOverlay(), "feature selector overlay", "shift F");
-		extensible.addOverlayRenderer( this.getOverlay() );
-	}
-
-	public Overlay getOverlay()
-	{
-		return overlay;
+		extensible.addBehaviour(overlay, "feature selector overlay", "shift F");
+		extensible.addOverlayRenderer(overlay);
 	}
 
 	@Override
@@ -52,16 +40,10 @@ public class MouseWheelChannelSelector implements ScrollBehaviour
 	{
 		if ( !isHorizontal )
 			synchronized(extensible.viewerSync()) {
-//				extensible.getVisibilityAndGrouping().getSources().get( activeChannel ).setActive( false );
-//
-//				if ( wheelRotation < 0 )
-//					this.activeChannel = Math.min( activeChannel + 1, maxChannelIndex );
-//				else if ( wheelRotation > 0 )
-//					this.activeChannel = Math.max( activeChannel - 1, minChannelIndex );
-//
-//				extensible.getVisibilityAndGrouping().getSources().get( activeChannel ).setActive( true );
-
-				extensible.repaint();
+				if ( wheelRotation < 0 )
+					featureLayer.previous();
+				else if ( wheelRotation > 0 )
+					featureLayer.next();
 			}
 	}
 
@@ -90,13 +72,12 @@ public class MouseWheelChannelSelector implements ScrollBehaviour
 
 				{
 					final FontMetrics fm = g.getFontMetrics();
-					final String str = "TODO"; //extensible.getState().getSources().get( activeChannel ).getSpimSource().getName();
+					final String str = featureLayer.title(); //extensible.getState().getSources().get( activeChannel ).getSpimSource().getName();
 					final Rectangle2D rect = fm.getStringBounds( str, g );
 					g2d.setColor( Color.WHITE );
 					g2d.fillRect( x, y - fm.getAscent(), ( int ) rect.getWidth(), ( int ) rect.getHeight() );
 					g2d.setColor( Color.BLACK );
 					g2d.drawString( str, x, y );
-
 				}
 			}
 		}
@@ -128,7 +109,6 @@ public class MouseWheelChannelSelector implements ScrollBehaviour
 		{
 			visible = false;
 			extensible.displayRepaint();
-
 		}
 	}
 

@@ -90,7 +90,6 @@ public class MainFrame {
 		new PredictionLayer(extensible, labelingComponent.colorProvider(), classifier, featureStack);
 		new SerializeClassifier(extensible, this.classifier);
 		new DeserializeClassifier(extensible, this.classifier);
-		new MouseWheelChannelSelector(extensible, 2, featureStack.filter().count());
 		new FeatureLayer(extensible, featureStack);
 	}
 
