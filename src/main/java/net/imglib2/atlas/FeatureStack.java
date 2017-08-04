@@ -5,6 +5,7 @@ import net.imglib2.RandomAccessibleInterval;
 import net.imglib2.algorithm.features.Feature;
 import net.imglib2.algorithm.features.FeatureGroup;
 import net.imglib2.algorithm.features.RevampUtils;
+import net.imglib2.atlas.classification.Classifier;
 import net.imglib2.cache.img.CellLoader;
 import net.imglib2.cache.img.DiskCachedCellImgFactory;
 import net.imglib2.cache.img.DiskCachedCellImgOptions;
@@ -23,7 +24,7 @@ import java.util.stream.Stream;
  */
 public class FeatureStack {
 
-	FeatureGroup filter;
+	private FeatureGroup filter = null;
 
 	private RandomAccessibleInterval<FloatType> original;
 
@@ -35,12 +36,16 @@ public class FeatureStack {
 
 	private CellGrid grid;
 
-	public FeatureStack(RandomAccessibleInterval<FloatType> original, CellGrid grid) {
+	public FeatureStack(RandomAccessibleInterval<FloatType> original, Classifier classifier, CellGrid grid) {
 		this.original = original;
 		this.grid = grid;
+		classifier.listeners().add((c, ignored) -> setFilter(c.features()));
+		setFilter(classifier.features());
 	}
 
 	public void setFilter(FeatureGroup featureGroup) {
+		if(filter != null && filter.equals(featureGroup))
+			return;
 		filter = featureGroup;
 		int nDim = original.numDimensions();
 		perFilter = featureGroup.features().stream()

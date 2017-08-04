@@ -13,13 +13,14 @@ import net.imglib2.view.composite.Composite;
 
 import java.util.Iterator;
 import java.util.List;
+import java.util.function.Supplier;
 
 public class TrainableSegmentationClassifier
 implements Classifier
 {
-	private net.imglib2.algorithm.features.classification.Classifier classifier;
+	private final Supplier<weka.classifiers.Classifier> wekaClassifierFactory;
 
-	private weka.classifiers.Classifier wekaClassifier;
+	private net.imglib2.algorithm.features.classification.Classifier classifier;
 
 	private final Notifier< Listener > listeners = new Notifier<>();
 
@@ -28,10 +29,21 @@ implements Classifier
 		return listeners;
 	}
 
-	public TrainableSegmentationClassifier(final weka.classifiers.Classifier wekaClassifier, final List<String> classLabels, FeatureGroup features)
+	@Override
+	public FeatureGroup features() {
+		return classifier.features();
+	}
+
+	@Override
+	public void reset(FeatureGroup features, List<String> classLabels) {
+		classifier = new net.imglib2.algorithm.features.classification.Classifier(classLabels, features, wekaClassifierFactory.get());
+		listeners.forEach(l -> l.notify(this, false));
+	}
+
+	public TrainableSegmentationClassifier(Supplier<weka.classifiers.Classifier> wekaClassifierFactory, final List<String> classLabels, FeatureGroup features)
 	{
-		this.wekaClassifier = wekaClassifier;
-		classifier = new net.imglib2.algorithm.features.classification.Classifier(classLabels, features, wekaClassifier);
+		this.wekaClassifierFactory = wekaClassifierFactory;
+		reset(features, classLabels);
 	}
 
 	@Override

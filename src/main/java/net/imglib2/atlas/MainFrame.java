@@ -14,6 +14,7 @@ import net.imglib2.RandomAccessible;
 import net.imglib2.RandomAccessibleInterval;
 import net.imglib2.algorithm.features.FeatureGroup;
 import net.imglib2.algorithm.features.Features;
+import net.imglib2.algorithm.features.gui.FeatureSettingsGui;
 import net.imglib2.atlas.actions.DeserializeClassifier;
 import net.imglib2.atlas.actions.SerializeClassifier;
 import net.imglib2.atlas.classification.Classifier;
@@ -33,6 +34,7 @@ import javax.swing.*;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.IntStream;
 
 import static net.imglib2.algorithm.features.GroupedFeatures.*;
@@ -73,14 +75,17 @@ public class MainFrame {
 		bdvHandle = labelingComponent.trainClassifier(rawData, nLabels, grid, isTimeSeries);
 		// --
 		FeatureGroup featureGroup = Features.group(SingleFeatures.identity(), GroupedFeatures.gauss());
-		this.classifier = new TrainableSegmentationClassifier(new FastRandomForest(), classLabels, featureGroup);
-		featureStack = new FeatureStack(Converters.convert(rawData, new RealFloatConverter<>(), new FloatType() ), grid);
-		featureStack.setFilter(featureGroup);
+		this.classifier = new TrainableSegmentationClassifier(FastRandomForest::new, classLabels, featureGroup);
+		featureStack = new FeatureStack(toFloatType(rawData), classifier, grid);
 		initClassification(rawData, nLabels, grid);
 		// --
 		initMenu(labelingComponent.getActions());
 		frame.add(labelingComponent.getComponent());
 		frame.setVisible(true);
+	}
+
+	private <R extends RealType<R>> RandomAccessibleInterval<FloatType> toFloatType(RandomAccessibleInterval<R> in) {
+		return Converters.convert(in, new RealFloatConverter<>(), new FloatType() );
 	}
 
 	private <R extends RealType<R>> void initClassification(RandomAccessibleInterval<R> rawData, int nLabels, CellGrid grid) {
@@ -111,10 +116,18 @@ public class MainFrame {
 	private void initMenu(List<AbstractNamedAction> actions) {
 		MenuBar bar = new MenuBar();
 		JMenu others = new JMenu("others");
-		others.add(newMenuItem("Show Feature", () -> selectFeature()));
+		others.add(newMenuItem("Show Feature", this::selectFeature));
+		others.add(newMenuItem("Change Feature Settings", this::changeFeatureSettings));
 		bar.add(others);
 		actions.forEach(bar::add);
 		frame.setJMenuBar(bar);
+	}
+
+	private void changeFeatureSettings() {
+		Optional<FeatureGroup> fg = FeatureSettingsGui.show();
+		if(!fg.isPresent())
+			return;
+		classifier.reset(fg.get(), classLabels);
 	}
 
 	private JMenuItem newMenuItem(String title, Runnable runnable) {
@@ -165,9 +178,32 @@ public class MainFrame {
 	}
 
 	public void selectFeature() {
-		int index = (Integer) JOptionPane.showInputDialog(null, "Index of Feature", "Select Feature",
-				JOptionPane.PLAIN_MESSAGE, null, IntStream.rangeClosed(0, featureStack.slices().size() - 1).mapToObj(x -> x).toArray(), 0);
-		featureContainer.setSource(tryWrapAsVolatile(featureStack.slices().get(index)));
+		List<RandomAccessibleInterval<FloatType>> slices = featureStack.slices();
+		List<String> names = featureStack.filter().attributeLabels();
+		Object[] objects = IntStream.range(0, slices.size()).mapToObj(i -> new NamedValue<>(names.get(i), slices.get(i))).toArray();
+		NamedValue<RandomAccessibleInterval<FloatType>> selected =
+				(NamedValue<RandomAccessibleInterval<FloatType>>) JOptionPane.showInputDialog(null, "Index of Feature", "Select Feature",
+				JOptionPane.PLAIN_MESSAGE, null, objects, 0);
+		featureContainer.setSource(tryWrapAsVolatile(selected.get()));
 		bdvHandle.getViewerPanel().requestRepaint();
+	}
+
+	class NamedValue<T> {
+		private final String name;
+		private final T value;
+
+		NamedValue(String name, T value) {
+			this.name = name;
+			this.value = value;
+		}
+
+		@Override
+		public String toString() {
+			return name;
+		}
+
+		public T get() {
+			return value;
+		}
 	}
 }
