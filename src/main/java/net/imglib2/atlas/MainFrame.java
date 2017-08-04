@@ -6,7 +6,6 @@ import bdv.util.BdvOptions;
 import bdv.util.BdvStackSource;
 import bdv.util.volatiles.SharedQueue;
 import bdv.util.volatiles.VolatileViews;
-import gnu.trove.map.hash.TLongIntHashMap;
 import hr.irb.fastRandomForest.FastRandomForest;
 import net.imglib2.*;
 import net.imglib2.algorithm.features.FeatureGroup;
@@ -18,7 +17,6 @@ import net.imglib2.atlas.classification.Classifier;
 import net.imglib2.atlas.classification.TrainClassifier;
 import net.imglib2.atlas.classification.PredictionLayer;
 import net.imglib2.atlas.classification.weka.TrainableSegmentationClassifier;
-import net.imglib2.atlas.color.ColorMapColorProvider;
 import net.imglib2.converter.Converters;
 import net.imglib2.converter.RealFloatConverter;
 import net.imglib2.img.cell.CellGrid;
@@ -50,7 +48,7 @@ public class MainFrame {
 
 	private Classifier classifier;
 
-	private SharedQueue queue = initQueue();
+	private SharedQueue queue = new SharedQueue(Runtime.getRuntime().availableProcessors());
 
 	private BdvHandle bdvHandle;
 
@@ -74,7 +72,7 @@ public class MainFrame {
 		bdvHandle = labelingComponent.trainClassifier(rawData, nLabels, grid, isTimeSeries);
 		// --
 		FeatureGroup featureGroup = Features.group(SingleFeatures.identity(), GroupedFeatures.gauss());
-		this.classifier = new TrainableSegmentationClassifier(FastRandomForest::new, classLabels, featureGroup);
+		classifier = new TrainableSegmentationClassifier(FastRandomForest::new, classLabels, featureGroup);
 		featureStack = new FeatureStack(toFloatType(rawData), classifier, grid);
 		initClassification(rawData, nLabels);
 		// --
@@ -88,21 +86,12 @@ public class MainFrame {
 	}
 
 	private <R extends RealType<R>> void initClassification(RandomAccessibleInterval<R> rawData, int nLabels) {
-		final Interval interval = new FinalInterval(rawData);
-
-		ColorMapColorProvider colorProvider = labelingComponent.colorProvider();
-		TLongIntHashMap labelingMap = labelingComponent.labelingMap();
-		new TrainClassifier<>(extensible, this.classifier, labelingMap, featureStack.block());
-		initPredictionLayer(colorProvider);
-		initSaveClassifierAction();
-		initLoadClassifierAction();
-		initMouseWheelSelection(featureStack.filter().count());
-		bdvAddFeatures();
-	}
-
-	private SharedQueue initQueue() {
-		final int numFetcherThreads = Runtime.getRuntime().availableProcessors();
-		return new SharedQueue( numFetcherThreads );
+		new TrainClassifier<>(extensible, this.classifier, labelingComponent.labelingMap(), featureStack.block());
+		new PredictionLayer(extensible, labelingComponent.colorProvider(), classifier, featureStack);
+		new SerializeClassifier(extensible, this.classifier);
+		new DeserializeClassifier(extensible, this.classifier);
+		new MouseWheelChannelSelector(extensible, 2, featureStack.filter().count());
+		new FeatureLayer(extensible, featureStack);
 	}
 
 	private JFrame initFrame() {
@@ -131,27 +120,6 @@ public class MainFrame {
 		JMenuItem item = new JMenuItem(title);
 		item.addActionListener(a -> runnable.run());
 		return item;
-	}
-
-	private void initPredictionLayer(ColorMapColorProvider colorProvider) {
-		// add prediction layer
-		new PredictionLayer(extensible, colorProvider, classifier, featureStack);
-	}
-
-	private void initSaveClassifierAction() {
-		new SerializeClassifier(extensible, this.classifier);
-	}
-
-	private void initLoadClassifierAction() {
-		new DeserializeClassifier(extensible, this.classifier);
-	}
-
-	private void initMouseWheelSelection(int nFeatures) {
-		new MouseWheelChannelSelector(extensible, 2, nFeatures );
-	}
-
-	private void bdvAddFeatures() {
-		new FeatureLayer(extensible, featureStack);
 	}
 
 	public class Extensible {
