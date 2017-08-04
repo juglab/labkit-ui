@@ -1,5 +1,7 @@
 package net.imglib2.atlas;
 
+import net.imglib2.FinalInterval;
+import net.imglib2.Interval;
 import net.imglib2.RandomAccessible;
 import net.imglib2.RandomAccessibleInterval;
 import net.imglib2.algorithm.features.Feature;
@@ -83,5 +85,9 @@ public class FeatureStack {
 
 	public FeatureGroup filter() {
 		return filter;
+	}
+
+	public Interval interval() {
+		return new FinalInterval(original);
 	}
 }

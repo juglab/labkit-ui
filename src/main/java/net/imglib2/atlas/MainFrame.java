@@ -5,7 +5,6 @@ import bdv.util.BdvHandle;
 import bdv.util.BdvOptions;
 import bdv.util.BdvStackSource;
 import bdv.util.volatiles.SharedQueue;
-import bdv.util.volatiles.VolatileViews;
 import gnu.trove.map.hash.TLongIntHashMap;
 import hr.irb.fastRandomForest.FastRandomForest;
 import net.imglib2.FinalInterval;
@@ -27,7 +26,6 @@ import net.imglib2.converter.RealFloatConverter;
 import net.imglib2.img.cell.CellGrid;
 import net.imglib2.type.numeric.RealType;
 import net.imglib2.type.numeric.real.FloatType;
-import net.imglib2.view.Views;
 import org.scijava.ui.behaviour.util.AbstractNamedAction;
 
 import javax.swing.*;
@@ -35,7 +33,6 @@ import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
-import java.util.stream.IntStream;
 
 import static net.imglib2.algorithm.features.GroupedFeatures.*;
 import static net.imglib2.algorithm.features.SingleFeatures.*;
@@ -56,8 +53,6 @@ public class MainFrame {
 	private BdvHandle bdvHandle;
 
 	private LabelingComponent labelingComponent;
-
-	private RandomAccessibleContainer<FloatType> featureContainer;
 
 	private FeatureStack featureStack;
 
@@ -116,7 +111,6 @@ public class MainFrame {
 	private void initMenu(List<AbstractNamedAction> actions) {
 		MenuBar bar = new MenuBar();
 		JMenu others = new JMenu("others");
-		others.add(newMenuItem("Show Feature", this::selectFeature));
 		others.add(newMenuItem("Change Feature Settings", this::changeFeatureSettings));
 		bar.add(others);
 		actions.forEach(bar::add);
@@ -160,50 +154,10 @@ public class MainFrame {
 	}
 
 	private void bdvAddFeatures() {
-		featureContainer = new RandomAccessibleContainer<>(tryWrapAsVolatile(featureStack.slices().get(0)));
-		final BdvStackSource source = BdvFunctions.show(Views.interval(featureContainer, featureStack.slices().get(0)), "feature", BdvOptions.options().addTo(bdvHandle));
+		FeatureLayer featureLayer = new FeatureLayer(queue, featureStack, bdvHandle);
+		labelingComponent.addAction(featureLayer.action(), "S");
+		final BdvStackSource source = BdvFunctions.show(featureLayer.getRandomAccessibleInterval(), "feature", BdvOptions.options().addTo(bdvHandle));
 		source.setDisplayRange( 0, 255 );
 		source.setActive( false );
-	}
-
-	public <T> RandomAccessibleInterval<T> tryWrapAsVolatile(RandomAccessibleInterval<T> rai) {
-		try
-		{
-			return AtlasUtils.uncheckedCast(VolatileViews.wrapAsVolatile(rai, queue));
-		}
-		catch ( final IllegalArgumentException e )
-		{
-			return rai;
-		}
-	}
-
-	public void selectFeature() {
-		List<RandomAccessibleInterval<FloatType>> slices = featureStack.slices();
-		List<String> names = featureStack.filter().attributeLabels();
-		Object[] objects = IntStream.range(0, slices.size()).mapToObj(i -> new NamedValue<>(names.get(i), slices.get(i))).toArray();
-		NamedValue<RandomAccessibleInterval<FloatType>> selected =
-				(NamedValue<RandomAccessibleInterval<FloatType>>) JOptionPane.showInputDialog(null, "Index of Feature", "Select Feature",
-				JOptionPane.PLAIN_MESSAGE, null, objects, 0);
-		featureContainer.setSource(tryWrapAsVolatile(selected.get()));
-		bdvHandle.getViewerPanel().requestRepaint();
-	}
-
-	class NamedValue<T> {
-		private final String name;
-		private final T value;
-
-		NamedValue(String name, T value) {
-			this.name = name;
-			this.value = value;
-		}
-
-		@Override
-		public String toString() {
-			return name;
-		}
-
-		public T get() {
-			return value;
-		}
 	}
 }
