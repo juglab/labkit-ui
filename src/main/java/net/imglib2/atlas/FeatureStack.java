@@ -90,4 +90,8 @@ public class FeatureStack {
 	public Interval interval() {
 		return new FinalInterval(original);
 	}
+
+	public CellGrid grid() {
+		return grid;
+	}
 }

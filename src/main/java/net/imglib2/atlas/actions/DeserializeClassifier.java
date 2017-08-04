@@ -1,38 +1,36 @@
 package net.imglib2.atlas.actions;
 
 import java.awt.event.ActionEvent;
-import java.io.IOException;
-import java.util.List;
 
 import javax.swing.JFileChooser;
 
+import net.imglib2.atlas.MainFrame;
 import org.scijava.ui.behaviour.util.AbstractNamedAction;
 
-import bdv.viewer.ViewerPanel;
 import net.imglib2.atlas.classification.Classifier;
-import net.imglib2.atlas.classification.TrainClassifier;
 
 public class DeserializeClassifier extends AbstractNamedAction
 {
 
-	private final ViewerPanel viewer;
+	private final MainFrame.Extensible extensible;
 
 	private final Classifier classifier;
 
-	public DeserializeClassifier(final ViewerPanel viewer, final Classifier classifier)
+	public DeserializeClassifier(final MainFrame.Extensible extensible, final Classifier classifier)
 	{
 		super( "Load Classifier" );
-		this.viewer = viewer;
+		this.extensible = extensible;
 		this.classifier = classifier;
+		extensible.addAction(this, "ctrl O");
 	}
 
 	@Override
 	public void actionPerformed( final ActionEvent e )
 	{
-		synchronized ( viewer )
+		synchronized (extensible.viewerSync())
 		{
 			final JFileChooser fileChooser = new JFileChooser();
-			final int returnVal = fileChooser.showOpenDialog( viewer );
+			final int returnVal = fileChooser.showOpenDialog(extensible.dialogParent());
 			if ( returnVal == JFileChooser.APPROVE_OPTION )
 				try
 			{

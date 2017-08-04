@@ -1,9 +1,9 @@
 package net.imglib2.atlas;
 
 import bdv.util.BdvHandle;
+import bdv.util.BdvStackSource;
 import bdv.util.volatiles.SharedQueue;
 import bdv.util.volatiles.VolatileViews;
-import net.imglib2.Interval;
 import net.imglib2.RandomAccessibleInterval;
 import net.imglib2.type.numeric.real.FloatType;
 import net.imglib2.view.Views;
@@ -19,19 +19,25 @@ import java.util.stream.IntStream;
  */
 public class FeatureLayer {
 
-	private final SharedQueue queue;
-
 	private final FeatureStack featureStack;
 
 	private final RandomAccessibleContainer<FloatType> featureContainer;
 
-	private final BdvHandle bdvHandle;
+	private final MainFrame.Extensible extensible;
 
-	public FeatureLayer(SharedQueue queue, FeatureStack featureStack, BdvHandle bdvHandle) {
-		this.queue = queue;
+	public FeatureLayer(MainFrame.Extensible extensible, FeatureStack featureStack) {
+		this.extensible = extensible;
 		this.featureStack = featureStack;
 		this.featureContainer = new RandomAccessibleContainer<>(tryWrapAsVolatile(featureStack.slices().get(0)));
-		this.bdvHandle = bdvHandle;
+		extensible.addAction(new AbstractNamedAction("Show Feature") {
+			@Override
+			public void actionPerformed(ActionEvent actionEvent) {
+				selectFeature();
+			}
+		}, "S");
+		final BdvStackSource source = extensible.addLayer(getRandomAccessibleInterval(), "feature");
+		source.setDisplayRange( 0, 255 );
+		source.setActive( false );
 	}
 
 	public void selectFeature() {
@@ -42,7 +48,7 @@ public class FeatureLayer {
 				(NamedValue<RandomAccessibleInterval<FloatType>>) JOptionPane.showInputDialog(null, "Index of Feature", "Select Feature",
 						JOptionPane.PLAIN_MESSAGE, null, objects, 0);
 		featureContainer.setSource(tryWrapAsVolatile(selected.get()));
-		bdvHandle.getViewerPanel().requestRepaint();
+		extensible.repaint();
 	}
 
 	public RandomAccessibleInterval<FloatType> getRandomAccessibleInterval() {
@@ -52,7 +58,7 @@ public class FeatureLayer {
 	private  <T> RandomAccessibleInterval<T> tryWrapAsVolatile(RandomAccessibleInterval<T> rai) {
 		try
 		{
-			return AtlasUtils.uncheckedCast(VolatileViews.wrapAsVolatile(rai, queue));
+			return AtlasUtils.uncheckedCast(extensible.wrapAsVolatile(rai));
 		}
 		catch ( final IllegalArgumentException e )
 		{

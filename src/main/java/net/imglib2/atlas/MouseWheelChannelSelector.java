@@ -11,13 +11,12 @@ import java.awt.geom.Rectangle2D;
 import org.scijava.ui.behaviour.DragBehaviour;
 import org.scijava.ui.behaviour.ScrollBehaviour;
 
-import bdv.viewer.ViewerPanel;
 import net.imglib2.ui.OverlayRenderer;
 
 public class MouseWheelChannelSelector implements ScrollBehaviour
 {
 
-	private final ViewerPanel viewer;
+	private final MainFrame.Extensible extensible;
 
 	private final int minChannelIndex;
 
@@ -29,14 +28,18 @@ public class MouseWheelChannelSelector implements ScrollBehaviour
 
 	private int activeChannel;
 
-	public MouseWheelChannelSelector( final ViewerPanel viewer, final int minChannelIndex, final int numChannels )
+	public MouseWheelChannelSelector(final MainFrame.Extensible extensible, final int minChannelIndex, final int numChannels )
 	{
 		super();
-		this.viewer = viewer;
+		this.extensible = extensible;
 		this.overlay = new Overlay();
 		this.minChannelIndex = minChannelIndex;
 		this.maxChannelIndex = minChannelIndex + numChannels - 1;
 		this.activeChannel = minChannelIndex;
+
+		extensible.addBehaviour(this, "mouseweheel selector", "shift F scroll");
+		extensible.addBehaviour(this.getOverlay(), "feature selector overlay", "shift F");
+		extensible.addOverlayRenderer( this.getOverlay() );
 	}
 
 	public Overlay getOverlay()
@@ -48,17 +51,17 @@ public class MouseWheelChannelSelector implements ScrollBehaviour
 	public void scroll( final double wheelRotation, final boolean isHorizontal, final int x, final int y )
 	{
 		if ( !isHorizontal )
-			synchronized( viewer ) {
-				viewer.getVisibilityAndGrouping().getSources().get( activeChannel ).setActive( false );
+			synchronized(extensible.viewerSync()) {
+//				extensible.getVisibilityAndGrouping().getSources().get( activeChannel ).setActive( false );
+//
+//				if ( wheelRotation < 0 )
+//					this.activeChannel = Math.min( activeChannel + 1, maxChannelIndex );
+//				else if ( wheelRotation > 0 )
+//					this.activeChannel = Math.max( activeChannel - 1, minChannelIndex );
+//
+//				extensible.getVisibilityAndGrouping().getSources().get( activeChannel ).setActive( true );
 
-				if ( wheelRotation < 0 )
-					this.activeChannel = Math.min( activeChannel + 1, maxChannelIndex );
-				else if ( wheelRotation > 0 )
-					this.activeChannel = Math.max( activeChannel - 1, minChannelIndex );
-
-				viewer.getVisibilityAndGrouping().getSources().get( activeChannel ).setActive( true );
-
-				viewer.requestRepaint();
+				extensible.repaint();
 			}
 	}
 
@@ -87,7 +90,7 @@ public class MouseWheelChannelSelector implements ScrollBehaviour
 
 				{
 					final FontMetrics fm = g.getFontMetrics();
-					final String str = viewer.getState().getSources().get( activeChannel ).getSpimSource().getName();
+					final String str = "TODO"; //extensible.getState().getSources().get( activeChannel ).getSpimSource().getName();
 					final Rectangle2D rect = fm.getStringBounds( str, g );
 					g2d.setColor( Color.WHITE );
 					g2d.fillRect( x, y - fm.getAscent(), ( int ) rect.getWidth(), ( int ) rect.getHeight() );
@@ -108,7 +111,7 @@ public class MouseWheelChannelSelector implements ScrollBehaviour
 		public void init( final int x, final int y )
 		{
 			visible = true;
-			viewer.getDisplay().repaint();
+			extensible.displayRepaint();
 			this.x = x;
 			this.y = y;
 		}
@@ -124,7 +127,7 @@ public class MouseWheelChannelSelector implements ScrollBehaviour
 		public void end( final int x, final int y )
 		{
 			visible = false;
-			viewer.getDisplay().repaint();
+			extensible.displayRepaint();
 
 		}
 	}

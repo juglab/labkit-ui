@@ -5,6 +5,7 @@ import java.util.Iterator;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
+import net.imglib2.atlas.MainFrame;
 import net.imglib2.type.numeric.IntegerType;
 import net.imglib2.type.numeric.integer.IntType;
 import net.imglib2.util.Pair;
@@ -39,6 +40,7 @@ public class TrainClassifier< F extends RealType< F > > extends AbstractNamedAct
 	}
 
 	public TrainClassifier(
+			final MainFrame.Extensible extensible,
 			final Classifier classifier,
 			final TLongIntHashMap groundTruth,
 			final RandomAccessibleInterval<F> features
@@ -48,6 +50,7 @@ public class TrainClassifier< F extends RealType< F > > extends AbstractNamedAct
 		this.classifier = classifier;
 		this.groundTruth = groundTruth;
 		this.features = features;
+		extensible.addAction(this, "ctrl shift T");
 	}
 
 	private final Classifier classifier;

@@ -5,12 +5,10 @@ import bdv.util.BdvHandle;
 import bdv.util.BdvOptions;
 import bdv.util.BdvStackSource;
 import bdv.util.volatiles.SharedQueue;
+import bdv.util.volatiles.VolatileViews;
 import gnu.trove.map.hash.TLongIntHashMap;
 import hr.irb.fastRandomForest.FastRandomForest;
-import net.imglib2.FinalInterval;
-import net.imglib2.Interval;
-import net.imglib2.RandomAccessible;
-import net.imglib2.RandomAccessibleInterval;
+import net.imglib2.*;
 import net.imglib2.algorithm.features.FeatureGroup;
 import net.imglib2.algorithm.features.Features;
 import net.imglib2.algorithm.features.gui.FeatureSettingsGui;
@@ -24,11 +22,15 @@ import net.imglib2.atlas.color.ColorMapColorProvider;
 import net.imglib2.converter.Converters;
 import net.imglib2.converter.RealFloatConverter;
 import net.imglib2.img.cell.CellGrid;
+import net.imglib2.type.numeric.NumericType;
 import net.imglib2.type.numeric.RealType;
 import net.imglib2.type.numeric.real.FloatType;
+import net.imglib2.ui.OverlayRenderer;
+import org.scijava.ui.behaviour.Behaviour;
 import org.scijava.ui.behaviour.util.AbstractNamedAction;
 
 import javax.swing.*;
+import java.awt.*;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
@@ -58,6 +60,8 @@ public class MainFrame {
 
 	private List<String> classLabels = Arrays.asList("foreground", "background");
 
+	private Extensible extensible = new Extensible();
+
 	public < R extends RealType< R > >
 	void trainClassifier(
 			final RandomAccessibleInterval<R> rawData,
@@ -72,7 +76,7 @@ public class MainFrame {
 		FeatureGroup featureGroup = Features.group(SingleFeatures.identity(), GroupedFeatures.gauss());
 		this.classifier = new TrainableSegmentationClassifier(FastRandomForest::new, classLabels, featureGroup);
 		featureStack = new FeatureStack(toFloatType(rawData), classifier, grid);
-		initClassification(rawData, nLabels, grid);
+		initClassification(rawData, nLabels);
 		// --
 		initMenu(labelingComponent.getActions());
 		frame.add(labelingComponent.getComponent());
@@ -83,16 +87,15 @@ public class MainFrame {
 		return Converters.convert(in, new RealFloatConverter<>(), new FloatType() );
 	}
 
-	private <R extends RealType<R>> void initClassification(RandomAccessibleInterval<R> rawData, int nLabels, CellGrid grid) {
+	private <R extends RealType<R>> void initClassification(RandomAccessibleInterval<R> rawData, int nLabels) {
 		final Interval interval = new FinalInterval(rawData);
 
 		ColorMapColorProvider colorProvider = labelingComponent.colorProvider();
 		TLongIntHashMap labelingMap = labelingComponent.labelingMap();
-		final TrainClassifier<FloatType> trainer = new TrainClassifier<>(this.classifier, labelingMap, featureStack.block());
-		initPredictionLayer(grid, interval, colorProvider);
-		labelingComponent.addAction(trainer, "ctrl shift T");
+		new TrainClassifier<>(extensible, this.classifier, labelingMap, featureStack.block());
+		initPredictionLayer(colorProvider);
 		initSaveClassifierAction();
-		initLoadClassifierAction(trainer);
+		initLoadClassifierAction();
 		initMouseWheelSelection(featureStack.filter().count());
 		bdvAddFeatures();
 	}
@@ -130,34 +133,69 @@ public class MainFrame {
 		return item;
 	}
 
-	private void initPredictionLayer(CellGrid grid, Interval interval, ColorMapColorProvider colorProvider) {
+	private void initPredictionLayer(ColorMapColorProvider colorProvider) {
 		// add prediction layer
-		RandomAccessible prediction = new PredictionLayer(grid, colorProvider, classifier, queue, featureStack.block(), bdvHandle.getViewerPanel()).prediction();
-		BdvFunctions.show(prediction, interval, "prediction", BdvOptions.options().addTo( bdvHandle ) );
+		new PredictionLayer(extensible, colorProvider, classifier, featureStack);
 	}
 
 	private void initSaveClassifierAction() {
-		final SerializeClassifier saveDialogAction = new SerializeClassifier( "classifier-serializer", bdvHandle.getViewerPanel(), this.classifier);
-		labelingComponent.addAction(saveDialogAction, "ctrl S");
+		new SerializeClassifier(extensible, this.classifier);
 	}
 
-	private void initLoadClassifierAction(TrainClassifier<FloatType> trainer) {
-		final DeserializeClassifier loadDialogAction = new DeserializeClassifier(bdvHandle.getViewerPanel(), this.classifier);
-		labelingComponent.addAction(loadDialogAction, "ctrl O");
+	private void initLoadClassifierAction() {
+		new DeserializeClassifier(extensible, this.classifier);
 	}
 
 	private void initMouseWheelSelection(int nFeatures) {
-		final MouseWheelChannelSelector mouseWheelSelector = new MouseWheelChannelSelector(bdvHandle.getViewerPanel(), 2, nFeatures );
-		labelingComponent.addBehaviour(mouseWheelSelector, "mouseweheel selector", "shift F scroll");
-		labelingComponent.addBehaviour(mouseWheelSelector.getOverlay(), "feature selector overlay", "shift F");
-		bdvHandle.getViewerPanel().getDisplay().addOverlayRenderer( mouseWheelSelector.getOverlay() );
+		new MouseWheelChannelSelector(extensible, 2, nFeatures );
 	}
 
 	private void bdvAddFeatures() {
-		FeatureLayer featureLayer = new FeatureLayer(queue, featureStack, bdvHandle);
-		labelingComponent.addAction(featureLayer.action(), "S");
-		final BdvStackSource source = BdvFunctions.show(featureLayer.getRandomAccessibleInterval(), "feature", BdvOptions.options().addTo(bdvHandle));
-		source.setDisplayRange( 0, 255 );
-		source.setActive( false );
+		new FeatureLayer(extensible, featureStack);
+	}
+
+	public class Extensible {
+
+		private Extensible() {
+
+		}
+
+		public void repaint() {
+			bdvHandle.getViewerPanel().requestRepaint();
+		}
+
+		public void addAction(AbstractNamedAction action, String keyStroke) {
+			labelingComponent.addAction(action, keyStroke);
+		}
+
+		public < T, V extends Volatile< T >> RandomAccessibleInterval< V > wrapAsVolatile(
+				RandomAccessibleInterval<T> img)
+		{
+			return VolatileViews.wrapAsVolatile( img, queue );
+		}
+
+		public Object viewerSync() {
+			return bdvHandle.getViewerPanel();
+		}
+
+		public <T extends NumericType<T>> BdvStackSource<T> addLayer(RandomAccessibleInterval<T> interval, String prediction) {
+			return BdvFunctions.show(interval, prediction, BdvOptions.options().addTo(bdvHandle));
+		}
+
+		public Component dialogParent() {
+			return frame;
+		}
+
+		public void addBehaviour(Behaviour behaviour, String name, String defaultTriggers) {
+			labelingComponent.addBehaviour(behaviour, name, defaultTriggers);
+		}
+
+		public void addOverlayRenderer(OverlayRenderer overlay) {
+			bdvHandle.getViewerPanel().getDisplay().addOverlayRenderer(overlay);
+		}
+
+		public void displayRepaint() {
+			bdvHandle.getViewerPanel().getDisplay().repaint();
+		}
 	}
 }
