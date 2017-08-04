@@ -37,6 +37,7 @@ public class FeatureLayer {
 		addLayer();
 		addAction();
 		new MouseWheelChannelSelector(extensible, this);
+		featureStack.listeners().add(() -> setSelected(selected.index));
 	}
 
 	private void addAction() {

@@ -38,6 +38,8 @@ public class FeatureStack {
 
 	private CellGrid grid;
 
+	private Notifier<Runnable> listeners = new Notifier<>();
+
 	public FeatureStack(RandomAccessibleInterval<FloatType> original, Classifier classifier, CellGrid grid) {
 		this.original = original;
 		this.grid = grid;
@@ -59,6 +61,7 @@ public class FeatureStack {
 						RevampUtils.slices(feature).stream()
 		).collect(Collectors.toList());
 		block = Views.stack(slices);
+		listeners.forEach(Runnable::run);
 	}
 
 	private static Img<FloatType> cachedFeature(RandomAccessibleInterval<FloatType> original, CellGrid grid, Feature feature) {
@@ -93,5 +96,9 @@ public class FeatureStack {
 
 	public CellGrid grid() {
 		return grid;
+	}
+
+	public Notifier<Runnable> listeners() {
+		return listeners;
 	}
 }
