@@ -109,7 +109,7 @@ public class MainFrame {
 	}
 
 	private void changeFeatureSettings() {
-		Optional<FeatureGroup> fg = FeatureSettingsGui.show();
+		Optional<FeatureGroup> fg = FeatureSettingsGui.show(classifier.features());
 		if(!fg.isPresent())
 			return;
 		classifier.reset(fg.get(), classLabels);
