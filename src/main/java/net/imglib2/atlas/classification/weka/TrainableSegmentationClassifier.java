@@ -1,18 +1,22 @@
 package net.imglib2.atlas.classification.weka;
 
+import net.imglib2.Cursor;
+import net.imglib2.RandomAccess;
 import net.imglib2.RandomAccessibleInterval;
 import net.imglib2.algorithm.features.FeatureGroup;
 import net.imglib2.algorithm.features.classification.Training;
 import net.imglib2.atlas.Notifier;
 import net.imglib2.atlas.classification.Classifier;
+import net.imglib2.atlas.labeling.Labeling;
+import net.imglib2.roi.IterableRegion;
+import net.imglib2.type.logic.BitType;
 import net.imglib2.type.numeric.IntegerType;
 import net.imglib2.type.numeric.RealType;
-import net.imglib2.util.Pair;
 import net.imglib2.view.Views;
 import net.imglib2.view.composite.Composite;
 
-import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.function.Supplier;
 
 public class TrainableSegmentationClassifier
@@ -56,11 +60,19 @@ implements Classifier
 	}
 
 	@Override
-	public void trainClassifier(Iterator<Pair<Composite<? extends RealType<?>>, ? extends IntegerType<?>>> data) throws Exception {
+	public void trainClassifier(RandomAccessibleInterval<? extends Composite<? extends RealType<?>>> features, Labeling labeling) {
 		Training training = classifier.training();
-		while(data.hasNext()) {
-			Pair<Composite<? extends RealType<?>>, ? extends IntegerType<?>> pair = data.next();
-			training.add(pair.getA(), pair.getB().getInteger());
+		Map<String, IterableRegion<BitType>> regions = labeling.regions();
+		List<String> classes = classifier.classNames();
+		for (int classIndex = 0; classIndex < classes.size(); classIndex++) {
+			IterableRegion<BitType> region = regions.get(classes.get(classIndex));
+			Cursor<Void> cursor = region.cursor();
+			RandomAccess<? extends Composite<? extends RealType<?>>> ra = features.randomAccess();
+			while (cursor.hasNext()) {
+				cursor.fwd();
+				ra.setPosition(cursor);
+				training.add(ra.get(), classIndex);
+			}
 		}
 		training.train();
 		listeners.forEach(l -> l.notify(this, true));

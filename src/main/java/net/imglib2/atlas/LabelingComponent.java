@@ -2,7 +2,6 @@ package net.imglib2.atlas;
 
 import bdv.util.*;
 import bdv.viewer.DisplayMode;
-import gnu.trove.map.hash.TLongIntHashMap;
 import net.imglib2.FinalInterval;
 import net.imglib2.Interval;
 import net.imglib2.RandomAccessibleInterval;
@@ -11,11 +10,8 @@ import net.imglib2.atlas.color.ColorMapColorProvider;
 import net.imglib2.atlas.color.IntegerARGBConverters;
 import net.imglib2.atlas.color.UpdateColormap;
 import net.imglib2.atlas.control.brush.*;
-import net.imglib2.cache.img.CellLoader;
-import net.imglib2.cache.img.DiskCachedCellImgFactory;
-import net.imglib2.cache.img.DiskCachedCellImgOptions;
+import net.imglib2.atlas.labeling.Labeling;
 import net.imglib2.converter.Converters;
-import net.imglib2.img.Img;
 import net.imglib2.img.cell.CellGrid;
 import net.imglib2.type.numeric.ARGBType;
 import net.imglib2.type.numeric.RealType;
@@ -51,7 +47,7 @@ public class LabelingComponent {
 
 	private ColorMapColorProvider colorProvider;
 
-	private LabelBrushController brushController;
+	private Labeling labels;
 
 	public LabelingComponent(JFrame dialogBoxOwner) {
 		this.dialogBoxOwner = dialogBoxOwner;
@@ -69,7 +65,7 @@ public class LabelingComponent {
 	public < R extends RealType< R > >
 	BdvHandle trainClassifier(
 			final RandomAccessibleInterval<R> rawData,
-			final int nLabels,
+			final List<String> labels,
 			final CellGrid grid,
 			final boolean isTimeSeries) throws IOException
 	{
@@ -80,7 +76,7 @@ public class LabelingComponent {
 
 		initBdv(isTimeSeries && nDim == 3);
 
-		brushController = initLabelsLayer(nLabels, grid, isTimeSeries, colorProvider);
+		initLabelsLayer(labels, grid, isTimeSeries, colorProvider);
 
 		addAction(new ToggleVisibility( "Toggle Classification", bdvHandle.getViewerPanel(), 1 ), "C");
 
@@ -107,6 +103,10 @@ public class LabelingComponent {
 		behaviors.install( bdvHandle.getTriggerbindings(), "classifier training" );
 	}
 
+	public Labeling getLabeling() {
+		return labels;
+	}
+
 	private void initBdv(boolean is2D) {
 		final BdvOptions options = BdvOptions.options();
 		if (is2D)
@@ -124,30 +124,20 @@ public class LabelingComponent {
 			return new NeighborhoodPixelsGenerator<>( NeighborhoodFactories.< IntType >hyperSphere(), 1.0 );
 	}
 
-	private Img<IntType> initCachedLabelsImg(CellGrid grid, int[] cellDimensions) {
-		final DiskCachedCellImgOptions labelsOpt = DiskCachedCellImgOptions.options().cellDimensions( cellDimensions ).dirtyAccesses( true );
-		final DiskCachedCellImgFactory< IntType > labelsFac = new DiskCachedCellImgFactory<>( labelsOpt );
-		CellLoader<IntType> loader = target -> target.forEach(x -> x.set(LabelBrushController.BACKGROUND));
-		return labelsFac.create( grid.getImgDimensions(), new IntType(), loader);
-	}
-
-	private LabelBrushController initLabelsLayer(int nLabels, CellGrid grid, boolean isTimeSeries, ColorMapColorProvider colorProvider) {
+	private void initLabelsLayer(List<String> labels, CellGrid grid, boolean isTimeSeries, ColorMapColorProvider colorProvider) {
 		final int[] cellDimensions = cellDimensions(grid);
-		final Img<IntType> labels = initCachedLabelsImg(grid, cellDimensions);
-		BdvFunctions.show( Converters.convert( (RandomAccessibleInterval< IntType >) labels, new IntegerARGBConverters.ARGB<>( colorProvider ), new ARGBType() ), "labels", BdvOptions.options().addTo(bdvHandle) );
+		this.labels = new Labeling(labels, new FinalInterval(grid.getImgDimensions()));
+		BdvFunctions.show( Converters.convert( this.labels.intView(), new IntegerARGBConverters.ARGB<>( colorProvider ), new ARGBType() ), "labels", BdvOptions.options().addTo(bdvHandle) );
 		final LabelBrushController brushController = new LabelBrushController(
 				bdvHandle.getViewerPanel(),
-				labels,
-				initPixelGenerator(isTimeSeries, labels.numDimensions()),
+				this.labels,
+				initPixelGenerator(isTimeSeries, this.labels.numDimensions()),
 				behaviors,
-				nLabels,
-				LabelBrushController.emptyLabeling(),
 				colorProvider );
 		behaviors.install( bdvHandle.getTriggerbindings(), "classifier training" );
-		initColorMapUpdaterAction(nLabels, colorProvider);
+		initColorMapUpdaterAction(labels.size(), colorProvider);
 		addAction(new ToggleVisibility( "Toggle Labels", bdvHandle.getViewerPanel(), 0 ), "L");
 		bdvHandle.getViewerPanel().getDisplay().addOverlayRenderer( brushController.getBrushOverlay() );
-		return brushController;
 	}
 
 	private void initColorMapUpdaterAction(int nLabels, ColorMapColorProvider colorProvider) {
@@ -158,9 +148,5 @@ public class LabelingComponent {
 
 	public ColorMapColorProvider colorProvider() {
 		return colorProvider;
-	}
-
-	public TLongIntHashMap labelingMap() {
-		return brushController.getLabeling();
 	}
 }

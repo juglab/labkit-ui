@@ -69,7 +69,7 @@ public class MainFrame {
 		labelingComponent = new LabelingComponent(frame);
 
 		int nLabels = classLabels.size();
-		bdvHandle = labelingComponent.trainClassifier(rawData, nLabels, grid, isTimeSeries);
+		bdvHandle = labelingComponent.trainClassifier(rawData, classLabels, grid, isTimeSeries);
 		// --
 		FeatureGroup featureGroup = Features.group(SingleFeatures.identity(), GroupedFeatures.gauss());
 		classifier = new TrainableSegmentationClassifier(FastRandomForest::new, classLabels, featureGroup);
@@ -86,7 +86,7 @@ public class MainFrame {
 	}
 
 	private <R extends RealType<R>> void initClassification(RandomAccessibleInterval<R> rawData, int nLabels) {
-		new TrainClassifier<>(extensible, this.classifier, labelingComponent.labelingMap(), featureStack.block());
+		new TrainClassifier<>(extensible, this.classifier, labelingComponent.getLabeling(), featureStack.block());
 		new PredictionLayer(extensible, labelingComponent.colorProvider(), classifier, featureStack);
 		new SerializeClassifier(extensible, this.classifier);
 		new DeserializeClassifier(extensible, this.classifier);

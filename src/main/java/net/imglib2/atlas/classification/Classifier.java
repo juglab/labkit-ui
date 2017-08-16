@@ -3,12 +3,11 @@ package net.imglib2.atlas.classification;
 import net.imglib2.RandomAccessibleInterval;
 import net.imglib2.algorithm.features.FeatureGroup;
 import net.imglib2.atlas.Notifier;
+import net.imglib2.atlas.labeling.Labeling;
 import net.imglib2.type.numeric.IntegerType;
 import net.imglib2.type.numeric.RealType;
-import net.imglib2.util.Pair;
 import net.imglib2.view.composite.Composite;
 
-import java.util.Iterator;
 import java.util.List;
 
 public interface Classifier
@@ -18,7 +17,7 @@ public interface Classifier
 
 	void predictLabels(RandomAccessibleInterval<? extends Composite<? extends RealType<?>>> instances, RandomAccessibleInterval<? extends IntegerType<?>> labels ) throws Exception;
 
-	void trainClassifier(Iterator<Pair<Composite<? extends RealType<?>>, ? extends IntegerType<?>>> data) throws Exception;
+	void trainClassifier(RandomAccessibleInterval<? extends Composite<? extends RealType<?>>> features, Labeling groundTruth);
 
 	boolean isTrained();
 

@@ -1,29 +1,25 @@
 package net.imglib2.atlas.control.brush;
 
 import java.awt.Cursor;
+import java.util.ArrayList;
 import java.util.Iterator;
 
+import net.imglib2.*;
+import net.imglib2.atlas.labeling.Labeling;
+import net.imglib2.roi.IterableRegion;
+import net.imglib2.type.logic.BitType;
 import org.scijava.ui.behaviour.Behaviour;
 import org.scijava.ui.behaviour.DragBehaviour;
 import org.scijava.ui.behaviour.ScrollBehaviour;
 import org.scijava.ui.behaviour.util.Behaviours;
 
 import bdv.viewer.ViewerPanel;
-import gnu.trove.impl.Constants;
-import gnu.trove.map.hash.TLongIntHashMap;
-import net.imglib2.Localizable;
-import net.imglib2.RandomAccessibleInterval;
-import net.imglib2.RealLocalizable;
-import net.imglib2.RealPoint;
 import net.imglib2.atlas.BrushOverlay;
 import net.imglib2.atlas.color.IntegerColorProvider;
 import net.imglib2.realtransform.AffineTransform3D;
-import net.imglib2.type.numeric.integer.IntType;
 import net.imglib2.ui.TransformEventHandler;
-import net.imglib2.util.IntervalIndexer;
 import net.imglib2.util.Intervals;
 import net.imglib2.util.LinAlgHelpers;
-import net.imglib2.view.ExtendedRandomAccessibleInterval;
 import net.imglib2.view.Views;
 
 /**
@@ -41,17 +37,15 @@ public class LabelBrushController
 
 	final protected ViewerPanel viewer;
 
-	private final RandomAccessibleInterval< IntType > labels;
+	private final Labeling labels;
 
-	private final PaintPixelsGenerator< IntType, ? extends Iterator< IntType > > pixelsGenerator;
+	private final PaintPixelsGenerator< BitType, ? extends Iterator<BitType> > pixelsGenerator;
 
 	final protected AffineTransform3D labelTransform = new AffineTransform3D();
 
 	final protected RealPoint labelLocation;
 
 	final protected BrushOverlay brushOverlay;
-
-	private final TLongIntHashMap labeling;
 
 	final int brushNormalAxis;
 
@@ -76,16 +70,6 @@ public class LabelBrushController
 		this.currentLabel = label;
 	}
 
-	public TLongIntHashMap getLabeling()
-	{
-		return labeling;
-	}
-
-	public static TLongIntHashMap emptyLabeling()
-	{
-		return new TLongIntHashMap( Constants.DEFAULT_CAPACITY, Constants.DEFAULT_LOAD_FACTOR, Long.MAX_VALUE, BACKGROUND );
-	}
-
 	/**
 	 * Coordinates where mouse dragging started.
 	 */
@@ -93,12 +77,10 @@ public class LabelBrushController
 
 	public LabelBrushController(
 			final ViewerPanel viewer,
-			final RandomAccessibleInterval<IntType> labels,
-			final PaintPixelsGenerator<IntType, ? extends Iterator<IntType>> pixelsGenerator,
+			final Labeling labels,
+			final PaintPixelsGenerator pixelsGenerator,
 			final Behaviours behaviors,
 			final int brushNormalAxis,
-			final int nLabels,
-			final TLongIntHashMap labeling,
 			final IntegerColorProvider colorProvider)
 	{
 		this.viewer = viewer;
@@ -114,20 +96,17 @@ public class LabelBrushController
 		behaviors.behaviour( new ChangeBrushRadius(), "change brush radius", "SPACE scroll" );
 		behaviors.behaviour( new ChangeLabel(), "change label", "SPACE shift scroll" );
 		behaviors.behaviour( new MoveBrush(), "move brush", "SPACE" );
-		this.nLabels = nLabels;
-		this.labeling = labeling;
+		this.nLabels = labels.numLabels();
 	}
 
 	public LabelBrushController(
 			final ViewerPanel viewer,
-			final RandomAccessibleInterval<IntType> labels,
-			final PaintPixelsGenerator<IntType, ? extends Iterator<IntType>> pixelsGenerator,
+			final Labeling labels,
+			final PaintPixelsGenerator pixelsGenerator,
 			final Behaviours behaviors,
-			final int nLabels,
-			final TLongIntHashMap labeling,
 			final IntegerColorProvider colorProvider)
 	{
-		this( viewer, labels, pixelsGenerator, behaviors, 2, nLabels, labeling, colorProvider );
+		this( viewer, labels, pixelsGenerator, behaviors, 2, colorProvider );
 	}
 
 	private void setCoordinates( final int x, final int y )
@@ -147,24 +126,15 @@ public class LabelBrushController
 		{
 			synchronized ( viewer )
 			{
-				final ExtendedRandomAccessibleInterval< IntType, RandomAccessibleInterval< IntType > > extended = Views.extendValue( labels, new IntType( BACKGROUND ) );
-				final Iterator< IntType > it = pixelsGenerator.getPaintPixels( extended, coords, viewer.getState().getCurrentTimepoint(), brushRadius );
 				final int v = getValue();
-				synchronized (labeling)
+				IterableRegion<BitType> label = new ArrayList<>(labels.regions().values()).get(v);
+				final RandomAccessible<BitType> extended = Views.extendValue(label, new BitType(false));
+				final Iterator< BitType > it = pixelsGenerator.getPaintPixels( extended, coords, viewer.getState().getCurrentTimepoint(), brushRadius );
+				while ( it.hasNext() )
 				{
-					while ( it.hasNext() )
-					{
-						final IntType val = it.next();
-						if ( Intervals.contains( labels, ( Localizable ) it ) )
-						{
-							val.set( v );
-							final long index = IntervalIndexer.positionToIndex( ( Localizable ) it, labels );
-							if ( v == BACKGROUND )
-								labeling.remove( index );
-							else
-								labeling.put( index, v );
-						}
-					}
+					final BitType val = it.next();
+					if ( Intervals.contains( label, ( Localizable ) it ) )
+						val.set( doPaint() );
 				}
 			}
 
@@ -200,7 +170,10 @@ public class LabelBrushController
 			paint( labelLocation );
 		}
 
-		abstract protected int getValue();
+		private int getValue()
+		{
+			return getCurrentLabel();
+		}
 
 		@Override
 		public void init( final int x, final int y )
@@ -214,8 +187,6 @@ public class LabelBrushController
 			paint( x, y );
 
 			viewer.requestRepaint();
-
-			// System.out.println( getName() + " drag start (" + oX + ", " + oY + ")" );
 		}
 
 		@Override
@@ -232,31 +203,29 @@ public class LabelBrushController
 			}
 
 			viewer.requestRepaint();
-
-			// System.out.println( getName() + " drag by (" + dX + ", " + dY + ")" );
 		}
 
 		@Override
 		public void end( final int x, final int y )
 		{
 		}
+
+		protected abstract boolean doPaint();
 	}
 
 	private class Paint extends AbstractPaintBehavior
 	{
 		@Override
-		protected int getValue()
-		{
-			return getCurrentLabel();
+		protected boolean doPaint() {
+			return true;
 		}
 	}
 
 	private class Erase extends AbstractPaintBehavior
 	{
 		@Override
-		protected int getValue()
-		{
-			return BACKGROUND;
+		protected boolean doPaint() {
+			return false;
 		}
 	}
 
