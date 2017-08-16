@@ -19,10 +19,10 @@ import net.imglib2.view.Views;
 public class PaintLabelsAndTrain
 {
 
-	public static void main( final String[] args ) throws IncompatibleTypeException, IOException
+	public static void em()
 	{
 
-		final String imgPath = System.getProperty( "user.home" ) + "/Downloads/epfl-em/training.tif";
+		final String imgPath = System.getProperty( "user.home" ) + "/Documents/epfl-em/training.tif";
 		final Img< UnsignedByteType > rawImg = ImageJFunctions.wrapByte( new ImagePlus( imgPath ) );
 		final long[] dimensions = Intervals.dimensionsAsLongArray( rawImg );
 		final int[] cellDimensions = new int[] { 128, 128, 2 };
@@ -36,4 +36,19 @@ public class PaintLabelsAndTrain
 		new MainFrame().trainClassifier( rawData, grid, true);
 	}
 
+	public static void main( final String[] args )
+	{
+
+		final String imgPath = System.getProperty( "user.home" ) + "/Documents/boats.tif";
+		final Img< UnsignedByteType > rawImg = ImageJFunctions.wrapByte( new ImagePlus( imgPath ) );
+		final long[] dimensions = Intervals.dimensionsAsLongArray( rawImg );
+		final int[] cellDimensions = new int[] { 128, 128 };
+		final CellGrid grid = new CellGrid( dimensions, cellDimensions );
+
+		final ArrayImg< UnsignedByteType, ByteArray > rawData = ArrayImgs.unsignedBytes( dimensions );
+		for ( final Pair< UnsignedByteType, UnsignedByteType > p : Views.interval( Views.pair( rawImg, rawData ), rawImg ) )
+			p.getB().set( p.getA() );
+
+		new MainFrame().trainClassifier( rawData, grid, false);
+	}
 }

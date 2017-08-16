@@ -64,7 +64,7 @@ public class MainFrame {
 	void trainClassifier(
 			final RandomAccessibleInterval<R> rawData,
 			final CellGrid grid,
-			final boolean isTimeSeries) throws IOException
+			final boolean isTimeSeries)
 	{
 		labelingComponent = new LabelingComponent(frame);
 

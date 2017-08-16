@@ -67,14 +67,13 @@ public class LabelingComponent {
 			final RandomAccessibleInterval<R> rawData,
 			final List<String> labels,
 			final CellGrid grid,
-			final boolean isTimeSeries) throws IOException
+			final boolean isTimeSeries)
 	{
-		final Interval interval = new FinalInterval(rawData);
 		final int nDim = rawData.numDimensions();
 
 		colorProvider = new ColorMapColorProvider(LabelBrushController.BACKGROUND, 0 );
 
-		initBdv(isTimeSeries && nDim == 3);
+		initBdv(isTimeSeries || nDim != 3);
 
 		initLabelsLayer(labels, grid, isTimeSeries, colorProvider);
 
