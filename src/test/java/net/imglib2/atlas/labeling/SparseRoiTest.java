@@ -1,4 +1,4 @@
-package net.imglib2.algorithm.features.labeling;
+package net.imglib2.atlas.labeling;
 
 import net.imglib2.Cursor;
 import net.imglib2.FinalInterval;
@@ -7,9 +7,7 @@ import net.imglib2.RandomAccess;
 import net.imglib2.type.logic.BitType;
 import org.junit.Test;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.*;
 
 /**
  * @author Matthias Arzt
