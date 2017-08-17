@@ -1,7 +1,9 @@
 package net.imglib2.atlas;
 
 import net.imglib2.RandomAccessibleInterval;
-import net.imglib2.Volatile;
+import net.imglib2.converter.Converters;
+import net.imglib2.type.numeric.RealType;
+import net.imglib2.type.numeric.real.FloatType;
 
 /*
  * @author Matthias Arzt
@@ -26,5 +28,9 @@ public class AtlasUtils {
 	public static <R,T> R uncheckedCast(T value) {
 		@SuppressWarnings("unchecked") R r = (R) value;
 		return r;
+	}
+
+	static RandomAccessibleInterval<FloatType> toFloat(RandomAccessibleInterval<? extends RealType<?>> rawData) {
+		return Converters.convert(rawData, (in, out) -> out.set(in.getRealFloat()), new FloatType());
 	}
 }

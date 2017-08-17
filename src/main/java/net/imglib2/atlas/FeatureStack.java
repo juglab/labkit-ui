@@ -13,8 +13,9 @@ import net.imglib2.cache.img.DiskCachedCellImgFactory;
 import net.imglib2.cache.img.DiskCachedCellImgOptions;
 import net.imglib2.img.Img;
 import net.imglib2.img.cell.CellGrid;
+import net.imglib2.type.numeric.ARGBType;
+import net.imglib2.type.numeric.RealType;
 import net.imglib2.type.numeric.real.FloatType;
-import net.imglib2.util.Intervals;
 import net.imglib2.view.Views;
 
 import java.util.Collections;
@@ -29,7 +30,7 @@ public class FeatureStack {
 
 	private FeatureGroup filter = null;
 
-	private RandomAccessibleInterval<FloatType> original;
+	private RandomAccessibleInterval<?> original;
 
 	private List<RandomAccessibleInterval<FloatType>> slices;
 
@@ -41,7 +42,7 @@ public class FeatureStack {
 
 	private Notifier<Runnable> listeners = new Notifier<>();
 
-	public FeatureStack(RandomAccessibleInterval<FloatType> original, Classifier classifier, CellGrid grid) {
+	public FeatureStack(RandomAccessibleInterval<?> original, Classifier classifier, CellGrid grid) {
 		this.original = original;
 		this.grid = grid;
 		classifier.listeners().add((c, ignored) -> setFilter(c.features()));
@@ -53,8 +54,10 @@ public class FeatureStack {
 			return;
 		filter = featureGroup;
 		int nDim = original.numDimensions();
+		List<RandomAccessible<FloatType>> extendedOriginal = prepareOriginal(original);
+		System.out.println("Channel Number in Original" + extendedOriginal.size());
 		perFilter = featureGroup.features().stream()
-				.map(feature -> cachedFeature(original, grid, feature))
+				.map(feature -> cachedFeature(feature, extendedOriginal))
 				.collect(Collectors.toList());
 		slices = perFilter.stream().flatMap(feature ->
 				feature.numDimensions() == nDim ?
@@ -65,17 +68,26 @@ public class FeatureStack {
 		listeners.forEach(Runnable::run);
 	}
 
-	private static Img<FloatType> cachedFeature(RandomAccessibleInterval<FloatType> original, CellGrid grid, FeatureOp feature) {
+	private List<RandomAccessible<FloatType>> prepareOriginal(RandomAccessibleInterval<?> original) {
+		Object voxel = original.randomAccess().get();
+		if(voxel instanceof RealType)
+			return Collections.singletonList(Views.extendBorder(AtlasUtils.toFloat((RandomAccessibleInterval<RealType<?>>)original)));
+		if(voxel instanceof ARGBType)
+			return RevampUtils.splitChannels((RandomAccessibleInterval<ARGBType>) original)
+					.stream().map(Views::extendBorder).collect(Collectors.toList());
+		throw new IllegalArgumentException("original must be a RandomAccessibleInterval of FloatType or ARGBType");
+	}
+
+	private Img<FloatType> cachedFeature(FeatureOp feature, List<RandomAccessible<FloatType>> extendedOriginal) {
 		int count = feature.count();
 		if(count <= 0)
 			throw new IllegalArgumentException();
-		long[] dimensions = AtlasUtils.extend(Intervals.dimensionsAsLongArray(original), count);
+		long[] dimensions = AtlasUtils.extend(grid.getImgDimensions(), count);
 		int[] cellDimensions = AtlasUtils.extend(new int[grid.numDimensions()], count);
 		grid.cellDimensions(cellDimensions);
 		final DiskCachedCellImgOptions featureOpts = DiskCachedCellImgOptions.options().cellDimensions( cellDimensions ).dirtyAccesses( false );
 		final DiskCachedCellImgFactory< FloatType > featureFactory = new DiskCachedCellImgFactory<>( featureOpts );
-		RandomAccessible<FloatType> extendedOriginal = Views.extendBorder(original);
-		CellLoader<FloatType> loader = target -> feature.apply(Collections.singletonList(extendedOriginal), RevampUtils.slices(target));
+		CellLoader<FloatType> loader = target -> feature.apply(extendedOriginal, RevampUtils.slices(target));
 		return featureFactory.create(dimensions, new FloatType(), loader);
 	}
 

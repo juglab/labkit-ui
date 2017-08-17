@@ -10,6 +10,7 @@ import hr.irb.fastRandomForest.FastRandomForest;
 import net.imglib2.*;
 import net.imglib2.algorithm.features.FeatureGroup;
 import net.imglib2.algorithm.features.Features;
+import net.imglib2.algorithm.features.GlobalSettings;
 import net.imglib2.algorithm.features.gui.FeatureSettingsGui;
 import net.imglib2.atlas.actions.DeserializeClassifier;
 import net.imglib2.atlas.actions.SerializeClassifier;
@@ -17,9 +18,8 @@ import net.imglib2.atlas.classification.Classifier;
 import net.imglib2.atlas.classification.TrainClassifier;
 import net.imglib2.atlas.classification.PredictionLayer;
 import net.imglib2.atlas.classification.weka.TrainableSegmentationClassifier;
-import net.imglib2.converter.Converters;
-import net.imglib2.converter.RealFloatConverter;
 import net.imglib2.img.cell.CellGrid;
+import net.imglib2.type.numeric.ARGBType;
 import net.imglib2.type.numeric.NumericType;
 import net.imglib2.type.numeric.RealType;
 import net.imglib2.type.numeric.real.FloatType;
@@ -34,8 +34,8 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 
-import static net.imglib2.algorithm.features.GroupedFeatures.*;
-import static net.imglib2.algorithm.features.SingleFeatures.*;
+import net.imglib2.algorithm.features.GroupedFeatures;
+import net.imglib2.algorithm.features.SingleFeatures;
 
 /**
  * A component that supports labeling an image.
@@ -60,32 +60,36 @@ public class MainFrame {
 
 	private Extensible extensible = new Extensible();
 
-	public < R extends RealType< R > >
-	void trainClassifier(
-			final RandomAccessibleInterval<R> rawData,
+	public <R extends NumericType<R>>
+	void trainClassifier(final RandomAccessibleInterval<R> rawData,
 			final CellGrid grid,
 			final boolean isTimeSeries)
 	{
 		labelingComponent = new LabelingComponent(frame);
 
-		int nLabels = classLabels.size();
 		bdvHandle = labelingComponent.trainClassifier(rawData, classLabels, grid, isTimeSeries);
 		// --
-		FeatureGroup featureGroup = Features.group(SingleFeatures.identity(), GroupedFeatures.gauss());
+		GlobalSettings globalSettings = new GlobalSettings(getImageType(rawData), 1.0, 16.0, 1.0);
+		FeatureGroup featureGroup = Features.group(new SingleFeatures(globalSettings).identity(), new GroupedFeatures(globalSettings).gauss());
 		classifier = new TrainableSegmentationClassifier(FastRandomForest::new, classLabels, featureGroup);
-		featureStack = new FeatureStack(toFloatType(rawData), classifier, grid);
-		initClassification(rawData, nLabels);
+		featureStack = new FeatureStack(rawData, classifier, grid);
+		initClassification();
 		// --
 		initMenu(labelingComponent.getActions());
 		frame.add(labelingComponent.getComponent());
 		frame.setVisible(true);
 	}
 
-	private <R extends RealType<R>> RandomAccessibleInterval<FloatType> toFloatType(RandomAccessibleInterval<R> in) {
-		return Converters.convert(in, new RealFloatConverter<>(), new FloatType() );
+	private GlobalSettings.ImageType getImageType(RandomAccessibleInterval<?> rawData) {
+		Object firstElement = rawData.randomAccess().get();
+		if(firstElement instanceof RealType)
+			return GlobalSettings.ImageType.GRAY_SCALE;
+		if(firstElement instanceof ARGBType)
+			return GlobalSettings.ImageType.COLOR;
+		throw new RuntimeException();
 	}
 
-	private <R extends RealType<R>> void initClassification(RandomAccessibleInterval<R> rawData, int nLabels) {
+	private void initClassification() {
 		new TrainClassifier<>(extensible, this.classifier, labelingComponent.getLabeling(), featureStack.block());
 		new PredictionLayer(extensible, labelingComponent.colorProvider(), classifier, featureStack);
 		new SerializeClassifier(extensible, this.classifier);

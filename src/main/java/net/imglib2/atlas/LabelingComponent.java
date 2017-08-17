@@ -14,7 +14,7 @@ import net.imglib2.atlas.labeling.Labeling;
 import net.imglib2.converter.Converters;
 import net.imglib2.img.cell.CellGrid;
 import net.imglib2.type.numeric.ARGBType;
-import net.imglib2.type.numeric.RealType;
+import net.imglib2.type.numeric.NumericType;
 import net.imglib2.type.numeric.integer.IntType;
 import org.scijava.ui.behaviour.Behaviour;
 import org.scijava.ui.behaviour.io.InputTriggerConfig;
@@ -62,7 +62,7 @@ public class LabelingComponent {
 	}
 
 	@SuppressWarnings( { "rawtypes" } )
-	public < R extends RealType< R > >
+	public < R extends NumericType< R >>
 	BdvHandle trainClassifier(
 			final RandomAccessibleInterval<R> rawData,
 			final List<String> labels,
