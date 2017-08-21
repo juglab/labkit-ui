@@ -27,7 +27,7 @@ public class LabelingSerializer
 
 	public static void save(Labeling roi, String filename) throws IOException {
 		try(FileWriter writer = new FileWriter(filename)) {
-			new Gson().toJson(writer, Labeling.class);
+			new Gson().toJson(roi, Labeling.class, writer);
 		}
 	}
 

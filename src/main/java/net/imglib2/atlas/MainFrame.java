@@ -13,6 +13,7 @@ import net.imglib2.algorithm.features.Features;
 import net.imglib2.algorithm.features.GlobalSettings;
 import net.imglib2.algorithm.features.gui.FeatureSettingsGui;
 import net.imglib2.atlas.actions.DeserializeClassifier;
+import net.imglib2.atlas.actions.LabelingSaveAndLoad;
 import net.imglib2.atlas.actions.SerializeClassifier;
 import net.imglib2.atlas.classification.Classifier;
 import net.imglib2.atlas.classification.TrainClassifier;
@@ -95,6 +96,7 @@ public class MainFrame {
 		new SerializeClassifier(extensible, this.classifier);
 		new DeserializeClassifier(extensible, this.classifier);
 		new FeatureLayer(extensible, featureStack);
+		new LabelingSaveAndLoad(extensible, labelingComponent);
 	}
 
 	private JFrame initFrame() {

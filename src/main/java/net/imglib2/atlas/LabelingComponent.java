@@ -11,11 +11,13 @@ import net.imglib2.atlas.color.IntegerARGBConverters;
 import net.imglib2.atlas.color.UpdateColormap;
 import net.imglib2.atlas.control.brush.*;
 import net.imglib2.atlas.labeling.Labeling;
+import net.imglib2.atlas.labeling.LabelsLayer;
 import net.imglib2.converter.Converters;
 import net.imglib2.img.cell.CellGrid;
 import net.imglib2.type.numeric.ARGBType;
 import net.imglib2.type.numeric.NumericType;
 import net.imglib2.type.numeric.integer.IntType;
+import net.imglib2.util.Intervals;
 import org.scijava.ui.behaviour.Behaviour;
 import org.scijava.ui.behaviour.io.InputTriggerConfig;
 import org.scijava.ui.behaviour.util.AbstractNamedAction;
@@ -47,7 +49,7 @@ public class LabelingComponent {
 
 	private ColorMapColorProvider colorProvider;
 
-	private Labeling labels;
+	private Holder<Labeling> labels;
 
 	public LabelingComponent(JFrame dialogBoxOwner) {
 		this.dialogBoxOwner = dialogBoxOwner;
@@ -103,7 +105,7 @@ public class LabelingComponent {
 	}
 
 	public Labeling getLabeling() {
-		return labels;
+		return labels.get();
 	}
 
 	private void initBdv(boolean is2D) {
@@ -125,12 +127,12 @@ public class LabelingComponent {
 
 	private void initLabelsLayer(List<String> labels, CellGrid grid, boolean isTimeSeries, ColorMapColorProvider colorProvider) {
 		final int[] cellDimensions = cellDimensions(grid);
-		this.labels = new Labeling(labels, new FinalInterval(grid.getImgDimensions()));
-		BdvFunctions.show( Converters.convert( this.labels.intView(), new IntegerARGBConverters.ARGB<>( colorProvider ), new ARGBType() ), "labels", BdvOptions.options().addTo(bdvHandle) );
+		this.labels = new Holder<>(new Labeling(labels, new FinalInterval(grid.getImgDimensions())));
+		BdvFunctions.show( new LabelsLayer(this.labels, colorProvider).view(), "labels", BdvOptions.options().addTo(bdvHandle) );
 		final LabelBrushController brushController = new LabelBrushController(
 				bdvHandle.getViewerPanel(),
 				this.labels,
-				initPixelGenerator(isTimeSeries, this.labels.numDimensions()),
+				initPixelGenerator(isTimeSeries, this.labels.get().numDimensions()),
 				behaviors,
 				colorProvider );
 		behaviors.install( bdvHandle.getTriggerbindings(), "classifier training" );
@@ -147,5 +149,11 @@ public class LabelingComponent {
 
 	public ColorMapColorProvider colorProvider() {
 		return colorProvider;
+	}
+
+	public void setLabeling(Labeling labeling) {
+		if(! Intervals.equals(labels.get(), labeling))
+			throw new IllegalArgumentException();
+		labels.set(labeling);
 	}
 }

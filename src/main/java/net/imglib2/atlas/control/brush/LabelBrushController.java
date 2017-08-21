@@ -3,8 +3,11 @@ package net.imglib2.atlas.control.brush;
 import java.awt.Cursor;
 import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.List;
+import java.util.function.Consumer;
 
 import net.imglib2.*;
+import net.imglib2.atlas.Holder;
 import net.imglib2.atlas.labeling.Labeling;
 import net.imglib2.roi.IterableRegion;
 import net.imglib2.type.logic.BitType;
@@ -37,7 +40,7 @@ public class LabelBrushController
 
 	final protected ViewerPanel viewer;
 
-	private final Labeling labels;
+	private List<IterableRegion<BitType>> labels;
 
 	private final PaintPixelsGenerator< BitType, ? extends Iterator<BitType> > pixelsGenerator;
 
@@ -50,8 +53,6 @@ public class LabelBrushController
 	final int brushNormalAxis;
 
 	protected int brushRadius = 5;
-
-	private final int nLabels;
 
 	private int currentLabel = 0;
 
@@ -77,16 +78,17 @@ public class LabelBrushController
 
 	public LabelBrushController(
 			final ViewerPanel viewer,
-			final Labeling labels,
+			final Holder<Labeling> labels,
 			final PaintPixelsGenerator pixelsGenerator,
 			final Behaviours behaviors,
 			final int brushNormalAxis,
 			final IntegerColorProvider colorProvider)
 	{
 		this.viewer = viewer;
-		this.labels = labels;
 		this.pixelsGenerator = pixelsGenerator;
 		this.brushNormalAxis = brushNormalAxis;
+		updateLabeling(labels.get());
+		labels.notifier().add(this::updateLabeling);
 		brushOverlay = new BrushOverlay( viewer, currentLabel, colorProvider );
 
 		labelLocation = new RealPoint( 3 );
@@ -96,12 +98,16 @@ public class LabelBrushController
 		behaviors.behaviour( new ChangeBrushRadius(), "change brush radius", "SPACE scroll" );
 		behaviors.behaviour( new ChangeLabel(), "change label", "SPACE shift scroll" );
 		behaviors.behaviour( new MoveBrush(), "move brush", "SPACE" );
-		this.nLabels = labels.numLabels();
+	}
+
+	void updateLabeling(Labeling labeling) {
+		this.labels = new ArrayList<>(labeling.regions().values());
+		currentLabel = Math.min(currentLabel, labels.size());
 	}
 
 	public LabelBrushController(
 			final ViewerPanel viewer,
-			final Labeling labels,
+			final Holder<Labeling> labels,
 			final PaintPixelsGenerator pixelsGenerator,
 			final Behaviours behaviors,
 			final IntegerColorProvider colorProvider)
@@ -127,7 +133,7 @@ public class LabelBrushController
 			synchronized ( viewer )
 			{
 				final int v = getValue();
-				IterableRegion<BitType> label = new ArrayList<>(labels.regions().values()).get(v);
+				IterableRegion<BitType> label = labels.get(v);
 				final RandomAccessible<BitType> extended = Views.extendValue(label, new BitType(false));
 				final Iterator< BitType > it = pixelsGenerator.getPaintPixels( extended, coords, viewer.getState().getCurrentTimepoint(), brushRadius );
 				while ( it.hasNext() )
@@ -257,7 +263,7 @@ public class LabelBrushController
 			if ( !isHorizontal )
 			{
 				if ( wheelRotation < 0 )
-					currentLabel = Math.min( currentLabel + 1, nLabels - 1 );
+					currentLabel = Math.min( currentLabel + 1, labels.size() - 1 );
 				else if ( wheelRotation > 0 )
 					currentLabel = Math.max( currentLabel - 1, 0 );
 
