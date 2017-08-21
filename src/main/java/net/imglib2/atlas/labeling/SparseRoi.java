@@ -1,5 +1,6 @@
 package net.imglib2.atlas.labeling;
 
+import com.google.gson.annotations.JsonAdapter;
 import gnu.trove.iterator.TLongIterator;
 import gnu.trove.set.TLongSet;
 import gnu.trove.set.hash.TLongHashSet;
@@ -13,6 +14,7 @@ import java.util.Iterator;
 /**
  * @author Matthias Arzt
  */
+@JsonAdapter(SparseRoiSerializer.Adapter.class)
 public class SparseRoi extends AbstractWrappedInterval<Interval> implements IterableRegion<BitType> {
 
 	final private TLongSet positions = new TLongHashSet();
