@@ -4,9 +4,9 @@ import net.imglib2.FinalInterval;
 import net.imglib2.Interval;
 import net.imglib2.RandomAccessible;
 import net.imglib2.RandomAccessibleInterval;
-import net.imglib2.algorithm.features.Feature;
 import net.imglib2.algorithm.features.FeatureGroup;
 import net.imglib2.algorithm.features.RevampUtils;
+import net.imglib2.algorithm.features.ops.FeatureOp;
 import net.imglib2.atlas.classification.Classifier;
 import net.imglib2.cache.img.CellLoader;
 import net.imglib2.cache.img.DiskCachedCellImgFactory;
@@ -17,6 +17,7 @@ import net.imglib2.type.numeric.real.FloatType;
 import net.imglib2.util.Intervals;
 import net.imglib2.view.Views;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -64,7 +65,7 @@ public class FeatureStack {
 		listeners.forEach(Runnable::run);
 	}
 
-	private static Img<FloatType> cachedFeature(RandomAccessibleInterval<FloatType> original, CellGrid grid, Feature feature) {
+	private static Img<FloatType> cachedFeature(RandomAccessibleInterval<FloatType> original, CellGrid grid, FeatureOp feature) {
 		int count = feature.count();
 		if(count <= 0)
 			throw new IllegalArgumentException();
@@ -74,7 +75,7 @@ public class FeatureStack {
 		final DiskCachedCellImgOptions featureOpts = DiskCachedCellImgOptions.options().cellDimensions( cellDimensions ).dirtyAccesses( false );
 		final DiskCachedCellImgFactory< FloatType > featureFactory = new DiskCachedCellImgFactory<>( featureOpts );
 		RandomAccessible<FloatType> extendedOriginal = Views.extendBorder(original);
-		CellLoader<FloatType> loader = target -> feature.apply(extendedOriginal, RevampUtils.slices(target));
+		CellLoader<FloatType> loader = target -> feature.apply(Collections.singletonList(extendedOriginal), RevampUtils.slices(target));
 		return featureFactory.create(dimensions, new FloatType(), loader);
 	}
 
