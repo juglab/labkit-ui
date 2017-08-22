@@ -48,8 +48,8 @@ public class PaintLabelsAndTrain
 		return rawData;
 	}
 
-	private static void lung() {
-		final String imgPath = "/home/arzt/Documents/20170804_LungImages/0003 anotated micro.jpg";
+	public static void lung() {
+		final String imgPath = "/home/arzt/Documents/20170804_LungImages/2017_08_03__0006.jpg";
 		final Img<ARGBType> rawImg = ImageJFunctions.wrap( new ImagePlus( imgPath ) );
 		final long[] dimensions = Intervals.dimensionsAsLongArray( rawImg );
 		final int[] cellDimensions = new int[] { 128, 128 };
@@ -59,6 +59,6 @@ public class PaintLabelsAndTrain
 	}
 
 	public static void main( final String[] args ) {
-		lung();
+		boats();
 	}
 }
