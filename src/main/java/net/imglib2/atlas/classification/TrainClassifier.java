@@ -1,6 +1,7 @@
 package net.imglib2.atlas.classification;
 
 import java.awt.event.ActionEvent;
+import java.util.function.Supplier;
 
 import net.imglib2.atlas.MainFrame;
 import net.imglib2.atlas.labeling.Labeling;
@@ -13,18 +14,18 @@ import net.imglib2.view.Views;
 public class TrainClassifier< F extends RealType< F > > extends AbstractNamedAction
 {
 
-	private Labeling groundTruth;
+	private Supplier<Labeling> labelingSupplier;
 
 	public TrainClassifier(
 			final MainFrame.Extensible extensible,
 			final Classifier classifier,
-			final Labeling groundTruth,
+			final Supplier<Labeling> labelingSupplier,
 			final RandomAccessibleInterval<F> features
 	)
 	{
 		super( "Train Classifier" );
 		this.classifier = classifier;
-		this.groundTruth = groundTruth;
+		this.labelingSupplier = labelingSupplier;
 		this.features = features;
 		extensible.addAction(this, "ctrl shift T");
 	}
@@ -46,7 +47,7 @@ public class TrainClassifier< F extends RealType< F > > extends AbstractNamedAct
 		trainingSuccess = false;
 		try
 		{
-			classifier.trainClassifier( Views.<F>collapse(features), groundTruth );
+			classifier.trainClassifier( Views.<F>collapse(features), labelingSupplier.get());
 			trainingSuccess = true;
 		}
 		catch ( final Exception e1 )

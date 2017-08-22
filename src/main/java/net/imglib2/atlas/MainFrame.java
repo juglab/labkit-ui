@@ -89,7 +89,7 @@ public class MainFrame {
 	}
 
 	private void initClassification() {
-		new TrainClassifier<>(extensible, this.classifier, labelingComponent.getLabeling(), featureStack.block());
+		new TrainClassifier<>(extensible, classifier, () -> labelingComponent.getLabeling(), featureStack.block());
 		PredictionLayer predictionLayer = new PredictionLayer(extensible, labelingComponent.colorProvider(), classifier, featureStack);
 		new ClassifierSaveAndLoad(extensible, this.classifier);
 		new FeatureLayer(extensible, featureStack);
