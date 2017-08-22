@@ -5,7 +5,7 @@ import bdv.viewer.DisplayMode;
 import net.imglib2.FinalInterval;
 import net.imglib2.RandomAccessibleInterval;
 import net.imglib2.atlas.actions.ToggleVisibility;
-import net.imglib2.atlas.color.ColorMapColorProvider;
+import net.imglib2.atlas.color.ColorMapProvider;
 import net.imglib2.atlas.color.UpdateColormap;
 import net.imglib2.atlas.control.brush.*;
 import net.imglib2.atlas.labeling.Labeling;
@@ -42,7 +42,7 @@ public class LabelingComponent {
 
 	private final List<AbstractNamedAction> actionsList = new ArrayList();
 
-	private ColorMapColorProvider colorProvider;
+	private ColorMapProvider colorProvider;
 
 	private Holder<Labeling> labels;
 
@@ -68,11 +68,9 @@ public class LabelingComponent {
 	{
 		final int nDim = rawData.numDimensions();
 
-		colorProvider = new ColorMapColorProvider(labels);
-
 		initBdv(isTimeSeries || nDim != 3);
 
-		initLabelsLayer(labels, grid, isTimeSeries, colorProvider);
+		initLabelsLayer(labels, grid, isTimeSeries);
 
 		addAction(new ToggleVisibility( "Toggle Classification", bdvHandle.getViewerPanel(), 1 ), "C");
 
@@ -120,28 +118,30 @@ public class LabelingComponent {
 			return new NeighborhoodPixelsGenerator<>( NeighborhoodFactories.< IntType >hyperSphere(), 1.0 );
 	}
 
-	private void initLabelsLayer(List<String> labels, CellGrid grid, boolean isTimeSeries, ColorMapColorProvider colorProvider) {
+	private void initLabelsLayer(List<String> labels, CellGrid grid, boolean isTimeSeries) {
 		final int[] cellDimensions = cellDimensions(grid);
 		this.labels = new Holder<>(new Labeling(labels, new FinalInterval(grid.getImgDimensions())));
+		colorProvider = new ColorMapProvider(this.labels);
+
 		BdvFunctions.show( new LabelsLayer(this.labels, colorProvider).view(), "labels", BdvOptions.options().addTo(bdvHandle) );
 		final LabelBrushController brushController = new LabelBrushController(
 				bdvHandle.getViewerPanel(),
 				this.labels,
 				initPixelGenerator(isTimeSeries, this.labels.get().numDimensions()),
 				behaviors,
-				colorProvider );
+				colorProvider.colorMap() );
 		behaviors.install( bdvHandle.getTriggerbindings(), "classifier training" );
 		initColorMapUpdaterAction(labels, colorProvider);
 		addAction(new ToggleVisibility( "Toggle Labels", bdvHandle.getViewerPanel(), 0 ), "L");
 		bdvHandle.getViewerPanel().getDisplay().addOverlayRenderer( brushController.getBrushOverlay() );
 	}
 
-	private void initColorMapUpdaterAction(List<String> labels, ColorMapColorProvider colorProvider) {
+	private void initColorMapUpdaterAction(List<String> labels, ColorMapProvider colorProvider) {
 		final UpdateColormap colormapUpdater = new UpdateColormap( colorProvider, labels, bdvHandle.getViewerPanel(), 1.0f );
 		addAction(colormapUpdater, "ctrl shift C");
 	}
 
-	public ColorMapColorProvider colorProvider() {
+	public ColorMapProvider colorProvider() {
 		return colorProvider;
 	}
 

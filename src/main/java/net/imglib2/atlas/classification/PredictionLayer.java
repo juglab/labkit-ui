@@ -4,8 +4,8 @@ import net.imglib2.RandomAccessible;
 import net.imglib2.atlas.FeatureStack;
 import net.imglib2.atlas.MainFrame;
 import net.imglib2.atlas.RandomAccessibleContainer;
-import net.imglib2.atlas.color.ColorMapColorProvider;
-import net.imglib2.atlas.color.IntegerColorProvider;
+import net.imglib2.atlas.color.ColorMapProvider;
+import net.imglib2.atlas.color.ColorMap;
 import net.imglib2.atlas.control.brush.LabelBrushController;
 import net.imglib2.cache.img.DiskCachedCellImg;
 import net.imglib2.cache.img.DiskCachedCellImgFactory;
@@ -27,13 +27,13 @@ public class PredictionLayer implements Classifier.Listener
 
 	private final ClassifyingCellLoader< ? > loader;
 
-	private final IntegerColorProvider colorProvider;
+	private final ColorMapProvider colorProvider;
 
 	private final RandomAccessibleContainer< VolatileARGBType > predictionContainer;
 
 	private final FeatureStack featureStack;
 
-	public PredictionLayer(MainFrame.Extensible extensible, ColorMapColorProvider colorProvider, Classifier classifier, FeatureStack featureStack) {
+	public PredictionLayer(MainFrame.Extensible extensible, ColorMapProvider colorProvider, Classifier classifier, FeatureStack featureStack) {
 		super();
 		final RandomAccessible< VolatileARGBType > emptyPrediction = ConstantUtils.constantRandomAccessible( new VolatileARGBType( 0 ), featureStack.grid().numDimensions());
 		this.extensible = extensible;
@@ -66,7 +66,7 @@ public class PredictionLayer implements Classifier.Listener
 
 				final DiskCachedCellImg< ShortType, ? > img = factory.create( featureStack.grid().getImgDimensions(), new ShortType(), loader );
 
-				int[] colors = classifier.classNames().stream().map(colorProvider::getColor).mapToInt(ARGBType::get).toArray();
+				int[] colors = classifier.classNames().stream().map(colorProvider.colorMap()::getColor).mapToInt(ARGBType::get).toArray();
 
 				final Converter< VolatileShortType, VolatileARGBType > conv = ( input, output ) -> {
 					final boolean isValid = input.isValid();

@@ -19,7 +19,7 @@ import org.scijava.ui.behaviour.util.Behaviours;
 
 import bdv.viewer.ViewerPanel;
 import net.imglib2.atlas.BrushOverlay;
-import net.imglib2.atlas.color.IntegerColorProvider;
+import net.imglib2.atlas.color.ColorMap;
 import net.imglib2.realtransform.AffineTransform3D;
 import net.imglib2.ui.TransformEventHandler;
 import net.imglib2.util.Intervals;
@@ -85,7 +85,7 @@ public class LabelBrushController
 			final PaintPixelsGenerator pixelsGenerator,
 			final Behaviours behaviors,
 			final int brushNormalAxis,
-			final IntegerColorProvider colorProvider)
+			final ColorMap colorProvider)
 	{
 		this.viewer = viewer;
 		this.pixelsGenerator = pixelsGenerator;
@@ -115,7 +115,7 @@ public class LabelBrushController
 			final Holder<Labeling> labels,
 			final PaintPixelsGenerator pixelsGenerator,
 			final Behaviours behaviors,
-			final IntegerColorProvider colorProvider)
+			final ColorMap colorProvider)
 	{
 		this( viewer, labels, pixelsGenerator, behaviors, 2, colorProvider );
 	}

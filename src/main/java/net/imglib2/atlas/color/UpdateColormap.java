@@ -24,11 +24,11 @@ public class UpdateColormap extends AbstractNamedAction
 		return alpha( alpha ) | 255 << 16 | 255 << 8 | 255 << 0;
 	}
 
-	private final ColorMapColorProvider colorProvider;
+	private final ColorMapProvider colorProvider;
 
 	private final ViewerPanel viewer;
 
-	public UpdateColormap(final ColorMapColorProvider colorProvider, final List<String> labels, final ViewerPanel viewer, final float alpha)
+	public UpdateColormap(final ColorMapProvider colorProvider, final List<String> labels, final ViewerPanel viewer, final float alpha)
 	{
 		super( "Update Color Map" );
 		this.colorProvider = colorProvider;
@@ -38,7 +38,7 @@ public class UpdateColormap extends AbstractNamedAction
 
 	public void updateColormap()
 	{
-		colorProvider.setColors(labels);
+		// TODO
 	}
 
 	@Override

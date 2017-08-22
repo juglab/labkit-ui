@@ -14,7 +14,7 @@ import java.awt.geom.Rectangle2D;
 
 import bdv.util.Affine3DHelpers;
 import bdv.viewer.ViewerPanel;
-import net.imglib2.atlas.color.IntegerColorProvider;
+import net.imglib2.atlas.color.ColorMap;
 import net.imglib2.realtransform.AffineTransform3D;
 import net.imglib2.ui.OverlayRenderer;
 
@@ -32,7 +32,7 @@ public class BrushOverlay implements OverlayRenderer
 
 	private String label;
 
-	private final IntegerColorProvider colorProvider;
+	private final ColorMap colorProvider;
 
 	public String getLabel()
 	{
@@ -44,7 +44,7 @@ public class BrushOverlay implements OverlayRenderer
 		this.label = label;
 	}
 
-	public BrushOverlay( final ViewerPanel viewer, final String label, final IntegerColorProvider colorProvider )
+	public BrushOverlay( final ViewerPanel viewer, final String label, final ColorMap colorProvider )
 	{
 		this.viewer = viewer;
 		this.label = label;
