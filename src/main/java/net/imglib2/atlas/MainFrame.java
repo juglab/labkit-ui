@@ -12,9 +12,8 @@ import net.imglib2.algorithm.features.FeatureGroup;
 import net.imglib2.algorithm.features.Features;
 import net.imglib2.algorithm.features.GlobalSettings;
 import net.imglib2.algorithm.features.gui.FeatureSettingsGui;
-import net.imglib2.atlas.actions.DeserializeClassifier;
+import net.imglib2.atlas.actions.ClassifierSaveAndLoad;
 import net.imglib2.atlas.actions.LabelingSaveAndLoad;
-import net.imglib2.atlas.actions.SerializeClassifier;
 import net.imglib2.atlas.classification.Classifier;
 import net.imglib2.atlas.classification.TrainClassifier;
 import net.imglib2.atlas.classification.PredictionLayer;
@@ -23,14 +22,12 @@ import net.imglib2.img.cell.CellGrid;
 import net.imglib2.type.numeric.ARGBType;
 import net.imglib2.type.numeric.NumericType;
 import net.imglib2.type.numeric.RealType;
-import net.imglib2.type.numeric.real.FloatType;
 import net.imglib2.ui.OverlayRenderer;
 import org.scijava.ui.behaviour.Behaviour;
 import org.scijava.ui.behaviour.util.AbstractNamedAction;
 
 import javax.swing.*;
 import java.awt.*;
-import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
@@ -93,8 +90,7 @@ public class MainFrame {
 	private void initClassification() {
 		new TrainClassifier<>(extensible, this.classifier, labelingComponent.getLabeling(), featureStack.block());
 		new PredictionLayer(extensible, labelingComponent.colorProvider(), classifier, featureStack);
-		new SerializeClassifier(extensible, this.classifier);
-		new DeserializeClassifier(extensible, this.classifier);
+		new ClassifierSaveAndLoad(extensible, this.classifier);
 		new FeatureLayer(extensible, featureStack);
 		new LabelingSaveAndLoad(extensible, labelingComponent);
 	}
