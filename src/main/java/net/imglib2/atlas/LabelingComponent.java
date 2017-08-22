@@ -123,7 +123,7 @@ public class LabelingComponent {
 		this.labels = new Holder<>(new Labeling(labels, new FinalInterval(grid.getImgDimensions())));
 		colorProvider = new ColorMapProvider(this.labels);
 
-		BdvFunctions.show( new LabelsLayer(this.labels, colorProvider).view(), "labels", BdvOptions.options().addTo(bdvHandle) );
+		BdvFunctions.show( new LabelsLayer(this.labels, colorProvider, this).view(), "labels", BdvOptions.options().addTo(bdvHandle) );
 		final LabelBrushController brushController = new LabelBrushController(
 				bdvHandle.getViewerPanel(),
 				this.labels,
@@ -149,5 +149,9 @@ public class LabelingComponent {
 		if(! Intervals.equals(labels.get(), labeling))
 			throw new IllegalArgumentException();
 		labels.set(labeling);
+	}
+
+	public void requestRepaint() {
+		bdvHandle.getViewerPanel().requestRepaint();
 	}
 }

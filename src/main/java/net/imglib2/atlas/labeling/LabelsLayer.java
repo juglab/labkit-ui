@@ -2,6 +2,7 @@ package net.imglib2.atlas.labeling;
 
 import net.imglib2.RandomAccessibleInterval;
 import net.imglib2.atlas.Holder;
+import net.imglib2.atlas.LabelingComponent;
 import net.imglib2.atlas.RandomAccessibleContainer;
 import net.imglib2.atlas.color.ColorMap;
 import net.imglib2.atlas.color.ColorMapProvider;
@@ -29,11 +30,14 @@ public class LabelsLayer {
 
 	private final RandomAccessibleContainer<ARGBType> container;
 
+	private final LabelingComponent labelingComponent; // TODO: LabelsLayer should not depend on LabelingComponent
+
 	private RandomAccessibleInterval<ARGBType> view;
 
-	public LabelsLayer(Holder<Labeling> labeling, ColorMapProvider colorProvider) {
+	public LabelsLayer(Holder<Labeling> labeling, ColorMapProvider colorProvider, LabelingComponent labelingComponent) {
 		this.colorProvider = colorProvider;
 		this.labelingHolder = labeling;
+		this.labelingComponent = labelingComponent;
 		container = new RandomAccessibleContainer<>(colorView());
 		view = Views.interval(container, labeling.get());
 		labeling.notifier().add(this::updateLabeling);
@@ -41,6 +45,7 @@ public class LabelsLayer {
 
 	private void updateLabeling(Labeling labeling) {
 		container.setSource(colorView());
+		labelingComponent.requestRepaint();
 	}
 
 	private RandomAccessibleInterval<ARGBType> colorView() {
