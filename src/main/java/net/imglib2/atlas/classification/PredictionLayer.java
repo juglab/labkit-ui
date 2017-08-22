@@ -13,6 +13,7 @@ import net.imglib2.cache.img.DiskCachedCellImgOptions;
 import net.imglib2.cache.img.DiskCachedCellImgOptions.CacheType;
 import net.imglib2.converter.Converter;
 import net.imglib2.converter.Converters;
+import net.imglib2.img.Img;
 import net.imglib2.type.numeric.ARGBType;
 import net.imglib2.type.numeric.integer.ShortType;
 import net.imglib2.type.volatiles.VolatileARGBType;
@@ -55,16 +56,7 @@ public class PredictionLayer implements Classifier.Listener
 		if ( trainingSuccess )
 			synchronized ( extensible.viewerSync() )
 			{
-				final int[] cellDimensions = new int[ featureStack.grid().numDimensions() ];
-				featureStack.grid().cellDimensions( cellDimensions );
-				final DiskCachedCellImgOptions factoryOptions = DiskCachedCellImgOptions.options()
-						.cacheType( CacheType.BOUNDED )
-						.maxCacheSize( 1000 )
-						.cellDimensions( cellDimensions );
-				final DiskCachedCellImgFactory< ShortType > factory = new DiskCachedCellImgFactory<>( factoryOptions );
-
-
-				final DiskCachedCellImg< ShortType, ? > img = factory.create( featureStack.grid().getImgDimensions(), new ShortType(), loader );
+				final Img<ShortType> img = getPrediction();
 
 				int[] colors = classifier.classNames().stream().map(colorProvider.colorMap()::getColor).mapToInt(ARGBType::get).toArray();
 
@@ -84,5 +76,18 @@ public class PredictionLayer implements Classifier.Listener
 				extensible.repaint();
 			}
 
+	}
+
+	public Img<ShortType> getPrediction() {
+		final int[] cellDimensions = new int[ featureStack.grid().numDimensions() ];
+		featureStack.grid().cellDimensions( cellDimensions );
+		final DiskCachedCellImgOptions factoryOptions = DiskCachedCellImgOptions.options()
+				//.cacheType( CacheType.BOUNDED )
+				//.maxCacheSize( 1000 )
+				.cellDimensions( cellDimensions );
+		final DiskCachedCellImgFactory< ShortType > factory = new DiskCachedCellImgFactory<>( factoryOptions );
+
+
+		return factory.create( featureStack.grid().getImgDimensions(), new ShortType(), loader );
 	}
 }
