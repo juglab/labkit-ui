@@ -13,6 +13,7 @@ import net.imglib2.cache.img.DiskCachedCellImgOptions;
 import net.imglib2.cache.img.DiskCachedCellImgOptions.CacheType;
 import net.imglib2.converter.Converter;
 import net.imglib2.converter.Converters;
+import net.imglib2.type.numeric.ARGBType;
 import net.imglib2.type.numeric.integer.ShortType;
 import net.imglib2.type.volatiles.VolatileARGBType;
 import net.imglib2.type.volatiles.VolatileShortType;
@@ -64,14 +65,14 @@ public class PredictionLayer implements Classifier.Listener
 
 
 				final DiskCachedCellImg< ShortType, ? > img = factory.create( featureStack.grid().getImgDimensions(), new ShortType(), loader );
-//				final VolatileCachedCellImg< VolatileShortType, VolatileShortArray > vimg = new VolatileCachedCellImg<>( cacheOptions.grid, vtype, hints, volatileCache.unchecked()::get );
 
+				int[] colors = classifier.classNames().stream().map(colorProvider::getColor).mapToInt(ARGBType::get).toArray();
 
 				final Converter< VolatileShortType, VolatileARGBType > conv = ( input, output ) -> {
 					final boolean isValid = input.isValid();
 					output.setValid( isValid );
 					if ( isValid )
-						output.set( colorProvider.getColor( input.get().get() ) );
+						output.set(colors[input.get().get()]);
 				};
 
 				final RandomAccessible< VolatileShortType > extended =

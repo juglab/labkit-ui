@@ -4,6 +4,7 @@ import net.imglib2.RandomAccessibleInterval;
 import net.imglib2.algorithm.features.FeatureGroup;
 import net.imglib2.atlas.Notifier;
 import net.imglib2.atlas.labeling.Labeling;
+import net.imglib2.type.numeric.ARGBType;
 import net.imglib2.type.numeric.IntegerType;
 import net.imglib2.type.numeric.RealType;
 import net.imglib2.view.composite.Composite;
@@ -28,6 +29,8 @@ public interface Classifier
 	Notifier<Listener> listeners();
 
 	FeatureGroup features();
+
+	List<String> classNames();
 
 	interface Listener
 	{

@@ -39,6 +39,11 @@ implements Classifier
 	}
 
 	@Override
+	public List<String> classNames() {
+		return classifier.classNames();
+	}
+
+	@Override
 	public void reset(FeatureGroup features, List<String> classLabels) {
 		classifier = new net.imglib2.algorithm.features.classification.Classifier(classLabels, features, wekaClassifierFactory.get());
 		listeners.forEach(l -> l.notify(this, false));

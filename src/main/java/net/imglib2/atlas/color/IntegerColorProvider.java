@@ -1,12 +1,8 @@
 package net.imglib2.atlas.color;
 
+import net.imglib2.type.numeric.ARGBType;
+
 public interface IntegerColorProvider
 {
-	default public int getColor( final int i )
-	{
-		return getColor( ( long ) i );
-	}
-
-	public int getColor( long l );
-
+	ARGBType getColor(String key );
 }

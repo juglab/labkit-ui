@@ -4,7 +4,8 @@ import java.awt.Cursor;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
-import java.util.function.Consumer;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 import net.imglib2.*;
 import net.imglib2.atlas.Holder;
@@ -40,7 +41,9 @@ public class LabelBrushController
 
 	final protected ViewerPanel viewer;
 
-	private List<IterableRegion<BitType>> labels;
+	private List<IterableRegion<BitType>> regions;
+
+	private List<String> labels;
 
 	private final PaintPixelsGenerator< BitType, ? extends Iterator<BitType> > pixelsGenerator;
 
@@ -89,7 +92,7 @@ public class LabelBrushController
 		this.brushNormalAxis = brushNormalAxis;
 		updateLabeling(labels.get());
 		labels.notifier().add(this::updateLabeling);
-		brushOverlay = new BrushOverlay( viewer, currentLabel, colorProvider );
+		brushOverlay = new BrushOverlay( viewer, this.labels.get(currentLabel), colorProvider );
 
 		labelLocation = new RealPoint( 3 );
 
@@ -101,8 +104,10 @@ public class LabelBrushController
 	}
 
 	void updateLabeling(Labeling labeling) {
-		this.labels = new ArrayList<>(labeling.regions().values());
-		currentLabel = Math.min(currentLabel, labels.size());
+		List<Map.Entry<String, IterableRegion<BitType>>> entries = new ArrayList<>(labeling.regions().entrySet());
+		this.labels = entries.stream().map(Map.Entry::getKey).collect(Collectors.toList());
+		this.regions = entries.stream().map(Map.Entry::getValue).collect(Collectors.toList());
+		currentLabel = Math.min(currentLabel, regions.size());
 	}
 
 	public LabelBrushController(
@@ -133,7 +138,7 @@ public class LabelBrushController
 			synchronized ( viewer )
 			{
 				final int v = getValue();
-				IterableRegion<BitType> label = labels.get(v);
+				IterableRegion<BitType> label = regions.get(v);
 				final RandomAccessible<BitType> extended = Views.extendValue(label, new BitType(false));
 				final Iterator< BitType > it = pixelsGenerator.getPaintPixels( extended, coords, viewer.getState().getCurrentTimepoint(), brushRadius );
 				while ( it.hasNext() )
@@ -263,11 +268,11 @@ public class LabelBrushController
 			if ( !isHorizontal )
 			{
 				if ( wheelRotation < 0 )
-					currentLabel = Math.min( currentLabel + 1, labels.size() - 1 );
+					currentLabel = Math.min( currentLabel + 1, regions.size() - 1 );
 				else if ( wheelRotation > 0 )
 					currentLabel = Math.max( currentLabel - 1, 0 );
 
-				brushOverlay.setLabel( currentLabel );
+				brushOverlay.setLabel( labels.get(currentLabel) );
 				// TODO request only overlays to repaint
 				viewer.getDisplay().repaint();
 			}

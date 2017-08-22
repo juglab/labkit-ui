@@ -3,18 +3,14 @@ package net.imglib2.atlas;
 import bdv.util.*;
 import bdv.viewer.DisplayMode;
 import net.imglib2.FinalInterval;
-import net.imglib2.Interval;
 import net.imglib2.RandomAccessibleInterval;
 import net.imglib2.atlas.actions.ToggleVisibility;
 import net.imglib2.atlas.color.ColorMapColorProvider;
-import net.imglib2.atlas.color.IntegerARGBConverters;
 import net.imglib2.atlas.color.UpdateColormap;
 import net.imglib2.atlas.control.brush.*;
 import net.imglib2.atlas.labeling.Labeling;
 import net.imglib2.atlas.labeling.LabelsLayer;
-import net.imglib2.converter.Converters;
 import net.imglib2.img.cell.CellGrid;
-import net.imglib2.type.numeric.ARGBType;
 import net.imglib2.type.numeric.NumericType;
 import net.imglib2.type.numeric.integer.IntType;
 import net.imglib2.util.Intervals;
@@ -26,7 +22,6 @@ import org.scijava.ui.behaviour.util.Behaviours;
 
 import javax.swing.*;
 import java.awt.*;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -73,7 +68,7 @@ public class LabelingComponent {
 	{
 		final int nDim = rawData.numDimensions();
 
-		colorProvider = new ColorMapColorProvider(LabelBrushController.BACKGROUND, 0 );
+		colorProvider = new ColorMapColorProvider(labels);
 
 		initBdv(isTimeSeries || nDim != 3);
 
@@ -136,14 +131,13 @@ public class LabelingComponent {
 				behaviors,
 				colorProvider );
 		behaviors.install( bdvHandle.getTriggerbindings(), "classifier training" );
-		initColorMapUpdaterAction(labels.size(), colorProvider);
+		initColorMapUpdaterAction(labels, colorProvider);
 		addAction(new ToggleVisibility( "Toggle Labels", bdvHandle.getViewerPanel(), 0 ), "L");
 		bdvHandle.getViewerPanel().getDisplay().addOverlayRenderer( brushController.getBrushOverlay() );
 	}
 
-	private void initColorMapUpdaterAction(int nLabels, ColorMapColorProvider colorProvider) {
-		final UpdateColormap colormapUpdater = new UpdateColormap( colorProvider, nLabels, bdvHandle.getViewerPanel(), 1.0f );
-		colormapUpdater.updateColormap();
+	private void initColorMapUpdaterAction(List<String> labels, ColorMapColorProvider colorProvider) {
+		final UpdateColormap colormapUpdater = new UpdateColormap( colorProvider, labels, bdvHandle.getViewerPanel(), 1.0f );
 		addAction(colormapUpdater, "ctrl shift C");
 	}
 

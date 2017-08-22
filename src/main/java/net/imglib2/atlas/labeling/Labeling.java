@@ -13,6 +13,7 @@ import net.imglib2.view.Views;
 import net.imglib2.view.composite.GenericComposite;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * @author Matthias Arzt
@@ -53,19 +54,4 @@ public class Labeling extends AbstractWrappedInterval {
 		return regions;
 	}
 
-	public RandomAccessibleInterval<IntType> intView() {
-		List<IterableRegion<BitType>> labels = new ArrayList<>(regions.values());
-		int nLabels = labels.size();
-		RandomAccessibleInterval<? extends GenericComposite<BitType>> collapsed = Views.collapse(Views.stack(labels));
-		Converter<GenericComposite<BitType>, IntType> converter = (in, out) -> {
-			for (int i = 0; i < nLabels; i++) {
-				if(in.get(i).get()) {
-					out.set(i);
-					return;
-				}
-			}
-			out.set(LabelBrushController.BACKGROUND);
-		};
-		return Converters.convert(collapsed, converter, new IntType());
-	}
 }

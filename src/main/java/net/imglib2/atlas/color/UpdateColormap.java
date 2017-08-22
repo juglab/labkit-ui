@@ -1,8 +1,7 @@
 package net.imglib2.atlas.color;
 
 import java.awt.event.ActionEvent;
-import java.util.Random;
-import java.util.stream.IntStream;
+import java.util.List;
 
 import org.scijava.ui.behaviour.util.AbstractNamedAction;
 
@@ -11,7 +10,9 @@ import bdv.viewer.ViewerPanel;
 public class UpdateColormap extends AbstractNamedAction
 {
 
-	public static int alpha( final float alpha )
+	private final List<String> labels;
+
+	public static int alpha(final float alpha )
 	{
 		assert alpha >= 0.0 && alpha <= 1.0;
 		final int val = Math.round( alpha * 255 );
@@ -25,22 +26,19 @@ public class UpdateColormap extends AbstractNamedAction
 
 	private final ColorMapColorProvider colorProvider;
 
-	private final int nLabels;
-
 	private final ViewerPanel viewer;
 
-
-	public UpdateColormap(final ColorMapColorProvider colorProvider, final int nLabels, final ViewerPanel viewer, final float alpha)
+	public UpdateColormap(final ColorMapColorProvider colorProvider, final List<String> labels, final ViewerPanel viewer, final float alpha)
 	{
 		super( "Update Color Map" );
 		this.colorProvider = colorProvider;
-		this.nLabels = nLabels;
+		this.labels = labels;
 		this.viewer = viewer;
 	}
 
 	public void updateColormap()
 	{
-		colorProvider.setColors(IntStream.range( 0, nLabels ).toArray() );
+		colorProvider.setColors(labels);
 	}
 
 	@Override
