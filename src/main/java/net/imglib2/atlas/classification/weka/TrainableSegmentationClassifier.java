@@ -5,6 +5,7 @@ import net.imglib2.RandomAccess;
 import net.imglib2.RandomAccessibleInterval;
 import net.imglib2.algorithm.features.FeatureGroup;
 import net.imglib2.algorithm.features.classification.Training;
+import net.imglib2.atlas.AtlasUtils;
 import net.imglib2.atlas.Notifier;
 import net.imglib2.atlas.classification.Classifier;
 import net.imglib2.atlas.labeling.Labeling;
@@ -12,7 +13,6 @@ import net.imglib2.roi.IterableRegion;
 import net.imglib2.type.logic.BitType;
 import net.imglib2.type.numeric.IntegerType;
 import net.imglib2.type.numeric.RealType;
-import net.imglib2.view.Views;
 import net.imglib2.view.composite.Composite;
 
 import java.util.List;
@@ -57,11 +57,7 @@ implements Classifier
 
 	@Override
 	public void predictLabels(RandomAccessibleInterval<? extends Composite<? extends RealType<?>>> instances, RandomAccessibleInterval<? extends IntegerType<?>> labels) throws Exception {
-		this.<IntegerType>copy(classifier.segmentLazyOnComposite(instances), labels);
-	}
-
-	private void copy(RandomAccessibleInterval<? extends IntegerType<?>> source, RandomAccessibleInterval<? extends IntegerType<?>> dest) {
-		Views.interval(Views.pair(source, dest), dest).forEach(p -> p.getB().setInteger(p.getA().getInteger()));
+		AtlasUtils.<IntegerType>copy(classifier.segmentLazyOnComposite(instances), labels);
 	}
 
 	@Override

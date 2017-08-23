@@ -3,16 +3,11 @@ package net.imglib2.atlas;
 import ij.ImagePlus;
 
 import net.imglib2.img.Img;
-import net.imglib2.img.array.ArrayImg;
-import net.imglib2.img.array.ArrayImgs;
-import net.imglib2.img.basictypeaccess.array.ByteArray;
 import net.imglib2.img.cell.CellGrid;
 import net.imglib2.img.display.imagej.ImageJFunctions;
 import net.imglib2.type.numeric.ARGBType;
 import net.imglib2.type.numeric.integer.UnsignedByteType;
 import net.imglib2.util.Intervals;
-import net.imglib2.util.Pair;
-import net.imglib2.view.Views;
 
 public class PaintLabelsAndTrain
 {
@@ -26,7 +21,7 @@ public class PaintLabelsAndTrain
 		final int[] cellDimensions = new int[] { 128, 128, 2 };
 		final CellGrid grid = new CellGrid( dimensions, cellDimensions );
 
-		new MainFrame().trainClassifier(copy(rawImg), grid, true);
+		new MainFrame().trainClassifier(AtlasUtils.copyUnsignedBytes(rawImg), grid, true);
 	}
 
 	public static void boats()
@@ -37,15 +32,7 @@ public class PaintLabelsAndTrain
 		final int[] cellDimensions = new int[] { 128, 128 };
 		final CellGrid grid = new CellGrid( dimensions, cellDimensions );
 
-		new MainFrame().trainClassifier(copy(rawImg), grid, false);
-	}
-
-	private static ArrayImg<UnsignedByteType, ByteArray> copy(Img<UnsignedByteType> rawImg) {
-		final long[] dimensions = Intervals.dimensionsAsLongArray( rawImg );
-		final ArrayImg< UnsignedByteType, ByteArray > rawData = ArrayImgs.unsignedBytes( dimensions );
-		for ( final Pair< UnsignedByteType, UnsignedByteType > p : Views.interval( Views.pair( rawImg, rawData ), rawImg ) )
-			p.getB().set( p.getA() );
-		return rawData;
+		new MainFrame().trainClassifier(AtlasUtils.copyUnsignedBytes(rawImg), grid, false);
 	}
 
 	public static void lung() {
