@@ -40,7 +40,7 @@ public class FeatureStack {
 	public FeatureStack(RandomAccessibleInterval<?> original, Classifier classifier, boolean isTimeSeries) {
 		this.original = original;
 		this.grid = initGrid(original, isTimeSeries);
-		classifier.listeners().add((c, ignored) -> setFilter(c.features()));
+		classifier.listeners().add(c -> setFilter(c.features()));
 		setFilter(classifier.features());
 	}
 

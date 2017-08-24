@@ -31,6 +31,8 @@ implements Classifier
 
 	private final Notifier< Listener > listeners = new Notifier<>();
 
+	private boolean isTrained = false;
+
 	@Override
 	public Notifier<Listener> listeners() {
 		return listeners;
@@ -49,7 +51,8 @@ implements Classifier
 	@Override
 	public void reset(FeatureGroup features, List<String> classLabels) {
 		classifier = new net.imglib2.algorithm.features.classification.Classifier(classLabels, features, wekaClassifierFactory.get());
-		listeners.forEach(l -> l.notify(this, false));
+		isTrained = false;
+		listeners.forEach(l -> l.notify(this));
 	}
 
 	public TrainableSegmentationClassifier(Supplier<weka.classifiers.Classifier> wekaClassifierFactory, final List<String> classLabels, FeatureGroup features)
@@ -80,12 +83,13 @@ implements Classifier
 			}
 		}
 		training.train();
-		listeners.forEach(l -> l.notify(this, true));
+		isTrained = true;
+		listeners.forEach(l -> l.notify(this));
 	}
 
 	@Override
 	public boolean isTrained() {
-		return false;
+		return isTrained;
 	}
 
 	@Override
@@ -98,6 +102,7 @@ implements Classifier
 	public void loadClassifier( final String path ) throws Exception
 	{
 		classifier = net.imglib2.algorithm.features.classification.Classifier.load(path);
-		listeners.forEach(l -> l.notify(this, true));
+		isTrained = true;
+		listeners.forEach(l -> l.notify(this));
 	}
 }

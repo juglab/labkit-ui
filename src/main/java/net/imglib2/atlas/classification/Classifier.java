@@ -31,6 +31,6 @@ public interface Classifier
 
 	interface Listener
 	{
-		void notify( Classifier classifier, boolean applicable );
+		void notify(Classifier classifier);
 	}
 }

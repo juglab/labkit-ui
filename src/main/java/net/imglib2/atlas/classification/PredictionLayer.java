@@ -48,9 +48,9 @@ public class PredictionLayer implements Classifier.Listener
 	}
 
 	@Override
-	public void notify( final Classifier classifier, final boolean trainingSuccess )
+	public void notify(final Classifier classifier)
 	{
-		if ( trainingSuccess )
+		if ( classifier.isTrained() )
 			synchronized ( extensible.viewerSync() )
 			{
 				final Img<ShortType> img = getPrediction();
