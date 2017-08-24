@@ -55,7 +55,7 @@ public class BatchSegmenter {
 	private static class Segmenter {
 		public static void segment(Classifier classifier, RandomAccessible<ARGBType> image, RandomAccessibleInterval<? extends IntegerType<?>> result) {
 			Interval interval = result;
-			RandomAccessibleInterval<FloatType> featureBlock = Features.applyOnColoredImage(classifier.features(), image, interval);
+			RandomAccessibleInterval<FloatType> featureBlock = Features.applyOnImg(classifier.features(), image, interval);
 			AtlasUtils.copy(classifier.segmentLazyOnComposite(Views.collapse(featureBlock)), result);
 		}
 	}
