@@ -60,7 +60,7 @@ public class MainFrame {
 	private Extensible extensible = new Extensible();
 
 	public <R extends NumericType<R>>
-	void trainClassifier(final RandomAccessibleInterval<R> rawData,
+	MainFrame(final RandomAccessibleInterval<R> rawData,
 			final CellGrid grid,
 			final boolean isTimeSeries)
 	{

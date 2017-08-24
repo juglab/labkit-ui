@@ -21,7 +21,7 @@ public class PaintLabelsAndTrain
 		final int[] cellDimensions = new int[] { 128, 128, 2 };
 		final CellGrid grid = new CellGrid( dimensions, cellDimensions );
 
-		new MainFrame().trainClassifier(AtlasUtils.copyUnsignedBytes(rawImg), grid, true);
+		new MainFrame(AtlasUtils.copyUnsignedBytes(rawImg), grid, true);
 	}
 
 	public static void boats()
@@ -32,7 +32,7 @@ public class PaintLabelsAndTrain
 		final int[] cellDimensions = new int[] { 128, 128 };
 		final CellGrid grid = new CellGrid( dimensions, cellDimensions );
 
-		new MainFrame().trainClassifier(AtlasUtils.copyUnsignedBytes(rawImg), grid, false);
+		new MainFrame(AtlasUtils.copyUnsignedBytes(rawImg), grid, false);
 	}
 
 	public static void lung() {
@@ -42,7 +42,7 @@ public class PaintLabelsAndTrain
 		final int[] cellDimensions = new int[] { 128, 128 };
 		final CellGrid grid = new CellGrid( dimensions, cellDimensions );
 
-		new MainFrame().trainClassifier(rawImg, grid, false);
+		new MainFrame(rawImg, grid, false);
 	}
 
 	public static void main( final String[] args ) {
