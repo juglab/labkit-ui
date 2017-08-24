@@ -54,11 +54,8 @@ public class FeatureStack {
 			return;
 		filter = featureGroup;
 		int nDim = original.numDimensions();
-		List<RandomAccessible<FloatType>> extendedOriginal = prepareOriginal(original);
-		System.out.println("Channel Number in Original" + extendedOriginal.size());
-		perFilter = featureGroup.features().stream()
-				.map(feature -> cachedFeature(feature, extendedOriginal))
-				.collect(Collectors.toList());
+		RandomAccessible<?> extendedOriginal = prepareOriginal(original);
+		perFilter = Collections.singletonList(cachedFeature(featureGroup, extendedOriginal));
 		slices = perFilter.stream().flatMap(feature ->
 				feature.numDimensions() == nDim ?
 						Stream.of(feature) :
@@ -68,17 +65,14 @@ public class FeatureStack {
 		listeners.forEach(Runnable::run);
 	}
 
-	private List<RandomAccessible<FloatType>> prepareOriginal(RandomAccessibleInterval<?> original) {
+	private RandomAccessible<?> prepareOriginal(RandomAccessibleInterval<?> original) {
 		Object voxel = original.randomAccess().get();
 		if(voxel instanceof RealType)
-			return Collections.singletonList(Views.extendBorder(AtlasUtils.toFloat((RandomAccessibleInterval<RealType<?>>)original)));
-		if(voxel instanceof ARGBType)
-			return RevampUtils.splitChannels((RandomAccessibleInterval<ARGBType>) original)
-					.stream().map(Views::extendBorder).collect(Collectors.toList());
-		throw new IllegalArgumentException("original must be a RandomAccessibleInterval of FloatType or ARGBType");
+			return Views.extendBorder(AtlasUtils.toFloat((RandomAccessibleInterval<RealType<?>>)original));
+		return Views.extendBorder(original);
 	}
 
-	private Img<FloatType> cachedFeature(FeatureOp feature, List<RandomAccessible<FloatType>> extendedOriginal) {
+	private Img<FloatType> cachedFeature(FeatureGroup feature, RandomAccessible extendedOriginal) {
 		int count = feature.count();
 		if(count <= 0)
 			throw new IllegalArgumentException();

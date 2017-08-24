@@ -70,6 +70,7 @@ public class MainFrame {
 		// --
 		GlobalSettings globalSettings = new GlobalSettings(getImageType(rawData), 1.0, 16.0, 1.0);
 		FeatureGroup featureGroup = Features.group(new SingleFeatures(globalSettings).identity(), new GroupedFeatures(globalSettings).gauss());
+
 		classifier = new TrainableSegmentationClassifier(FastRandomForest::new, classLabels, featureGroup);
 		featureStack = new FeatureStack(rawData, classifier, grid);
 		initClassification();
