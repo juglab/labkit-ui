@@ -5,12 +5,9 @@ import net.imglib2.atlas.FeatureStack;
 import net.imglib2.atlas.MainFrame;
 import net.imglib2.atlas.RandomAccessibleContainer;
 import net.imglib2.atlas.color.ColorMapProvider;
-import net.imglib2.atlas.color.ColorMap;
 import net.imglib2.atlas.control.brush.LabelBrushController;
-import net.imglib2.cache.img.DiskCachedCellImg;
 import net.imglib2.cache.img.DiskCachedCellImgFactory;
 import net.imglib2.cache.img.DiskCachedCellImgOptions;
-import net.imglib2.cache.img.DiskCachedCellImgOptions.CacheType;
 import net.imglib2.converter.Converter;
 import net.imglib2.converter.Converters;
 import net.imglib2.img.Img;
@@ -26,7 +23,7 @@ public class PredictionLayer implements Classifier.Listener
 
 	private final MainFrame.Extensible extensible;
 
-	private final ClassifyingCellLoader< ? > loader;
+	private final ClassifyingCellLoader loader;
 
 	private final ColorMapProvider colorProvider;
 
@@ -39,7 +36,7 @@ public class PredictionLayer implements Classifier.Listener
 		final RandomAccessible< VolatileARGBType > emptyPrediction = ConstantUtils.constantRandomAccessible( new VolatileARGBType( 0 ), featureStack.grid().numDimensions());
 		this.extensible = extensible;
 		this.featureStack = featureStack;
-		this.loader = new ClassifyingCellLoader<>(featureStack.block(), classifier);
+		this.loader = new ClassifyingCellLoader(featureStack.compatibleOriginal(), classifier);
 		this.colorProvider = colorProvider;
 		this.predictionContainer = new RandomAccessibleContainer<>( emptyPrediction );
 		extensible.addLayer(Views.interval(predictionContainer, featureStack.interval()), "prediction");

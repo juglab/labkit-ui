@@ -41,6 +41,7 @@ public class FeatureStack {
 	private CellGrid grid;
 
 	private Notifier<Runnable> listeners = new Notifier<>();
+	private RandomAccessibleInterval<?> preparedOriginal;
 
 	public FeatureStack(RandomAccessibleInterval<?> original, Classifier classifier, boolean isTimeSeries) {
 		this.original = original;
@@ -69,7 +70,8 @@ public class FeatureStack {
 			return;
 		filter = featureGroup;
 		int nDim = original.numDimensions();
-		RandomAccessible<?> extendedOriginal = prepareOriginal(original);
+		preparedOriginal = prepareOriginal(original);
+		RandomAccessible<?> extendedOriginal = Views.extendBorder(preparedOriginal);
 		perFilter = Collections.singletonList(cachedFeature(featureGroup, extendedOriginal));
 		slices = perFilter.stream().flatMap(feature ->
 				feature.numDimensions() == nDim ?
@@ -80,11 +82,11 @@ public class FeatureStack {
 		listeners.forEach(Runnable::run);
 	}
 
-	private RandomAccessible<?> prepareOriginal(RandomAccessibleInterval<?> original) {
+	private RandomAccessibleInterval<?> prepareOriginal(RandomAccessibleInterval<?> original) {
 		Object voxel = original.randomAccess().get();
 		if(voxel instanceof RealType)
-			return Views.extendBorder(AtlasUtils.toFloat((RandomAccessibleInterval<RealType<?>>)original));
-		return Views.extendBorder(original);
+			return AtlasUtils.toFloat(RevampUtils.uncheckedCast(original));
+		return original;
 	}
 
 	private Img<FloatType> cachedFeature(FeatureGroup feature, RandomAccessible extendedOriginal) {
@@ -122,5 +124,9 @@ public class FeatureStack {
 
 	public Notifier<Runnable> listeners() {
 		return listeners;
+	}
+
+	public RandomAccessibleInterval<?> compatibleOriginal() {
+		return preparedOriginal;
 	}
 }

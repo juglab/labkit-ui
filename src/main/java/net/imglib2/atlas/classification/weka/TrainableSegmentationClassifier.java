@@ -13,10 +13,12 @@ import net.imglib2.roi.IterableRegion;
 import net.imglib2.type.logic.BitType;
 import net.imglib2.type.numeric.IntegerType;
 import net.imglib2.type.numeric.RealType;
+import net.imglib2.view.Views;
 import net.imglib2.view.composite.Composite;
 
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ExecutorService;
 import java.util.function.Supplier;
 
 public class TrainableSegmentationClassifier
@@ -56,8 +58,8 @@ implements Classifier
 	}
 
 	@Override
-	public void predictLabels(RandomAccessibleInterval<? extends Composite<? extends RealType<?>>> instances, RandomAccessibleInterval<? extends IntegerType<?>> labels) throws Exception {
-		AtlasUtils.<IntegerType>copy(classifier.segmentLazyOnComposite(instances), labels);
+	public void segment(RandomAccessibleInterval<?> image, RandomAccessibleInterval<? extends IntegerType<?>> labels) throws Exception {
+		classifier.segment(labels, Views.extendBorder(image));
 	}
 
 	@Override
