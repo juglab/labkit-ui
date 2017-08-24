@@ -14,6 +14,7 @@ import net.imglib2.algorithm.features.GlobalSettings;
 import net.imglib2.algorithm.features.gui.FeatureSettingsGui;
 import net.imglib2.atlas.actions.ClassifierSaveAndLoad;
 import net.imglib2.atlas.actions.LabelingSaveAndLoad;
+import net.imglib2.atlas.actions.OpenImageAction;
 import net.imglib2.atlas.actions.SegmentationSave;
 import net.imglib2.atlas.classification.Classifier;
 import net.imglib2.atlas.classification.TrainClassifier;
@@ -61,18 +62,16 @@ public class MainFrame {
 
 	public <R extends NumericType<R>>
 	MainFrame(final RandomAccessibleInterval<R> rawData,
-			final CellGrid grid,
-			final boolean isTimeSeries)
+			  final boolean isTimeSeries)
 	{
 		labelingComponent = new LabelingComponent(frame);
 
-		bdvHandle = labelingComponent.trainClassifier(rawData, classLabels, grid, isTimeSeries);
+		bdvHandle = labelingComponent.trainClassifier(rawData, classLabels, isTimeSeries);
 		// --
 		GlobalSettings globalSettings = new GlobalSettings(getImageType(rawData), 1.0, 16.0, 1.0);
 		FeatureGroup featureGroup = Features.group(new SingleFeatures(globalSettings).identity(), new GroupedFeatures(globalSettings).gauss());
-
 		classifier = new TrainableSegmentationClassifier(FastRandomForest::new, classLabels, featureGroup);
-		featureStack = new FeatureStack(rawData, classifier, grid);
+		featureStack = new FeatureStack(rawData, classifier, isTimeSeries);
 		initClassification();
 		// --
 		initMenu(labelingComponent.getActions());

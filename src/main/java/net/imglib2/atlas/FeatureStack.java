@@ -6,21 +6,21 @@ import net.imglib2.RandomAccessible;
 import net.imglib2.RandomAccessibleInterval;
 import net.imglib2.algorithm.features.FeatureGroup;
 import net.imglib2.algorithm.features.RevampUtils;
-import net.imglib2.algorithm.features.ops.FeatureOp;
 import net.imglib2.atlas.classification.Classifier;
 import net.imglib2.cache.img.CellLoader;
 import net.imglib2.cache.img.DiskCachedCellImgFactory;
 import net.imglib2.cache.img.DiskCachedCellImgOptions;
 import net.imglib2.img.Img;
 import net.imglib2.img.cell.CellGrid;
-import net.imglib2.type.numeric.ARGBType;
 import net.imglib2.type.numeric.RealType;
 import net.imglib2.type.numeric.real.FloatType;
+import net.imglib2.util.Intervals;
 import net.imglib2.view.Views;
 
 import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
 /**
@@ -42,11 +42,26 @@ public class FeatureStack {
 
 	private Notifier<Runnable> listeners = new Notifier<>();
 
-	public FeatureStack(RandomAccessibleInterval<?> original, Classifier classifier, CellGrid grid) {
+	public FeatureStack(RandomAccessibleInterval<?> original, Classifier classifier, boolean isTimeSeries) {
 		this.original = original;
-		this.grid = grid;
+		this.grid = initGrid(original, isTimeSeries);
 		classifier.listeners().add((c, ignored) -> setFilter(c.features()));
 		setFilter(classifier.features());
+	}
+
+	private CellGrid initGrid(Interval interval, boolean isTimeSeries) {
+		int[] cellDimension = initCellDimension(interval.numDimensions(), isTimeSeries);
+		return new CellGrid(Intervals.dimensionsAsLongArray(interval), cellDimension);
+	}
+
+	private int[] initCellDimension(int n, boolean isTimeSeries) {
+		return isTimeSeries ? RevampUtils.extend(initCellDimension(n - 1), 2) :
+				initCellDimension(n);
+	}
+
+	private int[] initCellDimension(int n) {
+		int size = (int) Math.round(Math.pow(128. * 128., 1. / n) + 0.5);
+		return IntStream.range(0, n).map(x -> size).toArray();
 	}
 
 	public void setFilter(FeatureGroup featureGroup) {

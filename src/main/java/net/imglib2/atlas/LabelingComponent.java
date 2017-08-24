@@ -3,6 +3,7 @@ package net.imglib2.atlas;
 import bdv.util.*;
 import bdv.viewer.DisplayMode;
 import net.imglib2.FinalInterval;
+import net.imglib2.Interval;
 import net.imglib2.RandomAccessibleInterval;
 import net.imglib2.atlas.actions.ToggleVisibility;
 import net.imglib2.atlas.color.ColorMapProvider;
@@ -63,14 +64,13 @@ public class LabelingComponent {
 	BdvHandle trainClassifier(
 			final RandomAccessibleInterval<R> rawData,
 			final List<String> labels,
-			final CellGrid grid,
 			final boolean isTimeSeries)
 	{
 		final int nDim = rawData.numDimensions();
 
 		initBdv(isTimeSeries || nDim != 3);
 
-		initLabelsLayer(labels, grid, isTimeSeries);
+		initLabelsLayer(labels, rawData, isTimeSeries);
 
 		addAction(new ToggleVisibility( "Toggle Classification", bdvHandle.getViewerPanel(), 1 ), "C");
 
@@ -118,9 +118,8 @@ public class LabelingComponent {
 			return new NeighborhoodPixelsGenerator<>( NeighborhoodFactories.< IntType >hyperSphere(), 1.0 );
 	}
 
-	private void initLabelsLayer(List<String> labels, CellGrid grid, boolean isTimeSeries) {
-		final int[] cellDimensions = cellDimensions(grid);
-		this.labels = new Holder<>(new Labeling(labels, new FinalInterval(grid.getImgDimensions())));
+	private void initLabelsLayer(List<String> labels, Interval interval, boolean isTimeSeries) {
+		this.labels = new Holder<>(new Labeling(labels, interval));
 		colorProvider = new ColorMapProvider(this.labels);
 
 		BdvFunctions.show( new LabelsLayer(this.labels, colorProvider, this).view(), "labels", BdvOptions.options().addTo(bdvHandle) );
