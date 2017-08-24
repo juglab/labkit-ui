@@ -11,7 +11,7 @@ import net.imglib2.RandomAccessibleInterval;
 import net.imglib2.type.numeric.RealType;
 import net.imglib2.view.Views;
 
-public class TrainClassifier< F extends RealType< F > > extends AbstractNamedAction
+public class TrainClassifier extends AbstractNamedAction
 {
 
 	private Supplier<Labeling> labelingSupplier;
@@ -20,19 +20,19 @@ public class TrainClassifier< F extends RealType< F > > extends AbstractNamedAct
 			final MainFrame.Extensible extensible,
 			final Classifier classifier,
 			final Supplier<Labeling> labelingSupplier,
-			final RandomAccessibleInterval<F> features
+			final RandomAccessibleInterval<?> image
 	)
 	{
 		super( "Train Classifier" );
 		this.classifier = classifier;
 		this.labelingSupplier = labelingSupplier;
-		this.features = features;
+		this.image = image;
 		extensible.addAction(this, "ctrl shift T");
 	}
 
 	private final Classifier classifier;
 
-	private final RandomAccessibleInterval< F > features;
+	private final RandomAccessibleInterval<?> image;
 
 	private boolean trainingSuccess = false;
 
@@ -47,7 +47,7 @@ public class TrainClassifier< F extends RealType< F > > extends AbstractNamedAct
 		trainingSuccess = false;
 		try
 		{
-			classifier.trainClassifier( Views.<F>collapse(features), labelingSupplier.get());
+			classifier.train( image, labelingSupplier.get());
 			trainingSuccess = true;
 		}
 		catch ( final Exception e1 )

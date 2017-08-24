@@ -5,8 +5,6 @@ import net.imglib2.algorithm.features.FeatureGroup;
 import net.imglib2.atlas.Notifier;
 import net.imglib2.atlas.labeling.Labeling;
 import net.imglib2.type.numeric.IntegerType;
-import net.imglib2.type.numeric.RealType;
-import net.imglib2.view.composite.Composite;
 
 import java.util.List;
 
@@ -17,7 +15,7 @@ public interface Classifier
 
 	void segment(RandomAccessibleInterval<?> image, RandomAccessibleInterval<? extends IntegerType<?>> labels ) throws Exception;
 
-	void trainClassifier(RandomAccessibleInterval<? extends Composite<? extends RealType<?>>> features, Labeling groundTruth);
+	void train(RandomAccessibleInterval<?> image, Labeling groundTruth);
 
 	boolean isTrained();
 

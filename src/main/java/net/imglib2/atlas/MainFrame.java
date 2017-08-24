@@ -20,7 +20,6 @@ import net.imglib2.atlas.classification.Classifier;
 import net.imglib2.atlas.classification.TrainClassifier;
 import net.imglib2.atlas.classification.PredictionLayer;
 import net.imglib2.atlas.classification.weka.TrainableSegmentationClassifier;
-import net.imglib2.img.cell.CellGrid;
 import net.imglib2.type.numeric.ARGBType;
 import net.imglib2.type.numeric.NumericType;
 import net.imglib2.type.numeric.RealType;
@@ -89,7 +88,7 @@ public class MainFrame {
 	}
 
 	private void initClassification() {
-		new TrainClassifier<>(extensible, classifier, () -> labelingComponent.getLabeling(), featureStack.block());
+		new TrainClassifier(extensible, classifier, () -> labelingComponent.getLabeling(), featureStack.compatibleOriginal());
 		PredictionLayer predictionLayer = new PredictionLayer(extensible, labelingComponent.colorProvider(), classifier, featureStack);
 		new ClassifierSaveAndLoad(extensible, this.classifier);
 		new FeatureLayer(extensible, featureStack);

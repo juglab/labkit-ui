@@ -50,17 +50,17 @@ public class FeatureStack {
 		setFilter(classifier.features());
 	}
 
-	private CellGrid initGrid(Interval interval, boolean isTimeSeries) {
+	private static CellGrid initGrid(Interval interval, boolean isTimeSeries) {
 		int[] cellDimension = initCellDimension(interval.numDimensions(), isTimeSeries);
 		return new CellGrid(Intervals.dimensionsAsLongArray(interval), cellDimension);
 	}
 
-	private int[] initCellDimension(int n, boolean isTimeSeries) {
+	private static int[] initCellDimension(int n, boolean isTimeSeries) {
 		return isTimeSeries ? RevampUtils.extend(initCellDimension(n - 1), 2) :
 				initCellDimension(n);
 	}
 
-	private int[] initCellDimension(int n) {
+	private static int[] initCellDimension(int n) {
 		int size = (int) Math.round(Math.pow(128. * 128., 1. / n) + 0.5);
 		return IntStream.range(0, n).map(x -> size).toArray();
 	}
@@ -84,12 +84,20 @@ public class FeatureStack {
 
 	private RandomAccessibleInterval<?> prepareOriginal(RandomAccessibleInterval<?> original) {
 		Object voxel = original.randomAccess().get();
-		if(voxel instanceof RealType)
+		if(voxel instanceof RealType && !(voxel instanceof FloatType))
 			return AtlasUtils.toFloat(RevampUtils.uncheckedCast(original));
 		return original;
 	}
 
-	private Img<FloatType> cachedFeature(FeatureGroup feature, RandomAccessible extendedOriginal) {
+	private Img<FloatType> cachedFeature(FeatureGroup feature, RandomAccessible<?> extendedOriginal) {
+		return cachedFeatureBlock(feature, extendedOriginal, this.grid);
+	}
+
+	public static Img<FloatType> cachedFeatureBlock(FeatureGroup feature, RandomAccessibleInterval<?> image) {
+		return cachedFeatureBlock(feature, Views.extendBorder(image), initGrid(image, false));
+	}
+
+	public static Img<FloatType> cachedFeatureBlock(FeatureGroup feature, RandomAccessible<?> extendedOriginal, CellGrid grid) {
 		int count = feature.count();
 		if(count <= 0)
 			throw new IllegalArgumentException();
