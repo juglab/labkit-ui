@@ -95,6 +95,7 @@ public class MainFrame {
 		new FeatureLayer(extensible, featureStack);
 		new LabelingSaveAndLoad(extensible, labelingComponent);
 		new SegmentationSave(extensible, predictionLayer);
+		new OpenImageAction(extensible);
 	}
 
 	private JFrame initFrame() {
