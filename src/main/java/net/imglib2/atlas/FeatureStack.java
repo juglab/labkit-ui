@@ -17,11 +17,8 @@ import net.imglib2.type.numeric.real.FloatType;
 import net.imglib2.util.Intervals;
 import net.imglib2.view.Views;
 
-import java.util.Collections;
 import java.util.List;
-import java.util.stream.Collectors;
 import java.util.stream.IntStream;
-import java.util.stream.Stream;
 
 /**
  * @author Matthias Arzt
@@ -34,13 +31,10 @@ public class FeatureStack {
 
 	private List<RandomAccessibleInterval<FloatType>> slices;
 
-	private RandomAccessibleInterval<FloatType> block;
-
-	private List<RandomAccessibleInterval<FloatType>> perFilter;
-
 	private CellGrid grid;
 
 	private Notifier<Runnable> listeners = new Notifier<>();
+
 	private RandomAccessibleInterval<?> preparedOriginal;
 
 	public FeatureStack(RandomAccessibleInterval<?> original, Classifier classifier, boolean isTimeSeries) {
@@ -69,16 +63,10 @@ public class FeatureStack {
 		if(filter != null && filter.equals(featureGroup))
 			return;
 		filter = featureGroup;
-		int nDim = original.numDimensions();
 		preparedOriginal = prepareOriginal(original);
 		RandomAccessible<?> extendedOriginal = Views.extendBorder(preparedOriginal);
-		perFilter = Collections.singletonList(cachedFeature(featureGroup, extendedOriginal));
-		slices = perFilter.stream().flatMap(feature ->
-				feature.numDimensions() == nDim ?
-						Stream.of(feature) :
-						RevampUtils.slices(feature).stream()
-		).collect(Collectors.toList());
-		block = Views.stack(slices);
+		RandomAccessibleInterval<FloatType> block = cachedFeature(featureGroup, extendedOriginal);
+		slices = RevampUtils.slices(block);
 		listeners.forEach(Runnable::run);
 	}
 
@@ -108,10 +96,6 @@ public class FeatureStack {
 		final DiskCachedCellImgFactory< FloatType > featureFactory = new DiskCachedCellImgFactory<>( featureOpts );
 		CellLoader<FloatType> loader = target -> feature.apply(extendedOriginal, RevampUtils.slices(target));
 		return featureFactory.create(dimensions, new FloatType(), loader);
-	}
-
-	public RandomAccessibleInterval<FloatType> block() {
-		return block;
 	}
 
 	public List<RandomAccessibleInterval<FloatType>> slices() {
