@@ -110,6 +110,7 @@ Jean-Yves Tinevez and Michael Zinsmaier.</license.copyrightOwners>
 		<dependency>
 			<groupId>net.imglib2</groupId>
 			<artifactId>imglib2-cache</artifactId>
+			<version>1.0.0-beta-7</version>
 		</dependency>
 		<dependency>
 			<groupId>net.imglib2</groupId>

@@ -3,6 +3,7 @@ package net.imglib2.atlas.classification;
 import net.imglib2.RandomAccessible;
 import net.imglib2.RandomAccessibleInterval;
 import net.imglib2.cache.img.CellLoader;
+import net.imglib2.cache.img.SingleCellArrayImg;
 import net.imglib2.img.Img;
 import net.imglib2.img.basictypeaccess.volatiles.VolatileShortAccess;
 import net.imglib2.type.numeric.RealType;
@@ -28,8 +29,7 @@ public class ClassifyingCellLoader implements CellLoader< ShortType >
 	}
 
 	@Override
-	public void load( final Img< ShortType > img ) throws Exception
-	{
+	public void load(SingleCellArrayImg<ShortType, ?> img) throws Exception {
 		classifier.segment(original, img );
 	}
 }

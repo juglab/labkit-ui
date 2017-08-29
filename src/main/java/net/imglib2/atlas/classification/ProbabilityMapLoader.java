@@ -2,6 +2,7 @@ package net.imglib2.atlas.classification;
 
 import net.imglib2.RandomAccessible;
 import net.imglib2.cache.img.CellLoader;
+import net.imglib2.cache.img.SingleCellArrayImg;
 import net.imglib2.img.Img;
 import net.imglib2.img.cell.CellGrid;
 import net.imglib2.type.numeric.RealType;
@@ -41,8 +42,7 @@ public class ProbabilityMapLoader< T extends RealType< T > > implements CellLoad
 	}
 
 	@Override
-	public void load( final Img< UnsignedShortType > img ) throws Exception
-	{
+	public void load(SingleCellArrayImg<UnsignedShortType, ?> cell) throws Exception {
 
 	}
 }
