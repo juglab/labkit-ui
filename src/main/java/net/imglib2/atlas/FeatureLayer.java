@@ -46,7 +46,7 @@ public class FeatureLayer {
 			public void actionPerformed(ActionEvent actionEvent) {
 				selectFeature();
 			}
-		}, "S");
+		}, "");
 	}
 
 	private void addLayer() {
