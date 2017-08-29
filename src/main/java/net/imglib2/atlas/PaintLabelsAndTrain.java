@@ -24,7 +24,7 @@ public class PaintLabelsAndTrain
 		start("/home/arzt/Documents/20170804_LungImages/2017_08_03__0004.jpg");
 	}
 
-	private static void start(String imgPath) {
+	public static void start(String imgPath) {
 		Img<?> img = ImageJFunctions.wrap(new ImagePlus(imgPath));
 		new MainFrame(RevampUtils.uncheckedCast(img), false);
 	}
