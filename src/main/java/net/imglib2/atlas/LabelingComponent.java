@@ -36,10 +36,6 @@ public class LabelingComponent {
 
 	private ActionsAndBehaviours actionsAndBehaviours;
 
-	public LabelingComponent(JFrame dialogBoxOwner) {
-		this.dialogBoxOwner = dialogBoxOwner;
-	}
-
 	public JComponent getComponent() {
 		return panel;
 	}
@@ -47,13 +43,15 @@ public class LabelingComponent {
 	public List<AbstractNamedAction> getActions() {
 		return actionsAndBehaviours.getActions();
 	}
-	@SuppressWarnings( { "rawtypes" } )
+
 	public < R extends NumericType< R >>
-	BdvHandle trainClassifier(
+	LabelingComponent(final JFrame dialogBoxOwner,
 			final RandomAccessibleInterval<R> rawData,
 			final List<String> labels,
 			final boolean isTimeSeries)
 	{
+		this.dialogBoxOwner = dialogBoxOwner;
+
 		final int nDim = rawData.numDimensions();
 
 		initBdv(isTimeSeries || nDim != 3);
@@ -65,8 +63,6 @@ public class LabelingComponent {
 		addAction(new ToggleVisibility( "Toggle Classification", bdvHandle.getViewerPanel(), 1 ), "C");
 
 		BdvFunctions.show(rawData, "original", BdvOptions.options().addTo( bdvHandle ));
-
-		return bdvHandle;
 	}
 
 	private static int[] cellDimensions(CellGrid grid) {
@@ -139,4 +135,7 @@ public class LabelingComponent {
 		bdvHandle.getViewerPanel().requestRepaint();
 	}
 
+	public BdvHandle getBdvHandle() {
+		return bdvHandle;
+	}
 }

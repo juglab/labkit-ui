@@ -63,9 +63,8 @@ public class MainFrame {
 	MainFrame(final RandomAccessibleInterval<R> rawData,
 			  final boolean isTimeSeries)
 	{
-		labelingComponent = new LabelingComponent(frame);
-
-		bdvHandle = labelingComponent.trainClassifier(rawData, classLabels, isTimeSeries);
+		labelingComponent = new LabelingComponent(frame, rawData, classLabels, isTimeSeries);
+		bdvHandle = labelingComponent.getBdvHandle();
 		// --
 		GlobalSettings globalSettings = new GlobalSettings(getImageType(rawData), 1.0, 16.0, 1.0);
 		FeatureGroup featureGroup = Features.group(new SingleFeatures(globalSettings).identity(), new GroupedFeatures(globalSettings).gauss());
