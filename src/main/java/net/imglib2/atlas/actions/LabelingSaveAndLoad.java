@@ -5,6 +5,7 @@ import net.imglib2.atlas.MainFrame;
 import net.imglib2.atlas.labeling.Labeling;
 import net.imglib2.atlas.labeling.LabelingSerializer;
 
+import javax.swing.filechooser.FileNameExtensionFilter;
 import java.io.IOException;
 
 /**
@@ -15,10 +16,10 @@ public class LabelingSaveAndLoad extends AbstractSaveAndLoadAction {
 	private final LabelingComponent labelingComponent;
 
 	public LabelingSaveAndLoad(MainFrame.Extensible extensible, LabelingComponent labelingComponent) {
-		super(extensible);
+		super(extensible, new FileNameExtensionFilter("Labeling (*.labeling)", "labeling"));
 		this.labelingComponent = labelingComponent;
-		initAction("Save Labeling", this::save, "");
-		initAction("Load Labeling", this::load, "");
+		initSaveAction("Save Labeling", this::save, "");
+		initLoadAction("Load Labeling", this::load, "");
 	}
 
 	private void save(String filename) throws IOException {

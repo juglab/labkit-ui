@@ -2,10 +2,8 @@ package net.imglib2.atlas.actions;
 
 import net.imglib2.atlas.MainFrame;
 import net.imglib2.atlas.classification.Classifier;
-import net.imglib2.atlas.labeling.Labeling;
-import net.imglib2.atlas.labeling.LabelingSerializer;
 
-import java.io.IOException;
+import javax.swing.filechooser.FileNameExtensionFilter;
 
 /**
  * @author Matthias Arzt
@@ -15,10 +13,10 @@ public class ClassifierSaveAndLoad extends AbstractSaveAndLoadAction {
 	private final Classifier classifier;
 
 	public ClassifierSaveAndLoad(MainFrame.Extensible extensible, final Classifier classifier) {
-		super(extensible);
+		super(extensible, new FileNameExtensionFilter("Classifier", "classifier"));
 		this.classifier = classifier;
-		initAction("Save Classifier", this::save, "ctrl O");
-		initAction("Load Classifier", this::load, "ctrl S");
+		initSaveAction("Save Classifier", this::save, "ctrl O");
+		initLoadAction("Load Classifier", this::load, "ctrl S");
 	}
 
 	private void save(String filename) throws Exception {

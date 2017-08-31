@@ -8,6 +8,8 @@ import net.imglib2.exception.IncompatibleTypeException;
 import net.imglib2.img.Img;
 import net.imglib2.type.numeric.integer.ShortType;
 
+import javax.swing.filechooser.FileNameExtensionFilter;
+
 /**
  * @author Matthias Arzt
  */
@@ -16,9 +18,9 @@ public class SegmentationSave extends AbstractSaveAndLoadAction {
 	private final PredictionLayer predictionLayer;
 
 	public SegmentationSave(MainFrame.Extensible extensible, PredictionLayer predictionLayer) {
-		super(extensible);
+		super(extensible, AbstractSaveAndLoadAction.TIFF_FILTER);
 		this.predictionLayer = predictionLayer;
-		initAction("Save Segmentation", this::action, "");
+		initSaveAction("Save Segmentation", this::action, "");
 	}
 
 	private void action(String filename) throws IncompatibleTypeException, ImgIOException {
