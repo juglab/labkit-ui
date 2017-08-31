@@ -5,6 +5,8 @@ import net.imglib2.algorithm.neighborhood.HyperSphereNeighborhood;
 import net.imglib2.algorithm.neighborhood.HyperSphereNeighborhoodFactory;
 import net.imglib2.algorithm.neighborhood.Neighborhood;
 
+import java.util.stream.DoubleStream;
+
 public class NeighborhoodFactories
 {
 
@@ -31,4 +33,11 @@ public class NeighborhoodFactories
 		return new HypherSphereNeighborhoodFactory<>();
 	}
 
+	public static < T > NeighborhoodFactory< T > hyperEllipsoid(final double[] radius) {
+		return ((access, position, size) -> new HyperEllipsoidNeighborhood<>(position, scale(radius, size), access));
+	}
+
+	private static double[] scale(double[] radius, long size) {
+		return DoubleStream.of(radius).map(x -> x * size).toArray();
+	}
 }
