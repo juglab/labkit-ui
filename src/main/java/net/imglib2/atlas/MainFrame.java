@@ -1,7 +1,6 @@
 package net.imglib2.atlas;
 
 import bdv.util.BdvFunctions;
-import bdv.util.BdvHandle;
 import bdv.util.BdvOptions;
 import bdv.util.BdvStackSource;
 import bdv.util.volatiles.SharedQueue;
@@ -49,8 +48,6 @@ public class MainFrame {
 
 	private SharedQueue queue = new SharedQueue(Runtime.getRuntime().availableProcessors());
 
-	private BdvHandle bdvHandle;
-
 	private LabelingComponent labelingComponent;
 
 	private FeatureStack featureStack;
@@ -64,7 +61,6 @@ public class MainFrame {
 			  final boolean isTimeSeries)
 	{
 		labelingComponent = new LabelingComponent(frame, rawData, classLabels, isTimeSeries);
-		bdvHandle = labelingComponent.getBdvHandle();
 		// --
 		GlobalSettings globalSettings = new GlobalSettings(getImageType(rawData), 1.0, 16.0, 1.0);
 		FeatureGroup featureGroup = Features.group(new SingleFeatures(globalSettings).identity(), new GroupedFeatures(globalSettings).gauss());
@@ -131,7 +127,7 @@ public class MainFrame {
 		}
 
 		public void repaint() {
-			bdvHandle.getViewerPanel().requestRepaint();
+			labelingComponent.requestRepaint();
 		}
 
 		public void addAction(AbstractNamedAction action, String keyStroke) {
@@ -145,11 +141,11 @@ public class MainFrame {
 		}
 
 		public Object viewerSync() {
-			return bdvHandle.getViewerPanel();
+			return labelingComponent.viewerSync();
 		}
 
 		public <T extends NumericType<T>> BdvStackSource<T> addLayer(RandomAccessibleInterval<T> interval, String prediction) {
-			return BdvFunctions.show(interval, prediction, BdvOptions.options().addTo(bdvHandle));
+			return labelingComponent.addLayer(interval, prediction);
 		}
 
 		public Component dialogParent() {
@@ -161,11 +157,11 @@ public class MainFrame {
 		}
 
 		public void addOverlayRenderer(OverlayRenderer overlay) {
-			bdvHandle.getViewerPanel().getDisplay().addOverlayRenderer(overlay);
+			labelingComponent.addOverlayRenderer(overlay);
 		}
 
 		public void displayRepaint() {
-			bdvHandle.getViewerPanel().getDisplay().repaint();
+			labelingComponent.displayRepaint();
 		}
 	}
 }

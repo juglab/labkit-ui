@@ -13,6 +13,7 @@ import net.imglib2.atlas.labeling.LabelsLayer;
 import net.imglib2.img.cell.CellGrid;
 import net.imglib2.type.numeric.NumericType;
 import net.imglib2.type.numeric.integer.IntType;
+import net.imglib2.ui.OverlayRenderer;
 import net.imglib2.util.Intervals;
 import org.scijava.ui.behaviour.Behaviour;
 import org.scijava.ui.behaviour.util.AbstractNamedAction;
@@ -135,7 +136,19 @@ public class LabelingComponent {
 		bdvHandle.getViewerPanel().requestRepaint();
 	}
 
-	public BdvHandle getBdvHandle() {
-		return bdvHandle;
+	public <T extends NumericType<T>> BdvStackSource<T> addLayer(RandomAccessibleInterval<T> interval, String prediction) {
+		return BdvFunctions.show(interval, prediction, BdvOptions.options().addTo(bdvHandle));
+	}
+
+	public void addOverlayRenderer(OverlayRenderer overlay) {
+		bdvHandle.getViewerPanel().getDisplay().addOverlayRenderer(overlay);
+	}
+
+	public void displayRepaint() {
+		bdvHandle.getViewerPanel().getDisplay().repaint();
+	}
+
+	public Object viewerSync() {
+		return bdvHandle.getViewerPanel();
 	}
 }
