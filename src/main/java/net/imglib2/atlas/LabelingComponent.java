@@ -2,7 +2,6 @@ package net.imglib2.atlas;
 
 import bdv.util.*;
 import bdv.viewer.DisplayMode;
-import net.imglib2.FinalInterval;
 import net.imglib2.Interval;
 import net.imglib2.RandomAccessibleInterval;
 import net.imglib2.atlas.actions.ToggleVisibility;
@@ -16,14 +15,10 @@ import net.imglib2.type.numeric.NumericType;
 import net.imglib2.type.numeric.integer.IntType;
 import net.imglib2.util.Intervals;
 import org.scijava.ui.behaviour.Behaviour;
-import org.scijava.ui.behaviour.io.InputTriggerConfig;
 import org.scijava.ui.behaviour.util.AbstractNamedAction;
-import org.scijava.ui.behaviour.util.Actions;
-import org.scijava.ui.behaviour.util.Behaviours;
 
 import javax.swing.*;
 import java.awt.*;
-import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
@@ -31,21 +26,15 @@ public class LabelingComponent {
 
 	private BdvHandle bdvHandle;
 
-	private InputTriggerConfig config = new InputTriggerConfig();
-
-	private Actions actions = new Actions( config );
-
-	private Behaviours behaviors = new Behaviours(config);
-
 	private JPanel panel = new JPanel();
 
 	private final JFrame dialogBoxOwner;
 
-	private final List<AbstractNamedAction> actionsList = new ArrayList();
-
 	private ColorMapProvider colorProvider;
 
 	private Holder<Labeling> labels;
+
+	private ActionsAndBehaviours actionsAndBehaviours;
 
 	public LabelingComponent(JFrame dialogBoxOwner) {
 		this.dialogBoxOwner = dialogBoxOwner;
@@ -56,9 +45,8 @@ public class LabelingComponent {
 	}
 
 	public List<AbstractNamedAction> getActions() {
-		return actionsList;
+		return actionsAndBehaviours.getActions();
 	}
-
 	@SuppressWarnings( { "rawtypes" } )
 	public < R extends NumericType< R >>
 	BdvHandle trainClassifier(
@@ -69,6 +57,8 @@ public class LabelingComponent {
 		final int nDim = rawData.numDimensions();
 
 		initBdv(isTimeSeries || nDim != 3);
+
+		actionsAndBehaviours = new ActionsAndBehaviours(bdvHandle);
 
 		initLabelsLayer(labels, rawData, isTimeSeries);
 
@@ -86,15 +76,11 @@ public class LabelingComponent {
 	}
 
 	public void addAction(AbstractNamedAction action, String keyStroke) {
-		JMenuItem item = new JMenuItem(action);
-		actionsList.add(action);
-		actions.namedAction(action, keyStroke);
-		actions.install( bdvHandle.getKeybindings(), "classifier training" );
+		actionsAndBehaviours.addAction(action, keyStroke);
 	}
 
 	public void addBehaviour(Behaviour behaviour, String name, String defaultTriggers) {
-		behaviors.behaviour(behaviour, name, defaultTriggers);
-		behaviors.install( bdvHandle.getTriggerbindings(), "classifier training" );
+		actionsAndBehaviours.addBehaviour(behaviour, name, defaultTriggers);
 	}
 
 	public Labeling getLabeling() {
@@ -127,9 +113,8 @@ public class LabelingComponent {
 				bdvHandle.getViewerPanel(),
 				this.labels,
 				initPixelGenerator(isTimeSeries, this.labels.get().numDimensions()),
-				behaviors,
+				actionsAndBehaviours,
 				colorProvider.colorMap() );
-		behaviors.install( bdvHandle.getTriggerbindings(), "classifier training" );
 		initColorMapUpdaterAction(labels, colorProvider);
 		addAction(new ToggleVisibility( "Toggle Labels", bdvHandle.getViewerPanel(), 0 ), "L");
 		bdvHandle.getViewerPanel().getDisplay().addOverlayRenderer( brushController.getBrushOverlay() );
@@ -153,4 +138,5 @@ public class LabelingComponent {
 	public void requestRepaint() {
 		bdvHandle.getViewerPanel().requestRepaint();
 	}
+
 }

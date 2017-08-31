@@ -8,6 +8,7 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 import net.imglib2.*;
+import net.imglib2.atlas.ActionsAndBehaviours;
 import net.imglib2.atlas.Holder;
 import net.imglib2.atlas.labeling.Labeling;
 import net.imglib2.roi.IterableRegion;
@@ -15,7 +16,6 @@ import net.imglib2.type.logic.BitType;
 import org.scijava.ui.behaviour.Behaviour;
 import org.scijava.ui.behaviour.DragBehaviour;
 import org.scijava.ui.behaviour.ScrollBehaviour;
-import org.scijava.ui.behaviour.util.Behaviours;
 
 import bdv.viewer.ViewerPanel;
 import net.imglib2.atlas.BrushOverlay;
@@ -83,7 +83,7 @@ public class LabelBrushController
 			final ViewerPanel viewer,
 			final Holder<Labeling> labels,
 			final PaintPixelsGenerator pixelsGenerator,
-			final Behaviours behaviors,
+			final ActionsAndBehaviours behaviors,
 			final int brushNormalAxis,
 			final ColorMap colorProvider)
 	{
@@ -96,11 +96,11 @@ public class LabelBrushController
 
 		labelLocation = new RealPoint( 3 );
 
-		behaviors.behaviour( new Paint(), "paint", "SPACE button1" );
-		behaviors.behaviour( new Erase(), "erase", "SPACE button2", "SPACE button3" );
-		behaviors.behaviour( new ChangeBrushRadius(), "change brush radius", "SPACE scroll" );
-		behaviors.behaviour( new ChangeLabel(), "change label", "SPACE shift scroll" );
-		behaviors.behaviour( new MoveBrush(), "move brush", "SPACE" );
+		behaviors.addBehaviour( new Paint(), "paint", "SPACE button1" );
+		behaviors.addBehaviour( new Erase(), "erase", "SPACE button2", "SPACE button3" );
+		behaviors.addBehaviour( new ChangeBrushRadius(), "change brush radius", "SPACE scroll" );
+		behaviors.addBehaviour( new ChangeLabel(), "change label", "SPACE shift scroll" );
+		behaviors.addBehaviour( new MoveBrush(), "move brush", "SPACE" );
 	}
 
 	void updateLabeling(Labeling labeling) {
@@ -114,7 +114,7 @@ public class LabelBrushController
 			final ViewerPanel viewer,
 			final Holder<Labeling> labels,
 			final PaintPixelsGenerator pixelsGenerator,
-			final Behaviours behaviors,
+			final ActionsAndBehaviours behaviors,
 			final ColorMap colorProvider)
 	{
 		this( viewer, labels, pixelsGenerator, behaviors, 2, colorProvider );
