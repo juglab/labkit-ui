@@ -1,6 +1,7 @@
 package net.imglib2.atlas.control.brush;
 
 import java.awt.Cursor;
+import java.awt.event.ActionEvent;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -25,6 +26,7 @@ import net.imglib2.ui.TransformEventHandler;
 import net.imglib2.util.Intervals;
 import net.imglib2.util.LinAlgHelpers;
 import net.imglib2.view.Views;
+import org.scijava.ui.behaviour.util.AbstractNamedAction;
 
 /**
  * A {@link TransformEventHandler} that changes an {@link AffineTransform3D}
@@ -99,7 +101,7 @@ public class LabelBrushController
 		behaviors.addBehaviour( new Paint(), "paint", "SPACE button1" );
 		behaviors.addBehaviour( new Erase(), "erase", "SPACE button2", "SPACE button3" );
 		behaviors.addBehaviour( new ChangeBrushRadius(), "change brush radius", "SPACE scroll" );
-		behaviors.addBehaviour( new ChangeLabel(), "change label", "SPACE shift scroll" );
+		behaviors.addAction( new ChangeLabel(), "N" );
 		behaviors.addBehaviour( new MoveBrush(), "move brush", "SPACE" );
 	}
 
@@ -259,23 +261,18 @@ public class LabelBrushController
 		}
 	}
 
-	private class ChangeLabel implements ScrollBehaviour
-	{
+	private class ChangeLabel extends AbstractNamedAction {
+
+		public ChangeLabel() {
+			super("Next Label");
+		}
 
 		@Override
-		public void scroll( final double wheelRotation, final boolean isHorizontal, final int x, final int y )
-		{
-			if ( !isHorizontal )
-			{
-				if ( wheelRotation < 0 )
-					currentLabel = Math.min( currentLabel + 1, regions.size() - 1 );
-				else if ( wheelRotation > 0 )
-					currentLabel = Math.max( currentLabel - 1, 0 );
-
-				brushOverlay.setLabel( labels.get(currentLabel) );
-				// TODO request only overlays to repaint
-				viewer.getDisplay().repaint();
-			}
+		public void actionPerformed(ActionEvent actionEvent) {
+			currentLabel = currentLabel == (regions.size() - 1) ? 0 : currentLabel + 1;
+			brushOverlay.setLabel( labels.get(currentLabel) );
+			// TODO request only overlays to repaint
+			viewer.getDisplay().repaint();
 		}
 	}
 
