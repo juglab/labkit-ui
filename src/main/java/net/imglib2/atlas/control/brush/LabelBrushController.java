@@ -55,8 +55,6 @@ public class LabelBrushController
 
 	final protected BrushOverlay brushOverlay;
 
-	final int brushNormalAxis;
-
 	protected int brushRadius = 5;
 
 	private int currentLabel = 0;
@@ -84,14 +82,12 @@ public class LabelBrushController
 	public LabelBrushController(
 			final ViewerPanel viewer,
 			final Holder<Labeling> labels,
-			final PaintPixelsGenerator pixelsGenerator,
+			final PaintPixelsGenerator< BitType, ? extends Iterator<BitType>> pixelsGenerator,
 			final ActionsAndBehaviours behaviors,
-			final int brushNormalAxis,
 			final ColorMap colorProvider)
 	{
 		this.viewer = viewer;
 		this.pixelsGenerator = pixelsGenerator;
-		this.brushNormalAxis = brushNormalAxis;
 		updateLabeling(labels.get());
 		labels.notifier().add(this::updateLabeling);
 		brushOverlay = new BrushOverlay( viewer, this.labels.get(currentLabel), colorProvider );
@@ -110,16 +106,6 @@ public class LabelBrushController
 		this.labels = entries.stream().map(Map.Entry::getKey).collect(Collectors.toList());
 		this.regions = entries.stream().map(Map.Entry::getValue).collect(Collectors.toList());
 		currentLabel = Math.min(currentLabel, regions.size());
-	}
-
-	public LabelBrushController(
-			final ViewerPanel viewer,
-			final Holder<Labeling> labels,
-			final PaintPixelsGenerator pixelsGenerator,
-			final ActionsAndBehaviours behaviors,
-			final ColorMap colorProvider)
-	{
-		this( viewer, labels, pixelsGenerator, behaviors, 2, colorProvider );
 	}
 
 	private void setCoordinates( final int x, final int y )

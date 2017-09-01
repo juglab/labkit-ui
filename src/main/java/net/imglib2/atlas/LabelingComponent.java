@@ -2,6 +2,7 @@ package net.imglib2.atlas;
 
 import bdv.util.*;
 import bdv.viewer.DisplayMode;
+import bdv.viewer.Source;
 import net.imglib2.Interval;
 import net.imglib2.RandomAccessibleInterval;
 import net.imglib2.atlas.actions.ToggleVisibility;
@@ -11,8 +12,8 @@ import net.imglib2.atlas.control.brush.*;
 import net.imglib2.atlas.labeling.Labeling;
 import net.imglib2.atlas.labeling.LabelsLayer;
 import net.imglib2.img.cell.CellGrid;
+import net.imglib2.type.logic.BitType;
 import net.imglib2.type.numeric.NumericType;
-import net.imglib2.type.numeric.integer.IntType;
 import net.imglib2.ui.OverlayRenderer;
 import net.imglib2.util.Intervals;
 import org.scijava.ui.behaviour.Behaviour;
@@ -94,11 +95,11 @@ public class LabelingComponent {
 		bdvHandle.getViewerPanel().setDisplayMode( DisplayMode.FUSED );
 	}
 
-	private PaintPixelsGenerator<IntType, ? extends Iterator<IntType>> initPixelGenerator(boolean isTimeSeries, int numDimensions) {
+	private PaintPixelsGenerator<BitType, ? extends Iterator<BitType>> initPixelGenerator(boolean isTimeSeries, int numDimensions) {
 		if ( isTimeSeries )
-			return new NeighborhoodPixelsGeneratorForTimeSeries<>(numDimensions - 1, new NeighborhoodPixelsGenerator<IntType>(NeighborhoodFactories.hyperSphere(), 1.0));
+			return new NeighborhoodPixelsGeneratorForTimeSeries<>(numDimensions - 1, new NeighborhoodPixelsGenerator<BitType>(NeighborhoodFactories.hyperSphere(), 1.0));
 		else
-			return new NeighborhoodPixelsGenerator<>( NeighborhoodFactories.< IntType >hyperSphere(), 1.0 );
+			return new NeighborhoodPixelsGenerator<>(NeighborhoodFactories.<BitType>hyperEllipsoid(new double[]{1.0, 1.0, 0.25}), 1.0);
 	}
 
 	private void initLabelsLayer(List<String> labels, Interval interval, boolean isTimeSeries) {
