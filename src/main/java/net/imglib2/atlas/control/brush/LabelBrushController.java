@@ -49,7 +49,7 @@ public class LabelBrushController
 
 	private final PaintPixelsGenerator< BitType, ? extends Iterator<BitType> > pixelsGenerator;
 
-	final protected AffineTransform3D labelTransform = new AffineTransform3D();
+	final protected AffineTransform3D labelTransform;
 
 	final protected RealPoint labelLocation;
 
@@ -84,10 +84,11 @@ public class LabelBrushController
 			final Holder<Labeling> labels,
 			final PaintPixelsGenerator< BitType, ? extends Iterator<BitType>> pixelsGenerator,
 			final ActionsAndBehaviours behaviors,
-			final ColorMap colorProvider)
+			final ColorMap colorProvider, AffineTransform3D labelTransform)
 	{
 		this.viewer = viewer;
 		this.pixelsGenerator = pixelsGenerator;
+		this.labelTransform = labelTransform;
 		updateLabeling(labels.get());
 		labels.notifier().add(this::updateLabeling);
 		brushOverlay = new BrushOverlay( viewer, this.labels.get(currentLabel), colorProvider );

@@ -12,6 +12,7 @@ import net.imglib2.atlas.control.brush.*;
 import net.imglib2.atlas.labeling.Labeling;
 import net.imglib2.atlas.labeling.LabelsLayer;
 import net.imglib2.img.cell.CellGrid;
+import net.imglib2.realtransform.AffineTransform3D;
 import net.imglib2.type.logic.BitType;
 import net.imglib2.type.numeric.NumericType;
 import net.imglib2.ui.OverlayRenderer;
@@ -37,6 +38,8 @@ public class LabelingComponent {
 	private Holder<Labeling> labels;
 
 	private ActionsAndBehaviours actionsAndBehaviours;
+
+	private AffineTransform3D sourceTransformation = new AffineTransform3D();
 
 	public JComponent getComponent() {
 		return panel;
@@ -64,7 +67,7 @@ public class LabelingComponent {
 
 		addAction(new ToggleVisibility( "Toggle Classification", bdvHandle.getViewerPanel(), 1 ), "C");
 
-		BdvFunctions.show(rawData, "original", BdvOptions.options().addTo( bdvHandle ));
+		addLayer(rawData, "original");
 	}
 
 	private static int[] cellDimensions(CellGrid grid) {
@@ -99,20 +102,21 @@ public class LabelingComponent {
 		if ( isTimeSeries )
 			return new NeighborhoodPixelsGeneratorForTimeSeries<>(numDimensions - 1, new NeighborhoodPixelsGenerator<BitType>(NeighborhoodFactories.hyperSphere(), 1.0));
 		else
-			return new NeighborhoodPixelsGenerator<>(NeighborhoodFactories.<BitType>hyperEllipsoid(new double[]{1.0, 1.0, 0.25}), 1.0);
+			return new NeighborhoodPixelsGenerator<>(NeighborhoodFactories.<BitType>hyperEllipsoid(new double[]{1.0,1.0,0.25}), 1.0);
 	}
 
 	private void initLabelsLayer(List<String> labels, Interval interval, boolean isTimeSeries) {
 		this.labels = new Holder<>(new Labeling(labels, interval));
 		colorProvider = new ColorMapProvider(this.labels);
 
-		BdvFunctions.show( new LabelsLayer(this.labels, colorProvider, this).view(), "labels", BdvOptions.options().addTo(bdvHandle) );
+		addLayer(new LabelsLayer(this.labels, colorProvider, this).view(), "labels");
 		final LabelBrushController brushController = new LabelBrushController(
 				bdvHandle.getViewerPanel(),
 				this.labels,
 				initPixelGenerator(isTimeSeries, this.labels.get().numDimensions()),
 				actionsAndBehaviours,
-				colorProvider.colorMap() );
+				colorProvider.colorMap(),
+				sourceTransformation);
 		initColorMapUpdaterAction(labels, colorProvider);
 		addAction(new ToggleVisibility( "Toggle Labels", bdvHandle.getViewerPanel(), 0 ), "L");
 		bdvHandle.getViewerPanel().getDisplay().addOverlayRenderer( brushController.getBrushOverlay() );
@@ -137,8 +141,13 @@ public class LabelingComponent {
 		bdvHandle.getViewerPanel().requestRepaint();
 	}
 
-	public <T extends NumericType<T>> BdvStackSource<T> addLayer(RandomAccessibleInterval<T> interval, String prediction) {
-		return BdvFunctions.show(interval, prediction, BdvOptions.options().addTo(bdvHandle));
+	public <T extends NumericType<T>> BdvStackSource<T> addLayer(RandomAccessibleInterval<T> image, String title) {
+		Source<T> source = new RandomAccessibleIntervalSource<>(image, image.randomAccess().get(), sourceTransformation, title);
+		return BdvFunctions.show(source, BdvOptions.options().addTo(bdvHandle));
+	}
+
+	public AffineTransform3D sourceTransformation() {
+		return sourceTransformation;
 	}
 
 	public void addOverlayRenderer(OverlayRenderer overlay) {

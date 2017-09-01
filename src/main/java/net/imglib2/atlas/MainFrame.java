@@ -1,7 +1,5 @@
 package net.imglib2.atlas;
 
-import bdv.util.BdvFunctions;
-import bdv.util.BdvOptions;
 import bdv.util.BdvStackSource;
 import bdv.util.volatiles.SharedQueue;
 import bdv.util.volatiles.VolatileViews;
@@ -11,10 +9,7 @@ import net.imglib2.algorithm.features.FeatureGroup;
 import net.imglib2.algorithm.features.Features;
 import net.imglib2.algorithm.features.GlobalSettings;
 import net.imglib2.algorithm.features.gui.FeatureSettingsGui;
-import net.imglib2.atlas.actions.ClassifierSaveAndLoad;
-import net.imglib2.atlas.actions.LabelingSaveAndLoad;
-import net.imglib2.atlas.actions.OpenImageAction;
-import net.imglib2.atlas.actions.SegmentationSave;
+import net.imglib2.atlas.actions.*;
 import net.imglib2.atlas.classification.Classifier;
 import net.imglib2.atlas.classification.TrainClassifier;
 import net.imglib2.atlas.classification.PredictionLayer;
@@ -90,6 +85,7 @@ public class MainFrame {
 		new LabelingSaveAndLoad(extensible, labelingComponent);
 		new SegmentationSave(extensible, predictionLayer);
 		new OpenImageAction(extensible);
+		new ZAxisScaling(extensible, labelingComponent.sourceTransformation());
 	}
 
 	private JFrame initFrame() {
