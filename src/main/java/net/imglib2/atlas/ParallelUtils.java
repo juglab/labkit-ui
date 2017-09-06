@@ -25,7 +25,7 @@ import java.util.stream.Stream;
  */
 public class ParallelUtils {
 
-	public static List<Callable<Void>> chunkOperation(Img<UnsignedByteType> image, int[] cellDimensions, Consumer<RandomAccessibleInterval<UnsignedByteType>> operation) {
+	public static <T> List<Callable<Void>> chunkOperation(Img<T> image, int[] cellDimensions, Consumer<RandomAccessibleInterval<T>> operation) {
 		return getCells(new CellGrid(Intervals.dimensionsAsLongArray(image), cellDimensions))
 					.map(interval -> (Callable<Void>) (() -> {
 						operation.accept(Views.interval(image, interval)); return null;}))
