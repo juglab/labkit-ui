@@ -3,6 +3,7 @@ package net.imglib2.atlas;
 import bdv.util.BdvStackSource;
 import bdv.util.volatiles.SharedQueue;
 import bdv.util.volatiles.VolatileViews;
+import bdv.viewer.ViewerPanel;
 import hr.irb.fastRandomForest.FastRandomForest;
 import net.imglib2.*;
 import net.imglib2.algorithm.features.FeatureGroup;
@@ -14,6 +15,7 @@ import net.imglib2.atlas.classification.Classifier;
 import net.imglib2.atlas.classification.TrainClassifier;
 import net.imglib2.atlas.classification.PredictionLayer;
 import net.imglib2.atlas.classification.weka.TrainableSegmentationClassifier;
+import net.imglib2.realtransform.AffineTransform3D;
 import net.imglib2.type.numeric.ARGBType;
 import net.imglib2.type.numeric.NumericType;
 import net.imglib2.type.numeric.RealType;
@@ -86,6 +88,7 @@ public class MainFrame {
 		new SegmentationSave(extensible, predictionLayer);
 		new OpenImageAction(extensible);
 		new ZAxisScaling(extensible, labelingComponent.sourceTransformation());
+		new OrthogonalView(extensible, new AffineTransform3D());
 	}
 
 	private JFrame initFrame() {
