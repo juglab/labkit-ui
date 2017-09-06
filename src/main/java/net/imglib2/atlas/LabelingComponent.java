@@ -17,6 +17,7 @@ import net.imglib2.type.logic.BitType;
 import net.imglib2.type.numeric.NumericType;
 import net.imglib2.ui.OverlayRenderer;
 import net.imglib2.util.Intervals;
+import net.imglib2.util.Pair;
 import org.scijava.ui.behaviour.Behaviour;
 import org.scijava.ui.behaviour.util.AbstractNamedAction;
 
@@ -67,7 +68,8 @@ public class LabelingComponent {
 
 		addAction(new ToggleVisibility( "Toggle Classification", bdvHandle.getViewerPanel(), 1 ), "C");
 
-		addLayer(rawData, "original");
+		Pair<Double, Double> p = AtlasUtils.estimateMinMax(rawData);
+		addLayer(rawData, "original").setDisplayRange(p.getA(), p.getB());
 	}
 
 	private static int[] cellDimensions(CellGrid grid) {
