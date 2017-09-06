@@ -17,6 +17,9 @@ import net.imglib2.type.numeric.integer.ShortType;
 import net.imglib2.util.Intervals;
 import org.scijava.ui.behaviour.util.RunnableAction;
 
+import java.util.List;
+import java.util.concurrent.Callable;
+import java.util.concurrent.Executors;
 import java.util.function.Consumer;
 
 /**
@@ -45,7 +48,7 @@ public class SegmentationSave extends AbstractSaveAndLoadAction {
 	}
 
 	private Img<ShortType> getSegmentation() {
-		Img<ShortType> img = predictionLayer.getPrediction();
+		Img<ShortType> img = predictionLayer.prediction();
 		populateCachedImg(img);
 		return img;
 	}
@@ -65,7 +68,11 @@ public class SegmentationSave extends AbstractSaveAndLoadAction {
 			ra.setPosition(min);
 			ra.get().valueEquals(t);
 		};
-		ParallelUtils.chunkOperation(img, cellDimensions, accessPixel);
+		List<Callable<Void>> tasks = ParallelUtils.chunkOperation(img, cellDimensions, accessPixel);
+		ParallelUtils.executeInParallel(
+				Executors.newFixedThreadPool(10),
+				ParallelUtils.addShowProgress(tasks)
+		);
 	}
 
 }

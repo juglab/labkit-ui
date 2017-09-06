@@ -30,6 +30,7 @@ public class PredictionLayer implements Classifier.Listener
 	private final RandomAccessibleContainer< VolatileARGBType > predictionContainer;
 
 	private final FeatureStack featureStack;
+	private Img<ShortType> prediction;
 
 	public PredictionLayer(MainFrame.Extensible extensible, ColorMapProvider colorProvider, Classifier classifier, FeatureStack featureStack) {
 		super();
@@ -43,17 +44,13 @@ public class PredictionLayer implements Classifier.Listener
 		classifier.listeners().add( this );
 	}
 
-	public RandomAccessible< VolatileARGBType > prediction() {
-		return predictionContainer;
-	}
-
 	@Override
 	public void notify(final Classifier classifier)
 	{
 		if ( classifier.isTrained() )
 			synchronized ( extensible.viewerSync() )
 			{
-				final Img<ShortType> img = getPrediction();
+				prediction = getPrediction();
 
 				int[] colors = classifier.classNames().stream().map(colorProvider.colorMap()::getColor).mapToInt(ARGBType::get).toArray();
 
@@ -65,7 +62,7 @@ public class PredictionLayer implements Classifier.Listener
 				};
 
 				final RandomAccessible< VolatileShortType > extended =
-						Views.extendValue( extensible.wrapAsVolatile(img), new VolatileShortType( ( short ) LabelBrushController.BACKGROUND ) );
+						Views.extendValue( extensible.wrapAsVolatile(prediction), new VolatileShortType( ( short ) LabelBrushController.BACKGROUND ) );
 				final RandomAccessible< VolatileARGBType > converted = Converters.convert( extended, conv, new VolatileARGBType() );
 
 				predictionContainer.setSource( converted );
@@ -75,7 +72,11 @@ public class PredictionLayer implements Classifier.Listener
 
 	}
 
-	public Img<ShortType> getPrediction() {
+	public Img<ShortType> prediction() {
+		return prediction;
+	}
+
+	private Img<ShortType> getPrediction() {
 		final int[] cellDimensions = new int[ featureStack.grid().numDimensions() ];
 		featureStack.grid().cellDimensions( cellDimensions );
 		final DiskCachedCellImgOptions factoryOptions = DiskCachedCellImgOptions.options()

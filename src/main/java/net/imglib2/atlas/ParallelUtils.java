@@ -3,6 +3,7 @@ package net.imglib2.atlas;
 import net.imglib2.FinalInterval;
 import net.imglib2.Interval;
 import net.imglib2.RandomAccessibleInterval;
+import net.imglib2.algorithm.features.RevampUtils;
 import net.imglib2.img.Img;
 import net.imglib2.img.cell.CellGrid;
 import net.imglib2.type.numeric.integer.UnsignedByteType;
@@ -56,13 +57,15 @@ public class ParallelUtils {
 		).collect(Collectors.toList());
 	}
 
-	public static void executeInParallel(ExecutorService executor, List<Callable<Void>> collection) throws InterruptedException {
-		executor.invokeAll(collection).forEach(future -> {
-			try {
-				future.get();
-			} catch (InterruptedException | ExecutionException e) {
-				e.printStackTrace();
-			}
+	public static void executeInParallel(ExecutorService executor, List<Callable<Void>> collection) {
+		RevampUtils.wrapException(() -> {
+			executor.invokeAll(collection).forEach(future -> {
+				try {
+					future.get();
+				} catch (InterruptedException | ExecutionException e) {
+					e.printStackTrace();
+				}
+			});
 		});
 	}
 }
