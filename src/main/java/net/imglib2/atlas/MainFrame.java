@@ -89,10 +89,11 @@ public class MainFrame {
 		new OpenImageAction(extensible);
 		new ZAxisScaling(extensible, labelingComponent.sourceTransformation());
 		new OrthogonalView(extensible, new AffineTransform3D());
+		new SelectClassifier(extensible, classifier);
 	}
 
 	private JFrame initFrame() {
-		JFrame frame = new JFrame("ATLAS");
+		JFrame frame = new JFrame("BDV Labkit");
 		frame.setBounds( 50, 50, 1200, 900 );
 		return frame;
 	}

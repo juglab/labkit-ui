@@ -12,7 +12,7 @@ import org.scijava.plugin.Plugin;
 /**
  * @author Matthias Arzt
  */
-@Plugin(type = Command.class, menuPath = "Plugins > Segmentation > Trainable Segmentation Revamp")
+@Plugin(type = Command.class, menuPath = "Plugins > Segmentation > BDV Labkit")
 public class TrainableSegmentationRevamp implements Command {
 
 	@Parameter
