@@ -1,13 +1,16 @@
 package net.imglib2.atlas.classification.weka;
 
+import hr.irb.fastRandomForest.FastRandomForest;
 import net.imglib2.Cursor;
 import net.imglib2.RandomAccess;
 import net.imglib2.RandomAccessible;
 import net.imglib2.RandomAccessibleInterval;
 import net.imglib2.algorithm.features.FeatureGroup;
+import net.imglib2.algorithm.features.RevampUtils;
 import net.imglib2.algorithm.features.classification.Training;
 import net.imglib2.atlas.FeatureStack;
 import net.imglib2.atlas.Notifier;
+import net.imglib2.atlas.actions.SelectClassifier;
 import net.imglib2.atlas.classification.Classifier;
 import net.imglib2.atlas.labeling.Labeling;
 import net.imglib2.roi.IterableRegion;
@@ -17,15 +20,19 @@ import net.imglib2.type.numeric.RealType;
 import net.imglib2.type.numeric.real.FloatType;
 import net.imglib2.view.Views;
 import net.imglib2.view.composite.Composite;
+import weka.classifiers.AbstractClassifier;
 
+import javax.swing.*;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Supplier;
 
+import static weka.classifiers.AbstractClassifier.makeCopy;
+
 public class TrainableSegmentationClassifier
 implements Classifier
 {
-	private final Supplier<weka.classifiers.Classifier> wekaClassifierFactory;
+	private weka.classifiers.Classifier initialWekaClassifier;
 
 	private net.imglib2.algorithm.features.classification.Classifier classifier;
 
@@ -49,15 +56,27 @@ implements Classifier
 	}
 
 	@Override
+	public void editClassifier() {
+		initialWekaClassifier = SelectClassifier.runStatic(null, initialWekaClassifier);
+		reset(classifier.features(), classifier.classNames());
+	}
+
+	@Override
 	public void reset(FeatureGroup features, List<String> classLabels) {
-		classifier = new net.imglib2.algorithm.features.classification.Classifier(classLabels, features, wekaClassifierFactory.get());
+		weka.classifiers.Classifier wekaClassifier = RevampUtils.wrapException(() ->
+				AbstractClassifier.makeCopy(this.initialWekaClassifier));
+		reset(new net.imglib2.algorithm.features.classification.Classifier(classLabels, features, wekaClassifier));
+	}
+
+	private void reset(net.imglib2.algorithm.features.classification.Classifier classifier) {
+		this.classifier = classifier;
 		isTrained = false;
 		listeners.forEach(l -> l.notify(this));
 	}
 
-	public TrainableSegmentationClassifier(Supplier<weka.classifiers.Classifier> wekaClassifierFactory, final List<String> classLabels, FeatureGroup features)
+	public TrainableSegmentationClassifier(weka.classifiers.Classifier initialWekaClassifier, final List<String> classLabels, FeatureGroup features)
 	{
-		this.wekaClassifierFactory = wekaClassifierFactory;
+		this.initialWekaClassifier = initialWekaClassifier;
 		reset(features, classLabels);
 	}
 

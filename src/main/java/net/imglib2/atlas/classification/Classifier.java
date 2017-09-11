@@ -11,6 +11,8 @@ import java.util.List;
 public interface Classifier
 {
 
+	void editClassifier();
+
 	void reset(FeatureGroup features, List<String> classLabels);
 
 	void segment(RandomAccessibleInterval<?> image, RandomAccessibleInterval<? extends IntegerType<?>> labels ) throws Exception;
