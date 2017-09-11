@@ -17,11 +17,11 @@ public class PaintLabelsAndTrain
 
 	public static void boats()
 	{
-		start(System.getProperty( "user.home" ) + "/Documents/boats.tif");
+		start(System.getProperty( "user.home" ) + "/Documents/Datasets/boats.tif");
 	}
 
 	public static void lung() {
-		start("/home/arzt/Documents/20170804_LungImages/2017_08_03__0004.jpg");
+		start("/home/arzt/Documents/Datasets/20170804_LungImages/2017_08_03__0004.jpg");
 	}
 
 	public static void start(String imgPath) {
@@ -30,6 +30,6 @@ public class PaintLabelsAndTrain
 	}
 
 	public static void main( final String[] args ) {
-		em();
+		boats();
 	}
 }
