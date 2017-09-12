@@ -69,7 +69,8 @@ public class PredictionLayer implements Classifier.Listener
 
 				extensible.repaint();
 			}
-
+		else
+			predictionContainer.setSource(ConstantUtils.constantRandomAccessible(new VolatileARGBType(0), predictionContainer.numDimensions()));
 	}
 
 	public Img<ShortType> prediction() {
