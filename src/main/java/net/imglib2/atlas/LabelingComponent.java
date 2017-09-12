@@ -104,7 +104,7 @@ public class LabelingComponent {
 		if ( isTimeSeries )
 			return new NeighborhoodPixelsGeneratorForTimeSeries<>(numDimensions - 1, new NeighborhoodPixelsGenerator<BitType>(NeighborhoodFactories.hyperSphere(), 1.0));
 		else
-			return new NeighborhoodPixelsGenerator<>(NeighborhoodFactories.<BitType>hyperEllipsoid(new double[]{1.0,1.0,0.25}), 1.0);
+			return new NeighborhoodPixelsGenerator<>(NeighborhoodFactories.<BitType>hyperSphere(), 1.0);
 	}
 
 	private void initLabelsLayer(List<String> labels, Interval interval, boolean isTimeSeries) {
@@ -143,9 +143,8 @@ public class LabelingComponent {
 		bdvHandle.getViewerPanel().requestRepaint();
 	}
 
-	public <T extends NumericType<T>> BdvStackSource<T> addLayer(RandomAccessibleInterval<T> image, String title) {
-		Source<T> source = new RandomAccessibleIntervalSource<>(image, image.randomAccess().get(), sourceTransformation, title);
-		return BdvFunctions.show(source, BdvOptions.options().addTo(bdvHandle));
+	public <T extends NumericType<T>> BdvStackSource<T> addLayer(RandomAccessibleInterval<T> interval, String prediction) {
+		return BdvFunctions.show(interval, prediction, BdvOptions.options().addTo(bdvHandle).sourceTransform(sourceTransformation));
 	}
 
 	public AffineTransform3D sourceTransformation() {
