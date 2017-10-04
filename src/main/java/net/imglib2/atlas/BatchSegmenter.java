@@ -3,8 +3,10 @@ package net.imglib2.atlas;
 import ij.ImagePlus;
 import io.scif.img.ImgIOException;
 import io.scif.img.ImgSaver;
-import net.imglib2.RandomAccessible;
+import net.imagej.ops.OpEnvironment;
+import net.imagej.ops.OpService;
 import net.imglib2.RandomAccessibleInterval;
+import net.imglib2.algorithm.features.gson.GsonUtils;
 import net.imglib2.atlas.classification.Classifier;
 import net.imglib2.atlas.classification.weka.TrainableSegmentationClassifier;
 import net.imglib2.exception.IncompatibleTypeException;
@@ -14,7 +16,7 @@ import net.imglib2.img.display.imagej.ImageJFunctions;
 import net.imglib2.type.numeric.ARGBType;
 import net.imglib2.type.numeric.integer.UnsignedByteType;
 import net.imglib2.util.Intervals;
-import net.imglib2.view.Views;
+import org.scijava.Context;
 
 import java.io.File;
 import java.io.IOException;
@@ -41,8 +43,9 @@ public class BatchSegmenter {
 	}
 
 	public static void classifyLung() throws IOException, IncompatibleTypeException, ImgIOException, InterruptedException {
+		final OpService ops = new Context(OpService.class).service(OpService.class);
 		final Img<ARGBType> rawImg = loadImage();
-		Classifier classifier = loadClassifier();
+		Classifier classifier = loadClassifier(ops);
 		final int[] cellDimensions = new int[] { 256, 256 };
 		Img<UnsignedByteType> segmentation = segment(rawImg, classifier, cellDimensions);
 		new ImgSaver().saveImg("/home/arzt/test.tif", segmentation);
@@ -53,9 +56,9 @@ public class BatchSegmenter {
 		return ImageJFunctions.wrap( new ImagePlus( imgPath ) );
 	}
 
-	private static Classifier loadClassifier() throws IOException {
+	private static Classifier loadClassifier(OpEnvironment ops) throws IOException {
 		final String classifierPath = "/home/arzt/Documents/20170804_LungImages/0006.classifier";
-		return new TrainableSegmentationClassifier(net.imglib2.algorithm.features.classification.Classifier.load(classifierPath));
+		return new TrainableSegmentationClassifier(ops, net.imglib2.algorithm.features.classification.Segmenter.fromJson(ops, GsonUtils.read(classifierPath)));
 	}
 
 	public static Img<UnsignedByteType> segment(Img<ARGBType> rawImg, Classifier classifier, int[] cellDimensions) throws InterruptedException {

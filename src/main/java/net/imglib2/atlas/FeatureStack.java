@@ -1,10 +1,13 @@
 package net.imglib2.atlas;
 
+import net.imagej.ops.OpService;
 import net.imglib2.FinalInterval;
 import net.imglib2.Interval;
 import net.imglib2.RandomAccessible;
 import net.imglib2.RandomAccessibleInterval;
 import net.imglib2.algorithm.features.FeatureGroup;
+import net.imglib2.algorithm.features.FeatureSettings;
+import net.imglib2.algorithm.features.Features;
 import net.imglib2.algorithm.features.RevampUtils;
 import net.imglib2.atlas.classification.Classifier;
 import net.imglib2.cache.img.CellLoader;
@@ -23,7 +26,10 @@ import java.util.stream.IntStream;
 /**
  * @author Matthias Arzt
  */
+// TODO : Refactor FeatureStack, what it is actually used for, can it be remove / replaced by something more appropriate
 public class FeatureStack {
+
+	private final MainFrame.Extensible extensible;
 
 	private FeatureGroup filter = null;
 
@@ -37,11 +43,12 @@ public class FeatureStack {
 
 	private RandomAccessibleInterval<?> preparedOriginal;
 
-	public FeatureStack(RandomAccessibleInterval<?> original, Classifier classifier, boolean isTimeSeries) {
+	public FeatureStack(MainFrame.Extensible extensible, RandomAccessibleInterval<?> original, Classifier classifier, boolean isTimeSeries) {
+		this.extensible = extensible;
 		this.original = original;
 		this.grid = initGrid(original, isTimeSeries);
-		classifier.listeners().add(c -> setFilter(c.features()));
-		setFilter(classifier.features());
+		classifier.listeners().add(c -> setFilter(c.settings()));
+		setFilter(classifier.settings());
 	}
 
 	private static CellGrid initGrid(Interval interval, boolean isTimeSeries) {
@@ -61,7 +68,8 @@ public class FeatureStack {
 		return IntStream.range(0, n).map(x -> size).toArray();
 	}
 
-	public void setFilter(FeatureGroup featureGroup) {
+	public void setFilter(FeatureSettings fs) {
+		FeatureGroup featureGroup = Features.group(extensible.context().service(OpService.class), fs);
 		if(filter != null && filter.equals(featureGroup))
 			return;
 		filter = featureGroup;

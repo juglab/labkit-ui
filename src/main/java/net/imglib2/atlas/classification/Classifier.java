@@ -2,6 +2,7 @@ package net.imglib2.atlas.classification;
 
 import net.imglib2.RandomAccessibleInterval;
 import net.imglib2.algorithm.features.FeatureGroup;
+import net.imglib2.algorithm.features.FeatureSettings;
 import net.imglib2.atlas.Notifier;
 import net.imglib2.atlas.labeling.Labeling;
 import net.imglib2.type.numeric.IntegerType;
@@ -27,7 +28,7 @@ public interface Classifier
 
 	Notifier<Listener> listeners();
 
-	FeatureGroup features();
+	FeatureSettings settings();
 
 	List<String> classNames();
 
