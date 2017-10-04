@@ -5,7 +5,8 @@ import io.scif.img.ImgIOException;
 import io.scif.img.ImgSaver;
 import net.imglib2.RandomAccessible;
 import net.imglib2.RandomAccessibleInterval;
-import net.imglib2.algorithm.features.classification.Classifier;
+import net.imglib2.atlas.classification.Classifier;
+import net.imglib2.atlas.classification.weka.TrainableSegmentationClassifier;
 import net.imglib2.exception.IncompatibleTypeException;
 import net.imglib2.img.Img;
 import net.imglib2.img.array.ArrayImgs;
@@ -15,6 +16,7 @@ import net.imglib2.type.numeric.integer.UnsignedByteType;
 import net.imglib2.util.Intervals;
 import net.imglib2.view.Views;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.List;
 import java.util.concurrent.Callable;
@@ -25,6 +27,19 @@ import java.util.function.Consumer;
  * @author Matthias Arzt
  */
 public class BatchSegmenter {
+
+	private final Classifier classifier;
+
+	public BatchSegmenter(Classifier classifier) {
+		this.classifier = classifier;
+	}
+
+	public void segment(File inputFile, File outputFile) throws Exception {
+		Img<ARGBType> img = ImageJFunctions.wrap( new ImagePlus( inputFile.getAbsolutePath() ) );
+		Img<UnsignedByteType> segmentation = segment(img, classifier, Intervals.dimensionsAsIntArray(img));
+		new ImgSaver().saveImg(outputFile.getAbsolutePath(), segmentation);
+	}
+
 	public static void classifyLung() throws IOException, IncompatibleTypeException, ImgIOException, InterruptedException {
 		final Img<ARGBType> rawImg = loadImage();
 		Classifier classifier = loadClassifier();
@@ -40,12 +55,11 @@ public class BatchSegmenter {
 
 	private static Classifier loadClassifier() throws IOException {
 		final String classifierPath = "/home/arzt/Documents/20170804_LungImages/0006.classifier";
-		return Classifier.load(classifierPath);
+		return new TrainableSegmentationClassifier(net.imglib2.algorithm.features.classification.Classifier.load(classifierPath));
 	}
 
-	private static Img<UnsignedByteType> segment(Img<ARGBType> rawImg, Classifier classifier, int[] cellDimensions) throws InterruptedException {
-		RandomAccessible<ARGBType> image = Views.extendBorder(rawImg);
-		Consumer<RandomAccessibleInterval<UnsignedByteType>> loader = target -> classifier.segment(target, image);
+	public static Img<UnsignedByteType> segment(Img<ARGBType> rawImg, Classifier classifier, int[] cellDimensions) throws InterruptedException {
+		Consumer<RandomAccessibleInterval<UnsignedByteType>> loader = target -> classifier.segment(rawImg, target);
 		Img<UnsignedByteType> result = ArrayImgs.unsignedBytes(Intervals.dimensionsAsLongArray(rawImg));
 		List<Callable<Void>> chunks = ParallelUtils.chunkOperation(result, cellDimensions, loader);
 		ParallelUtils.executeInParallel(

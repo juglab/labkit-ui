@@ -80,8 +80,14 @@ implements Classifier
 		reset(features, classLabels);
 	}
 
+	public TrainableSegmentationClassifier(net.imglib2.algorithm.features.classification.Classifier classifier)
+	{
+		this.initialWekaClassifier = new FastRandomForest();
+		this.classifier = classifier;
+	}
+
 	@Override
-	public void segment(RandomAccessibleInterval<?> image, RandomAccessibleInterval<? extends IntegerType<?>> labels) throws Exception {
+	public void segment(RandomAccessibleInterval<?> image, RandomAccessibleInterval<? extends IntegerType<?>> labels) {
 		classifier.segment(labels, Views.extendBorder(image));
 	}
 

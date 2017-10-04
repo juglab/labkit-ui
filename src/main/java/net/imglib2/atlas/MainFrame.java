@@ -9,6 +9,7 @@ import net.imglib2.algorithm.features.FeatureGroup;
 import net.imglib2.algorithm.features.Features;
 import net.imglib2.algorithm.features.GlobalSettings;
 import net.imglib2.algorithm.features.gui.FeatureSettingsGui;
+import net.imglib2.atlas.actions.BatchSegmentAction;
 import net.imglib2.atlas.actions.ClassifierSaveAndLoad;
 import net.imglib2.atlas.actions.LabelingSaveAndLoad;
 import net.imglib2.atlas.actions.OpenImageAction;
@@ -25,6 +26,7 @@ import net.imglib2.type.numeric.ARGBType;
 import net.imglib2.type.numeric.NumericType;
 import net.imglib2.type.numeric.RealType;
 import net.imglib2.ui.OverlayRenderer;
+import org.scijava.Context;
 import org.scijava.ui.behaviour.Behaviour;
 import org.scijava.ui.behaviour.util.AbstractNamedAction;
 
@@ -58,10 +60,20 @@ public class MainFrame {
 
 	private Extensible extensible = new Extensible();
 
+	private final Context context;
+
 	public <R extends NumericType<R>>
 	MainFrame(final RandomAccessibleInterval<R> rawData,
 			  final boolean isTimeSeries)
 	{
+		this(new Context(), rawData, isTimeSeries);
+	}
+
+	public <R extends NumericType<R>>
+	MainFrame(final Context context, final RandomAccessibleInterval<R> rawData,
+			  final boolean isTimeSeries)
+	{
+		this.context = context;
 		labelingComponent = new LabelingComponent(frame, rawData, classLabels, isTimeSeries);
 		// --
 		GlobalSettings globalSettings = new GlobalSettings(getImageType(rawData), 1.0, 16.0, 1.0);
@@ -95,6 +107,7 @@ public class MainFrame {
 		new ZAxisScaling(extensible, labelingComponent.sourceTransformation());
 		new OrthogonalView(extensible, new AffineTransform3D());
 		new SelectClassifier(extensible, classifier);
+		new BatchSegmentAction(extensible, classifier);
 	}
 
 	private JFrame initFrame() {
@@ -129,6 +142,10 @@ public class MainFrame {
 
 		private Extensible() {
 
+		}
+
+		public Context context() {
+			return context;
 		}
 
 		public void repaint() {

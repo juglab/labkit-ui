@@ -15,7 +15,7 @@ public interface Classifier
 
 	void reset(FeatureGroup features, List<String> classLabels);
 
-	void segment(RandomAccessibleInterval<?> image, RandomAccessibleInterval<? extends IntegerType<?>> labels ) throws Exception;
+	void segment(RandomAccessibleInterval<?> image, RandomAccessibleInterval<? extends IntegerType<?>> labels );
 
 	void train(RandomAccessibleInterval<?> image, Labeling groundTruth);
 
