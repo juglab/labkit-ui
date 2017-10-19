@@ -12,7 +12,6 @@ import net.imglib2.*;
 import net.imglib2.atlas.ActionsAndBehaviours;
 import net.imglib2.atlas.Holder;
 import net.imglib2.atlas.labeling.Labeling;
-import net.imglib2.roi.IterableRegion;
 import net.imglib2.type.logic.BitType;
 import org.scijava.ui.behaviour.Behaviour;
 import org.scijava.ui.behaviour.DragBehaviour;
@@ -43,7 +42,7 @@ public class LabelBrushController
 
 	final protected ViewerPanel viewer;
 
-	private List<IterableRegion<BitType>> regions;
+	private List<RandomAccessibleInterval<BitType>> regions;
 
 	private List<String> labels;
 
@@ -103,7 +102,8 @@ public class LabelBrushController
 	}
 
 	void updateLabeling(Labeling labeling) {
-		List<Map.Entry<String, IterableRegion<BitType>>> entries = new ArrayList<>(labeling.regions().entrySet());
+		List<Map.Entry<String, RandomAccessibleInterval<BitType>>> entries =
+				new ArrayList<>(labeling.regions().entrySet());
 		this.labels = entries.stream().map(Map.Entry::getKey).collect(Collectors.toList());
 		this.regions = entries.stream().map(Map.Entry::getValue).collect(Collectors.toList());
 		currentLabel = Math.min(currentLabel, regions.size());
@@ -127,7 +127,7 @@ public class LabelBrushController
 			synchronized ( viewer )
 			{
 				final int v = getValue();
-				IterableRegion<BitType> label = regions.get(v);
+				RandomAccessibleInterval<BitType> label = regions.get(v);
 				final RandomAccessible<BitType> extended = Views.extendValue(label, new BitType(false));
 				final Iterator< BitType > it = pixelsGenerator.getPaintPixels( extended, coords, viewer.getState().getCurrentTimepoint(), brushRadius );
 				while ( it.hasNext() )

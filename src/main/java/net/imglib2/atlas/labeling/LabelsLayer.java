@@ -1,5 +1,7 @@
 package net.imglib2.atlas.labeling;
 
+import gnu.trove.map.TIntObjectMap;
+import gnu.trove.map.hash.TIntObjectHashMap;
 import net.imglib2.RandomAccessibleInterval;
 import net.imglib2.atlas.Holder;
 import net.imglib2.atlas.LabelingComponent;
@@ -17,6 +19,7 @@ import net.imglib2.view.composite.GenericComposite;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 /**
@@ -49,25 +52,20 @@ public class LabelsLayer {
 	}
 
 	private RandomAccessibleInterval<ARGBType> colorView() {
-		List<Map.Entry<String, IterableRegion<BitType>>> entries = new ArrayList<>(labelingHolder.get().regions().entrySet());
+		Labeling labeling = labelingHolder.get();
 		ColorMap colorMap = colorProvider.colorMap();
-		List<ARGBType> colors = entries.stream().map(x -> colorMap.getColor(x.getKey())).collect(Collectors.toList());
-		List<IterableRegion<BitType>> regions = entries.stream().map(Map.Entry::getValue).collect(Collectors.toList());
-		return colorView(regions, colors);
-	}
+		TIntObjectMap<ARGBType> colors = new TIntObjectHashMap<>();
 
-	public static RandomAccessibleInterval<ARGBType> colorView(List<IterableRegion<BitType>> regions, List<ARGBType> colors) {
-		int nLabels = regions.size();
-		RandomAccessibleInterval<? extends GenericComposite<BitType>> collapsed = Views.collapse(Views.stack(regions));
-		Converter<GenericComposite<BitType>, ARGBType> converter = (in, out) -> {
-			for (int i = 0; i < nLabels; i++)
-				if (in.get(i).get()) {
-					out.set(colors.get(i));
-					return;
-				}
-			out.set(0);
-		};
-		return Converters.convert(collapsed, converter, new ARGBType());
+		return Converters.convert(labeling.getIndexImg(), (in, out) -> {
+			int i = in.getInteger();
+			ARGBType c = colors.get(i);
+			if(c == null) {
+				Set<String> set = labeling.getLabelSets().get(i);
+				c = set.isEmpty() ? new ARGBType(0) : colorMap.getColor(set.iterator().next());
+				colors.put(i, c);
+			}
+			out.set(c);
+		}, new ARGBType());
 	}
 
 	public RandomAccessibleInterval<ARGBType> view() {

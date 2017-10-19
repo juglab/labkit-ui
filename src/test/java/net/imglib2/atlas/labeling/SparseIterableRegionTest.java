@@ -4,6 +4,7 @@ import net.imglib2.Cursor;
 import net.imglib2.FinalInterval;
 import net.imglib2.Interval;
 import net.imglib2.RandomAccess;
+import net.imglib2.sparse.SparseIterableRegion;
 import net.imglib2.type.logic.BitType;
 import org.junit.Test;
 
@@ -12,7 +13,7 @@ import static org.junit.Assert.*;
 /**
  * @author Matthias Arzt
  */
-public class SparseRoiTest {
+public class SparseIterableRegionTest {
 
 	Interval interval = new FinalInterval(1000, 1000, 1000);
 
@@ -22,7 +23,7 @@ public class SparseRoiTest {
 
 	@Test
 	public void testRandomAccess() {
-		SparseRoi roi = new SparseRoi(interval);
+		SparseIterableRegion roi = new SparseIterableRegion(interval);
 		RandomAccess<BitType> ra = roi.randomAccess();
 		ra.setPosition(positionA);
 		assertFalse(ra.get().get());
@@ -35,7 +36,7 @@ public class SparseRoiTest {
 
 	@Test
 	public void testSize() {
-		SparseRoi roi = new SparseRoi(interval);
+		SparseIterableRegion roi = new SparseIterableRegion(interval);
 		RandomAccess<BitType> ra = roi.randomAccess();
 		ra.setPosition(positionA);
 		ra.get().set(true);
@@ -44,7 +45,7 @@ public class SparseRoiTest {
 
 	@Test
 	public void testCursor() {
-		SparseRoi roi = new SparseRoi(interval);
+		SparseIterableRegion roi = new SparseIterableRegion(interval);
 		RandomAccess<BitType> ra = roi.randomAccess();
 		ra.setPosition(positionA);
 		ra.get().set(true);

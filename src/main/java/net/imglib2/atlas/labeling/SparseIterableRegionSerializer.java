@@ -8,17 +8,16 @@ import net.imglib2.Cursor;
 import net.imglib2.FinalInterval;
 import net.imglib2.RandomAccess;
 import net.imglib2.roi.IterableRegion;
+import net.imglib2.sparse.SparseIterableRegion;
 import net.imglib2.type.logic.BitType;
 
-import java.io.FileReader;
-import java.io.FileWriter;
 import java.io.IOException;
 import java.lang.reflect.Type;
 
 /**
  * @author Matthias Arzt
  */
-public class SparseRoiSerializer {
+public class SparseIterableRegionSerializer {
 
 	public static class Adapter extends TypeAdapter<IterableRegion<BitType>> {
 
@@ -30,9 +29,9 @@ public class SparseRoiSerializer {
 		}
 
 		@Override
-		public SparseRoi read(JsonReader reader) throws IOException {
-			Gson gson = new GsonBuilder().registerTypeAdapter(SparseRoi.class, new Deserializer()).create();
-			return gson.fromJson(reader, SparseRoi.class);
+		public IterableRegion<BitType> read(JsonReader reader) throws IOException {
+			Gson gson = new GsonBuilder().registerTypeHierarchyAdapter(IterableRegion.class, new Deserializer()).create();
+			return gson.fromJson(reader, IterableRegion.class);
 		}
 	}
 
@@ -58,18 +57,18 @@ public class SparseRoiSerializer {
 		}
 	}
 
-	public static class Deserializer implements JsonDeserializer<SparseRoi> {
+	public static class Deserializer implements JsonDeserializer<SparseIterableRegion> {
 
 		@Override
-		public SparseRoi deserialize(JsonElement jsonElement, Type type, JsonDeserializationContext context) throws JsonParseException {
+		public SparseIterableRegion deserialize(JsonElement jsonElement, Type type, JsonDeserializationContext context) throws JsonParseException {
 			JsonObject json = jsonElement.getAsJsonObject();
 			FinalInterval interval = context.deserialize(json.get("interval"), FinalInterval.class);
-			SparseRoi roi = new SparseRoi(interval);
+			SparseIterableRegion roi = new SparseIterableRegion(interval);
 			fromJson(roi, json.get("coordinates").getAsJsonArray(), context);
 			return roi;
 		}
 
-		private void fromJson(SparseRoi roi, JsonArray array, JsonDeserializationContext context) {
+		private void fromJson(SparseIterableRegion roi, JsonArray array, JsonDeserializationContext context) {
 			RandomAccess<BitType> ra = roi.randomAccess();
 			for(JsonElement element : array) {
 				long[] position = context.deserialize(element, long[].class);

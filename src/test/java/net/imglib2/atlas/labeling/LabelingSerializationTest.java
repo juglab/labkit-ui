@@ -4,17 +4,23 @@ import com.google.gson.Gson;
 import net.imglib2.FinalInterval;
 import net.imglib2.RandomAccess;
 import net.imglib2.roi.IterableRegion;
+import net.imglib2.roi.labeling.LabelingType;
+import net.imglib2.sparse.SparseIterableRegion;
 import net.imglib2.type.logic.BitType;
-import net.imglib2.util.Intervals;
+import net.imglib2.view.Views;
 import org.junit.Test;
+import org.scijava.Context;
 
+import java.io.IOException;
 import java.util.Map;
+import java.util.Set;
 import java.util.TreeMap;
 
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
 /**
- * Created by arzt on 21.08.17.
+ * @author Matthias Arzt
  */
 public class LabelingSerializationTest {
 
@@ -26,9 +32,25 @@ public class LabelingSerializationTest {
 		assertTrue(labelingsEqual(labeling, deserialized));
 	}
 
+	@Test
+	public void testLoadAndSaveToTiff() throws IOException {
+		Labeling labeling = exampleLabeling();
+		LabelingSerializer serializer = new LabelingSerializer(new Context());
+		serializer.save(labeling, "test.tif");
+		Labeling deserialized = serializer.load("test.tif");
+		assertTrue(labelingsEqual(labeling, deserialized));
+	}
+
 	private boolean labelingsEqual(Labeling expected, Labeling actual) {
-		// TODO equality test for region
-		return Intervals.equals(expected, actual) && expected.regions().keySet().equals(actual.regions().keySet());
+		boolean[] value = {true};
+		Views.interval(Views.pair(expected, actual), expected).forEach(
+				p -> { value[0] &= setsEqual(p.getA(), p.getB()); }
+		);
+		return value[0];
+	}
+
+	private boolean setsEqual(Set<String> a, Set<String> b) {
+		return a.size() == b.size() && a.containsAll(b);
 	}
 
 	private static Labeling exampleLabeling() {
@@ -41,11 +63,10 @@ public class LabelingSerializationTest {
 	}
 
 	private static IterableRegion<BitType> exampleRegion(long... position) {
-		SparseRoi roi = new SparseRoi(new FinalInterval(100, 200));
+		SparseIterableRegion roi = new SparseIterableRegion(new FinalInterval(100, 200));
 		RandomAccess<BitType> ra = roi.randomAccess();
 		ra.setPosition(position);
 		ra.get().set(true);
 		return roi;
 	}
-
 }

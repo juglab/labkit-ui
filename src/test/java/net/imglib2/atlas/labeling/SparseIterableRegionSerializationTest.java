@@ -3,6 +3,8 @@ package net.imglib2.atlas.labeling;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import net.imglib2.*;
+import net.imglib2.roi.IterableRegion;
+import net.imglib2.sparse.SparseIterableRegion;
 import net.imglib2.type.Type;
 import net.imglib2.type.logic.BitType;
 import net.imglib2.util.Intervals;
@@ -18,20 +20,22 @@ import static org.junit.Assert.fail;
 /**
  * @author Mattias Arzt
  */
-public class SparseRoiSerializationTest {
+public class SparseIterableRegionSerializationTest {
 	@Test
 	public void test() {
-		final Gson gson = new Gson();
-		final SparseRoi roi = exampleSparseRoi();
+		final Gson gson = new GsonBuilder()
+				.registerTypeHierarchyAdapter(IterableRegion.class, new SparseIterableRegionSerializer.Adapter())
+				.create();
+		final SparseIterableRegion roi = exampleSparseRoi();
 		String json = gson.toJson(roi);
-		SparseRoi roi2 = gson.fromJson(json, SparseRoi.class);
+		SparseIterableRegion roi2 = gson.fromJson(json, SparseIterableRegion.class);
 		assertImagesEqual(roi, roi2);
 		assertEquals(roi.size(), roi2.size());
 	}
 
-	public static SparseRoi exampleSparseRoi() {
+	public static SparseIterableRegion exampleSparseRoi() {
 		final Interval interval = new FinalInterval(100,200,300);
-		final SparseRoi roi = new SparseRoi(interval);
+		final SparseIterableRegion roi = new SparseIterableRegion(interval);
 		RandomAccess<BitType> ra = roi.randomAccess();
 		ra.setPosition(new long[]{42, 42, 42});
 		ra.get().set(true);

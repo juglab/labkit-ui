@@ -33,7 +33,7 @@ public class ColorMapProvider
 	}
 
 	private void updateLabeling(Labeling labeling) {
-		updateColors(new ArrayList<>(labeling.regions().keySet()));
+		updateColors(new ArrayList<>(labeling.getLabels()));
 		listeners.forEach(x -> x.accept(colorMap));
 	}
 

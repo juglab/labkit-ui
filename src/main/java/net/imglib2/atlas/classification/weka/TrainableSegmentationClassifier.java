@@ -99,7 +99,7 @@ implements Classifier
 	@Override
 	public void train(RandomAccessibleInterval<?> image, Labeling labeling) {
 		Training training = classifier.training();
-		Map<String, IterableRegion<BitType>> regions = labeling.regions();
+		Map<String, IterableRegion<BitType>> regions = labeling.iterableRegions();
 		List<String> classes = classifier.classNames();
 		RandomAccessible<? extends Composite<FloatType>> features = Views.collapse(FeatureStack.cachedFeatureBlock(classifier.features(), image));
 		for (int classIndex = 0; classIndex < classes.size(); classIndex++) {
