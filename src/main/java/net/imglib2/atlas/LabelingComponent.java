@@ -117,7 +117,7 @@ public class LabelingComponent {
 				this.labels,
 				initPixelGenerator(isTimeSeries, this.labels.get().numDimensions()),
 				actionsAndBehaviours,
-				colorProvider.colorMap(),
+				colorProvider,
 				sourceTransformation);
 		initColorMapUpdaterAction(labels, colorProvider);
 		addAction(new ToggleVisibility( "Toggle Labels", bdvHandle.getViewerPanel(), 0 ), "L");

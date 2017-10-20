@@ -11,6 +11,7 @@ import java.util.stream.Collectors;
 import net.imglib2.*;
 import net.imglib2.atlas.ActionsAndBehaviours;
 import net.imglib2.atlas.Holder;
+import net.imglib2.atlas.color.ColorMapProvider;
 import net.imglib2.atlas.labeling.Labeling;
 import net.imglib2.type.logic.BitType;
 import org.scijava.ui.behaviour.Behaviour;
@@ -68,10 +69,11 @@ public class LabelBrushController
 		return currentLabel;
 	}
 
-	public void setCurrentLabel( final int label )
-	{
-		this.currentLabel = label;
+	private void setCurrentLabel(int index) {
+		currentLabel = index;
+		brushOverlay.setLabel( labels.get(index) );
 	}
+
 
 	/**
 	 * Coordinates where mouse dragging started.
@@ -83,14 +85,14 @@ public class LabelBrushController
 			final Holder<Labeling> labels,
 			final PaintPixelsGenerator< BitType, ? extends Iterator<BitType>> pixelsGenerator,
 			final ActionsAndBehaviours behaviors,
-			final ColorMap colorProvider, AffineTransform3D labelTransform)
+			final ColorMapProvider colorProvider, AffineTransform3D labelTransform)
 	{
 		this.viewer = viewer;
 		this.pixelsGenerator = pixelsGenerator;
 		this.labelTransform = labelTransform;
+		this.brushOverlay = new BrushOverlay( viewer, "", colorProvider );
 		updateLabeling(labels.get());
 		labels.notifier().add(this::updateLabeling);
-		brushOverlay = new BrushOverlay( viewer, this.labels.get(currentLabel), colorProvider );
 
 		labelLocation = new RealPoint( 3 );
 
@@ -106,7 +108,7 @@ public class LabelBrushController
 				new ArrayList<>(labeling.regions().entrySet());
 		this.labels = entries.stream().map(Map.Entry::getKey).collect(Collectors.toList());
 		this.regions = entries.stream().map(Map.Entry::getValue).collect(Collectors.toList());
-		currentLabel = Math.min(currentLabel, regions.size());
+		setCurrentLabel(Math.min(currentLabel, regions.size()-1));
 	}
 
 	private void setCoordinates( final int x, final int y )
@@ -256,8 +258,7 @@ public class LabelBrushController
 
 		@Override
 		public void actionPerformed(ActionEvent actionEvent) {
-			currentLabel = currentLabel == (regions.size() - 1) ? 0 : currentLabel + 1;
-			brushOverlay.setLabel( labels.get(currentLabel) );
+			setCurrentLabel(currentLabel >= (regions.size() - 1) ? 0 : currentLabel + 1);
 			// TODO request only overlays to repaint
 			viewer.getDisplay().repaint();
 		}

@@ -47,6 +47,7 @@ public class ColorMapProvider
 			float y = x > 1.0f ? x - 1.0f : x;
 			map.put(keys.get(i), new ARGBType(Color.HSBtoRGB(y, 1.0f, 1.0f)));
 		}
-		colorMap = map::get;
+		ARGBType white = new ARGBType(Color.white.getRGB());
+		colorMap = key -> map.getOrDefault(key, white);
 	}
 }

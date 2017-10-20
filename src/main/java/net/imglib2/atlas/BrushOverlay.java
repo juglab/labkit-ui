@@ -15,6 +15,7 @@ import java.awt.geom.Rectangle2D;
 import bdv.util.Affine3DHelpers;
 import bdv.viewer.ViewerPanel;
 import net.imglib2.atlas.color.ColorMap;
+import net.imglib2.atlas.color.ColorMapProvider;
 import net.imglib2.realtransform.AffineTransform3D;
 import net.imglib2.ui.OverlayRenderer;
 
@@ -32,7 +33,7 @@ public class BrushOverlay implements OverlayRenderer
 
 	private String label;
 
-	private final ColorMap colorProvider;
+	private final ColorMapProvider colorProvider;
 
 	public String getLabel()
 	{
@@ -44,7 +45,7 @@ public class BrushOverlay implements OverlayRenderer
 		this.label = label;
 	}
 
-	public BrushOverlay( final ViewerPanel viewer, final String label, final ColorMap colorProvider )
+	public BrushOverlay( final ViewerPanel viewer, final String label, final ColorMapProvider colorProvider )
 	{
 		this.viewer = viewer;
 		this.label = label;
@@ -97,7 +98,7 @@ public class BrushOverlay implements OverlayRenderer
 				final Rectangle2D rect = fm.getStringBounds( str, g );
 				g2d.setColor( Color.WHITE );
 				g2d.fillRect( x + roundScaledRadius, y + roundScaledRadius - fm.getAscent(), ( int ) rect.getWidth(), ( int ) rect.getHeight() );
-				g2d.setColor( new Color( colorProvider.getColor( label ).get() ) );
+				g2d.setColor( new Color( colorProvider.colorMap().getColor( label ).get() ) );
 				g2d.setStroke( stroke );
 				g2d.drawOval( x - roundScaledRadius, y - roundScaledRadius, 2 * roundScaledRadius + 1, 2 * roundScaledRadius + 1 );
 				g2d.drawString( str, x + roundScaledRadius, y + roundScaledRadius );
