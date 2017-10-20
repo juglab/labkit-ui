@@ -6,7 +6,6 @@ import com.google.gson.stream.JsonReader;
 import com.google.gson.stream.JsonWriter;
 import io.scif.services.DatasetIOService;
 import net.imagej.DatasetService;
-import net.imagej.ImgPlus;
 import net.imglib2.Interval;
 import net.imglib2.RandomAccessibleInterval;
 import net.imglib2.atlas.AtlasUtils;
@@ -63,7 +62,17 @@ public class LabelingSerializer
 		LabelsMetaData meta = (new File(filename + ".labels").exists()) ?
 				loadMetaData(filename + ".labels") :
 				new LabelsMetaData(img);
-		return new Labeling(ImgLabeling.fromImageAndLabelSets(AtlasUtils.uncheckedCast(img), meta.asLabelSets()));
+		return new Labeling(fromImageAndLabelSets(img, meta.asLabelSets()));
+	}
+
+	private ImgLabeling<String,?> fromImageAndLabelSets(Img<? extends IntegerType<?>> img, List<Set<String>> labelSets) {
+		ImgLabeling<String, ?> result = new ImgLabeling<>(AtlasUtils.uncheckedCast(img));
+		new LabelingMapping.SerialisationAccess<String>(result.getMapping()){
+			public void run() {
+				setLabelSets(labelSets);
+			}
+		}.run();
+		return result;
 	}
 
 	private Img<? extends IntegerType<?>> loadImageFromTiff(String filename) throws IOException {

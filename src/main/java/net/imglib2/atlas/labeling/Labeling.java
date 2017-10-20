@@ -9,6 +9,7 @@ import net.imglib2.converter.Converters;
 import net.imglib2.img.Img;
 import net.imglib2.roi.IterableRegion;
 import net.imglib2.roi.labeling.ImgLabeling;
+import net.imglib2.roi.labeling.LabelingMapping;
 import net.imglib2.roi.labeling.LabelingType;
 import net.imglib2.sparse.SparseIterableRegion;
 import net.imglib2.sparse.SparseRandomAccessIntType;
@@ -107,7 +108,18 @@ public class Labeling extends AbstractWrappedInterval implements RandomAccessibl
 	}
 
 	public List<Set<String>> getLabelSets() {
-		return imgLabeling.getMapping();
+		LabelingMapping<String> mapping = imgLabeling.getMapping();
+		return new AbstractList<Set<String>>() {
+			@Override
+			public Set<String> get(int index) {
+				return mapping.labelsAtIndex(index);
+			}
+
+			@Override
+			public int size() {
+				return mapping.numSets();
+			}
+		};
 	}
 
 	public static class SetEntryAsBitType<T> extends BitType {
