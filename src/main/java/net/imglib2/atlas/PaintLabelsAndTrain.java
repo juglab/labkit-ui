@@ -9,20 +9,10 @@ import net.imglib2.img.display.imagej.ImageJFunctions;
 public class PaintLabelsAndTrain
 {
 
-	public static void em()
-	{
-
-		start(System.getProperty( "user.home" ) + "/Downloads/epfl-em/training.tif");
-	}
-
-	public static void boats()
-	{
-		start(System.getProperty( "user.home" ) + "/Documents/Datasets/boats.tif");
-	}
-
-	public static void lung() {
-		start("/home/arzt/Documents/Datasets/20170804_LungImages/2017_08_03__0004.jpg");
-	}
+	private static final String em = "/home/arzt/Downloads/epfl-em/training.tif";
+	private static final String boats = "/home/arzt/Documents/Datasets/boats.tif";
+	private static final String beans = "/home/arzt/Documents/Datasets/beans.tif";
+	private static final String lung = "/home/arzt/Documents/Datasets/20170804_LungImages/2017_08_03__0004.jpg";
 
 	public static void start(String imgPath) {
 		Img<?> img = ImageJFunctions.wrap(new ImagePlus(imgPath));
@@ -30,6 +20,6 @@ public class PaintLabelsAndTrain
 	}
 
 	public static void main( final String[] args ) {
-		boats();
+		start(beans);
 	}
 }
