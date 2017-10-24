@@ -6,13 +6,14 @@ import io.scif.img.ImgSaver;
 import net.imagej.ops.OpEnvironment;
 import net.imagej.ops.OpService;
 import net.imglib2.RandomAccessibleInterval;
-import net.imglib2.algorithm.features.gson.GsonUtils;
 import net.imglib2.atlas.classification.Classifier;
 import net.imglib2.atlas.classification.weka.TrainableSegmentationClassifier;
 import net.imglib2.exception.IncompatibleTypeException;
 import net.imglib2.img.Img;
 import net.imglib2.img.array.ArrayImgs;
 import net.imglib2.img.display.imagej.ImageJFunctions;
+import net.imglib2.trainable_segmention.classification.Segmenter;
+import net.imglib2.trainable_segmention.gson.GsonUtils;
 import net.imglib2.type.numeric.ARGBType;
 import net.imglib2.type.numeric.integer.UnsignedByteType;
 import net.imglib2.util.Intervals;
@@ -58,7 +59,7 @@ public class BatchSegmenter {
 
 	private static Classifier loadClassifier(OpEnvironment ops) throws IOException {
 		final String classifierPath = "/home/arzt/Documents/20170804_LungImages/0006.classifier";
-		return new TrainableSegmentationClassifier(ops, net.imglib2.algorithm.features.classification.Segmenter.fromJson(ops, GsonUtils.read(classifierPath)));
+		return new TrainableSegmentationClassifier(ops, Segmenter.fromJson(ops, GsonUtils.read(classifierPath)));
 	}
 
 	public static Img<UnsignedByteType> segment(Img<ARGBType> rawImg, Classifier classifier, int[] cellDimensions) throws InterruptedException {

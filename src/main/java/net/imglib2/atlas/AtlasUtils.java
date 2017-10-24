@@ -2,7 +2,7 @@ package net.imglib2.atlas;
 
 import net.imglib2.RandomAccessible;
 import net.imglib2.RandomAccessibleInterval;
-import net.imglib2.algorithm.features.RevampUtils;
+import net.imglib2.trainable_segmention.RevampUtils;
 import net.imglib2.converter.Converters;
 import net.imglib2.img.Img;
 import net.imglib2.img.array.ArrayImgs;

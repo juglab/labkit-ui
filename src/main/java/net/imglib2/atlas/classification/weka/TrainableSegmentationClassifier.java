@@ -6,18 +6,17 @@ import net.imglib2.Cursor;
 import net.imglib2.RandomAccess;
 import net.imglib2.RandomAccessible;
 import net.imglib2.RandomAccessibleInterval;
-import net.imglib2.algorithm.features.FeatureGroup;
-import net.imglib2.algorithm.features.FeatureSettings;
-import net.imglib2.algorithm.features.RevampUtils;
-import net.imglib2.algorithm.features.classification.Segmenter;
-import net.imglib2.algorithm.features.classification.Training;
-import net.imglib2.algorithm.features.gson.GsonUtils;
 import net.imglib2.atlas.FeatureStack;
 import net.imglib2.atlas.Notifier;
 import net.imglib2.atlas.actions.SelectClassifier;
 import net.imglib2.atlas.classification.Classifier;
 import net.imglib2.atlas.labeling.Labeling;
 import net.imglib2.roi.IterableRegion;
+import net.imglib2.trainable_segmention.RevampUtils;
+import net.imglib2.trainable_segmention.classification.Segmenter;
+import net.imglib2.trainable_segmention.classification.Training;
+import net.imglib2.trainable_segmention.gson.GsonUtils;
+import net.imglib2.trainable_segmention.pixel_feature.settings.FeatureSettings;
 import net.imglib2.type.logic.BitType;
 import net.imglib2.type.numeric.IntegerType;
 import net.imglib2.type.numeric.RealType;
@@ -61,14 +60,14 @@ implements Classifier
 	@Override
 	public void editClassifier() {
 		initialWekaClassifier = SelectClassifier.runStatic(null, initialWekaClassifier);
-		reset(classifier.features(), classifier.classNames());
+		reset(classifier.settings(), classifier.classNames());
 	}
 
 	@Override
-	public void reset(FeatureGroup features, List<String> classLabels) {
+	public void reset(FeatureSettings settings, List<String> classLabels) {
 		weka.classifiers.Classifier wekaClassifier = RevampUtils.wrapException(() ->
 				AbstractClassifier.makeCopy(this.initialWekaClassifier));
-		reset(new Segmenter(ops, classLabels, features, wekaClassifier));
+		reset(new Segmenter(ops, classLabels, settings, wekaClassifier));
 	}
 
 	private void reset(Segmenter classifier) {
@@ -77,7 +76,7 @@ implements Classifier
 		listeners.forEach(l -> l.notify(this));
 	}
 
-	public TrainableSegmentationClassifier(OpEnvironment ops, weka.classifiers.Classifier initialWekaClassifier, final List<String> classLabels, FeatureGroup features)
+	public TrainableSegmentationClassifier(OpEnvironment ops, weka.classifiers.Classifier initialWekaClassifier, final List<String> classLabels, FeatureSettings features)
 	{
 		this.ops = ops;
 		this.initialWekaClassifier = initialWekaClassifier;

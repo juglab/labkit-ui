@@ -1,10 +1,9 @@
 package net.imglib2.atlas.actions;
 
-import net.imglib2.algorithm.features.RevampUtils;
 import net.imglib2.atlas.BatchSegmenter;
 import net.imglib2.atlas.MainFrame;
 import net.imglib2.atlas.classification.Classifier;
-import net.imglib2.atlas.classification.weka.TrainableSegmentationClassifier;
+import net.imglib2.trainable_segmention.RevampUtils;
 import org.scijava.Cancelable;
 import org.scijava.Context;
 import org.scijava.command.Command;
@@ -21,7 +20,6 @@ import org.scijava.widget.InputHarvester;
 
 import javax.swing.*;
 import java.io.File;
-import java.io.IOException;
 import java.util.List;
 
 /**

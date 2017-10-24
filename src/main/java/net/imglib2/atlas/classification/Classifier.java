@@ -1,10 +1,9 @@
 package net.imglib2.atlas.classification;
 
 import net.imglib2.RandomAccessibleInterval;
-import net.imglib2.algorithm.features.FeatureGroup;
-import net.imglib2.algorithm.features.FeatureSettings;
 import net.imglib2.atlas.Notifier;
 import net.imglib2.atlas.labeling.Labeling;
+import net.imglib2.trainable_segmention.pixel_feature.settings.FeatureSettings;
 import net.imglib2.type.numeric.IntegerType;
 
 import java.util.List;
@@ -14,7 +13,7 @@ public interface Classifier
 
 	void editClassifier();
 
-	void reset(FeatureGroup features, List<String> classLabels);
+	void reset(FeatureSettings features, List<String> classLabels);
 
 	void segment(RandomAccessibleInterval<?> image, RandomAccessibleInterval<? extends IntegerType<?>> labels );
 

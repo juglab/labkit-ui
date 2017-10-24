@@ -5,16 +5,15 @@ import net.imglib2.FinalInterval;
 import net.imglib2.Interval;
 import net.imglib2.RandomAccessible;
 import net.imglib2.RandomAccessibleInterval;
-import net.imglib2.algorithm.features.FeatureGroup;
-import net.imglib2.algorithm.features.FeatureSettings;
-import net.imglib2.algorithm.features.Features;
-import net.imglib2.algorithm.features.RevampUtils;
 import net.imglib2.atlas.classification.Classifier;
 import net.imglib2.cache.img.CellLoader;
 import net.imglib2.cache.img.DiskCachedCellImgFactory;
 import net.imglib2.cache.img.DiskCachedCellImgOptions;
 import net.imglib2.img.Img;
 import net.imglib2.img.cell.CellGrid;
+import net.imglib2.trainable_segmention.RevampUtils;
+import net.imglib2.trainable_segmention.pixel_feature.calculator.FeatureCalculator;
+import net.imglib2.trainable_segmention.pixel_feature.settings.FeatureSettings;
 import net.imglib2.type.numeric.RealType;
 import net.imglib2.type.numeric.real.FloatType;
 import net.imglib2.util.Intervals;
@@ -31,7 +30,7 @@ public class FeatureStack {
 
 	private final MainFrame.Extensible extensible;
 
-	private FeatureGroup filter = null;
+	private FeatureCalculator filter = null;
 
 	private RandomAccessibleInterval<?> original;
 
@@ -69,7 +68,7 @@ public class FeatureStack {
 	}
 
 	public void setFilter(FeatureSettings fs) {
-		FeatureGroup featureGroup = Features.group(extensible.context().service(OpService.class), fs);
+		FeatureCalculator featureGroup = new FeatureCalculator(extensible.context().service(OpService.class), fs);
 		if(filter != null && filter.equals(featureGroup))
 			return;
 		filter = featureGroup;
@@ -87,15 +86,15 @@ public class FeatureStack {
 		return original;
 	}
 
-	private Img<FloatType> cachedFeature(FeatureGroup feature, RandomAccessible<?> extendedOriginal) {
+	private Img<FloatType> cachedFeature(FeatureCalculator feature, RandomAccessible<?> extendedOriginal) {
 		return cachedFeatureBlock(feature, extendedOriginal, this.grid);
 	}
 
-	public static Img<FloatType> cachedFeatureBlock(FeatureGroup feature, RandomAccessibleInterval<?> image) {
+	public static Img<FloatType> cachedFeatureBlock(FeatureCalculator feature, RandomAccessibleInterval<?> image) {
 		return cachedFeatureBlock(feature, Views.extendBorder(image), initGrid(image, false));
 	}
 
-	public static Img<FloatType> cachedFeatureBlock(FeatureGroup feature, RandomAccessible<?> extendedOriginal, CellGrid grid) {
+	public static Img<FloatType> cachedFeatureBlock(FeatureCalculator feature, RandomAccessible<?> extendedOriginal, CellGrid grid) {
 		int count = feature.count();
 		if(count <= 0)
 			throw new IllegalArgumentException();
@@ -112,7 +111,7 @@ public class FeatureStack {
 		return slices;
 	}
 
-	public FeatureGroup filter() {
+	public FeatureCalculator filter() {
 		return filter;
 	}
 

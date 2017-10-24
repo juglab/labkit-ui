@@ -1,7 +1,7 @@
 package net.imglib2.atlas.plugin;
 
 import net.imagej.Dataset;
-import net.imglib2.algorithm.features.RevampUtils;
+import net.imglib2.trainable_segmention.RevampUtils;
 import net.imglib2.atlas.MainFrame;
 import net.imglib2.img.Img;
 import net.imglib2.type.numeric.RealType;

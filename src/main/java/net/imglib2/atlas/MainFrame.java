@@ -6,11 +6,6 @@ import bdv.util.volatiles.VolatileViews;
 import hr.irb.fastRandomForest.FastRandomForest;
 import net.imagej.ops.OpService;
 import net.imglib2.*;
-import net.imglib2.algorithm.features.FeatureGroup;
-import net.imglib2.algorithm.features.FeatureSettings;
-import net.imglib2.algorithm.features.Features;
-import net.imglib2.algorithm.features.GlobalSettings;
-import net.imglib2.algorithm.features.gui.FeatureSettingsGui;
 import net.imglib2.atlas.actions.BatchSegmentAction;
 import net.imglib2.atlas.actions.ClassifierSaveAndLoad;
 import net.imglib2.atlas.actions.LabelingSaveAndLoad;
@@ -24,6 +19,11 @@ import net.imglib2.atlas.classification.TrainClassifier;
 import net.imglib2.atlas.classification.PredictionLayer;
 import net.imglib2.atlas.classification.weka.TrainableSegmentationClassifier;
 import net.imglib2.realtransform.AffineTransform3D;
+import net.imglib2.trainable_segmention.gui.FeatureSettingsGui;
+import net.imglib2.trainable_segmention.pixel_feature.filter.GroupedFeatures;
+import net.imglib2.trainable_segmention.pixel_feature.filter.SingleFeatures;
+import net.imglib2.trainable_segmention.pixel_feature.settings.FeatureSettings;
+import net.imglib2.trainable_segmention.pixel_feature.settings.GlobalSettings;
 import net.imglib2.type.numeric.ARGBType;
 import net.imglib2.type.numeric.NumericType;
 import net.imglib2.type.numeric.RealType;
@@ -37,9 +37,6 @@ import java.awt.*;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
-
-import net.imglib2.algorithm.features.GroupedFeatures;
-import net.imglib2.algorithm.features.SingleFeatures;
 
 /**
  * A component that supports labeling an image.
@@ -80,8 +77,8 @@ public class MainFrame {
 		// --
 		GlobalSettings globalSettings = new GlobalSettings(getImageType(rawData), 1.0, 16.0, 1.0);
 		OpService ops = context.service(OpService.class);
-		FeatureGroup featureGroup = Features.group(ops, globalSettings, SingleFeatures.identity(), GroupedFeatures.gauss());
-		classifier = new TrainableSegmentationClassifier(ops, new FastRandomForest(), classLabels, featureGroup);
+		FeatureSettings setting = new FeatureSettings(globalSettings, SingleFeatures.identity(), GroupedFeatures.gauss());
+		classifier = new TrainableSegmentationClassifier(ops, new FastRandomForest(), classLabels, setting );
 		featureStack = new FeatureStack(extensible, rawData, classifier, isTimeSeries);
 		initClassification();
 		// --
@@ -132,7 +129,7 @@ public class MainFrame {
 		Optional<FeatureSettings> fs = FeatureSettingsGui.show(context, classifier.settings());
 		if(!fs.isPresent())
 			return;
-		classifier.reset(Features.group(context.service(OpService.class), fs.get()), classLabels);
+		classifier.reset(fs.get(), classLabels);
 	}
 
 	private JMenuItem newMenuItem(String title, Runnable runnable) {

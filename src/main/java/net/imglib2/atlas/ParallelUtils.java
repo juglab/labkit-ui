@@ -3,10 +3,9 @@ package net.imglib2.atlas;
 import net.imglib2.FinalInterval;
 import net.imglib2.Interval;
 import net.imglib2.RandomAccessibleInterval;
-import net.imglib2.algorithm.features.RevampUtils;
 import net.imglib2.img.Img;
 import net.imglib2.img.cell.CellGrid;
-import net.imglib2.type.numeric.integer.UnsignedByteType;
+import net.imglib2.trainable_segmention.RevampUtils;
 import net.imglib2.util.Intervals;
 import net.imglib2.view.Views;
 

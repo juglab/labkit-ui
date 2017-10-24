@@ -1,8 +1,8 @@
 package net.imglib2.atlas.actions;
 
 import hr.irb.fastRandomForest.FastRandomForest;
-import net.imglib2.algorithm.features.RevampUtils;
 import net.imglib2.atlas.MainFrame;
+import net.imglib2.trainable_segmention.RevampUtils;
 import org.scijava.ui.behaviour.util.RunnableAction;
 import weka.classifiers.Classifier;
 import weka.core.PluginManager;
