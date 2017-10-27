@@ -13,6 +13,7 @@ import net.imglib2.atlas.labeling.Labeling;
 import net.imglib2.atlas.labeling.LabelsLayer;
 import net.imglib2.img.cell.CellGrid;
 import net.imglib2.realtransform.AffineTransform3D;
+import net.imglib2.trainable_segmention.RevampUtils;
 import net.imglib2.type.logic.BitType;
 import net.imglib2.type.numeric.NumericType;
 import net.imglib2.ui.OverlayRenderer;
@@ -50,9 +51,8 @@ public class LabelingComponent {
 		return actionsAndBehaviours.getActions();
 	}
 
-	public < R extends NumericType< R >>
 	LabelingComponent(final JFrame dialogBoxOwner,
-			final RandomAccessibleInterval<R> rawData,
+			final RandomAccessibleInterval<? extends NumericType<?>> rawData,
 			final List<String> labels,
 			final boolean isTimeSeries)
 	{
@@ -69,7 +69,7 @@ public class LabelingComponent {
 		addAction(new ToggleVisibility( "Toggle Classification", bdvHandle.getViewerPanel(), 1 ), "C");
 
 		Pair<Double, Double> p = AtlasUtils.estimateMinMax(rawData);
-		addLayer(rawData, "original").setDisplayRange(p.getA(), p.getB());
+		addLayer(RevampUtils.uncheckedCast(rawData), "original").setDisplayRange(p.getA(), p.getB());
 	}
 
 	private static int[] cellDimensions(CellGrid grid) {

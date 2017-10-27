@@ -4,6 +4,10 @@ import bdv.util.BdvStackSource;
 import bdv.util.volatiles.SharedQueue;
 import bdv.util.volatiles.VolatileViews;
 import hr.irb.fastRandomForest.FastRandomForest;
+import io.scif.services.DatasetIOService;
+import net.imagej.Dataset;
+import net.imagej.axis.Axes;
+import net.imagej.axis.CalibratedAxis;
 import net.imagej.ops.OpService;
 import net.imglib2.*;
 import net.imglib2.atlas.actions.BatchSegmentAction;
@@ -19,9 +23,11 @@ import net.imglib2.atlas.classification.TrainClassifier;
 import net.imglib2.atlas.classification.PredictionLayer;
 import net.imglib2.atlas.classification.weka.TrainableSegmentationClassifier;
 import net.imglib2.realtransform.AffineTransform3D;
+import net.imglib2.trainable_segmention.RevampUtils;
 import net.imglib2.trainable_segmention.gui.FeatureSettingsGui;
 import net.imglib2.trainable_segmention.pixel_feature.filter.GroupedFeatures;
 import net.imglib2.trainable_segmention.pixel_feature.filter.SingleFeatures;
+import net.imglib2.trainable_segmention.pixel_feature.settings.ChannelSetting;
 import net.imglib2.trainable_segmention.pixel_feature.settings.FeatureSettings;
 import net.imglib2.trainable_segmention.pixel_feature.settings.GlobalSettings;
 import net.imglib2.type.numeric.ARGBType;
@@ -61,25 +67,29 @@ public class MainFrame {
 
 	private final Context context;
 
-	public <R extends NumericType<R>>
-	MainFrame(final RandomAccessibleInterval<R> rawData,
-			  final boolean isTimeSeries)
+	public static MainFrame open(String filename)
 	{
-		this(new Context(), rawData, isTimeSeries);
+		return open(null, filename);
 	}
 
-	public <R extends NumericType<R>>
-	MainFrame(final Context context, final RandomAccessibleInterval<R> rawData,
-			  final boolean isTimeSeries)
+	public static MainFrame open(Context context, String filename) {
+		final Context context2 = (context == null) ? new Context() : context;
+		Dataset dataset = RevampUtils.wrapException( () -> context2.service(DatasetIOService.class).open(filename) );
+		return new MainFrame(context2, dataset);
+	}
+
+	public MainFrame(final Context context, final Dataset dataset)
 	{
 		this.context = context;
-		labelingComponent = new LabelingComponent(frame, rawData, classLabels, isTimeSeries);
+		InputImage inputImage = new InputImage(dataset);
+		RandomAccessibleInterval<? extends NumericType<?>> rawData = inputImage.displayImage();
+		labelingComponent = new LabelingComponent(frame, rawData, classLabels, false);
 		// --
-		GlobalSettings globalSettings = new GlobalSettings(getImageType(rawData), 1.0, 16.0, 1.0);
+		GlobalSettings globalSettings = new GlobalSettings(inputImage.getChannelSetting(), inputImage.getSpatialDimensions(), 1.0, 16.0, 1.0);
 		OpService ops = context.service(OpService.class);
 		FeatureSettings setting = new FeatureSettings(globalSettings, SingleFeatures.identity(), GroupedFeatures.gauss());
 		classifier = new TrainableSegmentationClassifier(ops, new FastRandomForest(), classLabels, setting );
-		featureStack = new FeatureStack(extensible, rawData, classifier, isTimeSeries);
+		featureStack = new FeatureStack(extensible, rawData, classifier, false);
 		initClassification();
 		// --
 		initMenu(labelingComponent.getActions());
@@ -87,14 +97,6 @@ public class MainFrame {
 		frame.setVisible(true);
 	}
 
-	private GlobalSettings.ImageType getImageType(RandomAccessibleInterval<?> rawData) {
-		Object firstElement = rawData.randomAccess().get();
-		if(firstElement instanceof RealType)
-			return GlobalSettings.ImageType.GRAY_SCALE;
-		if(firstElement instanceof ARGBType)
-			return GlobalSettings.ImageType.COLOR;
-		throw new RuntimeException();
-	}
 
 	private void initClassification() {
 		new TrainClassifier(extensible, classifier, () -> labelingComponent.getLabeling(), featureStack.compatibleOriginal());

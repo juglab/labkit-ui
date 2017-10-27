@@ -5,6 +5,7 @@ import net.imglib2.trainable_segmention.RevampUtils;
 import net.imglib2.atlas.MainFrame;
 import net.imglib2.img.Img;
 import net.imglib2.type.numeric.RealType;
+import org.scijava.Context;
 import org.scijava.command.Command;
 import org.scijava.plugin.Parameter;
 import org.scijava.plugin.Plugin;
@@ -16,11 +17,13 @@ import org.scijava.plugin.Plugin;
 public class TrainableSegmentationRevamp implements Command {
 
 	@Parameter
-	Dataset input;
+	private Context context;
+
+	@Parameter
+	private Dataset dataset;
 
 	@Override
 	public void run() {
-		Img<? extends RealType<?>> img = input.getImgPlus().getImg();
-		new MainFrame(RevampUtils.uncheckedCast(img), false);
+		new MainFrame(context, dataset);
 	}
 }

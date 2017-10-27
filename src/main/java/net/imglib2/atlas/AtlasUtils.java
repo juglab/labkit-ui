@@ -58,7 +58,7 @@ public class AtlasUtils {
 		return dest;
 	}
 
-	public static <R extends NumericType< R >> Pair<Double,Double> estimateMinMax(RandomAccessibleInterval<R> rawData) {
+	public static <R extends NumericType< ? >> Pair<Double,Double> estimateMinMax(RandomAccessibleInterval<R> rawData) {
 		R firstElement = rawData.randomAccess().get();
 		if(firstElement instanceof UnsignedByteType)
 			return new ValuePair<>(0., 255.);
