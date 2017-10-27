@@ -9,18 +9,24 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 import net.imglib2.*;
+import net.imglib2.algorithm.fill.Filter;
+import net.imglib2.algorithm.neighborhood.DiamondShape;
 import net.imglib2.atlas.ActionsAndBehaviours;
 import net.imglib2.atlas.Holder;
 import net.imglib2.atlas.color.ColorMapProvider;
 import net.imglib2.atlas.labeling.Labeling;
+import net.imglib2.type.Type;
 import net.imglib2.type.logic.BitType;
+import net.imglib2.type.operators.ValueEquals;
+import net.imglib2.util.Pair;
+import net.imglib2.view.ExtendedRandomAccessibleInterval;
 import org.scijava.ui.behaviour.Behaviour;
+import org.scijava.ui.behaviour.ClickBehaviour;
 import org.scijava.ui.behaviour.DragBehaviour;
 import org.scijava.ui.behaviour.ScrollBehaviour;
 
 import bdv.viewer.ViewerPanel;
 import net.imglib2.atlas.BrushOverlay;
-import net.imglib2.atlas.color.ColorMap;
 import net.imglib2.realtransform.AffineTransform3D;
 import net.imglib2.ui.TransformEventHandler;
 import net.imglib2.util.Intervals;
@@ -98,6 +104,8 @@ public class LabelBrushController
 
 		behaviors.addBehaviour( new Paint(), "paint", "SPACE button1" );
 		behaviors.addBehaviour( new Erase(), "erase", "SPACE button2", "SPACE button3" );
+		behaviors.addBehaviour( new FloodFillClick(true), "floodfill", "Y button1" );
+		behaviors.addBehaviour( new FloodFillClick(false), "floodclear", "Y button2", "Y button3" );
 		behaviors.addBehaviour( new ChangeBrushRadius(), "change brush radius", "SPACE scroll" );
 		behaviors.addAction( new ChangeLabel(), "N" );
 		behaviors.addBehaviour( new MoveBrush(), "move brush", "SPACE" );
@@ -292,5 +300,43 @@ public class LabelBrushController
 			viewer.getDisplay().repaint();
 
 		}
+	}
+
+	private class FloodFillClick implements ClickBehaviour
+	{
+		private final boolean foreground;
+
+		FloodFillClick(boolean foreground) {
+			this.foreground = foreground;
+		}
+
+		protected void floodFill( final RealLocalizable coords)
+		{
+			synchronized ( viewer )
+			{
+				RandomAccessibleInterval<BitType> region = regions.get(getCurrentLabel());
+				LabelBrushController.floodFill(region, round(coords), new BitType(foreground));
+			}
+		}
+
+		private Localizable round(final RealLocalizable realLocalizable) {
+			Point point = new Point(2);
+			for (int i = 0; i < point.numDimensions(); i++)
+				point.setPosition((long) realLocalizable.getDoublePosition(i), i);
+			return point;
+		}
+
+		@Override
+		public void click(int x, int y) {
+			setCoordinates(x, y);
+			floodFill( labelLocation );
+			viewer.requestRepaint();
+		}
+	}
+
+	public static <T extends Type<T> & ValueEquals<T>> void floodFill(RandomAccessibleInterval<T> image, Localizable seed, T value) {
+		Filter<Pair<T, T>, Pair<T, T>> filter = (f, s) -> ! value.valueEquals(f.getB());
+		ExtendedRandomAccessibleInterval<T, RandomAccessibleInterval<T>> target = Views.extendValue(image, value);
+		net.imglib2.algorithm.fill.FloodFill.fill(target, target, seed, value, new DiamondShape(1), filter);
 	}
 }
