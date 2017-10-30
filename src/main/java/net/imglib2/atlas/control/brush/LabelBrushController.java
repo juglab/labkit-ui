@@ -101,8 +101,8 @@ public class LabelBrushController
 
 		labelLocation = new RealPoint( 3 );
 
-		behaviors.addBehaviour( new Paint(), "paint", "SPACE button1" );
-		behaviors.addBehaviour( new Erase(), "erase", "SPACE button2", "SPACE button3" );
+		behaviors.addBehaviour( new PaintBehavior(true), "paint", "SPACE button1" );
+		behaviors.addBehaviour( new PaintBehavior(false), "erase", "SPACE button2", "SPACE button3" );
 		behaviors.addBehaviour( new FloodFillClick(true), "floodfill", "Y button1" );
 		behaviors.addBehaviour( new FloodFillClick(false), "floodclear", "Y button2", "Y button3" );
 		behaviors.addBehaviour( new ChangeBrushRadius(), "change brush radius", "SPACE scroll" );
@@ -129,9 +129,15 @@ public class LabelBrushController
 		labelTransform.applyInverse( labelLocation, labelLocation );
 	}
 
-	private abstract class AbstractPaintBehavior implements DragBehaviour
+	private class PaintBehavior implements DragBehaviour
 	{
-		protected void paint( final RealLocalizable coords)
+		private boolean value;
+
+		public PaintBehavior(boolean value) {
+			this.value = value;
+		}
+
+		private void paint( final RealLocalizable coords)
 		{
 			synchronized ( viewer )
 			{
@@ -143,19 +149,19 @@ public class LabelBrushController
 				{
 					final BitType val = it.next();
 					if ( Intervals.contains( label, ( Localizable ) it ) )
-						val.set( doPaint() );
+						val.set( value );
 				}
 			}
 
 		}
 
-		protected void paint( final int x, final int y )
+		private void paint( final int x, final int y )
 		{
 			setCoordinates( x, y );
 			paint( labelLocation );
 		}
 
-		protected void paint( final int x1, final int y1, final int x2, final int y2 )
+		private void paint( final int x1, final int y1, final int x2, final int y2 )
 		{
 			setCoordinates( x1, y1 );
 			final double[] p1 = new double[ 3 ];
@@ -217,24 +223,6 @@ public class LabelBrushController
 		@Override
 		public void end( final int x, final int y )
 		{
-		}
-
-		protected abstract boolean doPaint();
-	}
-
-	private class Paint extends AbstractPaintBehavior
-	{
-		@Override
-		protected boolean doPaint() {
-			return true;
-		}
-	}
-
-	private class Erase extends AbstractPaintBehavior
-	{
-		@Override
-		protected boolean doPaint() {
-			return false;
 		}
 	}
 
@@ -303,10 +291,10 @@ public class LabelBrushController
 
 	private class FloodFillClick implements ClickBehaviour
 	{
-		private final boolean foreground;
+		private final boolean value;
 
-		FloodFillClick(boolean foreground) {
-			this.foreground = foreground;
+		FloodFillClick(boolean value) {
+			this.value = value;
 		}
 
 		protected void floodFill( final RealLocalizable coords)
@@ -314,7 +302,7 @@ public class LabelBrushController
 			synchronized ( viewer )
 			{
 				RandomAccessibleInterval<BitType> region = regions.get(getCurrentLabel());
-				LabelBrushController.floodFill(region, round(coords), new BitType(foreground));
+				LabelBrushController.floodFill(region, round(coords), new BitType(value));
 			}
 		}
 
