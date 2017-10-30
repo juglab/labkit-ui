@@ -6,8 +6,6 @@ import bdv.util.volatiles.VolatileViews;
 import hr.irb.fastRandomForest.FastRandomForest;
 import io.scif.services.DatasetIOService;
 import net.imagej.Dataset;
-import net.imagej.axis.Axes;
-import net.imagej.axis.CalibratedAxis;
 import net.imagej.ops.OpService;
 import net.imglib2.*;
 import net.imglib2.atlas.actions.BatchSegmentAction;
@@ -17,22 +15,21 @@ import net.imglib2.atlas.actions.OpenImageAction;
 import net.imglib2.atlas.actions.OrthogonalView;
 import net.imglib2.atlas.actions.SegmentationSave;
 import net.imglib2.atlas.actions.SelectClassifier;
+import net.imglib2.atlas.actions.SetLabelsAction;
 import net.imglib2.atlas.actions.ZAxisScaling;
 import net.imglib2.atlas.classification.Classifier;
 import net.imglib2.atlas.classification.TrainClassifier;
 import net.imglib2.atlas.classification.PredictionLayer;
 import net.imglib2.atlas.classification.weka.TrainableSegmentationClassifier;
+import net.imglib2.atlas.labeling.Labeling;
 import net.imglib2.realtransform.AffineTransform3D;
 import net.imglib2.trainable_segmention.RevampUtils;
 import net.imglib2.trainable_segmention.gui.FeatureSettingsGui;
 import net.imglib2.trainable_segmention.pixel_feature.filter.GroupedFeatures;
 import net.imglib2.trainable_segmention.pixel_feature.filter.SingleFeatures;
-import net.imglib2.trainable_segmention.pixel_feature.settings.ChannelSetting;
 import net.imglib2.trainable_segmention.pixel_feature.settings.FeatureSettings;
 import net.imglib2.trainable_segmention.pixel_feature.settings.GlobalSettings;
-import net.imglib2.type.numeric.ARGBType;
 import net.imglib2.type.numeric.NumericType;
-import net.imglib2.type.numeric.RealType;
 import net.imglib2.ui.OverlayRenderer;
 import org.scijava.Context;
 import org.scijava.ui.behaviour.Behaviour;
@@ -110,6 +107,7 @@ public class MainFrame {
 		new OrthogonalView(extensible, new AffineTransform3D());
 		new SelectClassifier(extensible, classifier);
 		new BatchSegmentAction(extensible, classifier);
+		new SetLabelsAction(extensible);
 	}
 
 	private JFrame initFrame() {
@@ -186,6 +184,14 @@ public class MainFrame {
 
 		public void displayRepaint() {
 			labelingComponent.displayRepaint();
+		}
+
+		public Labeling getLabeling() {
+			return labelingComponent.getLabeling();
+		}
+
+		public void setLabeling(Labeling labeling) {
+			labelingComponent.setLabeling(labeling);
 		}
 	}
 }
