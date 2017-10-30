@@ -32,7 +32,7 @@ public class HyperEllipsoidNeighborhood< T > extends AbstractLocalizable impleme
 
 	private final Interval structuringElementBoundingBox;
 
-	HyperEllipsoidNeighborhood(final long[] position, final double[] radius, final RandomAccess< T > sourceRandomAccess )
+	public HyperEllipsoidNeighborhood(final long[] position, final double[] radius, final RandomAccess<T> sourceRandomAccess)
 	{
 		super( position );
 		this.sourceRandomAccess = sourceRandomAccess;

@@ -1,4 +1,4 @@
-package net.imglib2.atlas.control.brush;
+package net.imglib2.atlas.control.brush.neighboorhood;
 
 import net.imglib2.Cursor;
 import net.imglib2.Interval;
