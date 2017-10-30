@@ -2,6 +2,7 @@ package net.imglib2.atlas.control.brush;
 
 import net.imglib2.Cursor;
 import net.imglib2.Interval;
+import net.imglib2.atlas.control.brush.neighborhood.HyperEllipsoidNeighborhood;
 import net.imglib2.img.Img;
 import net.imglib2.img.array.ArrayImgs;
 import net.imglib2.type.logic.BitType;

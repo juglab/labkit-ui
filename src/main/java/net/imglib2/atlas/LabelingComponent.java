@@ -2,13 +2,16 @@ package net.imglib2.atlas;
 
 import bdv.util.*;
 import bdv.viewer.DisplayMode;
-import bdv.viewer.Source;
 import net.imglib2.Interval;
 import net.imglib2.RandomAccessibleInterval;
 import net.imglib2.atlas.actions.ToggleVisibility;
 import net.imglib2.atlas.color.ColorMapProvider;
 import net.imglib2.atlas.color.UpdateColormap;
 import net.imglib2.atlas.control.brush.*;
+import net.imglib2.atlas.control.brush.neighborhood.NeighborhoodFactories;
+import net.imglib2.atlas.control.brush.neighborhood.NeighborhoodPixelsGenerator;
+import net.imglib2.atlas.control.brush.neighborhood.NeighborhoodPixelsGeneratorForTimeSeries;
+import net.imglib2.atlas.control.brush.neighborhood.PaintPixelsGenerator;
 import net.imglib2.atlas.labeling.Labeling;
 import net.imglib2.atlas.labeling.LabelsLayer;
 import net.imglib2.img.cell.CellGrid;

@@ -1,4 +1,4 @@
-package net.imglib2.atlas.control.brush;
+package net.imglib2.atlas.control.brush.neighborhood;
 
 import bdv.util.Affine3DHelpers;
 import net.imglib2.Cursor;

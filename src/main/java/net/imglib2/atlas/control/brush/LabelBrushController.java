@@ -14,6 +14,7 @@ import net.imglib2.algorithm.neighborhood.DiamondShape;
 import net.imglib2.atlas.ActionsAndBehaviours;
 import net.imglib2.atlas.Holder;
 import net.imglib2.atlas.color.ColorMapProvider;
+import net.imglib2.atlas.control.brush.neighborhood.PaintPixelsGenerator;
 import net.imglib2.atlas.labeling.Labeling;
 import net.imglib2.type.Type;
 import net.imglib2.type.logic.BitType;
@@ -44,8 +45,6 @@ import org.scijava.ui.behaviour.util.AbstractNamedAction;
  */
 public class LabelBrushController
 {
-
-	public static int BACKGROUND = -1;
 
 	final protected ViewerPanel viewer;
 

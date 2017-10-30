@@ -1,4 +1,4 @@
-package net.imglib2.atlas.control.brush;
+package net.imglib2.atlas.control.brush.neighborhood;
 
 import java.util.stream.IntStream;
 
