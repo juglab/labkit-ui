@@ -46,7 +46,7 @@ import org.scijava.ui.behaviour.util.AbstractNamedAction;
 public class LabelBrushController
 {
 
-	final protected ViewerPanel viewer;
+	final private ViewerPanel viewer;
 
 	private List<RandomAccessibleInterval<BitType>> regions;
 
@@ -54,13 +54,11 @@ public class LabelBrushController
 
 	private final PaintPixelsGenerator< BitType, ? extends Iterator<BitType> > pixelsGenerator;
 
-	final protected AffineTransform3D labelTransform;
+	final private AffineTransform3D labelTransform;
 
-	final protected RealPoint labelLocation;
+	final private BrushOverlay brushOverlay;
 
-	final protected BrushOverlay brushOverlay;
-
-	protected int brushRadius = 5;
+	private int brushRadius = 5;
 
 	private int currentLabel = 0;
 
@@ -69,7 +67,7 @@ public class LabelBrushController
 		return brushOverlay;
 	}
 
-	public int getCurrentLabel()
+	private int getCurrentLabel()
 	{
 		return currentLabel;
 	}
@@ -78,12 +76,6 @@ public class LabelBrushController
 		currentLabel = index;
 		brushOverlay.setLabel( labels.get(index) );
 	}
-
-
-	/**
-	 * Coordinates where mouse dragging started.
-	 */
-	private int oX, oY;
 
 	public LabelBrushController(
 			final ViewerPanel viewer,
@@ -98,8 +90,6 @@ public class LabelBrushController
 		this.brushOverlay = new BrushOverlay( viewer, "", colorProvider );
 		updateLabeling(labels.get());
 		labels.notifier().add(this::updateLabeling);
-
-		labelLocation = new RealPoint( 3 );
 
 		behaviors.addBehaviour( new PaintBehavior(true), "paint", "SPACE button1" );
 		behaviors.addBehaviour( new PaintBehavior(false), "erase", "SPACE button2", "SPACE button3" );
@@ -118,20 +108,22 @@ public class LabelBrushController
 		setCurrentLabel(Math.min(currentLabel, regions.size()-1));
 	}
 
-	private void setCoordinates( final int x, final int y )
+	private RealPoint displayToImageCoordinates( final int x, final int y )
 	{
+		final RealPoint labelLocation = new RealPoint(3);
 		labelLocation.setPosition( x, 0 );
 		labelLocation.setPosition( y, 1 );
 		labelLocation.setPosition( 0, 2 );
-
 		viewer.displayToGlobalCoordinates( labelLocation );
-
 		labelTransform.applyInverse( labelLocation, labelLocation );
+		return labelLocation;
 	}
 
 	private class PaintBehavior implements DragBehaviour
 	{
 		private boolean value;
+
+		private RealPoint before;
 
 		public PaintBehavior(boolean value) {
 			this.value = value;
@@ -155,34 +147,27 @@ public class LabelBrushController
 
 		}
 
-		private void paint( final int x, final int y )
-		{
-			setCoordinates( x, y );
-			paint( labelLocation );
+		private void paint(RealPoint a, RealPoint b) {
+			long distance = (long) distance(a, b);
+			for ( long i = 0; i <= distance; ++i )
+				paint( interpolate((double) i / (double) distance, a, b) );
 		}
 
-		private void paint( final int x1, final int y1, final int x2, final int y2 )
-		{
-			setCoordinates( x1, y1 );
-			final double[] p1 = new double[ 3 ];
-			final RealPoint rp1 = RealPoint.wrap( p1 );
-			labelLocation.localize( p1 );
+		RealLocalizable interpolate(double ratio, RealLocalizable a, RealLocalizable b) {
+			RealPoint result = new RealPoint(a.numDimensions());
+			for (int d = 0; d < result.numDimensions(); d++)
+				result.setPosition(ratio * a.getDoublePosition(d) + (1 - ratio) * b.getDoublePosition(d), d);
+			return result;
+		}
 
-			setCoordinates( x2, y2 );
-			final double[] d = new double[ 3 ];
-			labelLocation.localize( d );
+		double distance(RealLocalizable a, RealLocalizable b) {
+			return LinAlgHelpers.distance(asArray(a), asArray(b));
+		}
 
-			LinAlgHelpers.subtract( d, p1, d );
-
-			final double l = LinAlgHelpers.length( d );
-			LinAlgHelpers.normalize( d );
-
-			for ( int i = 1; i < l; ++i )
-			{
-				LinAlgHelpers.add( p1, d, p1 );
-				paint( rp1 );
-			}
-			paint( labelLocation );
+		private double[] asArray(RealLocalizable a) {
+			double[] result = new double[a.numDimensions()];
+			a.localize(result);
+			return result;
 		}
 
 		private int getValue()
@@ -193,13 +178,9 @@ public class LabelBrushController
 		@Override
 		public void init( final int x, final int y )
 		{
-			synchronized ( this )
-			{
-				oX = x;
-				oY = y;
-			}
-
-			paint( x, y );
+			RealPoint coords = displayToImageCoordinates(x, y);
+			this.before = coords;
+			paint(coords);
 
 			viewer.requestRepaint();
 		}
@@ -207,16 +188,10 @@ public class LabelBrushController
 		@Override
 		public void drag( final int x, final int y )
 		{
+			RealPoint coords = displayToImageCoordinates(x, y);
+			paint(before, coords );
+			this.before = coords;
 			brushOverlay.setPosition( x, y );
-
-			paint( oX, oY, x, y );
-
-			synchronized ( this )
-			{
-				oX = x;
-				oY = y;
-			}
-
 			viewer.requestRepaint();
 		}
 
@@ -315,8 +290,7 @@ public class LabelBrushController
 
 		@Override
 		public void click(int x, int y) {
-			setCoordinates(x, y);
-			floodFill( labelLocation );
+			floodFill( displayToImageCoordinates(x, y) );
 			viewer.requestRepaint();
 		}
 	}
