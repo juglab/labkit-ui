@@ -147,7 +147,7 @@ public class LabelBrushController
 
 		}
 
-		private void paint(RealPoint a, RealPoint b) {
+		private void paint(RealLocalizable a, RealLocalizable b) {
 			long distance = (long) distance(a, b);
 			for ( long i = 0; i <= distance; ++i )
 				paint( interpolate((double) i / (double) distance, a, b) );
@@ -208,10 +208,9 @@ public class LabelBrushController
 		{
 			if ( !isHorizontal )
 			{
-				if ( wheelRotation < 0 )
-					brushRadius += 1;
-				else if ( wheelRotation > 0 )
-					brushRadius = Math.max( 0, brushRadius - 1 );
+				int sign = ( wheelRotation < 0 ) ? 1 : -1;
+				int distance = Math.max( 1, (int) (brushRadius * 0.1) );
+				brushRadius = Math.max( 0, brushRadius + sign * distance );
 
 				brushOverlay.setRadius( brushRadius );
 				// TODO request only overlays to repaint
