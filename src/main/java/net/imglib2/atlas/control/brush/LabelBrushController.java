@@ -277,12 +277,13 @@ public class LabelBrushController
 			synchronized ( viewer )
 			{
 				RandomAccessibleInterval<BitType> region = regions.get(getCurrentLabel());
-				LabelBrushController.floodFill(region, round(coords), new BitType(value));
+				Point seed = roundAndReduceDimension(coords, region.numDimensions());
+				LabelBrushController.floodFill(region, seed, new BitType(value));
 			}
 		}
 
-		private Localizable round(final RealLocalizable realLocalizable) {
-			Point point = new Point(2);
+		private Point roundAndReduceDimension(final RealLocalizable realLocalizable, int numDimesions) {
+			Point point = new Point(numDimesions);
 			for (int i = 0; i < point.numDimensions(); i++)
 				point.setPosition((long) realLocalizable.getDoublePosition(i), i);
 			return point;
