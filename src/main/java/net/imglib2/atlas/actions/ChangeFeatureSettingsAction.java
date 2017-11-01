@@ -4,7 +4,6 @@ import net.imglib2.atlas.MainFrame;
 import net.imglib2.atlas.classification.Classifier;
 import net.imglib2.trainable_segmention.gui.FeatureSettingsGui;
 import net.imglib2.trainable_segmention.pixel_feature.settings.FeatureSettings;
-import org.scijava.ui.behaviour.util.RunnableAction;
 
 import java.util.Optional;
 
@@ -16,7 +15,7 @@ public class ChangeFeatureSettingsAction {
 	public ChangeFeatureSettingsAction(MainFrame.Extensible extensible, Classifier classifier) {
 		this.extensible = extensible;
 		this.classifier = classifier;
-		extensible.addAction(new RunnableAction("Change Feature Settings ...", this::action), "");
+		extensible.addAction("Change Feature Settings ...", "changeFeatures", this::action, "");
 	}
 
 	private void action() {

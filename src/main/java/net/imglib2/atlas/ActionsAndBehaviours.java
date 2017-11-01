@@ -30,8 +30,9 @@ public class ActionsAndBehaviours {
 		return actions.getActionMap();
 	}
 
-	public void addAction(AbstractNamedAction action, String keyStroke) {
-		actions.namedAction(action, keyStroke);
+	public void addAction(AbstractNamedAction action) {
+		KeyStroke keyStroke = (KeyStroke) action.getValue(Action.ACCELERATOR_KEY);
+		actions.namedAction(action, keyStroke != null ? keyStroke.toString() : "");
 		actions.install(bdvHandle.getKeybindings(), "classifier training");
 	}
 

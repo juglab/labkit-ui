@@ -35,6 +35,8 @@ import net.imglib2.util.LinAlgHelpers;
 import net.imglib2.view.Views;
 import org.scijava.ui.behaviour.util.AbstractNamedAction;
 
+import javax.swing.*;
+
 /**
  * A {@link TransformEventHandler} that changes an {@link AffineTransform3D}
  * through a set of {@link Behaviour}s.
@@ -96,7 +98,7 @@ public class LabelBrushController
 		behaviors.addBehaviour( new FloodFillClick(true), "floodfill", "Y button1" );
 		behaviors.addBehaviour( new FloodFillClick(false), "floodclear", "Y button2", "Y button3" );
 		behaviors.addBehaviour( new ChangeBrushRadius(), "change brush radius", "SPACE scroll" );
-		behaviors.addAction( new ChangeLabel(), "N" );
+		behaviors.addAction( new ChangeLabel() );
 		behaviors.addBehaviour( new MoveBrush(), "move brush", "SPACE" );
 	}
 
@@ -223,6 +225,7 @@ public class LabelBrushController
 
 		public ChangeLabel() {
 			super("Next Label");
+			super.putValue(ACCELERATOR_KEY, KeyStroke.getKeyStroke("N"));
 		}
 
 		@Override

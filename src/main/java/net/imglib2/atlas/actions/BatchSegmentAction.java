@@ -33,7 +33,7 @@ public class BatchSegmentAction {
 	public BatchSegmentAction(MainFrame.Extensible extensible, Classifier classifier) {
 		this.extensible = extensible;
 		this.classifier = classifier;
-		extensible.addAction(new RunnableAction("Segment multiple images", this::segmentImages), "");
+		extensible.addAction("Batch Segment Images ...", "batchSegment", this::segmentImages, "");
 	}
 
 	private void segmentImages() {

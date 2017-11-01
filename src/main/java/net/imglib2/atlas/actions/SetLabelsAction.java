@@ -18,7 +18,8 @@ public class SetLabelsAction {
 
 	public SetLabelsAction(MainFrame.Extensible extensible) {
 		this.extensible = extensible;
-		extensible.addAction(new RunnableAction("Change Available Labels", this::changeLabels), "");
+		extensible.addAction("Change Available Labels ...", "changeLabels", this::changeLabels, "");
+		extensible.addAction("Delete All Labels", "clearLabeling", this::changeLabels, "");
 	}
 
 	private void changeLabels() {

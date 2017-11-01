@@ -33,13 +33,12 @@ import net.imglib2.type.numeric.NumericType;
 import net.imglib2.ui.OverlayRenderer;
 import org.scijava.Context;
 import org.scijava.ui.behaviour.Behaviour;
-import org.scijava.ui.behaviour.util.AbstractNamedAction;
+import org.scijava.ui.behaviour.util.RunnableAction;
 
 import javax.swing.*;
 import java.awt.*;
 import java.util.Arrays;
 import java.util.List;
-import java.util.stream.Stream;
 
 /**
  * A component that supports labeling an image.
@@ -88,7 +87,7 @@ public class MainFrame {
 		featureStack = new FeatureStack(extensible, rawData, classifier, false);
 		initClassification();
 		// --
-		initMenu(labelingComponent.getActions());
+		frame.setJMenuBar(new MenuBar(labelingComponent.getActions()));
 		frame.add(labelingComponent.getComponent());
 		frame.setVisible(true);
 	}
@@ -116,13 +115,6 @@ public class MainFrame {
 		return frame;
 	}
 
-	private void initMenu(ActionMap actions) {
-		MenuBar bar = new MenuBar();
-		Stream.of(actions.keys()).forEach(key -> bar.add(actions.get(key)));
-		frame.setJMenuBar(bar);
-	}
-
-
 	public class Extensible {
 
 		private Extensible() {
@@ -137,8 +129,11 @@ public class MainFrame {
 			labelingComponent.requestRepaint();
 		}
 
-		public void addAction(AbstractNamedAction action, String keyStroke) {
-			labelingComponent.addAction(action, keyStroke);
+		public void addAction(String title, String command, Runnable action, String keyStroke) {
+			RunnableAction a = new RunnableAction(title, action);
+			a.putValue(Action.ACTION_COMMAND_KEY, command);
+			a.putValue(Action.ACCELERATOR_KEY, KeyStroke.getKeyStroke(keyStroke));
+			labelingComponent.addAction(a);
 		}
 
 		public < T, V extends Volatile< T >> RandomAccessibleInterval< V > wrapAsVolatile(

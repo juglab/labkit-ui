@@ -12,10 +12,10 @@ import javax.swing.*;
 public class ZAxisScaling {
 
 	public ZAxisScaling(MainFrame.Extensible extensible, AffineTransform3D sourceTransformation) {
-		extensible.addAction(new RunnableAction("Change Z-Axis Scaling", () -> {
+		extensible.addAction("Change Z-Axis Scaling", "scaleZ", () -> {
 			String input = JOptionPane.showInputDialog("Scaling of z-Axis", Double.toString(sourceTransformation.get(2,2)));
 			sourceTransformation.set(Double.parseDouble(input), 2, 2);
 			extensible.repaint();
-		}), "");
+		}, "");
 	}
 }

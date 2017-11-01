@@ -20,8 +20,8 @@ public class LabelingSaveAndLoad extends AbstractSaveAndLoadAction {
 		super(extensible, new FileNameExtensionFilter("Labeling (*.labeling)", "labeling"));
 		this.labelingComponent = labelingComponent;
 		serializer = new LabelingSerializer(extensible.context());
-		initSaveAction("Save Labeling", this::save, "");
-		initLoadAction("Load Labeling", this::load, "");
+		initSaveAction("Save Labeling ...", "saveLabeling", this::save, "ctrl S");
+		initLoadAction("Load Labeling ...", "loadLabeling", this::load, "ctrl O");
 	}
 
 	private void save(String filename) throws IOException {

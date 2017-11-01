@@ -1,17 +1,13 @@
 package net.imglib2.atlas.classification;
 
-import java.awt.event.ActionEvent;
 import java.util.function.Supplier;
 
 import net.imglib2.atlas.MainFrame;
 import net.imglib2.atlas.labeling.Labeling;
-import org.scijava.ui.behaviour.util.AbstractNamedAction;
 
 import net.imglib2.RandomAccessibleInterval;
-import net.imglib2.type.numeric.RealType;
-import net.imglib2.view.Views;
 
-public class TrainClassifier extends AbstractNamedAction
+public class TrainClassifier
 {
 
 	private Supplier<Labeling> labelingSupplier;
@@ -23,11 +19,10 @@ public class TrainClassifier extends AbstractNamedAction
 			final RandomAccessibleInterval<?> image
 	)
 	{
-		super( "Train Classifier" );
 		this.classifier = classifier;
 		this.labelingSupplier = labelingSupplier;
 		this.image = image;
-		extensible.addAction(this, "ctrl shift T");
+		extensible.addAction("Train Classifier", "trainClassifier", this::trainClassifier, "ctrl shift T");
 	}
 
 	private final Classifier classifier;
@@ -41,8 +36,7 @@ public class TrainClassifier extends AbstractNamedAction
 		return trainingSuccess;
 	}
 
-	@Override
-	public void actionPerformed( final ActionEvent e )
+	private void trainClassifier()
 	{
 		trainingSuccess = false;
 		try

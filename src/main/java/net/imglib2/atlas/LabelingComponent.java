@@ -69,7 +69,7 @@ public class LabelingComponent {
 
 		initLabelsLayer(labels, rawData, isTimeSeries);
 
-		addAction(new ToggleVisibility( "Toggle Classification", bdvHandle.getViewerPanel(), 1 ), "C");
+		addAction(new ToggleVisibility( "Toggle Classification", bdvHandle.getViewerPanel(), 1 ));
 
 		Pair<Double, Double> p = AtlasUtils.estimateMinMax(rawData);
 		addLayer(RevampUtils.uncheckedCast(rawData), "original").setDisplayRange(p.getA(), p.getB());
@@ -81,8 +81,8 @@ public class LabelingComponent {
 		return cellDimensions;
 	}
 
-	public void addAction(AbstractNamedAction action, String keyStroke) {
-		actionsAndBehaviours.addAction(action, keyStroke);
+	public void addAction(AbstractNamedAction action) {
+		actionsAndBehaviours.addAction(action);
 	}
 
 	public void addBehaviour(Behaviour behaviour, String name, String defaultTriggers) {
@@ -123,13 +123,13 @@ public class LabelingComponent {
 				colorProvider,
 				sourceTransformation);
 		initColorMapUpdaterAction(labels, colorProvider);
-		addAction(new ToggleVisibility( "Toggle Labels", bdvHandle.getViewerPanel(), 0 ), "L");
+		addAction(new ToggleVisibility( "Toggle Labels", bdvHandle.getViewerPanel(), 0 ));
 		bdvHandle.getViewerPanel().getDisplay().addOverlayRenderer( brushController.getBrushOverlay() );
 	}
 
 	private void initColorMapUpdaterAction(List<String> labels, ColorMapProvider colorProvider) {
 		final UpdateColormap colormapUpdater = new UpdateColormap( colorProvider, labels, bdvHandle.getViewerPanel(), 1.0f );
-		addAction(colormapUpdater, "ctrl shift C");
+		addAction(colormapUpdater);
 	}
 
 	public ColorMapProvider colorProvider() {

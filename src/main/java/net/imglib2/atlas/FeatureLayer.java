@@ -8,10 +8,8 @@ import net.imglib2.type.numeric.real.FloatType;
 import net.imglib2.type.volatiles.VolatileFloatType;
 import net.imglib2.util.ConstantUtils;
 import net.imglib2.view.Views;
-import org.scijava.ui.behaviour.util.AbstractNamedAction;
 
 import javax.swing.*;
-import java.awt.event.ActionEvent;
 import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
@@ -35,18 +33,9 @@ public class FeatureLayer {
 		this.featureContainer = new RandomAccessibleContainer<>(null);
 		setSelected(0);
 		addLayer();
-		addAction();
+		this.extensible.addAction("Show Feature", "showFeature", this::selectFeature, "");
 		new MouseWheelChannelSelector(extensible, this);
 		featureStack.listeners().add(() -> setSelected(selected.index));
-	}
-
-	private void addAction() {
-		extensible.addAction(new AbstractNamedAction("Show Feature") {
-			@Override
-			public void actionPerformed(ActionEvent actionEvent) {
-				selectFeature();
-			}
-		}, "");
 	}
 
 	private void addLayer() {

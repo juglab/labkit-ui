@@ -12,6 +12,6 @@ public class OpenImageAction extends AbstractSaveAndLoadAction {
 
 	public OpenImageAction(MainFrame.Extensible extensible) {
 		super(extensible, AbstractSaveAndLoadAction.TIFF_FILTER);
-		initLoadAction("Open Image", filename -> MainFrame.open(extensible.context(), filename), "");
+		initLoadAction("Open Image ...", "openImage", filename -> MainFrame.open(extensible.context(), filename), "");
 	}
 }

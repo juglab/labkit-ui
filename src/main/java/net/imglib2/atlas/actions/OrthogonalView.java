@@ -13,9 +13,9 @@ import javax.swing.*;
 public class OrthogonalView {
 
 	public OrthogonalView(MainFrame.Extensible extensible, AffineTransform3D transformation) {
-		extensible.addAction(new RunnableAction("Orthogonal View", () -> {
+		extensible.addAction("Orthogonal View", "resetView", () -> {
 			ViewerPanel p = (ViewerPanel) extensible.viewerSync();
 			p.setCurrentViewerTransform(transformation);
-		}), "");
+		}, "");
 	}
 }

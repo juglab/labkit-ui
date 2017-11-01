@@ -1,14 +1,10 @@
 package net.imglib2.atlas.actions;
 
 import net.imglib2.atlas.MainFrame;
-import org.scijava.ui.behaviour.util.AbstractNamedAction;
 
 import javax.swing.*;
 import javax.swing.filechooser.FileFilter;
 import javax.swing.filechooser.FileNameExtensionFilter;
-import java.awt.event.ActionEvent;
-import java.util.Arrays;
-import java.util.List;
 import java.util.function.Consumer;
 
 /**
@@ -32,27 +28,16 @@ public abstract class AbstractSaveAndLoadAction {
 	}
 
 
-	public void initSaveAction(String title, Action action, String keyStroke) {
-		initAction(title, action, keyStroke, true);
+	public void initSaveAction(String title, String command, Action action, String keyStroke) {
+		initAction(title, command, action, keyStroke, true);
 	}
 
-	public void initLoadAction(String title, Action action, String keyStroke) {
-		initAction(title, action, keyStroke, false);
+	public void initLoadAction(String title, String command, Action action, String keyStroke) {
+		initAction(title, command, action, keyStroke, false);
 	}
 
-	public void initAction(String title, Action action, String keyStroke, boolean save) {
-		extensible.addAction(new AbstractNamedAction(title) {
-			@Override
-			public void actionPerformed(ActionEvent actionEvent) {
-				OpenDialogAndThen(title, save, filename -> {
-					try {
-						action.run(filename);
-					} catch (Exception e) {
-						e.printStackTrace();
-					}
-				});
-			}
-		}, keyStroke);
+	public void initAction(String title, String command, Action action, String keyStroke, boolean save) {
+		extensible.addAction(title, command, () -> OpenDialogAndThen(title, save, action), keyStroke);
 	}
 
 	private void OpenDialogAndThen(String title, boolean save, Consumer<String> action) {
@@ -63,7 +48,16 @@ public abstract class AbstractSaveAndLoadAction {
 			action.accept(fileChooser.getSelectedFile().getAbsolutePath());
 	}
 
-	public interface Action {
+	public interface Action extends Consumer<String> {
+		@Override
+		default void accept(String filename) {
+			try {
+				run(filename);
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
+		}
+
 		void run(String filename) throws Exception;
 	}
 }

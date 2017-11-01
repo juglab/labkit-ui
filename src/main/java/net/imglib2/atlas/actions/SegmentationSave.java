@@ -32,8 +32,8 @@ public class SegmentationSave extends AbstractSaveAndLoadAction {
 	public SegmentationSave(MainFrame.Extensible extensible, PredictionLayer predictionLayer) {
 		super(extensible, AbstractSaveAndLoadAction.TIFF_FILTER);
 		this.predictionLayer = predictionLayer;
-		initSaveAction("Save Segmentation", this::action, "");
-		extensible.addAction(new RunnableAction("Show Segmentation", this::showSegmentation), "");
+		initSaveAction("Save Segmentation ...", "saveSegmentation", this::action, "");
+		extensible.addAction("Show Segmentation", "showSegmentation", this::showSegmentation, "");
 	}
 
 	private void action(String filename) throws IncompatibleTypeException, ImgIOException {

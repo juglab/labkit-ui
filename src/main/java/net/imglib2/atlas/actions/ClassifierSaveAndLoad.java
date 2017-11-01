@@ -15,8 +15,8 @@ public class ClassifierSaveAndLoad extends AbstractSaveAndLoadAction {
 	public ClassifierSaveAndLoad(MainFrame.Extensible extensible, final Classifier classifier) {
 		super(extensible, new FileNameExtensionFilter("Classifier", "classifier"));
 		this.classifier = classifier;
-		initSaveAction("Save Classifier", this::save, "ctrl O");
-		initLoadAction("Load Classifier", this::load, "ctrl S");
+		initSaveAction("Save Classifier ...", "saveClassifier", this::save, "");
+		initLoadAction("Load Classifier ...", "loadClassifier", this::load, "");
 	}
 
 	private void save(String filename) throws Exception {

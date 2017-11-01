@@ -22,7 +22,7 @@ public class SelectClassifier {
 
 	public SelectClassifier(MainFrame.Extensible extensible, net.imglib2.atlas.classification.Classifier classifier) {
 		this.classifier = classifier;
-		extensible.addAction(new RunnableAction("Select Classification Algorithm", this::run), "");
+		extensible.addAction("Select Classification Algorithm ...", "selectAlgorithm", this::run, "");
 	}
 
 	private void run() {
