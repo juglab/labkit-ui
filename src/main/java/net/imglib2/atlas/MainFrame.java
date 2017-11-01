@@ -9,6 +9,7 @@ import net.imagej.Dataset;
 import net.imagej.ops.OpService;
 import net.imglib2.*;
 import net.imglib2.atlas.actions.BatchSegmentAction;
+import net.imglib2.atlas.actions.ChangeFeatureSettingsAction;
 import net.imglib2.atlas.actions.ClassifierSaveAndLoad;
 import net.imglib2.atlas.actions.LabelingSaveAndLoad;
 import net.imglib2.atlas.actions.OpenImageAction;
@@ -24,7 +25,6 @@ import net.imglib2.atlas.classification.weka.TrainableSegmentationClassifier;
 import net.imglib2.atlas.labeling.Labeling;
 import net.imglib2.realtransform.AffineTransform3D;
 import net.imglib2.trainable_segmention.RevampUtils;
-import net.imglib2.trainable_segmention.gui.FeatureSettingsGui;
 import net.imglib2.trainable_segmention.pixel_feature.filter.GroupedFeatures;
 import net.imglib2.trainable_segmention.pixel_feature.filter.SingleFeatures;
 import net.imglib2.trainable_segmention.pixel_feature.settings.FeatureSettings;
@@ -34,13 +34,11 @@ import net.imglib2.ui.OverlayRenderer;
 import org.scijava.Context;
 import org.scijava.ui.behaviour.Behaviour;
 import org.scijava.ui.behaviour.util.AbstractNamedAction;
-import org.scijava.ui.behaviour.util.Actions;
 
 import javax.swing.*;
 import java.awt.*;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Optional;
 import java.util.stream.Stream;
 
 /**
@@ -52,15 +50,13 @@ public class MainFrame {
 
 	private JFrame frame = initFrame();
 
-	private Classifier classifier;
+	private final Classifier classifier;
 
 	private SharedQueue queue = new SharedQueue(Runtime.getRuntime().availableProcessors());
 
 	private LabelingComponent labelingComponent;
 
 	private FeatureStack featureStack;
-
-	private List<String> classLabels = Arrays.asList("foreground", "background");
 
 	private Extensible extensible = new Extensible();
 
@@ -82,6 +78,7 @@ public class MainFrame {
 		this.context = context;
 		InputImage inputImage = new InputImage(dataset);
 		RandomAccessibleInterval<? extends NumericType<?>> rawData = inputImage.displayImage();
+		List<String> classLabels = Arrays.asList("foreground", "background");
 		labelingComponent = new LabelingComponent(frame, rawData, classLabels, false);
 		// --
 		GlobalSettings globalSettings = new GlobalSettings(inputImage.getChannelSetting(), inputImage.getSpatialDimensions(), 1.0, 16.0, 1.0);
@@ -110,6 +107,7 @@ public class MainFrame {
 		new SelectClassifier(extensible, classifier);
 		new BatchSegmentAction(extensible, classifier);
 		new SetLabelsAction(extensible);
+		new ChangeFeatureSettingsAction(extensible, classifier);
 	}
 
 	private JFrame initFrame() {
@@ -120,25 +118,10 @@ public class MainFrame {
 
 	private void initMenu(ActionMap actions) {
 		MenuBar bar = new MenuBar();
-		JMenu others = new JMenu("others");
-		others.add(newMenuItem("Change Feature Settings", this::changeFeatureSettings));
-		bar.add(others);
 		Stream.of(actions.keys()).forEach(key -> bar.add(actions.get(key)));
 		frame.setJMenuBar(bar);
 	}
 
-	private void changeFeatureSettings() {
-		Optional<FeatureSettings> fs = FeatureSettingsGui.show(context, classifier.settings());
-		if(!fs.isPresent())
-			return;
-		classifier.reset(fs.get(), classLabels);
-	}
-
-	private JMenuItem newMenuItem(String title, Runnable runnable) {
-		JMenuItem item = new JMenuItem(title);
-		item.addActionListener(a -> runnable.run());
-		return item;
-	}
 
 	public class Extensible {
 
