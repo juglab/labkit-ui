@@ -15,7 +15,7 @@ public class MenuBar extends JMenuBar {
 		add(menu);
 	}
 
-	public void add(AbstractNamedAction action) {
+	public void add(Action action) {
 		menu.add(new JMenuItem(action));
 	}
 }

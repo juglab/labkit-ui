@@ -34,12 +34,14 @@ import net.imglib2.ui.OverlayRenderer;
 import org.scijava.Context;
 import org.scijava.ui.behaviour.Behaviour;
 import org.scijava.ui.behaviour.util.AbstractNamedAction;
+import org.scijava.ui.behaviour.util.Actions;
 
 import javax.swing.*;
 import java.awt.*;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Stream;
 
 /**
  * A component that supports labeling an image.
@@ -116,12 +118,12 @@ public class MainFrame {
 		return frame;
 	}
 
-	private void initMenu(List<AbstractNamedAction> actions) {
+	private void initMenu(ActionMap actions) {
 		MenuBar bar = new MenuBar();
 		JMenu others = new JMenu("others");
 		others.add(newMenuItem("Change Feature Settings", this::changeFeatureSettings));
 		bar.add(others);
-		actions.forEach(bar::add);
+		Stream.of(actions.keys()).forEach(key -> bar.add(actions.get(key)));
 		frame.setJMenuBar(bar);
 	}
 

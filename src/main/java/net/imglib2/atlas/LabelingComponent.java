@@ -50,7 +50,7 @@ public class LabelingComponent {
 		return panel;
 	}
 
-	public List<AbstractNamedAction> getActions() {
+	public ActionMap getActions() {
 		return actionsAndBehaviours.getActions();
 	}
 

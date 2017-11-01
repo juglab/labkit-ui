@@ -7,8 +7,7 @@ import org.scijava.ui.behaviour.util.AbstractNamedAction;
 import org.scijava.ui.behaviour.util.Actions;
 import org.scijava.ui.behaviour.util.Behaviours;
 
-import java.util.ArrayList;
-import java.util.List;
+import javax.swing.*;
 
 /**
  * Created by arzt on 31.08.17.
@@ -21,20 +20,17 @@ public class ActionsAndBehaviours {
 
 	private final Behaviours behaviors = new Behaviours(config);
 
-	private final List<AbstractNamedAction> actionsList = new ArrayList();
-
 	private final BdvHandle bdvHandle;
 
 	public ActionsAndBehaviours(BdvHandle bdvHandle) {
 		this.bdvHandle = bdvHandle;
 	}
 
-	public List<AbstractNamedAction> getActions() {
-		return actionsList;
+	public ActionMap getActions() {
+		return actions.getActionMap();
 	}
 
 	public void addAction(AbstractNamedAction action, String keyStroke) {
-		actionsList.add(action);
 		actions.namedAction(action, keyStroke);
 		actions.install(bdvHandle.getKeybindings(), "classifier training");
 	}
