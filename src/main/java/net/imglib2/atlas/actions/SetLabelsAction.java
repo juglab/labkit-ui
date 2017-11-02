@@ -2,8 +2,9 @@ package net.imglib2.atlas.actions;
 
 import net.imglib2.Interval;
 import net.imglib2.atlas.MainFrame;
+import net.imglib2.atlas.Preferences;
 import net.imglib2.atlas.labeling.Labeling;
-import org.scijava.ui.behaviour.util.RunnableAction;
+import org.scijava.prefs.PrefService;
 
 import javax.swing.*;
 import java.awt.*;
@@ -14,11 +15,14 @@ import java.util.StringJoiner;
 
 public class SetLabelsAction {
 
-	MainFrame.Extensible extensible;
+	private final Preferences preference;
+	private final MainFrame.Extensible extensible;
 
-	public SetLabelsAction(MainFrame.Extensible extensible) {
+	public SetLabelsAction(MainFrame.Extensible extensible, Preferences preferences) {
 		this.extensible = extensible;
+		this.preference = preferences;
 		extensible.addAction("Change Available Labels ...", "changeLabels", this::changeLabels, "");
+		extensible.addAction("Default Available Labels ...", "defaultLabels", this::defaultLabels, "");
 		extensible.addAction("Delete All Labels", "clearLabeling", this::changeLabels, "");
 	}
 
@@ -28,6 +32,11 @@ public class SetLabelsAction {
 		Optional<List<String>> results = dialog(labels);
 		if(results.isPresent())
 			extensible.setLabeling(new Labeling(results.get(), (Interval) labeling));
+	}
+
+	private void defaultLabels() {
+		Optional<List<String>> result = dialog(preference.getDefaultLabels());
+		result.ifPresent(preference::setDefaultLabels);
 	}
 
 	private static Optional<List<String>> dialog(List<String> labels) {

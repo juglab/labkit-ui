@@ -38,7 +38,6 @@ import org.scijava.ui.behaviour.util.RunnableAction;
 
 import javax.swing.*;
 import java.awt.*;
-import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -62,6 +61,8 @@ public class MainFrame {
 
 	private final Context context;
 
+	private final Preferences preferences;
+
 	private final InputImage inputImage;
 
 	public static MainFrame open(String filename)
@@ -78,9 +79,10 @@ public class MainFrame {
 	public MainFrame(final Context context, final Dataset dataset)
 	{
 		this.context = context;
+		this.preferences = new Preferences(context);
 		inputImage = new InputImage(dataset);
 		RandomAccessibleInterval<? extends NumericType<?>> rawData = inputImage.displayImage();
-		List<String> classLabels = Arrays.asList("foreground", "background");
+		List<String> classLabels = preferences.getDefaultLabels();
 		labelingComponent = new LabelingComponent(frame, rawData, classLabels, false);
 		// --
 		GlobalSettings globalSettings = new GlobalSettings(inputImage.getChannelSetting(), inputImage.getSpatialDimensions(), 1.0, 16.0, 1.0);
@@ -108,7 +110,7 @@ public class MainFrame {
 		new OrthogonalView(extensible, new AffineTransform3D());
 		new SelectClassifier(extensible, classifier);
 		new BatchSegmentAction(extensible, classifier);
-		new SetLabelsAction(extensible);
+		new SetLabelsAction(extensible, preferences);
 		new ChangeFeatureSettingsAction(extensible, classifier);
 	}
 
