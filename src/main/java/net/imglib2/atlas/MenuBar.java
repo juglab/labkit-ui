@@ -1,11 +1,10 @@
 package net.imglib2.atlas;
 
-import org.scijava.ui.behaviour.util.AbstractNamedAction;
+import org.scijava.ui.behaviour.util.RunnableAction;
 
 import javax.swing.*;
 import java.util.Map;
 import java.util.TreeMap;
-import java.util.stream.Stream;
 
 /**
  * @author Matthias Arzt
@@ -27,36 +26,66 @@ public class MenuBar extends JMenuBar {
 	}
 
 	private void setupSortedMenu() {
-		addMenu("Labels", "loadLabeling", "saveLabeling", "changeLabels", "clearLabeling");
-		addMenu("Classifier",
-				"trainClassifier",
-				"saveClassifier",
-				"loadClassifier",
-				"showSegmentation",
-				"saveSegmentation",
-				"batchSegment",
-				"changeFeatures",
-				"selectAlgorithm");
+		addMenu("Labels")
+				.addItem("loadLabeling")
+				.addItem("saveLabeling")
+				.addItem("changeLabels")
+				.addItem("clearLabeling");
+		addMenu("Classifier")
+				.addItem("trainClassifier")
+				.addItem("saveClassifier")
+				.addItem("loadClassifier")
+				.addItem("showSegmentation")
+				.addItem("saveSegmentation")
+				.addItem("batchSegment")
+				.addItem("changeFeatures")
+				.addItem("selectAlgorithm");
+		addMenu("View")
+				.addCheckBox("toggleImage")
+				.addCheckBox("toggleLabeling")
+				.addCheckBox("toggleSegmentation");
 	}
 
-	private void addMenu(String title, String... actionCommandKeys) {
+	private MenuBuilder addMenu(String title) {
 		JMenu menu = new JMenu(title);
-		for(String command : actionCommandKeys)
-			menu.add(getItem(command));
 		add(menu);
+		return new MenuBuilder(menu);
 	}
 
-	private JMenuItem getItem(String command) {
+	private Action getAction(String command) {
 		Action action = actions.get(command);
 		if(action == null)
-			return new JMenuItem("Action not found: " + command);
+			return new RunnableAction("Action not found: " + command, () -> {});
 		actions.remove(command);
-		return new JMenuItem(action);
+		return action;
 	}
 
 	private void setupOthers() {
-		JMenu menu = new JMenu("Others");
-		actions.forEach((ignore, action) -> menu.add(action));
-		add(menu);
+		MenuBuilder menu = addMenu("Others");
+		actions.forEach((ignore, action) -> menu.addItem(action));
+	}
+
+	private class MenuBuilder {
+
+		private final JMenu menu;
+
+		public MenuBuilder(JMenu menu) {
+			this.menu = menu;
+		}
+
+		public MenuBuilder addItem(String command)	{
+			return addItem(getAction(command));
+		}
+
+		private MenuBuilder addItem(Action action) {
+			menu.add(new JMenuItem(action));
+			return this;
+		}
+
+		public MenuBuilder addCheckBox(String command) {
+			menu.add(new JCheckBoxMenuItem(getAction(command)));
+			return this;
+		}
+
 	}
 }

@@ -18,6 +18,7 @@ import net.imglib2.img.cell.CellGrid;
 import net.imglib2.realtransform.AffineTransform3D;
 import net.imglib2.trainable_segmention.RevampUtils;
 import net.imglib2.type.logic.BitType;
+import net.imglib2.type.numeric.ARGBType;
 import net.imglib2.type.numeric.NumericType;
 import net.imglib2.ui.OverlayRenderer;
 import net.imglib2.util.Intervals;
@@ -69,10 +70,10 @@ public class LabelingComponent {
 
 		initLabelsLayer(labels, rawData, isTimeSeries);
 
-		addAction(new ToggleVisibility( "Toggle Classification", bdvHandle.getViewerPanel(), 1 ));
-
 		Pair<Double, Double> p = AtlasUtils.estimateMinMax(rawData);
-		addLayer(RevampUtils.uncheckedCast(rawData), "original").setDisplayRange(p.getA(), p.getB());
+		BdvStackSource<?> source = addLayer(RevampUtils.uncheckedCast(rawData), "original");
+		source.setDisplayRange(p.getA(), p.getB());
+		addAction(new ToggleVisibility("Image", source));
 	}
 
 	private static int[] cellDimensions(CellGrid grid) {
@@ -114,7 +115,8 @@ public class LabelingComponent {
 		this.labels = new Holder<>(new Labeling(labels, interval));
 		colorProvider = new ColorMapProvider(this.labels);
 
-		addLayer(new LabelsLayer(this.labels, colorProvider, this).view(), "labels");
+		BdvSource source = addLayer(new LabelsLayer(this.labels, colorProvider, this).view(), "labels");
+		addAction(new ToggleVisibility( "Labeling", source ));
 		final LabelBrushController brushController = new LabelBrushController(
 				bdvHandle.getViewerPanel(),
 				this.labels,
@@ -123,7 +125,6 @@ public class LabelingComponent {
 				colorProvider,
 				sourceTransformation);
 		initColorMapUpdaterAction(labels, colorProvider);
-		addAction(new ToggleVisibility( "Toggle Labels", bdvHandle.getViewerPanel(), 0 ));
 		bdvHandle.getViewerPanel().getDisplay().addOverlayRenderer( brushController.getBrushOverlay() );
 	}
 

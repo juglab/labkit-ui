@@ -33,6 +33,7 @@ import net.imglib2.type.numeric.NumericType;
 import net.imglib2.ui.OverlayRenderer;
 import org.scijava.Context;
 import org.scijava.ui.behaviour.Behaviour;
+import org.scijava.ui.behaviour.util.AbstractNamedAction;
 import org.scijava.ui.behaviour.util.RunnableAction;
 
 import javax.swing.*;
@@ -133,7 +134,11 @@ public class MainFrame {
 			RunnableAction a = new RunnableAction(title, action);
 			a.putValue(Action.ACTION_COMMAND_KEY, command);
 			a.putValue(Action.ACCELERATOR_KEY, KeyStroke.getKeyStroke(keyStroke));
-			labelingComponent.addAction(a);
+			addAction(a);
+		}
+
+		public void addAction(AbstractNamedAction action) {
+			labelingComponent.addAction(action);
 		}
 
 		public < T, V extends Volatile< T >> RandomAccessibleInterval< V > wrapAsVolatile(

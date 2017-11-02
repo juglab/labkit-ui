@@ -1,10 +1,14 @@
 package net.imglib2.atlas.classification;
 
+import bdv.util.BdvSource;
+import bdv.util.BdvStackSource;
+import bdv.viewer.ViewerPanel;
 import net.imglib2.RandomAccessible;
 import net.imglib2.RandomAccessibleInterval;
 import net.imglib2.atlas.FeatureStack;
 import net.imglib2.atlas.MainFrame;
 import net.imglib2.atlas.RandomAccessibleContainer;
+import net.imglib2.atlas.actions.ToggleVisibility;
 import net.imglib2.atlas.color.ColorMapProvider;
 import net.imglib2.cache.img.CellLoader;
 import net.imglib2.cache.img.DiskCachedCellImgFactory;
@@ -41,7 +45,8 @@ public class PredictionLayer implements Classifier.Listener
 		this.featureStack = featureStack;
 		this.colorProvider = colorProvider;
 		this.predictionContainer = new RandomAccessibleContainer<>( emptyPrediction );
-		extensible.addLayer(Views.interval(predictionContainer, featureStack.interval()), "prediction");
+		BdvStackSource<VolatileARGBType> source = extensible.addLayer(Views.interval(predictionContainer, featureStack.interval()), "prediction");
+		extensible.addAction(new ToggleVisibility( "Segmentation", source ));
 		classifier.listeners().add( this );
 	}
 
