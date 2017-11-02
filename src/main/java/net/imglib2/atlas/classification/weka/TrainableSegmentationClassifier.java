@@ -128,7 +128,7 @@ implements Classifier
 	}
 
 	@Override
-	public void loadClassifier( final String path ) throws Exception
+	public void openClassifier( final String path ) throws Exception
 	{
 		classifier = Segmenter.fromJson(ops, GsonUtils.read(path));
 		isTrained = true;

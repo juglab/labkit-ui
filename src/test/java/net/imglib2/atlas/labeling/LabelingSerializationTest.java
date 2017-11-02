@@ -4,7 +4,6 @@ import com.google.gson.Gson;
 import net.imglib2.FinalInterval;
 import net.imglib2.RandomAccess;
 import net.imglib2.roi.IterableRegion;
-import net.imglib2.roi.labeling.LabelingType;
 import net.imglib2.sparse.SparseIterableRegion;
 import net.imglib2.type.logic.BitType;
 import net.imglib2.view.Views;
@@ -33,11 +32,11 @@ public class LabelingSerializationTest {
 	}
 
 	@Test
-	public void testLoadAndSaveToTiff() throws IOException {
+	public void testOpenAndSaveToTiff() throws IOException {
 		Labeling labeling = exampleLabeling();
 		LabelingSerializer serializer = new LabelingSerializer(new Context());
 		serializer.save(labeling, "test.tif");
-		Labeling deserialized = serializer.load("test.tif");
+		Labeling deserialized = serializer.open("test.tif");
 		assertTrue(labelingsEqual(labeling, deserialized));
 	}
 

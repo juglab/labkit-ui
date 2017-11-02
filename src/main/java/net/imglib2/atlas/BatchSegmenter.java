@@ -45,19 +45,19 @@ public class BatchSegmenter {
 
 	public static void classifyLung() throws IOException, IncompatibleTypeException, ImgIOException, InterruptedException {
 		final OpService ops = new Context(OpService.class).service(OpService.class);
-		final Img<ARGBType> rawImg = loadImage();
-		Classifier classifier = loadClassifier(ops);
+		final Img<ARGBType> rawImg = openImage();
+		Classifier classifier = openClassifier(ops);
 		final int[] cellDimensions = new int[] { 256, 256 };
 		Img<UnsignedByteType> segmentation = segment(rawImg, classifier, cellDimensions);
 		new ImgSaver().saveImg("/home/arzt/test.tif", segmentation);
 	}
 
-	private static Img<ARGBType> loadImage() {
+	private static Img<ARGBType> openImage() {
 		final String imgPath = "/home/arzt/Documents/20170804_LungImages/2017_08_03__0006.jpg";
 		return ImageJFunctions.wrap( new ImagePlus( imgPath ) );
 	}
 
-	private static Classifier loadClassifier(OpEnvironment ops) throws IOException {
+	private static Classifier openClassifier(OpEnvironment ops) throws IOException {
 		final String classifierPath = "/home/arzt/Documents/20170804_LungImages/0006.classifier";
 		return new TrainableSegmentationClassifier(ops, Segmenter.fromJson(ops, GsonUtils.read(classifierPath)));
 	}

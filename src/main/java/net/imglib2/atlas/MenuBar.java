@@ -27,14 +27,14 @@ public class MenuBar extends JMenuBar {
 
 	private void setupSortedMenu() {
 		addMenu("Labels")
-				.addItem("loadLabeling")
+				.addItem("openLabeling")
 				.addItem("saveLabeling")
 				.addItem("changeLabels")
 				.addItem("clearLabeling");
 		addMenu("Classifier")
 				.addItem("trainClassifier")
 				.addItem("saveClassifier")
-				.addItem("loadClassifier")
+				.addItem("openClassifier")
 				.addItem("showSegmentation")
 				.addItem("saveSegmentation")
 				.addItem("batchSegment")

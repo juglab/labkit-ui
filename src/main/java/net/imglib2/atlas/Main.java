@@ -1,6 +1,6 @@
 package net.imglib2.atlas;
 
-import net.imglib2.atlas.actions.AbstractSaveAndLoadAction;
+import net.imglib2.atlas.actions.AbstractFileIoAcion;
 
 import javax.swing.*;
 import javax.swing.filechooser.FileFilter;
@@ -17,7 +17,7 @@ public class Main {
 	static private void fileChooserAndThen(Consumer<String> action) {
 		final JFileChooser fileChooser = new JFileChooser();
 		fileChooser.setAcceptAllFileFilterUsed(false);
-		FileFilter fileFilter = AbstractSaveAndLoadAction.TIFF_FILTER;
+		FileFilter fileFilter = AbstractFileIoAcion.TIFF_FILTER;
 		fileChooser.setFileFilter(fileFilter);
 		fileChooser.addChoosableFileFilter(fileFilter);
 		fileChooser.setAcceptAllFileFilterUsed(true);

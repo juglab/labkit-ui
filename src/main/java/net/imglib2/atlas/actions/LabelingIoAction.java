@@ -12,12 +12,12 @@ import java.io.IOException;
 /**
  * @author Matthias Arzt
  */
-public class LabelingSaveAndLoad extends AbstractSaveAndLoadAction {
+public class LabelingIoAction extends AbstractFileIoAcion {
 
 	private final LabelingComponent labelingComponent;
 	private final LabelingSerializer serializer;
 
-	public LabelingSaveAndLoad(MainFrame.Extensible extensible, LabelingComponent labelingComponent, InputImage inputImage) {
+	public LabelingIoAction(MainFrame.Extensible extensible, LabelingComponent labelingComponent, InputImage inputImage) {
 		super(extensible, new FileNameExtensionFilter("Labeling (*.labeling)", "labeling"));
 		this.labelingComponent = labelingComponent;
 		serializer = new LabelingSerializer(extensible.context());
@@ -32,11 +32,11 @@ public class LabelingSaveAndLoad extends AbstractSaveAndLoadAction {
 				serializer.save(labelingComponent.getLabeling(), filename);
 			}
 		}, "ctrl S");
-		initLoadAction("Load Labeling ...", "loadLabeling", this::load, "ctrl O");
+		initOpenAction("Open Labeling ...", "openLabeling", this::open, "ctrl O");
 	}
 
-	private void load(String filename) throws IOException {
-		Labeling labeling = serializer.load(filename);
+	private void open(String filename) throws IOException {
+		Labeling labeling = serializer.open(filename);
 		labelingComponent.setLabeling(labeling);
 	}
 }

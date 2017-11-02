@@ -10,8 +10,8 @@ import net.imagej.ops.OpService;
 import net.imglib2.*;
 import net.imglib2.atlas.actions.BatchSegmentAction;
 import net.imglib2.atlas.actions.ChangeFeatureSettingsAction;
-import net.imglib2.atlas.actions.ClassifierSaveAndLoad;
-import net.imglib2.atlas.actions.LabelingSaveAndLoad;
+import net.imglib2.atlas.actions.ClassifierIoAction;
+import net.imglib2.atlas.actions.LabelingIoAction;
 import net.imglib2.atlas.actions.OpenImageAction;
 import net.imglib2.atlas.actions.OrthogonalView;
 import net.imglib2.atlas.actions.SegmentationSave;
@@ -99,9 +99,9 @@ public class MainFrame {
 	private void initClassification() {
 		new TrainClassifier(extensible, classifier, () -> labelingComponent.getLabeling(), featureStack.compatibleOriginal());
 		PredictionLayer predictionLayer = new PredictionLayer(extensible, labelingComponent.colorProvider(), classifier, featureStack);
-		new ClassifierSaveAndLoad(extensible, this.classifier);
+		new ClassifierIoAction(extensible, this.classifier);
 		new FeatureLayer(extensible, featureStack);
-		new LabelingSaveAndLoad(extensible, labelingComponent, inputImage);
+		new LabelingIoAction(extensible, labelingComponent, inputImage);
 		new SegmentationSave(extensible, predictionLayer);
 		new OpenImageAction(extensible);
 		new ZAxisScaling(extensible, labelingComponent.sourceTransformation());

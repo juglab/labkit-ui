@@ -8,22 +8,22 @@ import javax.swing.filechooser.FileNameExtensionFilter;
 /**
  * @author Matthias Arzt
  */
-public class ClassifierSaveAndLoad extends AbstractSaveAndLoadAction {
+public class ClassifierIoAction extends AbstractFileIoAcion {
 
 	private final Classifier classifier;
 
-	public ClassifierSaveAndLoad(MainFrame.Extensible extensible, final Classifier classifier) {
+	public ClassifierIoAction(MainFrame.Extensible extensible, final Classifier classifier) {
 		super(extensible, new FileNameExtensionFilter("Classifier", "classifier"));
 		this.classifier = classifier;
 		initSaveAction("Save Classifier ...", "saveClassifier", this::save, "");
-		initLoadAction("Load Classifier ...", "loadClassifier", this::load, "");
+		initOpenAction("Open Classifier ...", "openClassifier", this::open, "");
 	}
 
 	private void save(String filename) throws Exception {
 		classifier.saveClassifier(filename, true);
 	}
 
-	private void load(String filename) throws Exception {
-		classifier.loadClassifier(filename);
+	private void open(String filename) throws Exception {
+		classifier.openClassifier(filename);
 	}
 }

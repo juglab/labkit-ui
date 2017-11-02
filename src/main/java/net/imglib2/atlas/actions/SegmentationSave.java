@@ -15,7 +15,6 @@ import net.imglib2.type.NativeType;
 import net.imglib2.type.numeric.NumericType;
 import net.imglib2.type.numeric.integer.ShortType;
 import net.imglib2.util.Intervals;
-import org.scijava.ui.behaviour.util.RunnableAction;
 
 import java.util.List;
 import java.util.concurrent.Callable;
@@ -25,12 +24,12 @@ import java.util.function.Consumer;
 /**
  * @author Matthias Arzt
  */
-public class SegmentationSave extends AbstractSaveAndLoadAction {
+public class SegmentationSave extends AbstractFileIoAcion {
 
 	private final PredictionLayer predictionLayer;
 
 	public SegmentationSave(MainFrame.Extensible extensible, PredictionLayer predictionLayer) {
-		super(extensible, AbstractSaveAndLoadAction.TIFF_FILTER);
+		super(extensible, AbstractFileIoAcion.TIFF_FILTER);
 		this.predictionLayer = predictionLayer;
 		initSaveAction("Save Segmentation ...", "saveSegmentation", this::action, "");
 		extensible.addAction("Show Segmentation", "showSegmentation", this::showSegmentation, "");

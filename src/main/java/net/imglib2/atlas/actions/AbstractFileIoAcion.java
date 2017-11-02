@@ -11,7 +11,7 @@ import java.util.function.Consumer;
 /**
  * @author Matthias Arzt
  */
-public abstract class AbstractSaveAndLoadAction {
+public abstract class AbstractFileIoAcion {
 
 	public static final FileFilter TIFF_FILTER = new FileNameExtensionFilter("TIF Image (*.tif, *.tiff)", "tif", "tiff");
 
@@ -19,7 +19,7 @@ public abstract class AbstractSaveAndLoadAction {
 
 	private final JFileChooser fileChooser;
 
-	public AbstractSaveAndLoadAction(MainFrame.Extensible extensible, FileFilter fileFilter) {
+	public AbstractFileIoAcion(MainFrame.Extensible extensible, FileFilter fileFilter) {
 		this.extensible = extensible;
 		this.fileChooser = new JFileChooser();
 		fileChooser.setAcceptAllFileFilterUsed(false);
@@ -33,7 +33,7 @@ public abstract class AbstractSaveAndLoadAction {
 		initAction(title, command, action, keyStroke, JFileChooser.SAVE_DIALOG);
 	}
 
-	public void initLoadAction(String title, String command, Action action, String keyStroke) {
+	public void initOpenAction(String title, String command, Action action, String keyStroke) {
 		initAction(title, command, action, keyStroke, JFileChooser.OPEN_DIALOG);
 	}
 

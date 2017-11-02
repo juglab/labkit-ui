@@ -23,7 +23,7 @@ public interface Classifier
 
 	void saveClassifier( String path, boolean overwrite ) throws Exception;
 
-	void loadClassifier( String path ) throws Exception;
+	void openClassifier( String path ) throws Exception;
 
 	Notifier<Listener> listeners();
 

@@ -43,24 +43,24 @@ public class LabelingSerializer
 		this.context = context;
 	}
 
-	public Labeling load(String filename) throws IOException {
+	public Labeling open(String filename) throws IOException {
 		if(FilenameUtils.isExtension(filename, new String[]{"tif", "tiff"}))
-			return loadFromTiff(filename);
+			return openFromTiff(filename);
 		if(FilenameUtils.isExtension(filename, new String[]{"labeling", "json"}))
-			return loadFromJson(filename);
+			return openFromJson(filename);
 		throw new IllegalArgumentException("Filename must have supported extension (*.labeling, *.tif, *.tiff)");
 	}
 
-	private Labeling loadFromJson(String filename) throws IOException {
+	private Labeling openFromJson(String filename) throws IOException {
 		try(FileReader reader = new FileReader(filename)) {
 			return new Gson().fromJson(reader, Labeling.class);
 		}
 	}
 
-	private Labeling loadFromTiff(String filename) throws IOException {
-		Img<? extends IntegerType<?>> img = loadImageFromTiff(filename);
+	private Labeling openFromTiff(String filename) throws IOException {
+		Img<? extends IntegerType<?>> img = openImageFromTiff(filename);
 		LabelsMetaData meta = (new File(filename + ".labels").exists()) ?
-				loadMetaData(filename + ".labels") :
+				openMetaData(filename + ".labels") :
 				new LabelsMetaData(img);
 		return new Labeling(fromImageAndLabelSets(img, meta.asLabelSets()));
 	}
@@ -75,12 +75,12 @@ public class LabelingSerializer
 		return result;
 	}
 
-	private Img<? extends IntegerType<?>> loadImageFromTiff(String filename) throws IOException {
+	private Img<? extends IntegerType<?>> openImageFromTiff(String filename) throws IOException {
 		DatasetIOService io = context.service(DatasetIOService.class);
 		return AtlasUtils.uncheckedCast(io.open(filename).getImgPlus().getImg());
 	}
 
-	private LabelsMetaData loadMetaData(String filename) throws IOException {
+	private LabelsMetaData openMetaData(String filename) throws IOException {
 		try(FileReader reader = new FileReader(filename)) {
 			return new Gson().fromJson(reader, LabelsMetaData.class);
 		}
