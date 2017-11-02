@@ -5,6 +5,7 @@ import net.imglib2.atlas.MainFrame;
 import javax.swing.*;
 import javax.swing.filechooser.FileFilter;
 import javax.swing.filechooser.FileNameExtensionFilter;
+import java.io.File;
 import java.util.function.Consumer;
 
 /**
@@ -29,33 +30,40 @@ public abstract class AbstractSaveAndLoadAction {
 
 
 	public void initSaveAction(String title, String command, Action action, String keyStroke) {
-		initAction(title, command, action, keyStroke, true);
+		initAction(title, command, action, keyStroke, JFileChooser.SAVE_DIALOG);
 	}
 
 	public void initLoadAction(String title, String command, Action action, String keyStroke) {
-		initAction(title, command, action, keyStroke, false);
+		initAction(title, command, action, keyStroke, JFileChooser.OPEN_DIALOG);
 	}
 
-	public void initAction(String title, String command, Action action, String keyStroke, boolean save) {
-		extensible.addAction(title, command, () -> OpenDialogAndThen(title, save, action), keyStroke);
+	private void initAction(String title, String command, Action action, String keyStroke, int dialogType) {
+		extensible.addAction(title, command, () -> OpenDialogAndThen(title, dialogType, action), keyStroke);
 	}
 
-	private void OpenDialogAndThen(String title, boolean save, Consumer<String> action) {
+	private void OpenDialogAndThen(String title, int dialogType, Action action) {
 		fileChooser.setDialogTitle(title);
-		fileChooser.setDialogType(save ? JFileChooser.SAVE_DIALOG : JFileChooser.OPEN_DIALOG);
+		String filename = action.suggestedFile();
+		if(filename != null)
+			fileChooser.setSelectedFile(new File(filename));
+		fileChooser.setDialogType(dialogType);
 		final int returnVal = fileChooser.showDialog(extensible.dialogParent(), null);
 		if ( returnVal == JFileChooser.APPROVE_OPTION )
-			action.accept(fileChooser.getSelectedFile().getAbsolutePath());
+			runAction(action, fileChooser.getSelectedFile().getAbsolutePath());
 	}
 
-	public interface Action extends Consumer<String> {
-		@Override
-		default void accept(String filename) {
-			try {
-				run(filename);
-			} catch (Exception e) {
-				e.printStackTrace();
-			}
+	private void runAction(Action action, String filename) {
+		try {
+			action.run(filename);
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
+
+	public interface Action {
+
+		default String suggestedFile() {
+			return null;
 		}
 
 		void run(String filename) throws Exception;

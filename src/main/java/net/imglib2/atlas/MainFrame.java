@@ -62,6 +62,8 @@ public class MainFrame {
 
 	private final Context context;
 
+	private final InputImage inputImage;
+
 	public static MainFrame open(String filename)
 	{
 		return open(null, filename);
@@ -76,7 +78,7 @@ public class MainFrame {
 	public MainFrame(final Context context, final Dataset dataset)
 	{
 		this.context = context;
-		InputImage inputImage = new InputImage(dataset);
+		inputImage = new InputImage(dataset);
 		RandomAccessibleInterval<? extends NumericType<?>> rawData = inputImage.displayImage();
 		List<String> classLabels = Arrays.asList("foreground", "background");
 		labelingComponent = new LabelingComponent(frame, rawData, classLabels, false);
@@ -99,7 +101,7 @@ public class MainFrame {
 		PredictionLayer predictionLayer = new PredictionLayer(extensible, labelingComponent.colorProvider(), classifier, featureStack);
 		new ClassifierSaveAndLoad(extensible, this.classifier);
 		new FeatureLayer(extensible, featureStack);
-		new LabelingSaveAndLoad(extensible, labelingComponent);
+		new LabelingSaveAndLoad(extensible, labelingComponent, inputImage);
 		new SegmentationSave(extensible, predictionLayer);
 		new OpenImageAction(extensible);
 		new ZAxisScaling(extensible, labelingComponent.sourceTransformation());

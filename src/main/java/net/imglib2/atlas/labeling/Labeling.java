@@ -6,7 +6,6 @@ import net.imglib2.RandomAccess;
 import net.imglib2.atlas.AtlasUtils;
 import net.imglib2.converter.Converter;
 import net.imglib2.converter.Converters;
-import net.imglib2.img.Img;
 import net.imglib2.roi.IterableRegion;
 import net.imglib2.roi.labeling.ImgLabeling;
 import net.imglib2.roi.labeling.LabelingMapping;
@@ -15,7 +14,6 @@ import net.imglib2.sparse.SparseIterableRegion;
 import net.imglib2.sparse.SparseRandomAccessIntType;
 import net.imglib2.type.logic.BitType;
 import net.imglib2.type.numeric.IntegerType;
-import net.imglib2.type.numeric.integer.IntType;
 import net.imglib2.util.ConstantUtils;
 import net.imglib2.view.Views;
 
@@ -31,7 +29,11 @@ public class Labeling extends AbstractWrappedInterval implements RandomAccessibl
 	private List<String> labels;
 
 	public Labeling(Map<String,IterableRegion<BitType>> regions, Interval interval) {
-		this(initImgLabling(regions, interval));
+		this(new ArrayList<>(regions.keySet()), initImgLabling(regions, interval));
+	}
+
+	public Labeling(ImgLabeling<String, ?> imgLabeling) {
+		this(new ArrayList<>(imgLabeling.getMapping().getLabels()), imgLabeling);
 	}
 
 	private static ImgLabeling<String, ?> initImgLabling(Map<String, IterableRegion<BitType>> regions, Interval interval) {
@@ -48,15 +50,14 @@ public class Labeling extends AbstractWrappedInterval implements RandomAccessibl
 		return imgLabeling;
 	}
 
-	public Labeling(ImgLabeling<String, ?> labeling) {
+	public Labeling(List<String> labels, ImgLabeling<String, ?> labeling) {
 		super(labeling);
-		imgLabeling = labeling;
-		labels = new ArrayList<>(labeling.getMapping().getLabels());
+		this.imgLabeling = labeling;
+		this.labels = labels;
 	}
 
 	public Labeling(List<String> labels, Interval interval) {
-		this(new ImgLabeling<>(new SparseRandomAccessIntType(interval)));
-		this.labels = labels;
+		this(labels, new ImgLabeling<>(new SparseRandomAccessIntType(interval)));
 	}
 
 

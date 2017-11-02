@@ -59,4 +59,8 @@ public class InputImage {
 	public int getSpatialDimensions() {
 		return dataset.axis(Axes.Z).isPresent() || dataset.axis(Axes.TIME).isPresent() ? 3 : 2;
 	}
+
+	public String getFilename() {
+		return dataset.getSource();
+	}
 }
