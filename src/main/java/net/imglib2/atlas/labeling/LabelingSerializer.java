@@ -46,9 +46,9 @@ public class LabelingSerializer
 	public Labeling load(String filename) throws IOException {
 		if(FilenameUtils.isExtension(filename, new String[]{"tif", "tiff"}))
 			return loadFromTiff(filename);
-		if(FilenameUtils.isExtension(filename, "json"))
+		if(FilenameUtils.isExtension(filename, new String[]{"labeling", "json"}))
 			return loadFromJson(filename);
-		throw new IllegalArgumentException("Filename must have supported extension (*.json, *.tif, *.tiff)");
+		throw new IllegalArgumentException("Filename must have supported extension (*.labeling, *.tif, *.tiff)");
 	}
 
 	private Labeling loadFromJson(String filename) throws IOException {
@@ -89,9 +89,9 @@ public class LabelingSerializer
 	public void save(Labeling labeling, String filename) throws IOException {
 		if(FilenameUtils.isExtension(filename, new String[]{"tif", "tiff"}))
 			saveAsTiff(labeling, filename);
-		else if(FilenameUtils.isExtension(filename, "json"))
+		else if(FilenameUtils.isExtension(filename, new String[]{"labeling", "json"}))
 			saveAsJson(labeling, filename);
-		else throw new UnsupportedOperationException();
+		else throw new IllegalArgumentException("Filename must have supported extension (*.labeling, *.tif, *.tiff)");
 	}
 
 	private void saveAsJson(Labeling labeling, String filename) throws IOException {
