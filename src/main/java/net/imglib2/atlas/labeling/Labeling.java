@@ -1,6 +1,8 @@
 package net.imglib2.atlas.labeling;
 
 import com.google.gson.annotations.JsonAdapter;
+import net.imagej.axis.CalibratedAxis;
+import net.imagej.axis.DefaultLinearAxis;
 import net.imglib2.*;
 import net.imglib2.RandomAccess;
 import net.imglib2.atlas.AtlasUtils;
@@ -18,6 +20,8 @@ import net.imglib2.util.ConstantUtils;
 import net.imglib2.view.Views;
 
 import java.util.*;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 /**
  * @author Matthias Arzt
@@ -27,6 +31,7 @@ public class Labeling extends AbstractWrappedInterval implements RandomAccessibl
 
 	private final ImgLabeling<String, ?> imgLabeling;
 	private List<String> labels;
+	private List<CalibratedAxis> axes;
 
 	public Labeling(Map<String,IterableRegion<BitType>> regions, Interval interval) {
 		this(new ArrayList<>(regions.keySet()), initImgLabling(regions, interval));
@@ -54,6 +59,11 @@ public class Labeling extends AbstractWrappedInterval implements RandomAccessibl
 		super(labeling);
 		this.imgLabeling = labeling;
 		this.labels = labels;
+		this.axes = initAxes(labeling.numDimensions());
+	}
+
+	private List<CalibratedAxis> initAxes(int i) {
+		return IntStream.range(0, i).mapToObj(ignore -> new DefaultLinearAxis()).collect(Collectors.toList());
 	}
 
 	public Labeling(List<String> labels, Interval interval) {
@@ -63,6 +73,10 @@ public class Labeling extends AbstractWrappedInterval implements RandomAccessibl
 
 	public List<String> getLabels() {
 		return labels;
+	}
+
+	public void setAxes(List<CalibratedAxis> axes) {
+		this.axes = axes.stream().map(CalibratedAxis::copy).collect(Collectors.toList());
 	}
 
 	public Map<String, RandomAccessibleInterval<BitType>> regions() {
@@ -121,6 +135,10 @@ public class Labeling extends AbstractWrappedInterval implements RandomAccessibl
 				return mapping.numSets();
 			}
 		};
+	}
+
+	public List<CalibratedAxis> axes() {
+		return axes;
 	}
 
 	public static class SetEntryAsBitType<T> extends BitType {

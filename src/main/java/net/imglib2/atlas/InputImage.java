@@ -2,6 +2,8 @@ package net.imglib2.atlas;
 
 import net.imagej.Dataset;
 import net.imagej.axis.Axes;
+import net.imagej.axis.AxisType;
+import net.imagej.axis.CalibratedAxis;
 import net.imglib2.RandomAccessibleInterval;
 import net.imglib2.converter.Converters;
 import net.imglib2.trainable_segmention.pixel_feature.settings.ChannelSetting;
@@ -10,6 +12,9 @@ import net.imglib2.type.numeric.NumericType;
 import net.imglib2.type.numeric.RealType;
 import net.imglib2.view.Views;
 import net.imglib2.view.composite.GenericComposite;
+
+import java.util.ArrayList;
+import java.util.List;
 
 public class InputImage {
 
@@ -62,5 +67,15 @@ public class InputImage {
 
 	public String getFilename() {
 		return dataset.getSource();
+	}
+
+	public List<CalibratedAxis> axes() {
+		List<CalibratedAxis> axes = new ArrayList<>();
+		for (int i = 0; i < dataset.numDimensions(); i++) {
+			CalibratedAxis axis = dataset.axis(i);
+			if(axis.type() != Axes.CHANNEL)
+				axes.add(axis);
+		}
+		return axes;
 	}
 }

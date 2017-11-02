@@ -6,13 +6,21 @@ import com.google.gson.stream.JsonReader;
 import com.google.gson.stream.JsonWriter;
 import io.scif.services.DatasetIOService;
 import net.imagej.DatasetService;
+import net.imagej.axis.Axes;
+import net.imagej.axis.CalibratedAxis;
+import net.imagej.axis.DefaultLinearAxis;
+import net.imagej.axis.LinearAxis;
+import net.imglib2.Cursor;
+import net.imglib2.FinalInterval;
 import net.imglib2.Interval;
+import net.imglib2.Point;
 import net.imglib2.RandomAccessibleInterval;
 import net.imglib2.atlas.AtlasUtils;
 import net.imglib2.img.Img;
 import net.imglib2.roi.IterableRegion;
 import net.imglib2.roi.labeling.ImgLabeling;
 import net.imglib2.roi.labeling.LabelingMapping;
+import net.imglib2.sparse.SparseIterableRegion;
 import net.imglib2.type.logic.BitType;
 import net.imglib2.type.numeric.IntegerType;
 import net.imglib2.type.numeric.integer.IntType;
@@ -28,9 +36,11 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.TreeMap;
 import java.util.TreeSet;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
+import java.util.stream.Stream;
 
 /**
  * @author Matthias Arzt
@@ -139,24 +149,92 @@ public class LabelingSerializer
 
 		@Override
 		public void write(JsonWriter jsonWriter, Labeling labeling) throws IOException {
-			writeRegions(jsonWriter, labeling.iterableRegions());
+			Gson gson = new Gson();
+			JsonObject jsonLabeling = new JsonObject();
+			jsonLabeling.add("interval", gson.toJsonTree(new FinalInterval(labeling), FinalInterval.class));
+			jsonLabeling.add("pixelSizes", gson.toJsonTree(getPixelSize(labeling), PixelSize[].class));
+			jsonLabeling.add( "labels", regionsToJson(labeling.iterableRegions(), gson));
+			gson.toJson(jsonLabeling, jsonWriter);
 		}
 
-		private void writeRegions(JsonWriter jsonWriter, Map<String, ? extends IterableRegion<BitType>> regions) throws IOException {
-			Gson gson = new GsonBuilder().registerTypeAdapter(regionType, new SparseIterableRegionSerializer.Serializer()).create();
-			gson.toJson(regions, mapType, jsonWriter);
+		private PixelSize[] getPixelSize(Labeling labeling) {
+			return labeling.axes().stream().map(this::toPixelSize).toArray(PixelSize[]::new);
+		}
+
+		private PixelSize toPixelSize(CalibratedAxis calibratedAxis) {
+			if(!(calibratedAxis instanceof LinearAxis))
+				return new PixelSize(1, "unknown");
+			LinearAxis linear = (LinearAxis) calibratedAxis;
+			return new PixelSize(linear.scale(), linear.unit());
+		}
+
+		private JsonObject regionsToJson(Map<String, ? extends IterableRegion<BitType>> regions, Gson gson) {
+			JsonObject map = new JsonObject();
+			regions.forEach((label, region) -> map.add(label, regionToJson(gson, region)));
+			return map;
+		}
+
+		private JsonElement regionToJson(Gson gson, IterableRegion<BitType> region) {
+			JsonArray result = new JsonArray();
+			Cursor<Void> cursor = region.cursor();
+			long[] coords = new long[cursor.numDimensions()];
+			while(cursor.hasNext()) {
+				cursor.fwd();
+				cursor.localize(coords);
+				result.add(gson.toJsonTree(coords, long[].class));
+			}
+			return result;
 		}
 
 		@Override
 		public Labeling read(JsonReader jsonReader) throws IOException {
-			Map<String, IterableRegion<BitType>> regions = readRegions(jsonReader);
-			Interval interval = regions.values().stream().findAny().get();
-			return new Labeling(regions, interval);
+			Gson gson = new GsonBuilder().registerTypeAdapter(Labeling.class, new MyDeserializer()).create();
+			return gson.fromJson(jsonReader, Labeling.class);
 		}
 
-		private Map<String,IterableRegion<BitType>> readRegions(JsonReader jsonReader) {
-			Gson gson = new GsonBuilder().registerTypeAdapter(regionType, new SparseIterableRegionSerializer.Deserializer()).create();
-			return gson.fromJson(jsonReader, mapType);
+		private static class MyDeserializer implements JsonDeserializer<Labeling> {
+
+			@Override
+			public Labeling deserialize(JsonElement json, Type typeOfT, JsonDeserializationContext context) throws JsonParseException {
+				JsonObject object = json.getAsJsonObject();
+				Interval interval = context.deserialize(object.get("interval"), FinalInterval.class);
+				PixelSize[] axes = context.deserialize(object.get("pixelSizes"), PixelSize[].class);
+				Map<String, IterableRegion<BitType>> regions = new TreeMap<>();
+				object.getAsJsonObject("labels").entrySet().forEach(entry -> regions.put(entry.getKey(), regionFromJson(context, interval, entry.getValue())));
+				Labeling labeling = new Labeling(regions, interval);
+				labeling.setAxes(pixelSizesToAxes(axes));
+				return labeling;
+			}
+
+			private List<CalibratedAxis> pixelSizesToAxes(PixelSize[] axes) {
+				return Stream.of(axes).map(this::pixelSizeToAxis).collect(Collectors.toList());
+			}
+
+			private LinearAxis pixelSizeToAxis(PixelSize pixelSize) {
+				return new DefaultLinearAxis(Axes.unknown(), pixelSize.unit, pixelSize.size);
+			}
+
+			private SparseIterableRegion regionFromJson(JsonDeserializationContext context, Interval interval, JsonElement jsonCoords) {
+				SparseIterableRegion result = new SparseIterableRegion(interval);
+				JsonArray array = jsonCoords.getAsJsonArray();
+				Point point = new Point(interval.numDimensions());
+				for(JsonElement item : array) {
+					long[] coords = context.deserialize(item, long[].class);
+					point.setPosition(coords);
+					result.add(point);
+				}
+				return result;
+			}
+		}
+
+		private static class PixelSize {
+			public double size;
+			public String unit;
+
+			public PixelSize(double size, String unit) {
+				this.size = size;
+				this.unit = unit;
+			}
 		}
 	}
 }

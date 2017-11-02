@@ -83,7 +83,9 @@ public class MainFrame {
 		inputImage = new InputImage(dataset);
 		RandomAccessibleInterval<? extends NumericType<?>> rawData = inputImage.displayImage();
 		List<String> classLabels = preferences.getDefaultLabels();
-		labelingComponent = new LabelingComponent(frame, rawData, classLabels, false);
+		Labeling labeling = new Labeling(classLabels, rawData);
+		labeling.setAxes(inputImage.axes());
+		labelingComponent = new LabelingComponent(frame, rawData, labeling, false);
 		// --
 		GlobalSettings globalSettings = new GlobalSettings(inputImage.getChannelSetting(), inputImage.getSpatialDimensions(), 1.0, 16.0, 1.0);
 		OpService ops = context.service(OpService.class);

@@ -4,7 +4,6 @@ import net.imglib2.Interval;
 import net.imglib2.atlas.MainFrame;
 import net.imglib2.atlas.Preferences;
 import net.imglib2.atlas.labeling.Labeling;
-import org.scijava.prefs.PrefService;
 
 import javax.swing.*;
 import java.awt.*;
@@ -23,16 +22,27 @@ public class SetLabelsAction {
 		this.preference = preferences;
 		extensible.addAction("Change Available Labels ...", "changeLabels", this::changeLabels, "");
 		extensible.addAction("Default Available Labels ...", "defaultLabels", this::defaultLabels, "");
-		extensible.addAction("Delete All Labels", "clearLabeling", this::changeLabels, "");
+		extensible.addAction("Delete All Labels", "clearLabeling", this::clearLabels, "");
 	}
 
 	private void changeLabels() {
 		Labeling labeling = extensible.getLabeling();
 		List<String> labels = labeling.getLabels();
 		Optional<List<String>> results = dialog(labels);
-		if(results.isPresent())
-			extensible.setLabeling(new Labeling(results.get(), (Interval) labeling));
+		if(results.isPresent()) {
+			Labeling newLabeling = new Labeling(results.get(), (Interval) labeling);
+			newLabeling.setAxes(labeling.axes());
+			extensible.setLabeling(newLabeling);
+		}
 	}
+
+	private void clearLabels() {
+		Labeling oldLabeling = extensible.getLabeling();
+		Labeling newLabeling = new Labeling(oldLabeling.getLabels(), (Interval) oldLabeling);
+		newLabeling.setAxes(oldLabeling.axes());
+		extensible.setLabeling(newLabeling);
+	}
+
 
 	private void defaultLabels() {
 		Optional<List<String>> result = dialog(preference.getDefaultLabels());

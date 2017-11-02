@@ -57,7 +57,7 @@ public class LabelingComponent {
 
 	LabelingComponent(final JFrame dialogBoxOwner,
 			final RandomAccessibleInterval<? extends NumericType<?>> rawData,
-			final List<String> labels,
+			final Labeling labeling,
 			final boolean isTimeSeries)
 	{
 		this.dialogBoxOwner = dialogBoxOwner;
@@ -68,7 +68,7 @@ public class LabelingComponent {
 
 		actionsAndBehaviours = new ActionsAndBehaviours(bdvHandle);
 
-		initLabelsLayer(labels, rawData, isTimeSeries);
+		initLabelsLayer(labeling, isTimeSeries);
 
 		Pair<Double, Double> p = AtlasUtils.estimateMinMax(rawData);
 		BdvStackSource<?> source = addLayer(RevampUtils.uncheckedCast(rawData), "original");
@@ -111,8 +111,8 @@ public class LabelingComponent {
 			return new NeighborhoodPixelsGenerator<>(NeighborhoodFactories.<BitType>hyperSphere(), 1.0);
 	}
 
-	private void initLabelsLayer(List<String> labels, Interval interval, boolean isTimeSeries) {
-		this.labels = new Holder<>(new Labeling(labels, interval));
+	private void initLabelsLayer(Labeling labeling, boolean isTimeSeries) {
+		this.labels = new Holder<>(labeling);
 		colorProvider = new ColorMapProvider(this.labels);
 
 		BdvSource source = addLayer(new LabelsLayer(this.labels, colorProvider, this).view(), "labels");
@@ -124,7 +124,7 @@ public class LabelingComponent {
 				actionsAndBehaviours,
 				colorProvider,
 				sourceTransformation);
-		initColorMapUpdaterAction(labels, colorProvider);
+		initColorMapUpdaterAction(labels.get().getLabels(), colorProvider);
 		bdvHandle.getViewerPanel().getDisplay().addOverlayRenderer( brushController.getBrushOverlay() );
 	}
 
