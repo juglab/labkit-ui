@@ -95,6 +95,7 @@ public class MainFrame {
 		featureStack = new FeatureStack(extensible, rawData, classifier, false);
 		initClassification();
 		// --
+		setTitle();
 		frame.setJMenuBar(new MenuBar(labelingComponent.getActions()));
 		frame.add(labelingComponent.getComponent());
 		frame.setVisible(true);
@@ -119,9 +120,16 @@ public class MainFrame {
 	}
 
 	private JFrame initFrame() {
-		JFrame frame = new JFrame("BDV Labkit");
+		JFrame frame = new JFrame();
 		frame.setBounds( 50, 50, 1200, 900 );
 		return frame;
+	}
+
+	private void setTitle() {
+		String name = inputImage.getName();
+		if(name == null || name.isEmpty())
+			frame.setTitle("Labkit");
+		else frame.setTitle("Labkit - " + name);
 	}
 
 	public class Extensible {

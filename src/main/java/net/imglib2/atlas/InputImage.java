@@ -69,6 +69,10 @@ public class InputImage {
 		return dataset.getSource();
 	}
 
+	public String getName() {
+		return dataset.getName();
+	}
+
 	public List<CalibratedAxis> axes() {
 		List<CalibratedAxis> axes = new ArrayList<>();
 		for (int i = 0; i < dataset.numDimensions(); i++) {
