@@ -13,6 +13,7 @@ import net.imglib2.RandomAccess;
 import net.imglib2.algorithm.fill.Filter;
 import net.imglib2.algorithm.fill.FloodFill;
 import net.imglib2.algorithm.neighborhood.DiamondShape;
+import net.imglib2.atlas.MainFrame;
 import net.imglib2.atlas.labeling.Labeling;
 import net.imglib2.atlas.labeling.LabelingSerializer;
 import net.imglib2.roi.IterableRegion;
@@ -25,6 +26,7 @@ import org.scijava.ItemIO;
 import org.scijava.command.Command;
 import org.scijava.plugin.Parameter;
 import org.scijava.plugin.Plugin;
+import org.scijava.ui.UIService;
 
 import java.io.File;
 import java.io.IOException;
@@ -51,12 +53,24 @@ public class MeasureConnectedComponents implements Command {
 	public void run() {
 		try {
 			Labeling labeling = new LabelingSerializer(context).open(labelingFile.getAbsolutePath());
-			TableBuilder builder = new TableBuilder(labeling.axes());
-			labeling.iterableRegions().forEach((label, mask) -> builder.add(label, connectedComponets(mask)));
-			table = builder.getTable();
+			table = createTable(labeling, calibratedSize);
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
+	}
+
+	public static void addAction(MainFrame.Extensible extensible) {
+		extensible.addAction("Measure Connected Components ...", "measureConnectedComponents", () -> {
+			Table<?, ?> table = createTable(extensible.getLabeling(), true);
+			extensible.context().service(UIService.class).show(table);
+		}, "");
+	}
+
+	private static Table<?, ?> createTable(Labeling labeling, boolean calibratedSize) {
+		TableBuilder builder = new TableBuilder();
+		builder.setPixelSize(labeling.axes());
+		labeling.iterableRegions().forEach((label, mask) -> builder.add(label, connectedComponets(mask)));
+		return builder.getTable(calibratedSize);
 	}
 
 	static List<Long> connectedComponets(IterableRegion<BitType> region) {
@@ -80,32 +94,32 @@ public class MeasureConnectedComponents implements Command {
 		return sizes;
 	}
 
-	private class TableBuilder {
+	private static class TableBuilder {
 
 		Column<String> labels = new DefaultColumn<>(String.class, "label");
 		Column<Integer> indices = new DefaultColumn<>(Integer.class, "connect component");
-		Column<Long> number = new DefaultColumn<Long>(Long.class, "size in pixels");
+		Column<Long> number = new DefaultColumn<>(Long.class, "size in pixels");
 		Column<Double> sizes = new DoubleColumn("size");
 
-		private final double pixelSize;
+		private double pixelSize = 1;
+		private String unit = "unknown";
 
-		public TableBuilder(List<CalibratedAxis> axes) {
+		private void setPixelSize(List<CalibratedAxis> axes) {
 			double pixelSize = 1;
-			StringJoiner unit = new StringJoiner("*");
-			boolean unknown = false;
+			StringJoiner units = new StringJoiner("*");
 			for(CalibratedAxis axis : axes)
 				if(axis instanceof LinearAxis) {
 					LinearAxis linear = (LinearAxis) axis;
 					pixelSize *= linear.scale();
-					unit.add(linear.unit());
+					units.add(linear.unit() == null ? "unknown" : linear.unit());
 				}
 				else
-					unknown = true;
-			this.pixelSize = unknown ? 1 : pixelSize;
-			sizes.setHeader(sizes.getHeader() + " in " + (unknown ? "unknown" : unit.toString()));
+					return;
+			this.pixelSize = pixelSize;
+			this.unit = units.toString();
 		}
 
-		public void add(String label, List<Long> sizesInPixels) {
+		private void add(String label, List<Long> sizesInPixels) {
 			int index = 0;
 			for(Long size : sizesInPixels) {
 				index++;
@@ -116,13 +130,15 @@ public class MeasureConnectedComponents implements Command {
 			}
 		}
 
-		public Table<?, ?> getTable() {
+		public Table<?, ?> getTable(boolean calibratedSize) {
 			GenericTable table = new DefaultGenericTable();
 			table.add(labels);
 			table.add(indices);
 			table.add(number);
-			if(calibratedSize)
+			if(calibratedSize) {
+				sizes.setHeader("size in " + unit);
 				table.add(sizes);
+			}
 			return table;
 		}
 	}

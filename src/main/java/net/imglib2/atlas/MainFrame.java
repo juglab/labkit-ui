@@ -23,6 +23,7 @@ import net.imglib2.atlas.classification.TrainClassifier;
 import net.imglib2.atlas.classification.PredictionLayer;
 import net.imglib2.atlas.classification.weka.TrainableSegmentationClassifier;
 import net.imglib2.atlas.labeling.Labeling;
+import net.imglib2.atlas.plugin.MeasureConnectedComponents;
 import net.imglib2.realtransform.AffineTransform3D;
 import net.imglib2.trainable_segmention.RevampUtils;
 import net.imglib2.trainable_segmention.pixel_feature.filter.GroupedFeatures;
@@ -114,6 +115,7 @@ public class MainFrame {
 		new BatchSegmentAction(extensible, classifier);
 		new SetLabelsAction(extensible, preferences);
 		new ChangeFeatureSettingsAction(extensible, classifier);
+		MeasureConnectedComponents.addAction(extensible);
 	}
 
 	private JFrame initFrame() {
