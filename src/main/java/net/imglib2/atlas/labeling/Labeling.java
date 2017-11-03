@@ -122,6 +122,10 @@ public class Labeling extends AbstractWrappedInterval implements RandomAccessibl
 		return imgLabeling.getIndexImg();
 	}
 
+	public ImgLabeling<String, ?> asImgLabeling() {
+		return imgLabeling;
+	}
+
 	public List<Set<String>> getLabelSets() {
 		LabelingMapping<String> mapping = imgLabeling.getMapping();
 		return new AbstractList<Set<String>>() {
