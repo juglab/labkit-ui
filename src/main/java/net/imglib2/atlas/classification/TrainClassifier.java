@@ -29,26 +29,16 @@ public class TrainClassifier
 
 	private final RandomAccessibleInterval<?> image;
 
-	private boolean trainingSuccess = false;
-
-	public boolean getTrainingSuccess()
-	{
-		return trainingSuccess;
-	}
-
 	private void trainClassifier()
 	{
-		trainingSuccess = false;
 		try
 		{
 			classifier.train( image, labelingSupplier.get());
-			trainingSuccess = true;
 		}
 		catch ( final Exception e1 )
 		{
 			System.out.println("Training was interrupted by exception:");
 			e1.printStackTrace();
-			trainingSuccess = false;
 		}
 	}
 

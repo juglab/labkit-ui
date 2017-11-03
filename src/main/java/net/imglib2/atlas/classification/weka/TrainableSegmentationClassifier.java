@@ -14,6 +14,7 @@ import net.imglib2.atlas.labeling.Labeling;
 import net.imglib2.roi.IterableRegion;
 import net.imglib2.trainable_segmention.RevampUtils;
 import net.imglib2.trainable_segmention.classification.Segmenter;
+import net.imglib2.trainable_segmention.classification.Trainer;
 import net.imglib2.trainable_segmention.classification.Training;
 import net.imglib2.trainable_segmention.gson.GsonUtils;
 import net.imglib2.trainable_segmention.pixel_feature.settings.FeatureSettings;
@@ -97,9 +98,12 @@ implements Classifier
 
 	@Override
 	public void train(RandomAccessibleInterval<?> image, Labeling labeling) {
+		weka.classifiers.Classifier wekaClassifier = RevampUtils.wrapException(() ->
+				AbstractClassifier.makeCopy(this.initialWekaClassifier));
+		List<String> classes = labeling.getLabels();
+		classifier = new Segmenter(ops, classes, classifier.features(), wekaClassifier);
 		Training training = classifier.training();
 		Map<String, IterableRegion<BitType>> regions = labeling.iterableRegions();
-		List<String> classes = classifier.classNames();
 		RandomAccessible<? extends Composite<FloatType>> features = Views.collapse(FeatureStack.cachedFeatureBlock(classifier.features(), image));
 		for (int classIndex = 0; classIndex < classes.size(); classIndex++) {
 			IterableRegion<BitType> region = regions.get(classes.get(classIndex));
