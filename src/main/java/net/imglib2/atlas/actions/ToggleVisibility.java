@@ -23,7 +23,9 @@ public class ToggleVisibility extends AbstractNamedAction
 		putValue(ACTION_COMMAND_KEY, "toggle" + name);
 		this.viewer = source.getBdvHandle().getViewerPanel();
 		source.setCurrent();
-		sourceState = viewer.getVisibilityAndGrouping().getSources().get( viewer.getVisibilityAndGrouping().getCurrentSource() );
+		int currentSource = viewer.getVisibilityAndGrouping().getCurrentSource();
+		putValue(ACCELERATOR_KEY, KeyStroke.getKeyStroke("shift " + Integer.toString(currentSource + 1)));
+		sourceState = viewer.getVisibilityAndGrouping().getSources().get(currentSource);
 		putValue(Action.SELECTED_KEY, sourceState.isActive());
 	}
 
