@@ -34,6 +34,7 @@ import net.imglib2.util.Intervals;
 import net.imglib2.util.LinAlgHelpers;
 import net.imglib2.view.Views;
 import org.scijava.ui.behaviour.util.AbstractNamedAction;
+import org.scijava.ui.behaviour.util.RunnableAction;
 
 import javax.swing.*;
 
@@ -94,9 +95,12 @@ public class LabelBrushController
 		labels.notifier().add(this::updateLabeling);
 
 		behaviors.addBehaviour( new PaintBehavior(true), "paint", "SPACE button1" );
+		RunnableAction nop = new RunnableAction("nop", () -> { });
+		nop.putValue(Action.ACCELERATOR_KEY, KeyStroke.getKeyStroke("F"));
+		behaviors.addAction(nop);
 		behaviors.addBehaviour( new PaintBehavior(false), "erase", "SPACE button2", "SPACE button3" );
-		behaviors.addBehaviour( new FloodFillClick(true), "floodfill", "Y button1" );
-		behaviors.addBehaviour( new FloodFillClick(false), "floodclear", "Y button2", "Y button3" );
+		behaviors.addBehaviour( new FloodFillClick(true), "floodfill", "F button1" );
+		behaviors.addBehaviour( new FloodFillClick(false), "floodclear", "F button2", "F button3" );
 		behaviors.addBehaviour( new ChangeBrushRadius(), "change brush radius", "SPACE scroll" );
 		behaviors.addAction( new ChangeLabel() );
 		behaviors.addBehaviour( new MoveBrush(), "move brush", "SPACE" );
