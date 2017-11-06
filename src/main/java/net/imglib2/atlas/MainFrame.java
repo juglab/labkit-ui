@@ -23,6 +23,7 @@ import net.imglib2.atlas.classification.TrainClassifier;
 import net.imglib2.atlas.classification.PredictionLayer;
 import net.imglib2.atlas.classification.weka.TrainableSegmentationClassifier;
 import net.imglib2.atlas.labeling.Labeling;
+import net.imglib2.atlas.labeling.LabelingSerializer;
 import net.imglib2.atlas.plugin.MeasureConnectedComponents;
 import net.imglib2.realtransform.AffineTransform3D;
 import net.imglib2.trainable_segmention.RevampUtils;
@@ -39,6 +40,8 @@ import org.scijava.ui.behaviour.util.RunnableAction;
 
 import javax.swing.*;
 import java.awt.*;
+import java.io.File;
+import java.io.IOException;
 import java.util.List;
 
 /**
@@ -83,9 +86,8 @@ public class MainFrame {
 		this.preferences = new Preferences(context);
 		inputImage = new InputImage(dataset);
 		RandomAccessibleInterval<? extends NumericType<?>> rawData = inputImage.displayImage();
+		Labeling labeling = getInitialLabeling();
 		List<String> classLabels = preferences.getDefaultLabels();
-		Labeling labeling = new Labeling(classLabels, rawData);
-		labeling.setAxes(inputImage.axes());
 		labelingComponent = new LabelingComponent(frame, rawData, labeling, false);
 		// --
 		GlobalSettings globalSettings = new GlobalSettings(inputImage.getChannelSetting(), inputImage.getSpatialDimensions(), 1.0, 16.0, 1.0);
@@ -99,6 +101,22 @@ public class MainFrame {
 		frame.setJMenuBar(new MenuBar(labelingComponent.getActions()));
 		frame.add(labelingComponent.getComponent());
 		frame.setVisible(true);
+	}
+
+	private Labeling getInitialLabeling() {
+		List<String> classLabels = preferences.getDefaultLabels();
+		String filename = inputImage.getFilename();
+		if(new File(filename + ".labeling").exists()) {
+			try {
+				Labeling labeling = new LabelingSerializer(context).open(filename + ".labeling");
+				return labeling;
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+		}
+		Labeling labeling = new Labeling(classLabels, inputImage.displayImage());
+		labeling.setAxes(inputImage.axes());
+		return labeling;
 	}
 
 
