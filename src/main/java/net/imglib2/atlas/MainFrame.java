@@ -22,6 +22,8 @@ import net.imglib2.atlas.classification.Classifier;
 import net.imglib2.atlas.classification.TrainClassifier;
 import net.imglib2.atlas.classification.PredictionLayer;
 import net.imglib2.atlas.classification.weka.TrainableSegmentationClassifier;
+import net.imglib2.atlas.inputimage.DatasetInputImage;
+import net.imglib2.atlas.inputimage.InputImage;
 import net.imglib2.atlas.labeling.Labeling;
 import net.imglib2.atlas.labeling.LabelingSerializer;
 import net.imglib2.atlas.plugin.MeasureConnectedComponents;
@@ -51,23 +53,15 @@ import java.util.List;
  */
 public class MainFrame {
 
+	private final DatasetInputImage inputImage;
+
 	private JFrame frame = initFrame();
-
-	private final Classifier classifier;
-
-	private SharedQueue queue = new SharedQueue(Runtime.getRuntime().availableProcessors());
-
-	private LabelingComponent labelingComponent;
-
-	private FeatureStack featureStack;
-
-	private MyExtensible extensible = new MyExtensible();
-
-	private final Context context;
 
 	private final Preferences preferences;
 
-	private final InputImage inputImage;
+	private final Context context;
+
+	private final SegmentationComponent segmentationComponent;
 
 	public static MainFrame open(String filename)
 	{
@@ -84,22 +78,17 @@ public class MainFrame {
 	{
 		this.context = context;
 		this.preferences = new Preferences(context);
-		inputImage = new InputImage(dataset);
-		RandomAccessibleInterval<? extends NumericType<?>> rawData = inputImage.displayImage();
-		Labeling labeling = getInitialLabeling();
-		List<String> classLabels = preferences.getDefaultLabels();
-		labelingComponent = new LabelingComponent(frame, rawData, labeling, false);
+		this.inputImage = new DatasetInputImage(dataset);
+		this.segmentationComponent = new SegmentationComponent(context, frame, inputImage);
+		segmentationComponent.setLabeling(getInitialLabeling());
 		// --
-		GlobalSettings globalSettings = new GlobalSettings(inputImage.getChannelSetting(), inputImage.getSpatialDimensions(), 1.0, 16.0, 1.0);
-		OpService ops = context.service(OpService.class);
-		FeatureSettings setting = new FeatureSettings(globalSettings, SingleFeatures.identity(), GroupedFeatures.gauss());
-		classifier = new TrainableSegmentationClassifier(ops, new FastRandomForest(), classLabels, setting );
-		featureStack = new FeatureStack(extensible, rawData, classifier, false);
-		initClassification();
-		// --
+		SetLabelsAction setlabels = new SetLabelsAction(segmentationComponent::getLabeling,
+				segmentationComponent::setLabeling, preferences);
 		setTitle();
-		frame.setJMenuBar(new MenuBar(labelingComponent.getActions()));
-		frame.add(labelingComponent.getComponent());
+		MenuBar menubar = new MenuBar(segmentationComponent.getActions());
+		menubar.add(setlabels.getMenu());
+		frame.setJMenuBar(menubar);
+		frame.add(segmentationComponent.getComponent());
 		frame.setVisible(true);
 	}
 
@@ -119,24 +108,6 @@ public class MainFrame {
 		return labeling;
 	}
 
-
-	private void initClassification() {
-		new TrainClassifier(extensible, classifier, () -> labelingComponent.getLabeling(), featureStack.compatibleOriginal());
-		PredictionLayer predictionLayer = new PredictionLayer(extensible, labelingComponent.colorProvider(), classifier, featureStack);
-		new ClassifierIoAction(extensible, this.classifier);
-		new FeatureLayer(extensible, featureStack);
-		new LabelingIoAction(extensible, labelingComponent, inputImage);
-		new SegmentationSave(extensible, predictionLayer);
-		new OpenImageAction(extensible);
-		new ZAxisScaling(extensible, labelingComponent.sourceTransformation());
-		new OrthogonalView(extensible, new AffineTransform3D());
-		new SelectClassifier(extensible, classifier);
-		new BatchSegmentAction(extensible, classifier);
-		new SetLabelsAction(extensible, preferences);
-		new ChangeFeatureSettingsAction(extensible, classifier);
-		MeasureConnectedComponents.addAction(extensible);
-	}
-
 	private JFrame initFrame() {
 		JFrame frame = new JFrame();
 		frame.setBounds( 50, 50, 1200, 900 );
@@ -150,76 +121,4 @@ public class MainFrame {
 		else frame.setTitle("Labkit - " + name);
 	}
 
-	private class MyExtensible implements Extensible {
-
-		@Override
-		public Context context() {
-			return context;
-		}
-
-		@Override
-		public void repaint() {
-			labelingComponent.requestRepaint();
-		}
-
-		@Override
-		public void addAction(String title, String command, Runnable action, String keyStroke) {
-			RunnableAction a = new RunnableAction(title, action);
-			a.putValue(Action.ACTION_COMMAND_KEY, command);
-			a.putValue(Action.ACCELERATOR_KEY, KeyStroke.getKeyStroke(keyStroke));
-			addAction(a);
-		}
-
-		@Override
-		public void addAction(AbstractNamedAction action) {
-			labelingComponent.addAction(action);
-		}
-
-		@Override
-		public < T, V extends Volatile< T >> RandomAccessibleInterval< V > wrapAsVolatile(
-				RandomAccessibleInterval<T> img)
-		{
-			return VolatileViews.wrapAsVolatile( img, queue );
-		}
-
-		@Override
-		public Object viewerSync() {
-			return labelingComponent.viewerSync();
-		}
-
-		@Override
-		public <T extends NumericType<T>> BdvStackSource<T> addLayer(RandomAccessibleInterval<T> interval, String prediction) {
-			return labelingComponent.addLayer(interval, prediction);
-		}
-
-		@Override
-		public Component dialogParent() {
-			return frame;
-		}
-
-		@Override
-		public void addBehaviour(Behaviour behaviour, String name, String defaultTriggers) {
-			labelingComponent.addBehaviour(behaviour, name, defaultTriggers);
-		}
-
-		@Override
-		public void addOverlayRenderer(OverlayRenderer overlay) {
-			labelingComponent.addOverlayRenderer(overlay);
-		}
-
-		@Override
-		public void displayRepaint() {
-			labelingComponent.displayRepaint();
-		}
-
-		@Override
-		public Labeling getLabeling() {
-			return labelingComponent.getLabeling();
-		}
-
-		@Override
-		public void setLabeling(Labeling labeling) {
-			labelingComponent.setLabeling(labeling);
-		}
-	}
 }

@@ -1,9 +1,8 @@
 package net.imglib2.atlas.actions;
 
 import net.imglib2.atlas.Extensible;
-import net.imglib2.atlas.InputImage;
+import net.imglib2.atlas.inputimage.InputImage;
 import net.imglib2.atlas.LabelingComponent;
-import net.imglib2.atlas.MainFrame;
 import net.imglib2.atlas.labeling.Labeling;
 import net.imglib2.atlas.labeling.LabelingSerializer;
 

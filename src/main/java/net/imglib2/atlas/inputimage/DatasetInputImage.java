@@ -1,8 +1,7 @@
-package net.imglib2.atlas;
+package net.imglib2.atlas.inputimage;
 
 import net.imagej.Dataset;
 import net.imagej.axis.Axes;
-import net.imagej.axis.AxisType;
 import net.imagej.axis.CalibratedAxis;
 import net.imglib2.RandomAccessibleInterval;
 import net.imglib2.converter.Converters;
@@ -16,14 +15,15 @@ import net.imglib2.view.composite.GenericComposite;
 import java.util.ArrayList;
 import java.util.List;
 
-public class InputImage {
+public class DatasetInputImage implements InputImage {
 
 	private final Dataset dataset;
 
-	public InputImage(Dataset dataset) {
+	public DatasetInputImage(Dataset dataset) {
 		this.dataset = dataset;
 	}
 
+	@Override
 	public RandomAccessibleInterval<? extends NumericType<?>> displayImage() {
 		if(dataset.dimension(Axes.CHANNEL) != 3)
 			return dataset;
@@ -49,6 +49,7 @@ public class InputImage {
 		return ARGBType.rgba(r, g, b, 255);
 	}
 
+	@Override
 	public ChannelSetting getChannelSetting() {
 		int channelIndex = dataset.dimensionIndex(Axes.CHANNEL);
 		if(channelIndex < 0)
@@ -61,18 +62,22 @@ public class InputImage {
 		throw new IllegalArgumentException("Image must be single channel or rgb.");
 	}
 
+	@Override
 	public int getSpatialDimensions() {
 		return dataset.axis(Axes.Z).isPresent() || dataset.axis(Axes.TIME).isPresent() ? 3 : 2;
 	}
 
+	@Override
 	public String getFilename() {
 		return dataset.getSource();
 	}
 
+	@Override
 	public String getName() {
 		return dataset.getName();
 	}
 
+	@Override
 	public List<CalibratedAxis> axes() {
 		List<CalibratedAxis> axes = new ArrayList<>();
 		for (int i = 0; i < dataset.numDimensions(); i++) {
