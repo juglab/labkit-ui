@@ -1,5 +1,6 @@
 package net.imglib2.atlas.actions;
 
+import net.imglib2.atlas.Extensible;
 import net.imglib2.atlas.MainFrame;
 import net.imglib2.atlas.classification.Classifier;
 
@@ -12,7 +13,7 @@ public class ClassifierIoAction extends AbstractFileIoAcion {
 
 	private final Classifier classifier;
 
-	public ClassifierIoAction(MainFrame.Extensible extensible, final Classifier classifier) {
+	public ClassifierIoAction(Extensible extensible, final Classifier classifier) {
 		super(extensible, new FileNameExtensionFilter("Classifier", "classifier"));
 		this.classifier = classifier;
 		initSaveAction("Save Classifier ...", "saveClassifier", this::save, "");

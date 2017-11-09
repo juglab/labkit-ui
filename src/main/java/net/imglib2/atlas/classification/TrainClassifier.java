@@ -2,6 +2,7 @@ package net.imglib2.atlas.classification;
 
 import java.util.function.Supplier;
 
+import net.imglib2.atlas.Extensible;
 import net.imglib2.atlas.MainFrame;
 import net.imglib2.atlas.labeling.Labeling;
 
@@ -13,7 +14,7 @@ public class TrainClassifier
 	private Supplier<Labeling> labelingSupplier;
 
 	public TrainClassifier(
-			final MainFrame.Extensible extensible,
+			final Extensible extensible,
 			final Classifier classifier,
 			final Supplier<Labeling> labelingSupplier,
 			final RandomAccessibleInterval<?> image

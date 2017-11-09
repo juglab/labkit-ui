@@ -16,7 +16,7 @@ import net.imglib2.ui.OverlayRenderer;
 public class MouseWheelChannelSelector implements ScrollBehaviour
 {
 
-	private final MainFrame.Extensible extensible;
+	private final Extensible extensible;
 
 	private final FeatureLayer featureLayer;
 
@@ -24,7 +24,7 @@ public class MouseWheelChannelSelector implements ScrollBehaviour
 
 	private final Overlay overlay;
 
-	public MouseWheelChannelSelector(final MainFrame.Extensible extensible, final FeatureLayer featureLayer )
+	public MouseWheelChannelSelector(final Extensible extensible, final FeatureLayer featureLayer )
 	{
 		super();
 		this.extensible = extensible;

@@ -1,5 +1,6 @@
 package net.imglib2.atlas.actions;
 
+import net.imglib2.atlas.Extensible;
 import net.imglib2.atlas.MainFrame;
 import net.imglib2.atlas.classification.Classifier;
 import net.imglib2.trainable_segmention.gui.FeatureSettingsGui;
@@ -9,10 +10,10 @@ import java.util.Optional;
 
 public class ChangeFeatureSettingsAction {
 
-	private final MainFrame.Extensible extensible;
+	private final Extensible extensible;
 	private final Classifier classifier;
 
-	public ChangeFeatureSettingsAction(MainFrame.Extensible extensible, Classifier classifier) {
+	public ChangeFeatureSettingsAction(Extensible extensible, Classifier classifier) {
 		this.extensible = extensible;
 		this.classifier = classifier;
 		extensible.addAction("Change Feature Settings ...", "changeFeatures", this::action, "");

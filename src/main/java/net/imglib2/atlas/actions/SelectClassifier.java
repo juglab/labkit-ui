@@ -1,6 +1,7 @@
 package net.imglib2.atlas.actions;
 
 import hr.irb.fastRandomForest.FastRandomForest;
+import net.imglib2.atlas.Extensible;
 import net.imglib2.atlas.MainFrame;
 import net.imglib2.trainable_segmention.RevampUtils;
 import org.scijava.ui.behaviour.util.RunnableAction;
@@ -20,7 +21,7 @@ public class SelectClassifier {
 
 	private final net.imglib2.atlas.classification.Classifier classifier;
 
-	public SelectClassifier(MainFrame.Extensible extensible, net.imglib2.atlas.classification.Classifier classifier) {
+	public SelectClassifier(Extensible extensible, net.imglib2.atlas.classification.Classifier classifier) {
 		this.classifier = classifier;
 		extensible.addAction("Select Classification Algorithm ...", "selectAlgorithm", this::run, "");
 	}

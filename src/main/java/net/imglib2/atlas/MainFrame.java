@@ -61,7 +61,7 @@ public class MainFrame {
 
 	private FeatureStack featureStack;
 
-	private Extensible extensible = new Extensible();
+	private MyExtensible extensible = new MyExtensible();
 
 	private final Context context;
 
@@ -150,20 +150,19 @@ public class MainFrame {
 		else frame.setTitle("Labkit - " + name);
 	}
 
-	public class Extensible {
+	private class MyExtensible implements Extensible {
 
-		private Extensible() {
-
-		}
-
+		@Override
 		public Context context() {
 			return context;
 		}
 
+		@Override
 		public void repaint() {
 			labelingComponent.requestRepaint();
 		}
 
+		@Override
 		public void addAction(String title, String command, Runnable action, String keyStroke) {
 			RunnableAction a = new RunnableAction(title, action);
 			a.putValue(Action.ACTION_COMMAND_KEY, command);
@@ -171,44 +170,54 @@ public class MainFrame {
 			addAction(a);
 		}
 
+		@Override
 		public void addAction(AbstractNamedAction action) {
 			labelingComponent.addAction(action);
 		}
 
+		@Override
 		public < T, V extends Volatile< T >> RandomAccessibleInterval< V > wrapAsVolatile(
 				RandomAccessibleInterval<T> img)
 		{
 			return VolatileViews.wrapAsVolatile( img, queue );
 		}
 
+		@Override
 		public Object viewerSync() {
 			return labelingComponent.viewerSync();
 		}
 
+		@Override
 		public <T extends NumericType<T>> BdvStackSource<T> addLayer(RandomAccessibleInterval<T> interval, String prediction) {
 			return labelingComponent.addLayer(interval, prediction);
 		}
 
+		@Override
 		public Component dialogParent() {
 			return frame;
 		}
 
+		@Override
 		public void addBehaviour(Behaviour behaviour, String name, String defaultTriggers) {
 			labelingComponent.addBehaviour(behaviour, name, defaultTriggers);
 		}
 
+		@Override
 		public void addOverlayRenderer(OverlayRenderer overlay) {
 			labelingComponent.addOverlayRenderer(overlay);
 		}
 
+		@Override
 		public void displayRepaint() {
 			labelingComponent.displayRepaint();
 		}
 
+		@Override
 		public Labeling getLabeling() {
 			return labelingComponent.getLabeling();
 		}
 
+		@Override
 		public void setLabeling(Labeling labeling) {
 			labelingComponent.setLabeling(labeling);
 		}

@@ -5,6 +5,7 @@ import bdv.util.BdvStackSource;
 import bdv.viewer.ViewerPanel;
 import net.imglib2.RandomAccessible;
 import net.imglib2.RandomAccessibleInterval;
+import net.imglib2.atlas.Extensible;
 import net.imglib2.atlas.FeatureStack;
 import net.imglib2.atlas.MainFrame;
 import net.imglib2.atlas.RandomAccessibleContainer;
@@ -29,7 +30,7 @@ import java.awt.*;
 public class PredictionLayer implements Classifier.Listener
 {
 
-	private final MainFrame.Extensible extensible;
+	private final Extensible extensible;
 
 	private final ColorMapProvider colorProvider;
 
@@ -38,7 +39,7 @@ public class PredictionLayer implements Classifier.Listener
 	private final FeatureStack featureStack;
 	private Img<ShortType> prediction;
 
-	public PredictionLayer(MainFrame.Extensible extensible, ColorMapProvider colorProvider, Classifier classifier, FeatureStack featureStack) {
+	public PredictionLayer(Extensible extensible, ColorMapProvider colorProvider, Classifier classifier, FeatureStack featureStack) {
 		super();
 		final RandomAccessible< VolatileARGBType > emptyPrediction = ConstantUtils.constantRandomAccessible( new VolatileARGBType( 0 ), featureStack.grid().numDimensions());
 		this.extensible = extensible;

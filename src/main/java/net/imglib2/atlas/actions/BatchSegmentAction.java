@@ -1,6 +1,7 @@
 package net.imglib2.atlas.actions;
 
 import net.imglib2.atlas.BatchSegmenter;
+import net.imglib2.atlas.Extensible;
 import net.imglib2.atlas.MainFrame;
 import net.imglib2.atlas.classification.Classifier;
 import net.imglib2.trainable_segmention.RevampUtils;
@@ -27,10 +28,10 @@ import java.util.List;
  */
 public class BatchSegmentAction {
 
-	private final MainFrame.Extensible extensible;
+	private final Extensible extensible;
 	private final Classifier classifier;
 
-	public BatchSegmentAction(MainFrame.Extensible extensible, Classifier classifier) {
+	public BatchSegmentAction(Extensible extensible, Classifier classifier) {
 		this.extensible = extensible;
 		this.classifier = classifier;
 		extensible.addAction("Batch Segment Images ...", "batchSegment", this::segmentImages, "");

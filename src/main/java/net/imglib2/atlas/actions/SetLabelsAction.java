@@ -1,6 +1,7 @@
 package net.imglib2.atlas.actions;
 
 import net.imglib2.Interval;
+import net.imglib2.atlas.Extensible;
 import net.imglib2.atlas.MainFrame;
 import net.imglib2.atlas.Preferences;
 import net.imglib2.atlas.labeling.Labeling;
@@ -15,9 +16,9 @@ import java.util.StringJoiner;
 public class SetLabelsAction {
 
 	private final Preferences preference;
-	private final MainFrame.Extensible extensible;
+	private final Extensible extensible;
 
-	public SetLabelsAction(MainFrame.Extensible extensible, Preferences preferences) {
+	public SetLabelsAction(Extensible extensible, Preferences preferences) {
 		this.extensible = extensible;
 		this.preference = preferences;
 		extensible.addAction("Change Available Labels ...", "changeLabels", this::changeLabels, "");

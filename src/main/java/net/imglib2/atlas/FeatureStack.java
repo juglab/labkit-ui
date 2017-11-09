@@ -28,7 +28,7 @@ import java.util.stream.IntStream;
 // TODO : Refactor FeatureStack, what it is actually used for, can it be remove / replaced by something more appropriate
 public class FeatureStack {
 
-	private final MainFrame.Extensible extensible;
+	private final Extensible extensible;
 
 	private FeatureCalculator filter = null;
 
@@ -42,7 +42,7 @@ public class FeatureStack {
 
 	private RandomAccessibleInterval<?> preparedOriginal;
 
-	public FeatureStack(MainFrame.Extensible extensible, RandomAccessibleInterval<?> original, Classifier classifier, boolean isTimeSeries) {
+	public FeatureStack(Extensible extensible, RandomAccessibleInterval<?> original, Classifier classifier, boolean isTimeSeries) {
 		this.extensible = extensible;
 		this.original = original;
 		this.grid = initGrid(original, isTimeSeries);

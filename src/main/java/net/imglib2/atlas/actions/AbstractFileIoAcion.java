@@ -1,5 +1,6 @@
 package net.imglib2.atlas.actions;
 
+import net.imglib2.atlas.Extensible;
 import net.imglib2.atlas.MainFrame;
 
 import javax.swing.*;
@@ -15,11 +16,11 @@ public abstract class AbstractFileIoAcion {
 
 	public static final FileFilter TIFF_FILTER = new FileNameExtensionFilter("TIF Image (*.tif, *.tiff)", "tif", "tiff");
 
-	private final MainFrame.Extensible extensible;
+	private final Extensible extensible;
 
 	private final JFileChooser fileChooser;
 
-	public AbstractFileIoAcion(MainFrame.Extensible extensible, FileFilter fileFilter) {
+	public AbstractFileIoAcion(Extensible extensible, FileFilter fileFilter) {
 		this.extensible = extensible;
 		this.fileChooser = new JFileChooser();
 		fileChooser.setAcceptAllFileFilterUsed(false);

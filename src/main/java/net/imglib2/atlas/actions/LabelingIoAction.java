@@ -1,5 +1,6 @@
 package net.imglib2.atlas.actions;
 
+import net.imglib2.atlas.Extensible;
 import net.imglib2.atlas.InputImage;
 import net.imglib2.atlas.LabelingComponent;
 import net.imglib2.atlas.MainFrame;
@@ -17,7 +18,7 @@ public class LabelingIoAction extends AbstractFileIoAcion {
 	private final LabelingComponent labelingComponent;
 	private final LabelingSerializer serializer;
 
-	public LabelingIoAction(MainFrame.Extensible extensible, LabelingComponent labelingComponent, InputImage inputImage) {
+	public LabelingIoAction(Extensible extensible, LabelingComponent labelingComponent, InputImage inputImage) {
 		super(extensible, new FileNameExtensionFilter("Labeling (*.labeling)", "labeling"));
 		this.labelingComponent = labelingComponent;
 		serializer = new LabelingSerializer(extensible.context());

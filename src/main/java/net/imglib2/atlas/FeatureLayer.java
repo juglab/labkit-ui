@@ -23,11 +23,11 @@ public class FeatureLayer {
 
 	private final RandomAccessibleContainer<VolatileFloatType> featureContainer;
 
-	private final MainFrame.Extensible extensible;
+	private final Extensible extensible;
 
 	private Choice selected;
 
-	public FeatureLayer(MainFrame.Extensible extensible, FeatureStack featureStack) {
+	public FeatureLayer(Extensible extensible, FeatureStack featureStack) {
 		this.extensible = extensible;
 		this.featureStack = featureStack;
 		this.featureContainer = new RandomAccessibleContainer<>(null);

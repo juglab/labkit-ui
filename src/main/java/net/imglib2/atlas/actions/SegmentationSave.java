@@ -4,6 +4,7 @@ import io.scif.img.ImgIOException;
 import io.scif.img.ImgSaver;
 import net.imglib2.RandomAccess;
 import net.imglib2.RandomAccessibleInterval;
+import net.imglib2.atlas.Extensible;
 import net.imglib2.atlas.MainFrame;
 import net.imglib2.atlas.ParallelUtils;
 import net.imglib2.atlas.classification.PredictionLayer;
@@ -28,7 +29,7 @@ public class SegmentationSave extends AbstractFileIoAcion {
 
 	private final PredictionLayer predictionLayer;
 
-	public SegmentationSave(MainFrame.Extensible extensible, PredictionLayer predictionLayer) {
+	public SegmentationSave(Extensible extensible, PredictionLayer predictionLayer) {
 		super(extensible, AbstractFileIoAcion.TIFF_FILTER);
 		this.predictionLayer = predictionLayer;
 		initSaveAction("Save Segmentation ...", "saveSegmentation", this::action, "");
