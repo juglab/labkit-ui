@@ -8,7 +8,7 @@ import org.scijava.Context;
 
 import javax.swing.*;
 
-public class SegmenationComponentTest {
+public class SegmentationComponentTest {
 
 	public static void main(String... args) {
 		JFrame frame = setupFrame();
