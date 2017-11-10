@@ -5,6 +5,7 @@ import net.imglib2.atlas.Notifier;
 import net.imglib2.atlas.labeling.Labeling;
 import net.imglib2.trainable_segmention.pixel_feature.settings.FeatureSettings;
 import net.imglib2.type.numeric.IntegerType;
+import net.imglib2.type.numeric.RealType;
 
 import java.util.List;
 
@@ -16,6 +17,8 @@ public interface Classifier
 	void reset(FeatureSettings features, List<String> classLabels);
 
 	void segment(RandomAccessibleInterval<?> image, RandomAccessibleInterval<? extends IntegerType<?>> labels );
+
+	void predict(RandomAccessibleInterval<?> image, RandomAccessibleInterval<? extends RealType<?>> prediction);
 
 	void train(RandomAccessibleInterval<?> image, Labeling groundTruth);
 

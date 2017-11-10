@@ -33,10 +33,8 @@ import net.imglib2.trainable_segmention.pixel_feature.settings.GlobalSettings;
 import net.imglib2.type.NativeType;
 import net.imglib2.type.numeric.IntegerType;
 import net.imglib2.type.numeric.NumericType;
-import net.imglib2.type.numeric.integer.UnsignedByteType;
 import net.imglib2.type.numeric.real.FloatType;
 import net.imglib2.ui.OverlayRenderer;
-import net.imglib2.view.Views;
 import org.scijava.Context;
 import org.scijava.ui.behaviour.Behaviour;
 import org.scijava.ui.behaviour.util.AbstractNamedAction;
@@ -126,6 +124,22 @@ public class SegmentationComponent {
 
 	public ActionMap getActions() {
 		return labelingComponent.getActions();
+	}
+
+	public <T extends IntegerType<T> & NativeType<T>> RandomAccessibleInterval<T> getSegmentation(T type) {
+		RandomAccessibleInterval<T> labels =
+				context.service(OpService.class).create().img(inputImage.displayImage(), type);
+		classifier.segment(inputImage.displayImage(), labels);
+		return labels;
+	}
+
+	public RandomAccessibleInterval<FloatType> getPrediction() {
+		RandomAccessibleInterval<FloatType> prediction =
+				context.service(OpService.class).create().img(
+						RevampUtils.appendDimensionToInterval(inputImage.displayImage(), 0, 1),
+						new FloatType());
+		classifier.predict(inputImage.displayImage(), prediction);
+		return prediction;
 	}
 
 	private class MyExtensible implements Extensible {

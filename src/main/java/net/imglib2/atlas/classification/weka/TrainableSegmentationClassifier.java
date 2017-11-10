@@ -14,7 +14,6 @@ import net.imglib2.atlas.labeling.Labeling;
 import net.imglib2.roi.IterableRegion;
 import net.imglib2.trainable_segmention.RevampUtils;
 import net.imglib2.trainable_segmention.classification.Segmenter;
-import net.imglib2.trainable_segmention.classification.Trainer;
 import net.imglib2.trainable_segmention.classification.Training;
 import net.imglib2.trainable_segmention.gson.GsonUtils;
 import net.imglib2.trainable_segmention.pixel_feature.settings.FeatureSettings;
@@ -94,6 +93,11 @@ implements Classifier
 	@Override
 	public void segment(RandomAccessibleInterval<?> image, RandomAccessibleInterval<? extends IntegerType<?>> labels) {
 		classifier.segment(labels, Views.extendBorder(image));
+	}
+
+	@Override
+	public void predict(RandomAccessibleInterval<?> image, RandomAccessibleInterval<? extends RealType<?>> prediction) {
+		classifier.predict(Views.collapse(prediction), Views.extendBorder(image));
 	}
 
 	@Override

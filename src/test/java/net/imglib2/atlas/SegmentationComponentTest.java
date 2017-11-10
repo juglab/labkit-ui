@@ -1,22 +1,57 @@
 package net.imglib2.atlas;
 
 import ij.ImagePlus;
+import net.imglib2.RandomAccessibleInterval;
 import net.imglib2.img.Img;
 import net.imglib2.img.display.imagej.ImageJFunctions;
 import net.imglib2.type.numeric.NumericType;
+import net.imglib2.type.numeric.integer.UnsignedByteType;
+import net.imglib2.type.numeric.real.FloatType;
+import net.imglib2.view.Views;
+import net.miginfocom.swing.MigLayout;
 import org.scijava.Context;
+import org.scijava.ui.behaviour.util.RunnableAction;
 
 import javax.swing.*;
+import java.awt.*;
 
 public class SegmentationComponentTest {
 
+	private final SegmentationComponent segmenter;
+
 	public static void main(String... args) {
+		new SegmentationComponentTest();
+	}
+
+	private SegmentationComponentTest() {
 		JFrame frame = setupFrame();
 		Img<? extends NumericType<?>> image = ImageJFunctions.wrap(new ImagePlus("/home/arzt/Documents/Datasets/beans.tif"));
 		Context context = new Context();
-		SegmentationComponent segmenter = new SegmentationComponent(context, frame, image);
+		segmenter = new SegmentationComponent(context, frame, image);
 		frame.add(segmenter.getComponent());
+		frame.add(getBottomPanel(), BorderLayout.PAGE_END);
 		frame.setVisible(true);
+	}
+
+	private JPanel getBottomPanel() {
+		JButton segmentation = new JButton(new RunnableAction("Show Segmentation", this::showSegmentation));
+		JButton prediction = new JButton(new RunnableAction("Show Prediction", this::showPrediction));
+		JPanel panel = new JPanel();
+		panel.setLayout(new MigLayout());
+		panel.add(segmentation);
+		panel.add(prediction);
+		return panel;
+	}
+
+	private void showSegmentation() {
+		RandomAccessibleInterval<UnsignedByteType> segmentation = segmenter.getSegmentation(new UnsignedByteType());
+		Views.iterable(segmentation).forEach(x -> x.mul(128));
+		ImageJFunctions.show(segmentation);
+	}
+
+	private void showPrediction() {
+		RandomAccessibleInterval<FloatType> prediction = segmenter.getPrediction();
+		ImageJFunctions.show(prediction);
 	}
 
 	private static JFrame setupFrame() {
