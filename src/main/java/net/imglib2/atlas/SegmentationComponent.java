@@ -25,12 +25,18 @@ import net.imglib2.atlas.inputimage.InputImage;
 import net.imglib2.atlas.labeling.Labeling;
 import net.imglib2.atlas.plugin.MeasureConnectedComponents;
 import net.imglib2.realtransform.AffineTransform3D;
+import net.imglib2.trainable_segmention.RevampUtils;
 import net.imglib2.trainable_segmention.pixel_feature.filter.GroupedFeatures;
 import net.imglib2.trainable_segmention.pixel_feature.filter.SingleFeatures;
 import net.imglib2.trainable_segmention.pixel_feature.settings.FeatureSettings;
 import net.imglib2.trainable_segmention.pixel_feature.settings.GlobalSettings;
+import net.imglib2.type.NativeType;
+import net.imglib2.type.numeric.IntegerType;
 import net.imglib2.type.numeric.NumericType;
+import net.imglib2.type.numeric.integer.UnsignedByteType;
+import net.imglib2.type.numeric.real.FloatType;
 import net.imglib2.ui.OverlayRenderer;
+import net.imglib2.view.Views;
 import org.scijava.Context;
 import org.scijava.ui.behaviour.Behaviour;
 import org.scijava.ui.behaviour.util.AbstractNamedAction;
@@ -67,19 +73,17 @@ public class SegmentationComponent {
 	public SegmentationComponent(Context context, JFrame dialogBoxOwner, InputImage image) {
 		this.dialogBoxOwner = dialogBoxOwner;
 		this.inputImage = image;
+		this.context = context;
 		RandomAccessibleInterval<? extends NumericType<?>> displayImage = image.displayImage();
 		Labeling labeling = new Labeling(Arrays.asList("background", "foreground"), displayImage);
-		LabelingComponent labeler = new LabelingComponent(dialogBoxOwner, displayImage, labeling, false);
-		panel.add(labeler.getComponent());
-		this.context = context;
-		RandomAccessibleInterval<? extends NumericType<?>> rawData = inputImage.displayImage();
-		labelingComponent = new LabelingComponent(dialogBoxOwner, rawData, labeling, false);
+		labelingComponent = new LabelingComponent(dialogBoxOwner, displayImage, labeling, false);
+		panel.add(labelingComponent.getComponent());
 		// --
 		GlobalSettings globalSettings = new GlobalSettings(inputImage.getChannelSetting(), inputImage.getSpatialDimensions(), 1.0, 16.0, 1.0);
 		OpService ops = context.service(OpService.class);
 		FeatureSettings setting = new FeatureSettings(globalSettings, SingleFeatures.identity(), GroupedFeatures.gauss());
 		classifier = new TrainableSegmentationClassifier(ops, new FastRandomForest(), labeling.getLabels(), setting );
-		featureStack = new FeatureStack(extensible, rawData, classifier, false);
+		featureStack = new FeatureStack(extensible, displayImage, classifier, false);
 		initClassification();
 	}
 
