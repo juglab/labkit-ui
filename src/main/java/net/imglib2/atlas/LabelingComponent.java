@@ -54,9 +54,9 @@ public class LabelingComponent {
 	{
 		this.dialogBoxOwner = dialogBoxOwner;
 
-		final int nDim = rawData.numDimensions();
+		final int nDim = rawData.numDimensions() - (isTimeSeries ? 1 : 0);
 
-		initBdv(isTimeSeries || nDim != 3);
+		initBdv(nDim  < 3);
 
 		actionsAndBehaviours = new ActionsAndBehaviours(bdvHandle);
 
@@ -107,7 +107,8 @@ public class LabelingComponent {
 				this.labels,
 				actionsAndBehaviours,
 				colorProvider,
-				sourceTransformation);
+				sourceTransformation,
+				isTimeSeries);
 		initColorMapUpdaterAction(labels.get().getLabels(), colorProvider);
 		bdvHandle.getViewerPanel().getDisplay().addOverlayRenderer( brushController.getBrushOverlay() );
 	}

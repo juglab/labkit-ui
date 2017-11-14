@@ -18,9 +18,11 @@ import java.util.List;
 public class DatasetInputImage implements InputImage {
 
 	private final Dataset dataset;
+	private boolean isTimeSeries;
 
 	public DatasetInputImage(Dataset dataset) {
 		this.dataset = dataset;
+		this.isTimeSeries = dataset.axis(Axes.TIME).isPresent();
 	}
 
 	@Override
@@ -64,7 +66,7 @@ public class DatasetInputImage implements InputImage {
 
 	@Override
 	public int getSpatialDimensions() {
-		return dataset.axis(Axes.Z).isPresent() || dataset.axis(Axes.TIME).isPresent() ? 3 : 2;
+		return dataset.numDimensions() - (isTimeSeries() ? 1 : 0);
 	}
 
 	@Override
@@ -86,5 +88,14 @@ public class DatasetInputImage implements InputImage {
 				axes.add(axis);
 		}
 		return axes;
+	}
+
+	@Override
+	public boolean isTimeSeries() {
+		return isTimeSeries;
+	}
+
+	public void setTimeSeries(boolean value) {
+		this.isTimeSeries = value;
 	}
 }

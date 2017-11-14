@@ -19,4 +19,6 @@ public interface InputImage {
 	String getName();
 
 	List<CalibratedAxis> axes();
+
+	boolean isTimeSeries();
 }

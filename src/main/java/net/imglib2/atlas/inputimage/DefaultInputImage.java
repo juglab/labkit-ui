@@ -18,6 +18,8 @@ public class DefaultInputImage implements InputImage {
 
 	private final NumericType type;
 
+	private boolean isTimeSeries = false;
+
 	public DefaultInputImage(RandomAccessibleInterval<? extends NumericType<?>> image) {
 		this.image = image;
 		this.type = Util.getTypeFromInterval(image);
@@ -35,7 +37,7 @@ public class DefaultInputImage implements InputImage {
 
 	@Override
 	public int getSpatialDimensions() {
-		return image.numDimensions();
+		return image.numDimensions() - (isTimeSeries() ? 1 : 0);
 	}
 
 	@Override
@@ -53,5 +55,14 @@ public class DefaultInputImage implements InputImage {
 		return IntStream.range(0, image.numDimensions())
 				.mapToObj(ignore -> new DefaultLinearAxis())
 				.collect(Collectors.toList());
+	}
+
+	@Override
+	public boolean isTimeSeries() {
+		return isTimeSeries;
+	}
+
+	public void setTimeSeries(boolean value) {
+		isTimeSeries = value;
 	}
 }

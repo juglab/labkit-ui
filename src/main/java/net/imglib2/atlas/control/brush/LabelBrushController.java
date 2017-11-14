@@ -68,6 +68,8 @@ public class LabelBrushController
 
 	private int currentLabel = 0;
 
+	boolean sliceTime;
+
 	public BrushOverlay getBrushOverlay()
 	{
 		return brushOverlay;
@@ -87,11 +89,14 @@ public class LabelBrushController
 			final ViewerPanel viewer,
 			final Holder<Labeling> labels,
 			final ActionsAndBehaviours behaviors,
-			final ColorMapProvider colorProvider, AffineTransform3D labelTransform)
+			final ColorMapProvider colorProvider,
+			final AffineTransform3D labelTransform,
+			final boolean sliceTime)
 	{
 		this.viewer = viewer;
 		this.labelTransform = labelTransform;
 		this.brushOverlay = new BrushOverlay( viewer, "", colorProvider );
+		this.sliceTime = sliceTime;
 		updateLabeling(labels.get());
 		labels.notifier().add(this::updateLabeling);
 
@@ -142,6 +147,9 @@ public class LabelBrushController
 			{
 				final int v = getValue();
 				RandomAccessibleInterval<BitType> label = regions.get(v);
+				if(sliceTime)
+					label = Views.hyperSlice(label, label.numDimensions()-1,
+							viewer.getState().getCurrentTimepoint());
 				final RandomAccessible<BitType> extended = Views.extendValue(label, new BitType(false));
 				Neighborhood<BitType> neighborhood = pixelsGenerator.create(extended.randomAccess(),
 						toLongArray(coords, extended.numDimensions()), brushRadius);

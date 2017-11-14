@@ -74,7 +74,7 @@ public class SegmentationComponent {
 		this.context = context;
 		RandomAccessibleInterval<? extends NumericType<?>> displayImage = image.displayImage();
 		Labeling labeling = new Labeling(Arrays.asList("background", "foreground"), displayImage);
-		labelingComponent = new LabelingComponent(dialogBoxOwner, displayImage, labeling, false);
+		labelingComponent = new LabelingComponent(dialogBoxOwner, displayImage, labeling, inputImage.isTimeSeries());
 		panel.add(labelingComponent.getComponent());
 		// --
 		GlobalSettings globalSettings = new GlobalSettings(inputImage.getChannelSetting(), inputImage.getSpatialDimensions(), 1.0, 16.0, 1.0);

@@ -79,6 +79,15 @@ public class MainFrame {
 		this.context = context;
 		this.preferences = new Preferences(context);
 		this.inputImage = new DatasetInputImage(dataset);
+		boolean isTimeSeries = dataset.numDimensions() > 2;
+		if(dataset.numDimensions() == 3) {
+			int result = JOptionPane.showConfirmDialog(null,
+					"Is the given data a time series",
+					"Labkit",
+					JOptionPane.YES_NO_OPTION);
+			isTimeSeries = result == JOptionPane.YES_OPTION;
+		}
+		inputImage.setTimeSeries(isTimeSeries);
 		this.segmentationComponent = new SegmentationComponent(context, frame, inputImage);
 		segmentationComponent.setLabeling(getInitialLabeling());
 		// --
