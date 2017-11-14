@@ -5,7 +5,7 @@
 	<parent>
 		<groupId>org.scijava</groupId>
 		<artifactId>pom-scijava</artifactId>
-		<version>16.2.0</version>
+		<version>17.1.1</version>
 	</parent>
 
 	<groupId>net.imglib2</groupId>
@@ -95,7 +95,8 @@ Martin Horn, Steffen Jaensch, Lee Kamentsky, Larry Lindsey, Melissa Linkert,
 Mark Longair, Brian Northan, Nick Perry, Curtis Rueden, Johannes Schindelin,
 Jean-Yves Tinevez and Michael Zinsmaier.</license.copyrightOwners>
 
-	<enforcer.skip>true</enforcer.skip>
+		<enforcer.skip>true</enforcer.skip>
+		<bigdataviewer-vistools.version>1.0.0-beta-6</bigdataviewer-vistools.version>
 	</properties>
 
 	<dependencies>
@@ -110,7 +111,6 @@ Jean-Yves Tinevez and Michael Zinsmaier.</license.copyrightOwners>
 		<dependency>
 			<groupId>net.imglib2</groupId>
 			<artifactId>imglib2-cache</artifactId>
-			<version>1.0.0-beta-7</version>
 		</dependency>
 		<dependency>
 			<groupId>net.imglib2</groupId>
@@ -124,7 +124,6 @@ Jean-Yves Tinevez and Michael Zinsmaier.</license.copyrightOwners>
 		<dependency>
 			<groupId>sc.fiji</groupId>
 			<artifactId>bigdataviewer-vistools</artifactId>
-			<version>1.0.0-beta-6</version>
 		</dependency>
 		<dependency>
 			<groupId>net.imglib2</groupId>
@@ -132,8 +131,7 @@ Jean-Yves Tinevez and Michael Zinsmaier.</license.copyrightOwners>
 		</dependency>
 		<dependency>
 			<groupId>nz.ac.waikato.cms.weka</groupId>
-			<artifactId>weka-stable</artifactId>
-			<version>3.8.0</version>
+			<artifactId>weka-dev</artifactId>
 		</dependency>
 		<dependency>
 			<groupId>sc.fiji</groupId>
