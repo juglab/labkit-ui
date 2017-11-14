@@ -3,18 +3,20 @@ package net.imglib2.atlas.control.brush;
 import java.awt.Cursor;
 import java.awt.event.ActionEvent;
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 import net.imglib2.*;
 import net.imglib2.algorithm.fill.Filter;
 import net.imglib2.algorithm.neighborhood.DiamondShape;
+import net.imglib2.algorithm.neighborhood.Neighborhood;
 import net.imglib2.atlas.ActionsAndBehaviours;
 import net.imglib2.atlas.Holder;
 import net.imglib2.atlas.color.ColorMapProvider;
-import net.imglib2.atlas.control.brush.neighborhood.PaintPixelsGenerator;
+import net.imglib2.atlas.control.brush.neighborhood.NeighborhoodFactories;
+import net.imglib2.atlas.control.brush.neighborhood.NeighborhoodFactory;
 import net.imglib2.atlas.labeling.Labeling;
 import net.imglib2.type.Type;
 import net.imglib2.type.logic.BitType;
@@ -55,7 +57,8 @@ public class LabelBrushController
 
 	private List<String> labels;
 
-	private final PaintPixelsGenerator< BitType, ? extends Iterator<BitType> > pixelsGenerator;
+	private final NeighborhoodFactory pixelsGenerator =
+		NeighborhoodFactories.hyperSphere();
 
 	final private AffineTransform3D labelTransform;
 
@@ -83,12 +86,10 @@ public class LabelBrushController
 	public LabelBrushController(
 			final ViewerPanel viewer,
 			final Holder<Labeling> labels,
-			final PaintPixelsGenerator< BitType, ? extends Iterator<BitType>> pixelsGenerator,
 			final ActionsAndBehaviours behaviors,
 			final ColorMapProvider colorProvider, AffineTransform3D labelTransform)
 	{
 		this.viewer = viewer;
-		this.pixelsGenerator = pixelsGenerator;
 		this.labelTransform = labelTransform;
 		this.brushOverlay = new BrushOverlay( viewer, "", colorProvider );
 		updateLabeling(labels.get());
@@ -142,15 +143,17 @@ public class LabelBrushController
 				final int v = getValue();
 				RandomAccessibleInterval<BitType> label = regions.get(v);
 				final RandomAccessible<BitType> extended = Views.extendValue(label, new BitType(false));
-				final Iterator< BitType > it = pixelsGenerator.getPaintPixels( extended, coords, viewer.getState().getCurrentTimepoint(), brushRadius );
-				while ( it.hasNext() )
-				{
-					final BitType val = it.next();
-					if ( Intervals.contains( label, ( Localizable ) it ) )
-						val.set( value );
-				}
+				Neighborhood<BitType> neighborhood = pixelsGenerator.create(extended.randomAccess(),
+						toLongArray(coords, extended.numDimensions()), brushRadius);
+				neighborhood.forEach(pixel -> pixel.set( value ));
 			}
 
+		}
+
+		private long[] toLongArray(RealLocalizable coords, int numDimensions) {
+			return IntStream.range(0, numDimensions)
+					.mapToLong(d -> (long) coords.getDoublePosition(d))
+					.toArray();
 		}
 
 		private void paint(RealLocalizable a, RealLocalizable b) {

@@ -2,23 +2,16 @@ package net.imglib2.atlas;
 
 import bdv.util.*;
 import bdv.viewer.DisplayMode;
-import net.imglib2.Interval;
 import net.imglib2.RandomAccessibleInterval;
 import net.imglib2.atlas.actions.ToggleVisibility;
 import net.imglib2.atlas.color.ColorMapProvider;
 import net.imglib2.atlas.color.UpdateColormap;
 import net.imglib2.atlas.control.brush.*;
-import net.imglib2.atlas.control.brush.neighborhood.NeighborhoodFactories;
-import net.imglib2.atlas.control.brush.neighborhood.NeighborhoodPixelsGenerator;
-import net.imglib2.atlas.control.brush.neighborhood.NeighborhoodPixelsGeneratorForTimeSeries;
-import net.imglib2.atlas.control.brush.neighborhood.PaintPixelsGenerator;
 import net.imglib2.atlas.labeling.Labeling;
 import net.imglib2.atlas.labeling.LabelsLayer;
 import net.imglib2.img.cell.CellGrid;
 import net.imglib2.realtransform.AffineTransform3D;
 import net.imglib2.trainable_segmention.RevampUtils;
-import net.imglib2.type.logic.BitType;
-import net.imglib2.type.numeric.ARGBType;
 import net.imglib2.type.numeric.NumericType;
 import net.imglib2.ui.OverlayRenderer;
 import net.imglib2.util.Intervals;
@@ -28,7 +21,6 @@ import org.scijava.ui.behaviour.util.AbstractNamedAction;
 
 import javax.swing.*;
 import java.awt.*;
-import java.util.Iterator;
 import java.util.List;
 
 public class LabelingComponent {
@@ -104,13 +96,6 @@ public class LabelingComponent {
 		bdvHandle.getViewerPanel().setDisplayMode( DisplayMode.FUSED );
 	}
 
-	private PaintPixelsGenerator<BitType, ? extends Iterator<BitType>> initPixelGenerator(boolean isTimeSeries, int numDimensions) {
-		if ( isTimeSeries )
-			return new NeighborhoodPixelsGeneratorForTimeSeries<>(numDimensions - 1, new NeighborhoodPixelsGenerator<BitType>(NeighborhoodFactories.hyperSphere(), 1.0));
-		else
-			return new NeighborhoodPixelsGenerator<>(NeighborhoodFactories.<BitType>hyperSphere(), 1.0);
-	}
-
 	private void initLabelsLayer(Labeling labeling, boolean isTimeSeries) {
 		this.labels = new Holder<>(labeling);
 		colorProvider = new ColorMapProvider(this.labels);
@@ -120,7 +105,6 @@ public class LabelingComponent {
 		final LabelBrushController brushController = new LabelBrushController(
 				bdvHandle.getViewerPanel(),
 				this.labels,
-				initPixelGenerator(isTimeSeries, this.labels.get().numDimensions()),
 				actionsAndBehaviours,
 				colorProvider,
 				sourceTransformation);
