@@ -2,9 +2,8 @@ package net.imglib2.atlas.actions;
 
 import hr.irb.fastRandomForest.FastRandomForest;
 import net.imglib2.atlas.Extensible;
-import net.imglib2.atlas.MainFrame;
 import net.imglib2.trainable_segmention.RevampUtils;
-import org.scijava.ui.behaviour.util.RunnableAction;
+import net.miginfocom.swing.MigLayout;
 import weka.classifiers.Classifier;
 import weka.core.PluginManager;
 import weka.gui.GenericObjectEditor;
@@ -31,31 +30,22 @@ public class SelectClassifier {
 	}
 
 	public static Classifier runStatic(Component dialogParent, Classifier defaultValue) {
+		JCheckBox checkBox = new JCheckBox("FastRandomForest");
 		GenericObjectEditor editor = new GenericObjectEditor();
 		editor.setClassType(Classifier.class);
-		editor.setValue(defaultValue);
-		JOptionPane.showMessageDialog(dialogParent, editor.getCustomPanel(), "Select Classification Algorithm", JOptionPane.PLAIN_MESSAGE);
-		return (Classifier) editor.getValue();
+		if(defaultValue instanceof FastRandomForest)
+			checkBox.setSelected(true);
+		else
+			editor.setValue(defaultValue);
+		JPanel panel = new JPanel();
+		panel.setLayout(new MigLayout());
+		panel.add(checkBox, "wrap");
+		panel.add(editor.getCustomPanel());
+		JOptionPane.showMessageDialog(dialogParent, panel, "Select Classification Algorithm", JOptionPane.PLAIN_MESSAGE);
+		return checkBox.isSelected() ? new FastRandomForest() : (Classifier) editor.getValue();
 	}
 
 	public static void main(String... args) {
 		runStatic(null, new FastRandomForest());
-	}
-
-	static {
-		RevampUtils.wrapException(() -> {
-			Field field = GenericObjectEditor.class.getDeclaredField("EDITOR_PROPERTIES");
-			field.setAccessible(true);
-			Properties editorProperties = (Properties)field.get(null);
-			String key = "weka.classifiers.Classifier";
-			String value = editorProperties.getProperty(key);
-			value += ",hr.irb.fastRandomForest.FastRandomForest";
-			editorProperties.setProperty(key, value);
-			//new Exception("insert").printStackTrace();
-			//System.err.println("value: " + value);
-
-			// add classifiers from properties (needed after upgrade to WEKA version 3.7.11)
-			PluginManager.addFromProperties(editorProperties);
-		});
 	}
 }
