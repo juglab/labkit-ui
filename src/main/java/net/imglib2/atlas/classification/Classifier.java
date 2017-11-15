@@ -20,7 +20,7 @@ public interface Classifier
 
 	void predict(RandomAccessibleInterval<?> image, RandomAccessibleInterval<? extends RealType<?>> prediction);
 
-	void train(RandomAccessibleInterval<?> image, Labeling groundTruth);
+	void train(List<? extends RandomAccessibleInterval<?>> image, List<? extends Labeling> groundTruth);
 
 	boolean isTrained();
 

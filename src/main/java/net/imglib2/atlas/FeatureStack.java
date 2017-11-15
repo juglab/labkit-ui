@@ -44,7 +44,7 @@ public class FeatureStack {
 	private static int[] initCellDimension(int n, boolean isTimeSeries) {
 		if(n == 3)
 			return new int[] {256, 256, 4};
-		return isTimeSeries ? RevampUtils.extend(initCellDimension(n - 1), 2) :
+		return isTimeSeries ? RevampUtils.extend(initCellDimension(n - 1), 1) :
 				initCellDimension(n);
 	}
 

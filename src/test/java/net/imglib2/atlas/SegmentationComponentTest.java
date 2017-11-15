@@ -27,7 +27,7 @@ public class SegmentationComponentTest {
 		JFrame frame = setupFrame();
 		Img<? extends NumericType<?>> image = ImageJFunctions.wrap(new ImagePlus("/home/arzt/Documents/Datasets/beans.tif"));
 		Context context = new Context();
-		segmenter = new SegmentationComponent(context, frame, image);
+		segmenter = new SegmentationComponent(context, frame, image, false);
 		frame.add(segmenter.getComponent());
 		frame.add(getBottomPanel(), BorderLayout.PAGE_END);
 		frame.setVisible(true);

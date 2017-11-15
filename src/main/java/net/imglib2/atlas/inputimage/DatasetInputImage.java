@@ -57,8 +57,6 @@ public class DatasetInputImage implements InputImage {
 		if(channelIndex < 0)
 			return ChannelSetting.SINGLE;
 		long numberOfChannels = dataset.dimension(channelIndex);
-		if(numberOfChannels == 1)
-			return ChannelSetting.SINGLE;
 		if(numberOfChannels == 3)
 			return ChannelSetting.RGB;
 		throw new IllegalArgumentException("Image must be single channel or rgb.");
@@ -66,7 +64,7 @@ public class DatasetInputImage implements InputImage {
 
 	@Override
 	public int getSpatialDimensions() {
-		return dataset.numDimensions() - (isTimeSeries() ? 1 : 0);
+		return dataset.numDimensions() - (isTimeSeries() ? 1 : 0) - (hasColorChannel() ? 1 : 0);
 	}
 
 	@Override
@@ -93,6 +91,10 @@ public class DatasetInputImage implements InputImage {
 	@Override
 	public boolean isTimeSeries() {
 		return isTimeSeries;
+	}
+
+	private boolean hasColorChannel() {
+		return dataset.axis(Axes.CHANNEL).isPresent();
 	}
 
 	public void setTimeSeries(boolean value) {

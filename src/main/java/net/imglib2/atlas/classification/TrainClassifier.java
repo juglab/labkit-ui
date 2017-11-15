@@ -1,6 +1,8 @@
 package net.imglib2.atlas.classification;
 
+import java.util.Collections;
 import java.util.function.Supplier;
+import java.util.stream.Collectors;
 
 import net.imglib2.atlas.Extensible;
 import net.imglib2.atlas.MainFrame;
@@ -34,7 +36,7 @@ public class TrainClassifier
 	{
 		try
 		{
-			classifier.train( image, labelingSupplier.get());
+			classifier.train(Collections.singletonList(image), Collections.singletonList(labelingSupplier.get()));
 		}
 		catch ( final Exception e1 )
 		{

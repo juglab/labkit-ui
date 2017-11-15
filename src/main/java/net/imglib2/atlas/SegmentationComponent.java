@@ -19,6 +19,7 @@ import net.imglib2.atlas.actions.ZAxisScaling;
 import net.imglib2.atlas.classification.Classifier;
 import net.imglib2.atlas.classification.PredictionLayer;
 import net.imglib2.atlas.classification.TrainClassifier;
+import net.imglib2.atlas.classification.weka.TimeSeriesClassifier;
 import net.imglib2.atlas.classification.weka.TrainableSegmentationClassifier;
 import net.imglib2.atlas.inputimage.DefaultInputImage;
 import net.imglib2.atlas.inputimage.InputImage;
@@ -64,8 +65,17 @@ public class SegmentationComponent {
 
 	private final InputImage inputImage;
 
-	public SegmentationComponent(Context context, JFrame dialogBoxOwner, RandomAccessibleInterval<? extends NumericType<?>> image) {
-		this(context, dialogBoxOwner, new DefaultInputImage(image));
+	public SegmentationComponent(Context context,
+			JFrame dialogBoxOwner,
+			RandomAccessibleInterval<? extends NumericType<?>> image,
+			boolean isTimeSeries) {
+		this(context, dialogBoxOwner, initInputImage(image, isTimeSeries));
+	}
+
+	private static DefaultInputImage initInputImage(RandomAccessibleInterval<? extends NumericType<?>> image, boolean isTimeSeries) {
+		DefaultInputImage defaultInputImage = new DefaultInputImage(image);
+		defaultInputImage.setTimeSeries(isTimeSeries);
+		return defaultInputImage;
 	}
 
 	public SegmentationComponent(Context context, JFrame dialogBoxOwner, InputImage image) {
@@ -80,8 +90,9 @@ public class SegmentationComponent {
 		GlobalSettings globalSettings = new GlobalSettings(inputImage.getChannelSetting(), inputImage.getSpatialDimensions(), 1.0, 16.0, 1.0);
 		OpService ops = context.service(OpService.class);
 		FeatureSettings setting = new FeatureSettings(globalSettings, SingleFeatures.identity(), GroupedFeatures.gauss());
-		classifier = new TrainableSegmentationClassifier(ops, new FastRandomForest(), labeling.getLabels(), setting );
-		featureStack = new FeatureStack(displayImage, false);
+		TrainableSegmentationClassifier classifier1 = new TrainableSegmentationClassifier(ops, new FastRandomForest(), labeling.getLabels(), setting);
+		this.classifier = inputImage.isTimeSeries() ? new TimeSeriesClassifier(classifier1) : classifier1;
+		featureStack = new FeatureStack(displayImage, inputImage.isTimeSeries());
 		initClassification();
 	}
 

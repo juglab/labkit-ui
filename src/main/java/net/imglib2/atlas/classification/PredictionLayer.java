@@ -1,13 +1,10 @@
 package net.imglib2.atlas.classification;
 
-import bdv.util.BdvSource;
 import bdv.util.BdvStackSource;
-import bdv.viewer.ViewerPanel;
 import net.imglib2.RandomAccessible;
 import net.imglib2.RandomAccessibleInterval;
 import net.imglib2.atlas.Extensible;
 import net.imglib2.atlas.FeatureStack;
-import net.imglib2.atlas.MainFrame;
 import net.imglib2.atlas.RandomAccessibleContainer;
 import net.imglib2.atlas.actions.ToggleVisibility;
 import net.imglib2.atlas.color.ColorMapProvider;
@@ -95,7 +92,8 @@ public class PredictionLayer implements Classifier.Listener
 
 	private void updatePrediction(Classifier classifier) {
 		final DiskCachedCellImgFactory< ShortType > factory = new DiskCachedCellImgFactory<>(setupDiskCachedCellImgOptions(featureStack.grid()));
-		CellLoader<ShortType> loader = target -> classifier.segment(featureStack.compatibleOriginal(), target);
+		RandomAccessibleInterval<?> image = featureStack.compatibleOriginal();
+		CellLoader<ShortType> loader = target -> classifier.segment(image, target);
 		prediction = factory.create( featureStack.grid().getImgDimensions(), new ShortType(), loader );
 	}
 
