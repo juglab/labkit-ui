@@ -81,7 +81,7 @@ public class SegmentationComponent {
 		OpService ops = context.service(OpService.class);
 		FeatureSettings setting = new FeatureSettings(globalSettings, SingleFeatures.identity(), GroupedFeatures.gauss());
 		classifier = new TrainableSegmentationClassifier(ops, new FastRandomForest(), labeling.getLabels(), setting );
-		featureStack = new FeatureStack(extensible, displayImage, classifier, false);
+		featureStack = new FeatureStack(displayImage, false);
 		initClassification();
 	}
 
@@ -95,7 +95,6 @@ public class SegmentationComponent {
 		new TrainClassifier(extensible, classifier, () -> labelingComponent.getLabeling(), featureStack.compatibleOriginal());
 		PredictionLayer predictionLayer = new PredictionLayer(extensible, labelingComponent.colorProvider(), classifier, featureStack);
 		new ClassifierIoAction(extensible, this.classifier);
-		new FeatureLayer(extensible, featureStack);
 		new LabelingIoAction(extensible, labelingComponent, inputImage);
 		new SegmentationSave(extensible, predictionLayer);
 		new OpenImageAction(extensible);
