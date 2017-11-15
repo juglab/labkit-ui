@@ -98,7 +98,7 @@ public class Labeling extends AbstractWrappedInterval implements RandomAccessibl
 		return Collections.unmodifiableMap(regions);
 	}
 
-	private Cursor<?> sparsityCursor() {
+	public Cursor<?> sparsityCursor() {
 		RandomAccessibleInterval<?> indexImg = imgLabeling.getIndexImg();
 		if(indexImg instanceof SparseRandomAccessIntType)
 			return ((SparseRandomAccessIntType) indexImg).sparseCursor();
