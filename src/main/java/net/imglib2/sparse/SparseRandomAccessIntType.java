@@ -1,5 +1,7 @@
 package net.imglib2.sparse;
 
+import gnu.trove.impl.Constants;
+import gnu.trove.impl.hash.THash;
 import gnu.trove.map.hash.TLongIntHashMap;
 import net.imglib2.AbstractWrappedInterval;
 import net.imglib2.Cursor;
@@ -20,11 +22,18 @@ import net.imglib2.type.numeric.integer.IntType;
 public class SparseRandomAccessIntType extends AbstractWrappedInterval<Interval> implements RandomAccessibleInterval<IntType> {
 
 	private final IntervalIndexer2 indexer;
-	private final TLongIntHashMap values = new TLongIntHashMap();
+	private final TLongIntHashMap values;
+	private final int noEntryValue;
 
 	public SparseRandomAccessIntType(Interval source) {
+		this(source, 0);
+	}
+
+	public SparseRandomAccessIntType(Interval source, int noEntryValue) {
 		super(source);
 		this.indexer = new IntervalIndexer2(source);
+		this.values = new TLongIntHashMap(Constants.DEFAULT_CAPACITY, Constants.DEFAULT_LOAD_FACTOR, -1, noEntryValue);
+		this.noEntryValue = noEntryValue;
 	}
 
 	@Override
@@ -53,7 +62,7 @@ public class SparseRandomAccessIntType extends AbstractWrappedInterval<Interval>
 
 	private void set(MyRandomAccess position, int value) {
 		Long index = indexer.positionToIndex(position);
-		if(value == 0)
+		if(value == noEntryValue)
 			values.remove(index);
 		else
 			values.put(index, value);
