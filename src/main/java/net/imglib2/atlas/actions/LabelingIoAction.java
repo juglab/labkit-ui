@@ -1,10 +1,14 @@
 package net.imglib2.atlas.actions;
 
+import net.imglib2.RandomAccessibleInterval;
+import net.imglib2.atlas.AtlasUtils;
 import net.imglib2.atlas.Extensible;
 import net.imglib2.atlas.inputimage.InputImage;
 import net.imglib2.atlas.LabelingComponent;
 import net.imglib2.atlas.labeling.Labeling;
 import net.imglib2.atlas.labeling.LabelingSerializer;
+import net.imglib2.img.display.imagej.ImageJFunctions;
+import net.imglib2.type.numeric.IntegerType;
 
 import javax.swing.filechooser.FileNameExtensionFilter;
 import java.io.IOException;
@@ -33,6 +37,10 @@ public class LabelingIoAction extends AbstractFileIoAcion {
 			}
 		}, "ctrl S");
 		initOpenAction("Open Labeling ...", "openLabeling", this::open, "ctrl O");
+		extensible.addAction("Show Labeling in ImageJ", "showLabeling", () -> {
+			RandomAccessibleInterval<? extends IntegerType<?>> img = labelingComponent.getLabeling().getIndexImg();
+			ImageJFunctions.show(AtlasUtils.uncheckedCast(img), "Labeling");
+		}, "");
 	}
 
 	private void open(String filename) throws IOException {
