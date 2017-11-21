@@ -29,6 +29,7 @@ public class MenuBar extends JMenuBar {
 		addMenu("Labels")
 				.addItem("openLabeling")
 				.addItem("saveLabeling")
+				.addItem("showLabeling")
 				.addItem("changeLabels")
 				.addItem("clearLabeling");
 		addMenu("Classifier")
@@ -37,7 +38,8 @@ public class MenuBar extends JMenuBar {
 				.addItem("openClassifier")
 				.addItem("showSegmentation")
 				.addItem("saveSegmentation")
-				.addItem("batchSegment")
+				.addItem("showPrediction")
+				.addItem("savePrediction")
 				.addItem("changeFeatures")
 				.addItem("selectAlgorithm");
 		addMenu("View")

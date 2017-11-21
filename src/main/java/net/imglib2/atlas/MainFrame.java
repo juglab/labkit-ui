@@ -46,11 +46,9 @@ public class MainFrame {
 		this.segmentationComponent = new SegmentationComponent(context, frame, inputImage);
 		segmentationComponent.setLabeling(getInitialLabeling());
 		// --
-		SetLabelsAction setlabels = new SetLabelsAction(segmentationComponent::getLabeling,
-				segmentationComponent::setLabeling, preferences);
+		new SetLabelsAction(segmentationComponent, preferences);
 		setTitle();
 		MenuBar menubar = new MenuBar(segmentationComponent.getActions());
-		menubar.add(setlabels.getMenu());
 		frame.setJMenuBar(menubar);
 		frame.add(segmentationComponent.getComponent());
 		frame.setVisible(true);
