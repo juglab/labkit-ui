@@ -11,7 +11,7 @@ import org.scijava.plugin.Plugin;
  * @author Matthias Arzt
  */
 @Plugin(type = Command.class, menuPath = "Plugins > Segmentation > Labkit")
-public class TrainableSegmentationRevamp implements Command {
+public class LabkitPlugin implements Command {
 
 	@Parameter
 	private Context context;
@@ -21,6 +21,6 @@ public class TrainableSegmentationRevamp implements Command {
 
 	@Override
 	public void run() {
-		new MainFrame(context, dataset);
+		new MainFrame(context, dataset, false);
 	}
 }

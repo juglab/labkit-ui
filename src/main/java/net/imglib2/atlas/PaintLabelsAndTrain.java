@@ -10,7 +10,7 @@ public class PaintLabelsAndTrain
 	private static final String cells = "/home/arzt/Documents/Notes/Tr2d/ProjectFiles/raw.tif";
 
 	public static void start(String filename) {
-		MainFrame.open(filename);
+		MainFrame.open(null, filename, false);
 	}
 
 	public static void main( final String[] args ) {
