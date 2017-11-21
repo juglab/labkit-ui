@@ -15,8 +15,11 @@ import net.imglib2.converter.Converter;
 import net.imglib2.converter.Converters;
 import net.imglib2.img.Img;
 import net.imglib2.img.cell.CellGrid;
+import net.imglib2.trainable_segmention.RevampUtils;
+import net.imglib2.type.NativeType;
 import net.imglib2.type.numeric.ARGBType;
 import net.imglib2.type.numeric.integer.ShortType;
+import net.imglib2.type.numeric.real.FloatType;
 import net.imglib2.type.volatiles.VolatileARGBType;
 import net.imglib2.type.volatiles.VolatileShortType;
 import net.imglib2.util.ConstantUtils;
@@ -31,10 +34,13 @@ public class PredictionLayer implements Classifier.Listener
 
 	private final ColorMapProvider colorProvider;
 
-	private final RandomAccessibleContainer< VolatileARGBType > predictionContainer;
+	private final RandomAccessibleContainer< VolatileARGBType > segmentationContainer;
 
 	private final FeatureStack featureStack;
-	private Img<ShortType> prediction;
+
+	private Img<ShortType> segmentation;
+
+	private Img<FloatType> prediction;
 
 	public PredictionLayer(Extensible extensible, ColorMapProvider colorProvider, Classifier classifier, FeatureStack featureStack) {
 		super();
@@ -42,8 +48,8 @@ public class PredictionLayer implements Classifier.Listener
 		this.extensible = extensible;
 		this.featureStack = featureStack;
 		this.colorProvider = colorProvider;
-		this.predictionContainer = new RandomAccessibleContainer<>( emptyPrediction );
-		BdvStackSource<VolatileARGBType> source = extensible.addLayer(Views.interval(predictionContainer, featureStack.interval()), "prediction");
+		this.segmentationContainer = new RandomAccessibleContainer<>( emptyPrediction );
+		BdvStackSource<VolatileARGBType> source = extensible.addLayer(Views.interval(segmentationContainer, featureStack.interval()), "prediction");
 		extensible.addAction(new ToggleVisibility( "Segmentation", source ));
 		classifier.listeners().add( this );
 	}
@@ -54,17 +60,18 @@ public class PredictionLayer implements Classifier.Listener
 		if ( classifier.isTrained() )
 			synchronized ( extensible.viewerSync() )
 			{
-				updatePrediction(classifier);
+				updateSegmentation(classifier);
 				updateContainer(classifier);
+				updatePrediction(classifier);
 				extensible.repaint();
 			}
 		else
-			predictionContainer.setSource(ConstantUtils.constantRandomAccessible(new VolatileARGBType(Color.red.getRGB()), predictionContainer.numDimensions()));
+			segmentationContainer.setSource(ConstantUtils.constantRandomAccessible(new VolatileARGBType(Color.red.getRGB()), segmentationContainer.numDimensions()));
 	}
 
 	private void updateContainer(Classifier classifier) {
 		final RandomAccessibleInterval<VolatileARGBType> converted = coloredVolatileView(classifier);
-		predictionContainer.setSource(Views.extendValue( converted, new VolatileARGBType(0)  ));
+		segmentationContainer.setSource(Views.extendValue( converted, new VolatileARGBType(0)  ));
 	}
 
 	private RandomAccessibleInterval<VolatileARGBType> coloredVolatileView(Classifier classifier) {
@@ -72,7 +79,7 @@ public class PredictionLayer implements Classifier.Listener
 				.map(colorProvider.colorMap()::getColor)
 				.toArray(ARGBType[]::new);
 
-		return mapColors(colors, extensible.wrapAsVolatile(prediction));
+		return mapColors(colors, extensible.wrapAsVolatile(segmentation));
 	}
 
 	private RandomAccessibleInterval<VolatileARGBType> mapColors(ARGBType[] colors, RandomAccessibleInterval<VolatileShortType> source) {
@@ -86,23 +93,43 @@ public class PredictionLayer implements Classifier.Listener
 		return Converters.convert(source, conv, new VolatileARGBType() );
 	}
 
-	public Img<ShortType> prediction() {
+	public Img<ShortType> segmentation() {
+		return segmentation;
+	}
+
+	public Img<FloatType> prediction() {
+		if(prediction == null)
+			throw new IllegalStateException("No classifier trained yet");
 		return prediction;
 	}
 
 	private void updatePrediction(Classifier classifier) {
-		final DiskCachedCellImgFactory< ShortType > factory = new DiskCachedCellImgFactory<>(setupDiskCachedCellImgOptions(featureStack.grid()));
 		RandomAccessibleInterval<?> image = featureStack.compatibleOriginal();
-		CellLoader<ShortType> loader = target -> classifier.segment(image, target);
-		prediction = factory.create( featureStack.grid().getImgDimensions(), new ShortType(), loader );
+		CellGrid grid = featureStack.grid();
+		int count = classifier.classNames().size();
+		CellGrid extended = new CellGrid(RevampUtils.extend(grid.getImgDimensions(), count), RevampUtils.extend(getCellDimensions(grid), count));
+		prediction = setupCachedImage(target -> classifier.predict(image, target), extended, new FloatType());
 	}
 
-	private DiskCachedCellImgOptions setupDiskCachedCellImgOptions(CellGrid grid) {
-		final int[] cellDimensions = new int[ grid.numDimensions() ];
-		grid.cellDimensions( cellDimensions );
-		return DiskCachedCellImgOptions.options()
+	private void updateSegmentation(Classifier classifier) {
+		RandomAccessibleInterval<?> image = featureStack.compatibleOriginal();
+		segmentation = setupCachedImage(target -> classifier.segment(image, target), featureStack.grid(), new ShortType());
+	}
+
+	private <T extends NativeType<T>> Img<T> setupCachedImage(CellLoader<T> loader, CellGrid grid, T type) {
+		final int[] cellDimensions = getCellDimensions(grid);
+		DiskCachedCellImgOptions optional = DiskCachedCellImgOptions.options()
 				//.cacheType( CacheType.BOUNDED )
 				//.maxCacheSize( 1000 )
-				.cellDimensions( cellDimensions );
+				.cellDimensions(cellDimensions);
+		final DiskCachedCellImgFactory< T > factory = new DiskCachedCellImgFactory<>(optional);
+		return factory.create( grid.getImgDimensions(), type, loader );
 	}
+
+	private int[] getCellDimensions(CellGrid grid) {
+		final int[] cellDimensions = new int[ grid.numDimensions() ];
+		grid.cellDimensions( cellDimensions );
+		return cellDimensions;
+	}
+
 }

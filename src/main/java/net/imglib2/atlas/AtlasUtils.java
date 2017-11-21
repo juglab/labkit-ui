@@ -1,15 +1,19 @@
 package net.imglib2.atlas;
 
+import net.imglib2.RandomAccess;
 import net.imglib2.RandomAccessible;
 import net.imglib2.RandomAccessibleInterval;
+import net.imglib2.cache.img.CachedCellImg;
 import net.imglib2.trainable_segmention.RevampUtils;
 import net.imglib2.converter.Converters;
 import net.imglib2.img.Img;
 import net.imglib2.img.array.ArrayImgs;
+import net.imglib2.type.NativeType;
 import net.imglib2.type.numeric.ARGBType;
 import net.imglib2.type.numeric.IntegerType;
 import net.imglib2.type.numeric.NumericType;
 import net.imglib2.type.numeric.RealType;
+import net.imglib2.type.numeric.integer.ShortType;
 import net.imglib2.type.numeric.integer.UnsignedByteType;
 import net.imglib2.type.numeric.integer.UnsignedShortType;
 import net.imglib2.type.numeric.real.FloatType;
@@ -17,6 +21,11 @@ import net.imglib2.util.Intervals;
 import net.imglib2.util.Pair;
 import net.imglib2.util.ValuePair;
 import net.imglib2.view.Views;
+
+import java.util.List;
+import java.util.concurrent.Callable;
+import java.util.concurrent.Executors;
+import java.util.function.Consumer;
 
 /*
  * @author Matthias Arzt
@@ -86,5 +95,27 @@ public class AtlasUtils {
 			max = Math.max(max, d);
 		}
 		return new ValuePair<>(min, max);
+	}
+
+	public static <T> Img<T> populateCachedImg(Img<T> img) {
+		if(img instanceof CachedCellImg)
+			internPopulateCachedImg(AtlasUtils.uncheckedCast(img));
+		return img;
+	}
+
+	private static <T extends NativeType<T>> void internPopulateCachedImg(CachedCellImg<T, ?> img) {
+		int[] cellDimensions = new int[img.getCellGrid().numDimensions()];
+		img.getCellGrid().cellDimensions(cellDimensions);
+		Consumer<RandomAccessibleInterval<T>> accessPixel = target -> {
+			long[] min = Intervals.minAsLongArray(target);
+			RandomAccess<T> ra = target.randomAccess();
+			ra.setPosition(min);
+			ra.get();
+		};
+		List<Callable<Void>> tasks = ParallelUtils.chunkOperation(img, cellDimensions, accessPixel);
+		ParallelUtils.executeInParallel(
+				Executors.newFixedThreadPool(10),
+				ParallelUtils.addShowProgress(tasks)
+		);
 	}
 }

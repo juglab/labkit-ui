@@ -52,7 +52,7 @@ public class TimeSeriesClassifier implements Classifier{
 	private <T> void applyOnSlices(BiConsumer<RandomAccessibleInterval<?>, RandomAccessibleInterval<T>> action,
 			RandomAccessibleInterval<?> image,
 			RandomAccessibleInterval<T> target) {
-		int d = target.numDimensions() - 1;
+		int d = image.numDimensions() - 1;
 		long min = target.min(d);
 		long max = target.max(d);
 		for (long pos = min; pos <= max; pos++)
