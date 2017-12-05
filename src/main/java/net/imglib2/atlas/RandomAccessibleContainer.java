@@ -9,6 +9,10 @@ import net.imglib2.RandomAccessible;
 public class RandomAccessibleContainer< T > implements RandomAccessible< T >
 {
 
+	public RandomAccessible<T> getSource() {
+		return source;
+	}
+
 	public static interface SourceChangeListener< T >
 	{
 		public void notifyOnSourceChange( RandomAccessible< T > oldSource, RandomAccessible< T > newSource );

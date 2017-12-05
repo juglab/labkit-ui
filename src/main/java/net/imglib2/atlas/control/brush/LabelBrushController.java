@@ -1,30 +1,42 @@
 package net.imglib2.atlas.control.brush;
 
 import java.awt.Cursor;
+import java.awt.event.ActionEvent;
+import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
+import net.imglib2.*;
+import net.imglib2.algorithm.fill.Filter;
+import net.imglib2.algorithm.neighborhood.DiamondShape;
+import net.imglib2.atlas.ActionsAndBehaviours;
+import net.imglib2.atlas.Holder;
+import net.imglib2.atlas.color.ColorMapProvider;
+import net.imglib2.atlas.control.brush.neighborhood.PaintPixelsGenerator;
+import net.imglib2.atlas.labeling.Labeling;
+import net.imglib2.type.Type;
+import net.imglib2.type.logic.BitType;
+import net.imglib2.type.operators.ValueEquals;
+import net.imglib2.util.Pair;
+import net.imglib2.view.ExtendedRandomAccessibleInterval;
 import org.scijava.ui.behaviour.Behaviour;
+import org.scijava.ui.behaviour.ClickBehaviour;
 import org.scijava.ui.behaviour.DragBehaviour;
 import org.scijava.ui.behaviour.ScrollBehaviour;
-import org.scijava.ui.behaviour.util.Behaviours;
 
 import bdv.viewer.ViewerPanel;
-import gnu.trove.impl.Constants;
-import gnu.trove.map.hash.TLongIntHashMap;
-import net.imglib2.Localizable;
-import net.imglib2.RandomAccessibleInterval;
-import net.imglib2.RealLocalizable;
-import net.imglib2.RealPoint;
 import net.imglib2.atlas.BrushOverlay;
-import net.imglib2.atlas.color.IntegerColorProvider;
 import net.imglib2.realtransform.AffineTransform3D;
-import net.imglib2.type.numeric.integer.IntType;
 import net.imglib2.ui.TransformEventHandler;
-import net.imglib2.util.IntervalIndexer;
 import net.imglib2.util.Intervals;
 import net.imglib2.util.LinAlgHelpers;
-import net.imglib2.view.ExtendedRandomAccessibleInterval;
 import net.imglib2.view.Views;
+import org.scijava.ui.behaviour.util.AbstractNamedAction;
+import org.scijava.ui.behaviour.util.RunnableAction;
+
+import javax.swing.*;
 
 /**
  * A {@link TransformEventHandler} that changes an {@link AffineTransform3D}
@@ -37,27 +49,19 @@ import net.imglib2.view.Views;
 public class LabelBrushController
 {
 
-	public static int BACKGROUND = -1;
+	final private ViewerPanel viewer;
 
-	final protected ViewerPanel viewer;
+	private List<RandomAccessibleInterval<BitType>> regions;
 
-	private final RandomAccessibleInterval< IntType > labels;
+	private List<String> labels;
 
-	private final PaintPixelsGenerator< IntType, ? extends Iterator< IntType > > pixelsGenerator;
+	private final PaintPixelsGenerator< BitType, ? extends Iterator<BitType> > pixelsGenerator;
 
-	final protected AffineTransform3D labelTransform;
+	final private AffineTransform3D labelTransform;
 
-	final protected RealPoint labelLocation;
+	final private BrushOverlay brushOverlay;
 
-	final protected BrushOverlay brushOverlay;
-
-	private final TLongIntHashMap groundTruth;
-
-	final int brushNormalAxis;
-
-	protected int brushRadius = 5;
-
-	private final int nLabels;
+	private int brushRadius = 5;
 
 	private int currentLabel = 0;
 
@@ -66,200 +70,140 @@ public class LabelBrushController
 		return brushOverlay;
 	}
 
-	public int getCurrentLabel()
+	private int getCurrentLabel()
 	{
 		return currentLabel;
 	}
 
-	public void setCurrentLabel( final int label )
-	{
-		this.currentLabel = label;
+	private void setCurrentLabel(int index) {
+		currentLabel = index;
+		brushOverlay.setLabel( labels.get(index) );
 	}
-
-	public TLongIntHashMap getGroundTruth()
-	{
-		return groundTruth;
-	}
-
-	public static TLongIntHashMap emptyGroundTruth()
-	{
-		return new TLongIntHashMap( Constants.DEFAULT_CAPACITY, Constants.DEFAULT_LOAD_FACTOR, Long.MAX_VALUE, BACKGROUND );
-	}
-
-	/**
-	 * Coordinates where mouse dragging started.
-	 */
-	private int oX, oY;
 
 	public LabelBrushController(
 			final ViewerPanel viewer,
-			final RandomAccessibleInterval< IntType > labels,
-			final PaintPixelsGenerator< IntType, ? extends Iterator< IntType > > pixelsGenerator,
-					final AffineTransform3D labelTransform,
-					final Behaviours behaviors,
-					final int brushNormalAxis,
-					final int nLabels,
-					final TLongIntHashMap groundTruth,
-					final IntegerColorProvider colorProvider )
+			final Holder<Labeling> labels,
+			final PaintPixelsGenerator< BitType, ? extends Iterator<BitType>> pixelsGenerator,
+			final ActionsAndBehaviours behaviors,
+			final ColorMapProvider colorProvider, AffineTransform3D labelTransform)
 	{
 		this.viewer = viewer;
-		this.labels = labels;
 		this.pixelsGenerator = pixelsGenerator;
 		this.labelTransform = labelTransform;
-		this.brushNormalAxis = brushNormalAxis;
-		brushOverlay = new BrushOverlay( viewer, currentLabel, colorProvider );
+		this.brushOverlay = new BrushOverlay( viewer, "", colorProvider );
+		updateLabeling(labels.get());
+		labels.notifier().add(this::updateLabeling);
 
-		labelLocation = new RealPoint( 3 );
-
-		behaviors.behaviour( new Paint(), "paint", "SPACE button1" );
-		behaviors.behaviour( new Erase(), "erase", "SPACE button2", "SPACE button3" );
-		behaviors.behaviour( new ChangeBrushRadius(), "change brush radius", "SPACE scroll" );
-		behaviors.behaviour( new ChangeLabel(), "change label", "SPACE shift scroll" );
-		behaviors.behaviour( new MoveBrush(), "move brush", "SPACE" );
-		this.nLabels = nLabels;
-		this.groundTruth = groundTruth;
+		behaviors.addBehaviour( new PaintBehavior(true), "paint", "SPACE button1" );
+		RunnableAction nop = new RunnableAction("nop", () -> { });
+		nop.putValue(Action.ACCELERATOR_KEY, KeyStroke.getKeyStroke("F"));
+		behaviors.addAction(nop);
+		behaviors.addBehaviour( new PaintBehavior(false), "erase", "SPACE button2", "SPACE button3" );
+		behaviors.addBehaviour( new FloodFillClick(true), "floodfill", "F button1" );
+		behaviors.addBehaviour( new FloodFillClick(false), "floodclear", "F button2", "F button3" );
+		behaviors.addBehaviour( new ChangeBrushRadius(), "change brush radius", "SPACE scroll" );
+		behaviors.addAction( new ChangeLabel() );
+		behaviors.addBehaviour( new MoveBrush(), "move brush", "SPACE" );
 	}
 
-	public LabelBrushController(
-			final ViewerPanel viewer,
-			final RandomAccessibleInterval< IntType > labels,
-			final PaintPixelsGenerator< IntType, ? extends Iterator< IntType > > pixelsGenerator,
-					final AffineTransform3D labelTransform,
-					final Behaviours behaviors,
-					final int nLabels,
-					final TLongIntHashMap groundTruth,
-					final IntegerColorProvider colorProvider )
-	{
-		this( viewer, labels, pixelsGenerator, labelTransform, behaviors, 2, nLabels, groundTruth, colorProvider );
+	void updateLabeling(Labeling labeling) {
+		List<Map.Entry<String, RandomAccessibleInterval<BitType>>> entries =
+				new ArrayList<>(labeling.regions().entrySet());
+		this.labels = entries.stream().map(Map.Entry::getKey).collect(Collectors.toList());
+		this.regions = entries.stream().map(Map.Entry::getValue).collect(Collectors.toList());
+		setCurrentLabel(Math.min(currentLabel, regions.size()-1));
 	}
 
-	private void setCoordinates( final int x, final int y )
+	private RealPoint displayToImageCoordinates( final int x, final int y )
 	{
+		final RealPoint labelLocation = new RealPoint(3);
 		labelLocation.setPosition( x, 0 );
 		labelLocation.setPosition( y, 1 );
 		labelLocation.setPosition( 0, 2 );
-
 		viewer.displayToGlobalCoordinates( labelLocation );
-
 		labelTransform.applyInverse( labelLocation, labelLocation );
+		return labelLocation;
 	}
 
-	private abstract class AbstractPaintBehavior implements DragBehaviour
+	private class PaintBehavior implements DragBehaviour
 	{
-		protected void paint( final RealLocalizable coords)
+		private boolean value;
+
+		private RealPoint before;
+
+		public PaintBehavior(boolean value) {
+			this.value = value;
+		}
+
+		private void paint( final RealLocalizable coords)
 		{
 			synchronized ( viewer )
 			{
-				final ExtendedRandomAccessibleInterval< IntType, RandomAccessibleInterval< IntType > > extended = Views.extendValue( labels, new IntType( BACKGROUND ) );
-				final Iterator< IntType > it = pixelsGenerator.getPaintPixels( extended, coords, viewer.getState().getCurrentTimepoint(), brushRadius );
 				final int v = getValue();
-				synchronized ( groundTruth )
+				RandomAccessibleInterval<BitType> label = regions.get(v);
+				final RandomAccessible<BitType> extended = Views.extendValue(label, new BitType(false));
+				final Iterator< BitType > it = pixelsGenerator.getPaintPixels( extended, coords, viewer.getState().getCurrentTimepoint(), brushRadius );
+				while ( it.hasNext() )
 				{
-					while ( it.hasNext() )
-					{
-						final IntType val = it.next();
-						if ( Intervals.contains( labels, ( Localizable ) it ) )
-						{
-							val.set( v );
-							final long index = IntervalIndexer.positionToIndex( ( Localizable ) it, labels );
-							if ( v == BACKGROUND )
-								groundTruth.remove( index );
-							else
-								groundTruth.put( index, v );
-						}
-					}
+					final BitType val = it.next();
+					if ( Intervals.contains( label, ( Localizable ) it ) )
+						val.set( value );
 				}
 			}
 
 		}
 
-		protected void paint( final int x, final int y )
-		{
-			setCoordinates( x, y );
-			paint( labelLocation );
+		private void paint(RealLocalizable a, RealLocalizable b) {
+			long distance = (long) distance(a, b) + 1;
+			for ( long i = 0; i <= distance; ++i )
+				paint( interpolate((double) i / (double) distance, a, b) );
 		}
 
-		protected void paint( final int x1, final int y1, final int x2, final int y2 )
-		{
-			setCoordinates( x1, y1 );
-			final double[] p1 = new double[ 3 ];
-			final RealPoint rp1 = RealPoint.wrap( p1 );
-			labelLocation.localize( p1 );
-
-			setCoordinates( x2, y2 );
-			final double[] d = new double[ 3 ];
-			labelLocation.localize( d );
-
-			LinAlgHelpers.subtract( d, p1, d );
-
-			final double l = LinAlgHelpers.length( d );
-			LinAlgHelpers.normalize( d );
-
-			for ( int i = 1; i < l; ++i )
-			{
-				LinAlgHelpers.add( p1, d, p1 );
-				paint( rp1 );
-			}
-			paint( labelLocation );
+		RealLocalizable interpolate(double ratio, RealLocalizable a, RealLocalizable b) {
+			RealPoint result = new RealPoint(a.numDimensions());
+			for (int d = 0; d < result.numDimensions(); d++)
+				result.setPosition(ratio * a.getDoublePosition(d) + (1 - ratio) * b.getDoublePosition(d), d);
+			return result;
 		}
 
-		abstract protected int getValue();
+		double distance(RealLocalizable a, RealLocalizable b) {
+			return LinAlgHelpers.distance(asArray(a), asArray(b));
+		}
+
+		private double[] asArray(RealLocalizable a) {
+			double[] result = new double[a.numDimensions()];
+			a.localize(result);
+			return result;
+		}
+
+		private int getValue()
+		{
+			return getCurrentLabel();
+		}
 
 		@Override
 		public void init( final int x, final int y )
 		{
-			synchronized ( this )
-			{
-				oX = x;
-				oY = y;
-			}
-
-			paint( x, y );
+			RealPoint coords = displayToImageCoordinates(x, y);
+			this.before = coords;
+			paint(coords);
 
 			viewer.requestRepaint();
-
-			// System.out.println( getName() + " drag start (" + oX + ", " + oY + ")" );
 		}
 
 		@Override
 		public void drag( final int x, final int y )
 		{
+			RealPoint coords = displayToImageCoordinates(x, y);
+			paint(before, coords );
+			this.before = coords;
 			brushOverlay.setPosition( x, y );
-
-			paint( oX, oY, x, y );
-
-			synchronized ( this )
-			{
-				oX = x;
-				oY = y;
-			}
-
 			viewer.requestRepaint();
-
-			// System.out.println( getName() + " drag by (" + dX + ", " + dY + ")" );
 		}
 
 		@Override
 		public void end( final int x, final int y )
 		{
-		}
-	}
-
-	private class Paint extends AbstractPaintBehavior
-	{
-		@Override
-		protected int getValue()
-		{
-			return getCurrentLabel();
-		}
-	}
-
-	private class Erase extends AbstractPaintBehavior
-	{
-		@Override
-		protected int getValue()
-		{
-			return BACKGROUND;
 		}
 	}
 
@@ -270,10 +214,9 @@ public class LabelBrushController
 		{
 			if ( !isHorizontal )
 			{
-				if ( wheelRotation < 0 )
-					brushRadius += 1;
-				else if ( wheelRotation > 0 )
-					brushRadius = Math.max( 0, brushRadius - 1 );
+				int sign = ( wheelRotation < 0 ) ? 1 : -1;
+				int distance = Math.max( 1, (int) (brushRadius * 0.1) );
+				brushRadius = Math.max( 0, brushRadius + sign * distance );
 
 				brushOverlay.setRadius( brushRadius );
 				// TODO request only overlays to repaint
@@ -282,23 +225,18 @@ public class LabelBrushController
 		}
 	}
 
-	private class ChangeLabel implements ScrollBehaviour
-	{
+	private class ChangeLabel extends AbstractNamedAction {
+
+		public ChangeLabel() {
+			super("Next Label");
+			super.putValue(ACCELERATOR_KEY, KeyStroke.getKeyStroke("N"));
+		}
 
 		@Override
-		public void scroll( final double wheelRotation, final boolean isHorizontal, final int x, final int y )
-		{
-			if ( !isHorizontal )
-			{
-				if ( wheelRotation < 0 )
-					currentLabel = Math.min( currentLabel + 1, nLabels - 1 );
-				else if ( wheelRotation > 0 )
-					currentLabel = Math.max( currentLabel - 1, 0 );
-
-				brushOverlay.setLabel( currentLabel );
-				// TODO request only overlays to repaint
-				viewer.getDisplay().repaint();
-			}
+		public void actionPerformed(ActionEvent actionEvent) {
+			setCurrentLabel(currentLabel >= (regions.size() - 1) ? 0 : currentLabel + 1);
+			// TODO request only overlays to repaint
+			viewer.getDisplay().repaint();
 		}
 	}
 
@@ -330,5 +268,43 @@ public class LabelBrushController
 			viewer.getDisplay().repaint();
 
 		}
+	}
+
+	private class FloodFillClick implements ClickBehaviour
+	{
+		private final boolean value;
+
+		FloodFillClick(boolean value) {
+			this.value = value;
+		}
+
+		protected void floodFill( final RealLocalizable coords)
+		{
+			synchronized ( viewer )
+			{
+				RandomAccessibleInterval<BitType> region = regions.get(getCurrentLabel());
+				Point seed = roundAndReduceDimension(coords, region.numDimensions());
+				LabelBrushController.floodFill(region, seed, new BitType(value));
+			}
+		}
+
+		private Point roundAndReduceDimension(final RealLocalizable realLocalizable, int numDimesions) {
+			Point point = new Point(numDimesions);
+			for (int i = 0; i < point.numDimensions(); i++)
+				point.setPosition((long) realLocalizable.getDoublePosition(i), i);
+			return point;
+		}
+
+		@Override
+		public void click(int x, int y) {
+			floodFill( displayToImageCoordinates(x, y) );
+			viewer.requestRepaint();
+		}
+	}
+
+	public static <T extends Type<T> & ValueEquals<T>> void floodFill(RandomAccessibleInterval<T> image, Localizable seed, T value) {
+		Filter<Pair<T, T>, Pair<T, T>> filter = (f, s) -> ! value.valueEquals(f.getB());
+		ExtendedRandomAccessibleInterval<T, RandomAccessibleInterval<T>> target = Views.extendValue(image, value);
+		net.imglib2.algorithm.fill.FloodFill.fill(target, target, seed, value, new DiamondShape(1), filter);
 	}
 }

@@ -1,122 +1,45 @@
 package net.imglib2.atlas.classification;
 
-import java.awt.event.ActionEvent;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.stream.Stream;
+import java.util.function.Supplier;
 
-import org.scijava.ui.behaviour.util.AbstractNamedAction;
+import net.imglib2.atlas.MainFrame;
+import net.imglib2.atlas.labeling.Labeling;
 
-import gnu.trove.map.hash.TLongIntHashMap;
 import net.imglib2.RandomAccessibleInterval;
-import net.imglib2.atlas.control.brush.LabelBrushController;
-import net.imglib2.type.numeric.RealType;
-import net.imglib2.util.IntervalIndexer;
-import net.imglib2.view.Views;
-import net.imglib2.view.composite.Composite;
-import net.imglib2.view.composite.CompositeView;
-import net.imglib2.view.composite.RealComposite;
 
-public class TrainClassifier< F extends RealType< F > > extends AbstractNamedAction
+public class TrainClassifier
 {
 
-	public static interface Listener< F extends RealType< F > >
-	{
-		public void notify( Classifier< Composite< F >, ?, ? > classifier, boolean trainingSuccess ) throws IOException;
-	}
-
-	public static < F extends RealType< F > > Iterable< Composite< F > > toSamples( final RandomAccessibleInterval< F > features, final long[] indices )
-	{
-		final CompositeView< F, RealComposite< F > >.CompositeRandomAccess access = Views.collapseReal( features ).randomAccess();
-		final Stream< Composite< F > > featuresStream = Arrays.stream( indices ).mapToObj( loc -> {
-			IntervalIndexer.indexToPosition( loc, features, access );
-			return access.get();
-		} );
-		return featuresStream::iterator;
-	}
+	private Supplier<Labeling> labelingSupplier;
 
 	public TrainClassifier(
-			final Classifier< Composite< F >, ?, ? > classifier,
-			final LabelBrushController controller,
-			final RandomAccessibleInterval< F > features,
-			final ArrayList< String > classes,
-			final Listener... listeners
-			)
+			final MainFrame.Extensible extensible,
+			final Classifier classifier,
+			final Supplier<Labeling> labelingSupplier,
+			final RandomAccessibleInterval<?> image
+	)
 	{
-		super( "train classifier" );
 		this.classifier = classifier;
-		this.controller = controller;
-		this.features = features;
-		this.classes = classes;
-		this.listeners = new ArrayList<>( Arrays.asList( listeners ) );
+		this.labelingSupplier = labelingSupplier;
+		this.image = image;
+		extensible.addAction("Train Classifier", "trainClassifier", this::trainClassifier, "ctrl shift T");
 	}
 
-	private final Classifier< Composite< F >, ?, ? > classifier;
+	private final Classifier classifier;
 
-	private final LabelBrushController controller;
+	private final RandomAccessibleInterval<?> image;
 
-	private final RandomAccessibleInterval< F > features;
-
-	private final ArrayList< String > classes;
-
-	private final ArrayList< Listener > listeners;
-
-	private boolean trainingSuccess = false;
-
-	public boolean getTrainingSuccess()
+	private void trainClassifier()
 	{
-		return trainingSuccess;
-	}
-
-	public void addListener( final Listener listener )
-	{
-		this.listeners.add( listener );
-	}
-
-	public boolean removeListener( final Listener listener )
-	{
-		return this.listeners.remove( listener );
-	}
-
-	public List< Listener > getListeners()
-	{
-		return listeners;
-	}
-
-	@Override
-	public void actionPerformed( final ActionEvent e )
-	{
-		trainingSuccess = false;
-		final TLongIntHashMap samples = controller.getGroundTruth();
 		try
 		{
-//			classifier.buildClassifier( instances );
-//			synchronized ( samples )
-//			{
-			final long[] locations = samples.keys();
-			final int[] labels = samples.values();
-//			}
-			classifier.trainClassifier( toSamples( features, locations ), labels );
-			trainingSuccess = true;
+			classifier.train( image, labelingSupplier.get());
 		}
 		catch ( final Exception e1 )
 		{
-			trainingSuccess = false;
+			System.out.println("Training was interrupted by exception:");
+			e1.printStackTrace();
 		}
-		listeners.forEach( l -> {
-
-			try
-			{
-				l.notify( classifier, trainingSuccess );
-			}
-			catch ( final Exception e1 )
-			{
-				// TODO Auto-generated catch block
-				e1.printStackTrace();
-			}
-		} );
 	}
 
 }
