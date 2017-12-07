@@ -36,9 +36,10 @@ public class IntervalIndexer2 {
 	}
 
 	public long positionToIndex(Localizable localizable) {
-		return IntStream.range(0, dimensions.length)
-				.mapToLong(d -> stepSize[d] * (localizable.getLongPosition( d ) - min[d]))
-				.sum();
+		long sum = 0;
+		for (int d = 0; d < dimensions.length; ++d )
+			sum += stepSize[d] * (localizable.getLongPosition( d ) - min[d]);
+		return sum;
 	}
 
 	public void indexToPosition(long index, Positionable positionable) {
