@@ -3,24 +3,17 @@ package net.imglib2.atlas.labeling;
 import gnu.trove.map.TIntObjectMap;
 import gnu.trove.map.hash.TIntObjectHashMap;
 import net.imglib2.RandomAccessibleInterval;
+import net.imglib2.atlas.DefaultHolder;
 import net.imglib2.atlas.Holder;
 import net.imglib2.atlas.LabelingComponent;
 import net.imglib2.atlas.RandomAccessibleContainer;
 import net.imglib2.atlas.color.ColorMap;
 import net.imglib2.atlas.color.ColorMapProvider;
-import net.imglib2.converter.Converter;
 import net.imglib2.converter.Converters;
-import net.imglib2.roi.IterableRegion;
-import net.imglib2.type.logic.BitType;
 import net.imglib2.type.numeric.ARGBType;
 import net.imglib2.view.Views;
-import net.imglib2.view.composite.GenericComposite;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 /**
  * @author Matthias Arzt

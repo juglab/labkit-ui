@@ -22,6 +22,7 @@ import org.scijava.ui.behaviour.util.AbstractNamedAction;
 import javax.swing.*;
 import java.awt.*;
 import java.util.List;
+import java.util.function.Consumer;
 
 public class LabelingComponent {
 
@@ -33,7 +34,7 @@ public class LabelingComponent {
 
 	private ColorMapProvider colorProvider;
 
-	private Holder<Labeling> labels;
+	private Holder<Labeling> labels = new CheckedHolder();
 
 	private ActionsAndBehaviours actionsAndBehaviours;
 
@@ -82,10 +83,6 @@ public class LabelingComponent {
 		actionsAndBehaviours.addBehaviour(behaviour, name, defaultTriggers);
 	}
 
-	public Labeling getLabeling() {
-		return labels.get();
-	}
-
 	private void initBdv(boolean is2D) {
 		final BdvOptions options = BdvOptions.options();
 		if (is2D)
@@ -97,7 +94,7 @@ public class LabelingComponent {
 	}
 
 	private void initLabelsLayer(Labeling labeling, boolean isTimeSeries) {
-		this.labels = new Holder<>(labeling);
+		this.labels = new DefaultHolder<>(labeling);
 		colorProvider = new ColorMapProvider(this.labels);
 
 		BdvSource source = addLayer(new LabelsLayer(this.labels, colorProvider, this).view(), "labels");
@@ -122,12 +119,6 @@ public class LabelingComponent {
 		return colorProvider;
 	}
 
-	public void setLabeling(Labeling labeling) {
-		if(! Intervals.equals(labels.get(), labeling))
-			throw new IllegalArgumentException();
-		labels.set(labeling);
-	}
-
 	public void requestRepaint() {
 		bdvHandle.getViewerPanel().requestRepaint();
 	}
@@ -150,5 +141,34 @@ public class LabelingComponent {
 
 	public Object viewerSync() {
 		return bdvHandle.getViewerPanel();
+	}
+
+	public Holder<Labeling> labeling() {
+		return labels;
+	}
+
+	class CheckedHolder implements Holder<Labeling> {
+
+		Notifier<Consumer<Labeling>> notifier = new Notifier<>();
+
+		Labeling value;
+
+		@Override
+		public void set(Labeling value) {
+			if(! Intervals.equals(value, this.value))
+				throw new IllegalArgumentException();
+			this.value = value;
+			notifier.forEach(listener -> listener.accept(value));
+		}
+
+		@Override
+		public Labeling get() {
+			return value;
+		}
+
+		@Override
+		public Notifier<Consumer<Labeling>> notifier() {
+			return notifier;
+		}
 	}
 }

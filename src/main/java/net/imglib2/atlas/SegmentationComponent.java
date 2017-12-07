@@ -104,10 +104,10 @@ public class SegmentationComponent {
 	// -- Helper methods --
 
 	private void initClassification() {
-		new TrainClassifier(extensible, classifier, () -> labelingComponent.getLabeling(), featureStack.compatibleOriginal());
+		new TrainClassifier(extensible, classifier, labelingComponent.labeling()::get, featureStack.compatibleOriginal());
 		PredictionLayer predictionLayer = new PredictionLayer(extensible, labelingComponent.colorProvider(), classifier, featureStack);
 		new ClassifierIoAction(extensible, this.classifier);
-		new LabelingIoAction(extensible, labelingComponent, inputImage);
+		new LabelingIoAction(extensible, labelingComponent.labeling(), inputImage);
 		new SegmentationSave(extensible, predictionLayer);
 		new OpenImageAction(extensible);
 		new ZAxisScaling(extensible, labelingComponent.sourceTransformation());
@@ -127,12 +127,8 @@ public class SegmentationComponent {
 		return panel;
 	}
 
-	public void setLabeling(Labeling labeling) {
-		labelingComponent.setLabeling(labeling);
-	}
-
-	public Labeling getLabeling() {
-		return labelingComponent.getLabeling();
+	public Holder<Labeling> labeling() {
+		return labelingComponent.labeling();
 	}
 
 	public ActionMap getActions() {
@@ -218,13 +214,8 @@ public class SegmentationComponent {
 		}
 
 		@Override
-		public Labeling getLabeling() {
-			return labelingComponent.getLabeling();
-		}
-
-		@Override
-		public void setLabeling(Labeling labeling) {
-			labelingComponent.setLabeling(labeling);
+		public Holder<Labeling> labeling() {
+			return labelingComponent.labeling();
 		}
 	}
 }

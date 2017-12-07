@@ -36,7 +36,5 @@ public interface Extensible {
 
 	void displayRepaint();
 
-	Labeling getLabeling();
-
-	void setLabeling(Labeling labeling);
+	Holder<Labeling> labeling();
 }

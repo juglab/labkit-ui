@@ -1,7 +1,6 @@
 package net.imglib2.atlas.actions;
 
 import net.imglib2.Interval;
-import net.imglib2.atlas.Holder;
 import net.imglib2.atlas.Preferences;
 import net.imglib2.atlas.SegmentationComponent;
 import net.imglib2.atlas.labeling.Labeling;
@@ -13,8 +12,6 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 import java.util.StringJoiner;
-import java.util.function.Consumer;
-import java.util.function.Supplier;
 
 public class SetLabelsAction {
 
@@ -37,21 +34,21 @@ public class SetLabelsAction {
 	}
 
 	private void changeLabels() {
-		Labeling labeling = segmentationComponent.getLabeling();
+		Labeling labeling = segmentationComponent.labeling().get();
 		List<String> labels = labeling.getLabels();
 		Optional<List<String>> results = dialog(labels);
 		if(results.isPresent()) {
 			Labeling newLabeling = new Labeling(results.get(), (Interval) labeling);
 			newLabeling.setAxes(labeling.axes());
-			segmentationComponent.setLabeling(newLabeling);
+			segmentationComponent.labeling().set(newLabeling);
 		}
 	}
 
 	private void clearLabels() {
-		Labeling oldLabeling = segmentationComponent.getLabeling();
+		Labeling oldLabeling = segmentationComponent.labeling().get();
 		Labeling newLabeling = new Labeling(oldLabeling.getLabels(), (Interval) oldLabeling);
 		newLabeling.setAxes(oldLabeling.axes());
-		segmentationComponent.setLabeling(newLabeling);
+		segmentationComponent.labeling().set(newLabeling);
 	}
 
 

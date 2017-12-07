@@ -44,7 +44,7 @@ public class MainFrame {
 		this.inputImage = new DatasetInputImage(dataset);
 		inputImage.setTimeSeries(isTimeSeries);
 		this.segmentationComponent = new SegmentationComponent(context, frame, inputImage);
-		segmentationComponent.setLabeling(getInitialLabeling());
+		segmentationComponent.labeling().set(getInitialLabeling());
 		// --
 		new SetLabelsAction(segmentationComponent, preferences);
 		setTitle();

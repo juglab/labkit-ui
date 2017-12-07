@@ -14,7 +14,6 @@ import net.imglib2.algorithm.fill.Filter;
 import net.imglib2.algorithm.fill.FloodFill;
 import net.imglib2.algorithm.neighborhood.DiamondShape;
 import net.imglib2.atlas.Extensible;
-import net.imglib2.atlas.MainFrame;
 import net.imglib2.atlas.labeling.Labeling;
 import net.imglib2.atlas.labeling.LabelingSerializer;
 import net.imglib2.roi.IterableRegion;
@@ -62,7 +61,7 @@ public class MeasureConnectedComponents implements Command {
 
 	public static void addAction(Extensible extensible) {
 		extensible.addAction("Measure Connected Components ...", "measureConnectedComponents", () -> {
-			Table<?, ?> table = createTable(extensible.getLabeling(), true);
+			Table<?, ?> table = createTable(extensible.labeling().get(), true);
 			extensible.context().service(UIService.class).show(table);
 		}, "");
 	}

@@ -32,7 +32,6 @@ import bdv.viewer.ViewerPanel;
 import net.imglib2.atlas.BrushOverlay;
 import net.imglib2.realtransform.AffineTransform3D;
 import net.imglib2.ui.TransformEventHandler;
-import net.imglib2.util.Intervals;
 import net.imglib2.util.LinAlgHelpers;
 import net.imglib2.view.Views;
 import org.scijava.ui.behaviour.util.AbstractNamedAction;

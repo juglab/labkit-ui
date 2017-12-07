@@ -3,8 +3,8 @@ package net.imglib2.atlas.actions;
 import net.imglib2.RandomAccessibleInterval;
 import net.imglib2.atlas.AtlasUtils;
 import net.imglib2.atlas.Extensible;
+import net.imglib2.atlas.Holder;
 import net.imglib2.atlas.inputimage.InputImage;
-import net.imglib2.atlas.LabelingComponent;
 import net.imglib2.atlas.labeling.Labeling;
 import net.imglib2.atlas.labeling.LabelingSerializer;
 import net.imglib2.img.display.imagej.ImageJFunctions;
@@ -18,12 +18,12 @@ import java.io.IOException;
  */
 public class LabelingIoAction extends AbstractFileIoAcion {
 
-	private final LabelingComponent labelingComponent;
+	private final Holder<Labeling> labeling;
 	private final LabelingSerializer serializer;
 
-	public LabelingIoAction(Extensible extensible, LabelingComponent labelingComponent, InputImage inputImage) {
+	public LabelingIoAction(Extensible extensible, Holder<Labeling> labeling, InputImage inputImage) {
 		super(extensible, new FileNameExtensionFilter("Labeling (*.labeling)", "labeling"));
-		this.labelingComponent = labelingComponent;
+		this.labeling = labeling;
 		serializer = new LabelingSerializer(extensible.context());
 		initSaveAction("Save Labeling ...", "saveLabeling", new Action() {
 			@Override
@@ -33,18 +33,18 @@ public class LabelingIoAction extends AbstractFileIoAcion {
 
 			@Override
 			public void run(String filename) throws Exception {
-				serializer.save(labelingComponent.getLabeling(), filename);
+				serializer.save(labeling.get(), filename);
 			}
 		}, "ctrl S");
 		initOpenAction("Open Labeling ...", "openLabeling", this::open, "ctrl O");
 		extensible.addAction("Show Labeling in ImageJ", "showLabeling", () -> {
-			RandomAccessibleInterval<? extends IntegerType<?>> img = labelingComponent.getLabeling().getIndexImg();
+			RandomAccessibleInterval<? extends IntegerType<?>> img = labeling.get().getIndexImg();
 			ImageJFunctions.show(AtlasUtils.uncheckedCast(img), "Labeling");
 		}, "");
 	}
 
 	private void open(String filename) throws IOException {
 		Labeling labeling = serializer.open(filename);
-		labelingComponent.setLabeling(labeling);
+		this.labeling.set(labeling);
 	}
 }
