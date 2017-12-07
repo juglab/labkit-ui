@@ -24,6 +24,7 @@ import net.imglib2.atlas.classification.weka.TrainableSegmentationClassifier;
 import net.imglib2.atlas.inputimage.DefaultInputImage;
 import net.imglib2.atlas.inputimage.InputImage;
 import net.imglib2.atlas.labeling.Labeling;
+import net.imglib2.atlas.panel.LabelPanel;
 import net.imglib2.atlas.plugin.MeasureConnectedComponents;
 import net.imglib2.realtransform.AffineTransform3D;
 import net.imglib2.trainable_segmention.RevampUtils;
@@ -114,6 +115,8 @@ public class SegmentationComponent {
 		new SelectClassifier(extensible, classifier);
 		new BatchSegmentAction(extensible, classifier);
 		new ChangeFeatureSettingsAction(extensible, classifier);
+		JComponent labelPanel = new LabelPanel(extensible).getComponent();
+		panel.add(labelPanel, BorderLayout.LINE_END);
 		MeasureConnectedComponents.addAction(extensible);
 	}
 
