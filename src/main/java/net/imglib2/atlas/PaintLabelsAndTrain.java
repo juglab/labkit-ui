@@ -14,6 +14,6 @@ public class PaintLabelsAndTrain
 	}
 
 	public static void main( final String[] args ) {
-		start(cells);
+		start(em);
 	}
 }

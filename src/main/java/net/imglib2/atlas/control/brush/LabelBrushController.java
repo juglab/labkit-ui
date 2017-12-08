@@ -232,7 +232,7 @@ public class LabelBrushController
 			{
 				int sign = ( wheelRotation < 0 ) ? 1 : -1;
 				int distance = Math.max( 1, (int) (brushRadius * 0.1) );
-				brushRadius = Math.max( 0, brushRadius + sign * distance );
+				brushRadius = Math.min(Math.max( 0, brushRadius + sign * distance ), 50);
 
 				brushOverlay.setRadius( brushRadius );
 				// TODO request only overlays to repaint
