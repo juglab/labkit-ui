@@ -115,7 +115,7 @@ public class SegmentationComponent {
 		new SelectClassifier(extensible, classifier);
 		new BatchSegmentAction(extensible, classifier);
 		new ChangeFeatureSettingsAction(extensible, classifier);
-		JComponent labelPanel = new LabelPanel(extensible).getComponent();
+		JComponent labelPanel = new LabelPanel(extensible, labelingComponent.colorProvider()).getComponent();
 		panel.add(labelPanel, BorderLayout.LINE_END);
 		MeasureConnectedComponents.addAction(extensible);
 	}
