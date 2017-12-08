@@ -58,7 +58,7 @@ public class Labeling extends AbstractWrappedInterval implements RandomAccessibl
 	public Labeling(List<String> labels, ImgLabeling<String, ?> labeling) {
 		super(labeling);
 		this.imgLabeling = labeling;
-		this.labels = labels;
+		this.labels = new ArrayList<>(labels);
 		this.axes = initAxes(labeling.numDimensions());
 	}
 
@@ -143,6 +143,13 @@ public class Labeling extends AbstractWrappedInterval implements RandomAccessibl
 
 	public List<CalibratedAxis> axes() {
 		return axes;
+	}
+
+	public void addLabel(String label) {
+		Objects.requireNonNull(label);
+		if(labels.contains(label))
+			return;
+		labels.add(label);
 	}
 
 	public static class SetEntryAsBitType<T> extends BitType {

@@ -34,7 +34,7 @@ public class LabelingComponent {
 
 	private ColorMapProvider colorProvider;
 
-	private Holder<Labeling> labels = new CheckedHolder();
+	private Holder<Labeling> labels;
 
 	private ActionsAndBehaviours actionsAndBehaviours;
 
@@ -94,7 +94,7 @@ public class LabelingComponent {
 	}
 
 	private void initLabelsLayer(Labeling labeling, boolean isTimeSeries) {
-		this.labels = new DefaultHolder<>(labeling);
+		this.labels = new CheckedHolder(labeling);
 		colorProvider = new ColorMapProvider(this.labels);
 
 		BdvSource source = addLayer(new LabelsLayer(this.labels, colorProvider, this).view(), "labels");
@@ -147,11 +147,15 @@ public class LabelingComponent {
 		return labels;
 	}
 
-	class CheckedHolder implements Holder<Labeling> {
+	private static class CheckedHolder implements Holder<Labeling> {
 
 		Notifier<Consumer<Labeling>> notifier = new Notifier<>();
 
 		Labeling value;
+
+		CheckedHolder(Labeling value) {
+			this.value = value;
+		}
 
 		@Override
 		public void set(Labeling value) {
