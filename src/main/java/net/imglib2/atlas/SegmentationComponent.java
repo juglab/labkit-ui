@@ -7,6 +7,7 @@ import hr.irb.fastRandomForest.FastRandomForest;
 import net.imagej.ops.OpService;
 import net.imglib2.RandomAccessibleInterval;
 import net.imglib2.Volatile;
+import net.imglib2.atlas.actions.AddLabelingIoAction;
 import net.imglib2.atlas.actions.BatchSegmentAction;
 import net.imglib2.atlas.actions.ChangeFeatureSettingsAction;
 import net.imglib2.atlas.actions.ClassifierIoAction;
@@ -108,6 +109,7 @@ public class SegmentationComponent {
 		PredictionLayer predictionLayer = new PredictionLayer(extensible, labelingComponent.colorProvider(), classifier, featureStack);
 		new ClassifierIoAction(extensible, this.classifier);
 		new LabelingIoAction(extensible, labelingComponent.labeling(), inputImage);
+		new AddLabelingIoAction(extensible, labelingComponent.labeling());
 		new SegmentationSave(extensible, predictionLayer);
 		new OpenImageAction(extensible);
 		new ZAxisScaling(extensible, labelingComponent.sourceTransformation());
