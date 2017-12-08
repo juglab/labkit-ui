@@ -152,6 +152,35 @@ public class Labeling extends AbstractWrappedInterval implements RandomAccessibl
 		labels.add(label);
 	}
 
+	public void removeLabel(String label) {
+		if(!labels.contains(label))
+			return;
+		labels.remove(label);
+		Cursor<?> cursor = sparsityCursor();
+		RandomAccess<Set<String>> ra = randomAccess();
+		while(cursor.hasNext())	{
+			cursor.fwd();
+			ra.setPosition(cursor);
+			ra.get().remove(label);
+		}
+	}
+
+	public void renameLabel(String oldLabel, String newLabel) {
+		int index = labels.indexOf(oldLabel);
+		if(index < 0)
+			return;
+		labels.set(index, newLabel);
+		Cursor<?> cursor = sparsityCursor();
+		RandomAccess<Set<String>> ra = randomAccess();
+		while(cursor.hasNext())	{
+			cursor.fwd();
+			ra.setPosition(cursor);
+			Set<String> set = ra.get();
+			set.remove(oldLabel);
+			set.add(newLabel);
+		}
+	}
+
 	public static class SetEntryAsBitType<T> extends BitType {
 		private Set<T> set = null;
 		private final T entry;

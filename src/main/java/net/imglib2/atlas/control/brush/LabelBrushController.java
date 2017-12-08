@@ -3,6 +3,7 @@ package net.imglib2.atlas.control.brush;
 import java.awt.Cursor;
 import java.awt.event.ActionEvent;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -21,6 +22,7 @@ import net.imglib2.atlas.labeling.Labeling;
 import net.imglib2.type.Type;
 import net.imglib2.type.logic.BitType;
 import net.imglib2.type.operators.ValueEquals;
+import net.imglib2.util.ConstantUtils;
 import net.imglib2.util.Pair;
 import net.imglib2.view.ExtendedRandomAccessibleInterval;
 import org.scijava.ui.behaviour.Behaviour;
@@ -114,6 +116,10 @@ public class LabelBrushController
 	void updateLabeling(Labeling labeling) {
 		List<Map.Entry<String, RandomAccessibleInterval<BitType>>> entries =
 				new ArrayList<>(labeling.regions().entrySet());
+		if(entries.isEmpty()) {
+			RandomAccessibleInterval<BitType> dummy = ConstantUtils.constantRandomAccessibleInterval(new BitType(), labeling.numDimensions(), labeling);
+			entries = new ArrayList<>(Collections.singletonMap("no label", dummy).entrySet());
+		}
 		this.labels = entries.stream().map(Map.Entry::getKey).collect(Collectors.toList());
 		this.regions = entries.stream().map(Map.Entry::getValue).collect(Collectors.toList());
 		setCurrentLabel(Math.min(currentLabel, regions.size()-1));
