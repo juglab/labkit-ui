@@ -49,7 +49,7 @@ import java.util.Arrays;
 
 public class SegmentationComponent {
 
-	private final JPanel panel = initPanel();
+	private final JSplitPane panel = initPanel();
 
 	private final Classifier classifier;
 
@@ -87,7 +87,7 @@ public class SegmentationComponent {
 		RandomAccessibleInterval<? extends NumericType<?>> displayImage = image.displayImage();
 		Labeling labeling = new Labeling(Arrays.asList("background", "foreground"), displayImage);
 		labelingComponent = new LabelingComponent(dialogBoxOwner, displayImage, labeling, inputImage.isTimeSeries());
-		panel.add(labelingComponent.getComponent());
+		panel.setRightComponent(labelingComponent.getComponent());
 		// --
 		GlobalSettings globalSettings = new GlobalSettings(inputImage.getChannelSetting(), inputImage.getSpatialDimensions(), 1.0, 16.0, 1.0);
 		OpService ops = context.service(OpService.class);
@@ -118,14 +118,14 @@ public class SegmentationComponent {
 		new BatchSegmentAction(extensible, classifier);
 		new ChangeFeatureSettingsAction(extensible, classifier);
 		JComponent labelPanel = new LabelPanel(extensible, labelingComponent.colorProvider()).getComponent();
-		panel.add(labelPanel, BorderLayout.LINE_END);
+		panel.setOneTouchExpandable(true);
+		panel.setLeftComponent(labelPanel);
 		MeasureConnectedComponents.addAction(extensible);
 	}
 
-	private static JPanel initPanel() {
-		JPanel panel = new JPanel();
+	private static JSplitPane initPanel() {
+		JSplitPane panel = new JSplitPane();
 		panel.setSize(100, 100);
-		panel.setLayout(new BorderLayout());
 		return panel;
 	}
 
