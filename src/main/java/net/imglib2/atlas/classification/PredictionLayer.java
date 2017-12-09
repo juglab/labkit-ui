@@ -26,6 +26,7 @@ import net.imglib2.util.ConstantUtils;
 import net.imglib2.view.Views;
 
 import java.awt.*;
+import java.util.List;
 
 public class PredictionLayer implements Classifier.Listener
 {
@@ -41,6 +42,8 @@ public class PredictionLayer implements Classifier.Listener
 	private Img<ShortType> segmentation;
 
 	private Img<FloatType> prediction;
+
+	private List<String> labels;
 
 	public PredictionLayer(Extensible extensible, ColorMapProvider colorProvider, Classifier classifier, FeatureStack featureStack) {
 		super();
@@ -63,10 +66,15 @@ public class PredictionLayer implements Classifier.Listener
 				updateSegmentation(classifier);
 				updateContainer(classifier);
 				updatePrediction(classifier);
+				updateLabels(classifier);
 				extensible.repaint();
 			}
 		else
 			segmentationContainer.setSource(ConstantUtils.constantRandomAccessible(new VolatileARGBType(Color.red.getRGB()), segmentationContainer.numDimensions()));
+	}
+
+	private void updateLabels(Classifier classifier) {
+		this.labels = classifier.classNames();
 	}
 
 	private void updateContainer(Classifier classifier) {
@@ -132,4 +140,7 @@ public class PredictionLayer implements Classifier.Listener
 		return cellDimensions;
 	}
 
+	public List<String> labels() {
+		return labels;
+	}
 }

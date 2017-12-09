@@ -14,6 +14,7 @@ import net.imglib2.atlas.actions.ClassifierIoAction;
 import net.imglib2.atlas.actions.LabelingIoAction;
 import net.imglib2.atlas.actions.OpenImageAction;
 import net.imglib2.atlas.actions.OrthogonalView;
+import net.imglib2.atlas.actions.SegmentationAsLabelAction;
 import net.imglib2.atlas.actions.SegmentationSave;
 import net.imglib2.atlas.actions.SelectClassifier;
 import net.imglib2.atlas.actions.ZAxisScaling;
@@ -117,6 +118,7 @@ public class SegmentationComponent {
 		new SelectClassifier(extensible, classifier);
 		new BatchSegmentAction(extensible, classifier);
 		new ChangeFeatureSettingsAction(extensible, classifier);
+		new SegmentationAsLabelAction(extensible, predictionLayer, labelingComponent.labeling());
 		JComponent labelPanel = new LabelPanel(extensible, labelingComponent.colorProvider()).getComponent();
 		panel.setOneTouchExpandable(true);
 		panel.setLeftComponent(labelPanel);
