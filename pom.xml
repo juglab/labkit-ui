@@ -9,16 +9,16 @@
 	</parent>
 
 	<groupId>net.imglib2</groupId>
-	<artifactId>imglib2-atlas</artifactId>
+	<artifactId>imglib2-labkit</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
 
-	<name>ImgLib2 ATLAS</name>
-	<description>ImgLib2 ATLAS</description>
-	<url>https://github.com/hanslovsky/imglib2-atlas</url>
+	<name>ImgLib2 Labkit</name>
+	<description>ImgLib2 Labkit</description>
+	<url>https://github.com/maarzt/imglib2-labkit</url>
 	<inceptionYear>2017</inceptionYear>
 	<organization>
-		<name>ImgLib2</name>
-		<url>http://imglib2.net/</url>
+		<name>CSBD</name>
+		<url>http://csbdresden.de/</url>
 	</organization>
 	<licenses>
 		<license>
@@ -36,17 +36,24 @@
 
 	<developers>
 		<developer>
-			<id>hanslovsky</id>
-			<name>Philipp Hanslovsky</name>
-			<url>http://imagej.net/User:Hanslovsky</url>
+			<id>maarzt</id>
+			<name>Matthias Arzt</name>
+			<url>http://imagej.net/User:Maarzt</url>
 			<roles>
-				<role>founder</role>
 				<role>lead</role>
 				<role>developer</role>
 				<role>debugger</role>
 				<role>reviewer</role>
 				<role>support</role>
 				<role>maintainer</role>
+			</roles>
+		</developer>
+		<developer>
+			<id>hanslovsky</id>
+			<name>Philipp Hanslovsky</name>
+			<url>http://imagej.net/User:Hanslovsky</url>
+			<roles>
+				<role>founder</role>
 			</roles>
 		</developer>
 	</developers>
@@ -68,33 +75,24 @@
 	</repositories>
 
 	<scm>
-		<connection>scm:git:git://github.com/hanslovsky/imglib2-atlas</connection>
-		<developerConnection>scm:git:git@github.com:hanslovsky/imglib2-atlas</developerConnection>
+		<connection>scm:git:git://github.com/maarzt/imglib2-labkit</connection>
+		<developerConnection>scm:git:git@github.com:maarzt/imglib2-labkit</developerConnection>
 		<tag>HEAD</tag>
-		<url>https://github.com/hanslovsky/imglib2-atlas</url>
+		<url>https://github.com/maarzt/imglib2-labkit</url>
 	</scm>
 	<issueManagement>
 		<system>GitHub</system>
-		<url>https://github.com/hanslovsky/imglib2-atlas/issues</url>
+		<url>https://github.com/maarzt/imglib2-labkit/issues</url>
 	</issueManagement>
 	<ciManagement>
 		<system>Travis CI</system>
-		<url>https://travis-ci.org/hanslovsky/imglib2-atlas</url>
+		<url>https://travis-ci.org/maarzt/imglib2-labkit</url>
 	</ciManagement>
 
 	<properties>
-		<package-name>net.imglib2.atlas</package-name>
-
+		<package-name>net.imglib2.labkit</package-name>
 		<license.licenseName>bsd_2</license.licenseName>
-		<license.projectName>ImgLib2: a general-purpose, multidimensional image processing library.</license.projectName>
-		<license.organizationName>ImgLib2 authors</license.organizationName>
-		<license.copyrightOwners>Tobias Pietzsch, Stephan Preibisch, Stephan Saalfeld,
-John Bogovic, Albert Cardona, Barry DeZonia, Christian Dietz, Jan Funke,
-Aivar Grislis, Jonathan Hale, Grant Harris, Stefan Helfrich, Mark Hiner,
-Martin Horn, Steffen Jaensch, Lee Kamentsky, Larry Lindsey, Melissa Linkert,
-Mark Longair, Brian Northan, Nick Perry, Curtis Rueden, Johannes Schindelin,
-Jean-Yves Tinevez and Michael Zinsmaier.</license.copyrightOwners>
-
+		<license.copyrightOwners>Matthias Arzt, Philipp Hanslovsky</license.copyrightOwners>
 		<enforcer.skip>true</enforcer.skip>
 		<bigdataviewer-vistools.version>1.0.0-beta-6</bigdataviewer-vistools.version>
 	</properties>
@@ -137,13 +135,6 @@ Jean-Yves Tinevez and Michael Zinsmaier.</license.copyrightOwners>
 			<groupId>sc.fiji</groupId>
 			<artifactId>Trainable_Segmentation</artifactId>
 		</dependency>
-
-		<!-- Test dependencies -->
-		<dependency>
-			<groupId>junit</groupId>
-			<artifactId>junit</artifactId>
-			<scope>test</scope>
-		</dependency>
 		<dependency>
 			<groupId>net.imagej</groupId>
 			<artifactId>imagej-ops</artifactId>
@@ -151,6 +142,13 @@ Jean-Yves Tinevez and Michael Zinsmaier.</license.copyrightOwners>
 		<dependency>
 			<groupId>net.imagej</groupId>
 			<artifactId>imagej</artifactId>
+		</dependency>
+
+		<!-- Test dependencies -->
+		<dependency>
+			<groupId>junit</groupId>
+			<artifactId>junit</artifactId>
+			<scope>test</scope>
 		</dependency>
 		<dependency>
 			<groupId>org.openjdk.jmh</groupId>
