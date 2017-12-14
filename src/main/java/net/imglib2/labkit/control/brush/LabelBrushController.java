@@ -101,16 +101,16 @@ public class LabelBrushController
 		updateLabeling(labels.get());
 		labels.notifier().add(this::updateLabeling);
 
-		behaviors.addBehaviour( new PaintBehavior(true), "paint", "SPACE button1" );
+		behaviors.addBehaviour( new PaintBehavior(true), "paint", "D button1", "SPACE button1" );
 		RunnableAction nop = new RunnableAction("nop", () -> { });
 		nop.putValue(Action.ACCELERATOR_KEY, KeyStroke.getKeyStroke("F"));
 		behaviors.addAction(nop);
-		behaviors.addBehaviour( new PaintBehavior(false), "erase", "SPACE button2", "SPACE button3" );
+		behaviors.addBehaviour( new PaintBehavior(false), "erase", "E button1", "SPACE button2", "SPACE button3" );
 		behaviors.addBehaviour( new FloodFillClick(true), "floodfill", "F button1" );
-		behaviors.addBehaviour( new FloodFillClick(false), "floodclear", "F button2", "F button3" );
-		behaviors.addBehaviour( new ChangeBrushRadius(), "change brush radius", "SPACE scroll" );
+		behaviors.addBehaviour( new FloodFillClick(false), "floodclear", "R button1", "F button2", "F button3" );
+		behaviors.addBehaviour( new ChangeBrushRadius(), "change brush radius", "D scroll", "E scroll", "SPACE scroll" );
 		behaviors.addAction( new ChangeLabel() );
-		behaviors.addBehaviour( new MoveBrush(), "move brush", "SPACE" );
+		behaviors.addBehaviour( new MoveBrush(), "move brush", "E", "D", "SPACE" );
 	}
 
 	void updateLabeling(Labeling labeling) {
