@@ -40,6 +40,7 @@ public class MenuBar extends JMenuBar {
 				.addItem("saveSegmentation")
 				.addItem("showPrediction")
 				.addItem("savePrediction")
+				.addItem("addSegmentationAsLabel")
 				.addItem("changeFeatures")
 				.addItem("selectAlgorithm");
 		addMenu("View")

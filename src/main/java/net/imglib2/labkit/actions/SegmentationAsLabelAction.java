@@ -29,7 +29,7 @@ public class SegmentationAsLabelAction extends AbstractFileIoAcion {
 		super(extensible, AbstractFileIoAcion.TIFF_FILTER);
 		this.labelingHolder = labelingHolder;
 		this.predictionLayer = predictionLayer;
-		extensible.addAction("Add Segmentation as Labels...", "addSegmentationAsLabels",
+		extensible.addAction("Create Label from Segmentation...", "addSegmentationAsLabel",
 				this::addSegmentationAsLabels, "");
 	}
 
