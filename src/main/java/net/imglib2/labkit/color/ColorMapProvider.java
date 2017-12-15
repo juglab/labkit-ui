@@ -28,10 +28,6 @@ public class ColorMapProvider
 		return colorMap;
 	}
 
-	public Notifier<Consumer<ColorMap>> listeners() {
-		return listeners;
-	}
-
 	private void updateLabeling(Labeling labeling) {
 		updateColors(new ArrayList<>(labeling.getLabels()));
 		listeners.forEach(x -> x.accept(colorMap));
