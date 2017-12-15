@@ -30,11 +30,5 @@ public interface Extensible {
 
 	Component dialogParent();
 
-	void addBehaviour(Behaviour behaviour, String name, String defaultTriggers);
-
-	void addOverlayRenderer(OverlayRenderer overlay);
-
-	void displayRepaint();
-
 	Holder<Labeling> labeling();
 }

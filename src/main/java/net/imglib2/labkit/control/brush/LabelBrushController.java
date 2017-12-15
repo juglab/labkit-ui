@@ -14,8 +14,7 @@ import net.imglib2.algorithm.fill.Filter;
 import net.imglib2.algorithm.neighborhood.DiamondShape;
 import net.imglib2.algorithm.neighborhood.Neighborhood;
 import net.imglib2.labkit.ActionsAndBehaviours;
-import net.imglib2.labkit.Holder;
-import net.imglib2.labkit.color.ColorMapProvider;
+import net.imglib2.labkit.LabelingModel;
 import net.imglib2.labkit.control.brush.neighborhood.NeighborhoodFactories;
 import net.imglib2.labkit.control.brush.neighborhood.NeighborhoodFactory;
 import net.imglib2.labkit.labeling.Labeling;
@@ -88,18 +87,17 @@ public class LabelBrushController
 
 	public LabelBrushController(
 			final ViewerPanel viewer,
-			final Holder<Labeling> labels,
+			final LabelingModel model,
 			final ActionsAndBehaviours behaviors,
-			final ColorMapProvider colorProvider,
 			final AffineTransform3D labelTransform,
 			final boolean sliceTime)
 	{
 		this.viewer = viewer;
 		this.labelTransform = labelTransform;
-		this.brushOverlay = new BrushOverlay( viewer, "", colorProvider );
+		this.brushOverlay = new BrushOverlay( viewer, "", model.colorMapProvider() );
 		this.sliceTime = sliceTime;
-		updateLabeling(labels.get());
-		labels.notifier().add(this::updateLabeling);
+		updateLabeling(model.labeling().get());
+		model.labeling().notifier().add(this::updateLabeling);
 
 		behaviors.addBehaviour( new PaintBehavior(true), "paint", "D button1", "SPACE button1" );
 		RunnableAction nop = new RunnableAction("nop", () -> { });

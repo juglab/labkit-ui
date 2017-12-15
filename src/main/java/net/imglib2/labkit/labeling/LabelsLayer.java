@@ -5,6 +5,7 @@ import gnu.trove.map.hash.TIntObjectHashMap;
 import net.imglib2.RandomAccessibleInterval;
 import net.imglib2.labkit.Holder;
 import net.imglib2.labkit.LabelingComponent;
+import net.imglib2.labkit.LabelingModel;
 import net.imglib2.labkit.RandomAccessibleContainer;
 import net.imglib2.labkit.color.ColorMap;
 import net.imglib2.labkit.color.ColorMapProvider;
@@ -19,33 +20,27 @@ import java.util.Set;
  */
 public class LabelsLayer {
 
-	private final ColorMapProvider colorProvider;
-
-	private final Holder<Labeling> labelingHolder;
-
 	private final RandomAccessibleContainer<ARGBType> container;
 
-	private final LabelingComponent labelingComponent; // TODO: LabelsLayer should not depend on LabelingComponent
+	private final LabelingModel model;
 
 	private RandomAccessibleInterval<ARGBType> view;
 
-	public LabelsLayer(Holder<Labeling> labeling, ColorMapProvider colorProvider, LabelingComponent labelingComponent) {
-		this.colorProvider = colorProvider;
-		this.labelingHolder = labeling;
-		this.labelingComponent = labelingComponent;
+	public LabelsLayer(LabelingModel model) {
+		this.model = model;
 		container = new RandomAccessibleContainer<>(colorView());
-		view = Views.interval(container, labeling.get());
-		labeling.notifier().add(this::updateLabeling);
+		view = Views.interval(container, model.labeling().get());
+		model.labeling().notifier().add(this::updateLabeling);
 	}
 
 	private void updateLabeling(Labeling labeling) {
 		container.setSource(colorView());
-		labelingComponent.requestRepaint();
+		model.requestRepaint();
 	}
 
 	private RandomAccessibleInterval<ARGBType> colorView() {
-		Labeling labeling = labelingHolder.get();
-		ColorMap colorMap = colorProvider.colorMap();
+		Labeling labeling = model.labeling().get();
+		ColorMap colorMap = model.colorMapProvider().colorMap();
 		TIntObjectMap<ARGBType> colors = new TIntObjectHashMap<>();
 
 		return Converters.convert(labeling.getIndexImg(), (in, out) -> {

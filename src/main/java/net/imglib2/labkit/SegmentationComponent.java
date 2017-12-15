@@ -46,7 +46,6 @@ import org.scijava.ui.behaviour.util.RunnableAction;
 
 import javax.swing.*;
 import java.awt.*;
-import java.util.Arrays;
 
 public class SegmentationComponent {
 
@@ -59,6 +58,8 @@ public class SegmentationComponent {
 	private SharedQueue queue = new SharedQueue(Runtime.getRuntime().availableProcessors());
 
 	private LabelingComponent labelingComponent;
+
+	private ImageLabelingModel model;
 
 	private FeatureStack featureStack;
 
@@ -86,14 +87,14 @@ public class SegmentationComponent {
 		this.inputImage = image;
 		this.context = context;
 		RandomAccessibleInterval<? extends NumericType<?>> displayImage = image.displayImage();
-		Labeling labeling = new Labeling(Arrays.asList("background", "foreground"), displayImage);
-		labelingComponent = new LabelingComponent(dialogBoxOwner, displayImage, labeling, inputImage.isTimeSeries());
+		model = new ImageLabelingModel(displayImage);
+		labelingComponent = new LabelingComponent(dialogBoxOwner, model, inputImage.isTimeSeries());
 		panel.setRightComponent(labelingComponent.getComponent());
 		// --
 		GlobalSettings globalSettings = new GlobalSettings(inputImage.getChannelSetting(), inputImage.getSpatialDimensions(), 1.0, 16.0, 1.0);
 		OpService ops = context.service(OpService.class);
 		FeatureSettings setting = new FeatureSettings(globalSettings, SingleFeatures.identity(), GroupedFeatures.gauss());
-		TrainableSegmentationClassifier classifier1 = new TrainableSegmentationClassifier(ops, new FastRandomForest(), labeling.getLabels(), setting);
+		TrainableSegmentationClassifier classifier1 = new TrainableSegmentationClassifier(ops, new FastRandomForest(), model.labeling().get().getLabels(), setting);
 		this.classifier = inputImage.isTimeSeries() ? new TimeSeriesClassifier(classifier1) : classifier1;
 		featureStack = new FeatureStack(displayImage, inputImage.isTimeSeries());
 		initClassification();
@@ -106,11 +107,11 @@ public class SegmentationComponent {
 	// -- Helper methods --
 
 	private void initClassification() {
-		new TrainClassifier(extensible, classifier, labelingComponent.labeling()::get, featureStack.compatibleOriginal());
-		PredictionLayer predictionLayer = new PredictionLayer(extensible, labelingComponent.colorProvider(), classifier, featureStack);
+		new TrainClassifier(extensible, classifier, model.labeling()::get, featureStack.compatibleOriginal());
+		PredictionLayer predictionLayer = new PredictionLayer(extensible, model.colorMapProvider(), classifier, featureStack);
 		new ClassifierIoAction(extensible, this.classifier);
-		new LabelingIoAction(extensible, labelingComponent.labeling(), inputImage);
-		new AddLabelingIoAction(extensible, labelingComponent.labeling());
+		new LabelingIoAction(extensible, model.labeling(), inputImage);
+		new AddLabelingIoAction(extensible, model.labeling());
 		new SegmentationSave(extensible, predictionLayer);
 		new OpenImageAction(extensible);
 		new ZAxisScaling(extensible, labelingComponent.sourceTransformation());
@@ -118,8 +119,8 @@ public class SegmentationComponent {
 		new SelectClassifier(extensible, classifier);
 		new BatchSegmentAction(extensible, classifier);
 		new ChangeFeatureSettingsAction(extensible, classifier);
-		new SegmentationAsLabelAction(extensible, predictionLayer, labelingComponent.labeling());
-		JComponent labelPanel = new LabelPanel(extensible, labelingComponent.colorProvider()).getComponent();
+		new SegmentationAsLabelAction(extensible, predictionLayer, model.labeling());
+		JComponent labelPanel = new LabelPanel(extensible, model.colorMapProvider()).getComponent();
 		panel.setOneTouchExpandable(true);
 		panel.setLeftComponent(labelPanel);
 		MeasureConnectedComponents.addAction(extensible);
@@ -132,7 +133,7 @@ public class SegmentationComponent {
 	}
 
 	public Holder<Labeling> labeling() {
-		return labelingComponent.labeling();
+		return model.labeling();
 	}
 
 	public ActionMap getActions() {
@@ -164,7 +165,7 @@ public class SegmentationComponent {
 
 		@Override
 		public void repaint() {
-			labelingComponent.requestRepaint();
+			model.dataChangedNotifier();
 		}
 
 		@Override
@@ -203,23 +204,8 @@ public class SegmentationComponent {
 		}
 
 		@Override
-		public void addBehaviour(Behaviour behaviour, String name, String defaultTriggers) {
-			labelingComponent.addBehaviour(behaviour, name, defaultTriggers);
-		}
-
-		@Override
-		public void addOverlayRenderer(OverlayRenderer overlay) {
-			labelingComponent.addOverlayRenderer(overlay);
-		}
-
-		@Override
-		public void displayRepaint() {
-			labelingComponent.displayRepaint();
-		}
-
-		@Override
 		public Holder<Labeling> labeling() {
-			return labelingComponent.labeling();
+			return model.labeling();
 		}
 	}
 }
