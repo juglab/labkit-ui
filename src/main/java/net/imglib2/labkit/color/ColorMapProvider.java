@@ -1,49 +1,45 @@
 package net.imglib2.labkit.color;
 
-import java.awt.Color;
+import java.awt.*;
 import java.util.*;
-import java.util.function.Consumer;
+import java.util.function.Supplier;
 
 import net.imglib2.labkit.Holder;
-import net.imglib2.labkit.Notifier;
 import net.imglib2.labkit.labeling.Labeling;
 import net.imglib2.type.numeric.ARGBType;
 
 public class ColorMapProvider
 {
 
-	private final Random rng = new Random(42);
-
 	private ColorMap colorMap;
-
-	private final Notifier<Consumer<ColorMap>> listeners = new Notifier<>();
 
 	public ColorMapProvider(Holder<Labeling> labelingHolder)
 	{
-		updateLabeling(labelingHolder.get());
-		labelingHolder.notifier().add(this::updateLabeling);
+		colorMap = initColorMap();
 	}
 
 	public ColorMap colorMap() {
 		return colorMap;
 	}
 
-	private void updateLabeling(Labeling labeling) {
-		updateColors(new ArrayList<>(labeling.getLabels()));
-		listeners.forEach(x -> x.accept(colorMap));
-	}
-
-	private void updateColors(final List<String> keys)
+	private static ColorMap initColorMap()
 	{
 		Map<String, ARGBType> map = new TreeMap<>();
-		final float step = 1.0f / keys.size();
-		final float start = rng.nextFloat();
-		for (int i = 0; i < keys.size(); i++) {
-			float x = start + step * i;
-			float y = x > 1.0f ? x - 1.0f : x;
-			map.put(keys.get(i), new ARGBType(Color.HSBtoRGB(y, 1.0f, 1.0f)));
+		final ColorSupplier colorSupplier = new ColorSupplier();
+		return key -> map.computeIfAbsent(key, x -> colorSupplier.get());
+	}
+
+	private static class ColorSupplier implements Supplier<ARGBType> {
+
+		private static float GOLDEN_RATIO = (float) ((1 + Math.sqrt(5)) / 2);
+		private float GOLDEN_ANGLE = 1f - 1f / GOLDEN_RATIO;
+		float hue = 1f - 2f * GOLDEN_ANGLE;
+
+		@Override
+		public ARGBType get() {
+			hue += GOLDEN_ANGLE;
+			if(hue > 1f) hue -= 1f;
+			return new ARGBType(Color.HSBtoRGB(hue, 1f, 1f));
 		}
-		ARGBType white = new ARGBType(Color.white.getRGB());
-		colorMap = key -> map.getOrDefault(key, white);
 	}
 }
