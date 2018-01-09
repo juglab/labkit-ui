@@ -95,6 +95,9 @@
 		<license.copyrightOwners>Matthias Arzt, Philipp Hanslovsky</license.copyrightOwners>
 		<enforcer.skip>true</enforcer.skip>
 		<bigdataviewer-vistools.version>1.0.0-beta-6</bigdataviewer-vistools.version>
+
+		<!-- NB: Deploy releases to the ImageJ Maven repository. -->
+		<releaseProfiles>deploy-to-imagej</releaseProfiles>
 	</properties>
 
 	<dependencies>
