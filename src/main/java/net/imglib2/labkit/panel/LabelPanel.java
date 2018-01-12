@@ -10,16 +10,14 @@ import net.miginfocom.swing.MigLayout;
 import org.scijava.ui.behaviour.util.RunnableAction;
 
 import javax.swing.*;
-import javax.swing.event.ListSelectionEvent;
 import java.awt.*;
 import java.util.List;
 import java.util.function.Consumer;
 
 public class LabelPanel {
 
-	private final DefaultListModel<String> listModel = new DefaultListModel<>();
 	private final ImageLabelingModel model;
-	private JList<String> list = new JList<>(listModel);
+	private ComponentList<String, JPanel> list = new ComponentList<>();
 	private final JPanel panel = initPanel();
 	private final Extensible extensible;
 	private Holder<Labeling> labeling;
@@ -39,17 +37,16 @@ public class LabelPanel {
 	// -- Helper methods --
 
 	private void updateLabeling(Labeling labeling) {
-		listModel.clear();
-		labeling.getLabels().forEach(listModel::addElement);
+		list.clear();
+		labeling.getLabels().forEach(label -> list.add(label, new EntryPanel(label)));
 	}
 
 	private JPanel initPanel() {
 		JPanel panel = new JPanel();
 		panel.setPreferredSize(new Dimension(200, 100));
 		panel.setLayout(new MigLayout("","[grow]", "[grow][][][]"));
-		list.setCellRenderer(new MyRenderer());
-		list.addListSelectionListener(this::changeSelectedLabel);
-		panel.add(new JScrollPane(list), "grow, wrap");
+		list.listeners().add(this::changeSelectedLabel);
+		panel.add(list.getCompnent(), "grow, wrap");
 		panel.add(new JButton(new RunnableAction("add", this::addLabel)), "grow, wrap");
 		panel.add(new JButton(new RunnableAction("remove", () -> doForSelectedLabel(this::removeLabel))), "grow, wrap");
 		panel.add(new JButton(new RunnableAction("rename", () -> doForSelectedLabel(this::renameLabel))), "grow, wrap");
@@ -58,12 +55,10 @@ public class LabelPanel {
 	}
 
 	private void viewSelectedLabel(String label) {
-		list.setSelectedIndex( listModel.indexOf(label) );
+		list.setSelected(label);
 	}
 
-	private void changeSelectedLabel(ListSelectionEvent event) {
-		if(event.getValueIsAdjusting())
-			return;
+	private void changeSelectedLabel() {
 		String label = getSelectedLabel();
 		if(label != null)
 			model.selectedLabel().set(label);
@@ -75,8 +70,7 @@ public class LabelPanel {
 	}
 
 	private String getSelectedLabel() {
-		int index = list.getSelectedIndex();
-		return index < 0 ? null : list.getModel().getElementAt(index);
+		return list.getSelected();
 	}
 
 	private void addLabel() {
@@ -118,27 +112,18 @@ public class LabelPanel {
 		return null;
 	}
 
-	// -- Helper class --
+	// -- Helper methods --
 
-	private class MyRenderer implements ListCellRenderer<String> {
+	private class EntryPanel extends JPanel {
 
-		MyRenderer() {
-		}
-
-		@Override
-		public Component getListCellRendererComponent(JList<? extends String> list, String value, int index, boolean isSelected, boolean cellHasFocus) {
+		EntryPanel(String value) {
 			ARGBType color = model.colorMapProvider().colorMap().getColor(value);
-			JPanel panel = new JPanel();
-			panel.setOpaque(true);
-			panel.setLayout(new MigLayout());
+			setOpaque(true);
+			setLayout(new MigLayout());
 			JButton comp = new JButton();
 			comp.setBackground(new Color(color.get()));
-			panel.add(comp);
-			panel.add(new JLabel(value));
-			panel.setBackground(isSelected ? list.getSelectionBackground() : list.getBackground());
-			panel.setForeground(isSelected ? list.getSelectionForeground() : list.getForeground());
-			return panel;
+			add(comp);
+			add(new JLabel(value));
 		}
 	}
-
 }
