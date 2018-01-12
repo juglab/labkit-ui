@@ -5,4 +5,6 @@ import net.imglib2.type.numeric.ARGBType;
 public interface ColorMap
 {
 	ARGBType getColor(String key );
+
+	void setColor(String key, ARGBType color);
 }

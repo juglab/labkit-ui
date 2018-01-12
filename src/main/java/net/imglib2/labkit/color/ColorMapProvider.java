@@ -26,7 +26,17 @@ public class ColorMapProvider
 	{
 		Map<String, ARGBType> map = new TreeMap<>();
 		final ColorSupplier colorSupplier = new ColorSupplier();
-		return key -> map.computeIfAbsent(key, x -> colorSupplier.get());
+		return new ColorMap() {
+			@Override
+			public ARGBType getColor(String key) {
+				return map.computeIfAbsent(key, x -> colorSupplier.get());
+			}
+
+			@Override
+			public void setColor(String key, ARGBType color) {
+				map.put(key, color);
+			}
+		};
 	}
 
 	private static class ColorSupplier implements Supplier<ARGBType> {

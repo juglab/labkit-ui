@@ -48,7 +48,8 @@ public class LabelPanel {
 		panel.add(new JScrollPane(list), "grow, wrap");
 		panel.add(new JButton(new RunnableAction("add", this::addLabel)), "grow, wrap");
 		panel.add(new JButton(new RunnableAction("remove", () -> doForSelectedLabel(this::removeLabel))), "grow, wrap");
-		panel.add(new JButton(new RunnableAction("rename", () -> doForSelectedLabel(this::renameLabel))), "grow");
+		panel.add(new JButton(new RunnableAction("rename", () -> doForSelectedLabel(this::renameLabel))), "grow, wrap");
+		panel.add(new JButton(new RunnableAction("change color", () -> doForSelectedLabel(this::changeColor))), "grow");
 		return panel;
 	}
 
@@ -78,6 +79,14 @@ public class LabelPanel {
 		if(newLabel == null)
 			return;
 		labeling.get().renameLabel(label, newLabel);
+		labeling.notifier().forEach(l -> l.accept(labeling.get()));
+	}
+
+	private void changeColor(String label) {
+		ARGBType color = colorMapProvider.colorMap().getColor(label);
+		Color newColor = JColorChooser.showDialog(extensible.dialogParent(), "Choose Color for Label \"" + label + "\"", new Color(color.get()));
+		if(newColor == null) return;
+		colorMapProvider.colorMap().setColor(label, new ARGBType(newColor.getRGB()));
 		labeling.notifier().forEach(l -> l.accept(labeling.get()));
 	}
 
