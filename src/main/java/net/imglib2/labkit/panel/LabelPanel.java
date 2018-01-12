@@ -50,7 +50,6 @@ public class LabelPanel {
 		panel.add(new JButton(new RunnableAction("add", this::addLabel)), "grow, wrap");
 		panel.add(new JButton(new RunnableAction("remove", () -> doForSelectedLabel(this::removeLabel))), "grow, wrap");
 		panel.add(new JButton(new RunnableAction("rename", () -> doForSelectedLabel(this::renameLabel))), "grow, wrap");
-		panel.add(new JButton(new RunnableAction("change color", () -> doForSelectedLabel(this::changeColor))), "grow");
 		return panel;
 	}
 
@@ -122,6 +121,7 @@ public class LabelPanel {
 			setLayout(new MigLayout());
 			JButton comp = new JButton();
 			comp.setBackground(new Color(color.get()));
+			comp.addActionListener(l -> changeColor(value));
 			add(comp);
 			add(new JLabel(value));
 		}
