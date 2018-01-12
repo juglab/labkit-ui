@@ -2,31 +2,34 @@ package net.imglib2.labkit.panel;
 
 import net.imglib2.labkit.Extensible;
 import net.imglib2.labkit.Holder;
-import net.imglib2.labkit.color.ColorMapProvider;
+import net.imglib2.labkit.ImageLabelingModel;
+import net.imglib2.labkit.color.ColorMap;
 import net.imglib2.labkit.labeling.Labeling;
 import net.imglib2.type.numeric.ARGBType;
 import net.miginfocom.swing.MigLayout;
 import org.scijava.ui.behaviour.util.RunnableAction;
 
 import javax.swing.*;
+import javax.swing.event.ListSelectionEvent;
 import java.awt.*;
 import java.util.List;
 import java.util.function.Consumer;
 
 public class LabelPanel {
 
-	private final DefaultListModel<String> model = new DefaultListModel<>();
-	private final ColorMapProvider colorMapProvider;
-	private JList<String> list = new JList<>(model);
+	private final DefaultListModel<String> listModel = new DefaultListModel<>();
+	private final ImageLabelingModel model;
+	private JList<String> list = new JList<>(listModel);
 	private final JPanel panel = initPanel();
 	private final Extensible extensible;
 	private Holder<Labeling> labeling;
 
-	public LabelPanel(Extensible extensible, ColorMapProvider colorMapProvider) {
-		this.colorMapProvider = colorMapProvider;
+	public LabelPanel(Extensible extensible, ImageLabelingModel model) {
+		this.model = model;
 		this.extensible = extensible;
 		this.labeling = extensible.labeling();
 		labeling.notifier().add(this::updateLabeling);
+		model.selectedLabel().notifier().add(this::viewSelectedLabel);
 	}
 
 	public JComponent getComponent() {
@@ -36,8 +39,8 @@ public class LabelPanel {
 	// -- Helper methods --
 
 	private void updateLabeling(Labeling labeling) {
-		model.clear();
-		labeling.getLabels().forEach(model::addElement);
+		listModel.clear();
+		labeling.getLabels().forEach(listModel::addElement);
 	}
 
 	private JPanel initPanel() {
@@ -45,6 +48,7 @@ public class LabelPanel {
 		panel.setPreferredSize(new Dimension(200, 100));
 		panel.setLayout(new MigLayout("","[grow]", "[grow][][][]"));
 		list.setCellRenderer(new MyRenderer());
+		list.addListSelectionListener(this::changeSelectedLabel);
 		panel.add(new JScrollPane(list), "grow, wrap");
 		panel.add(new JButton(new RunnableAction("add", this::addLabel)), "grow, wrap");
 		panel.add(new JButton(new RunnableAction("remove", () -> doForSelectedLabel(this::removeLabel))), "grow, wrap");
@@ -53,12 +57,26 @@ public class LabelPanel {
 		return panel;
 	}
 
-	private void doForSelectedLabel(Consumer<String> action) {
-		int index = list.getSelectedIndex();
-		if(index < 0)
+	private void viewSelectedLabel(String label) {
+		list.setSelectedIndex( listModel.indexOf(label) );
+	}
+
+	private void changeSelectedLabel(ListSelectionEvent event) {
+		if(event.getValueIsAdjusting())
 			return;
-		String label = list.getModel().getElementAt(index);
-		action.accept(label);
+		String label = getSelectedLabel();
+		if(label != null)
+			model.selectedLabel().set(label);
+	}
+
+	private void doForSelectedLabel(Consumer<String> action) {
+		String label = getSelectedLabel();
+		if(label != null) action.accept(label);
+	}
+
+	private String getSelectedLabel() {
+		int index = list.getSelectedIndex();
+		return index < 0 ? null : list.getModel().getElementAt(index);
 	}
 
 	private void addLabel() {
@@ -83,10 +101,11 @@ public class LabelPanel {
 	}
 
 	private void changeColor(String label) {
-		ARGBType color = colorMapProvider.colorMap().getColor(label);
+		ColorMap colorMap = model.colorMapProvider().colorMap();
+		ARGBType color = colorMap.getColor(label);
 		Color newColor = JColorChooser.showDialog(extensible.dialogParent(), "Choose Color for Label \"" + label + "\"", new Color(color.get()));
 		if(newColor == null) return;
-		colorMapProvider.colorMap().setColor(label, new ARGBType(newColor.getRGB()));
+		colorMap.setColor(label, new ARGBType(newColor.getRGB()));
 		labeling.notifier().forEach(l -> l.accept(labeling.get()));
 	}
 
@@ -108,7 +127,7 @@ public class LabelPanel {
 
 		@Override
 		public Component getListCellRendererComponent(JList<? extends String> list, String value, int index, boolean isSelected, boolean cellHasFocus) {
-			ARGBType color = colorMapProvider.colorMap().getColor(value);
+			ARGBType color = model.colorMapProvider().colorMap().getColor(value);
 			JPanel panel = new JPanel();
 			panel.setOpaque(true);
 			panel.setLayout(new MigLayout());

@@ -120,7 +120,7 @@ public class SegmentationComponent {
 		new BatchSegmentAction(extensible, classifier);
 		new ChangeFeatureSettingsAction(extensible, classifier);
 		new SegmentationAsLabelAction(extensible, predictionLayer, model.labeling());
-		JComponent labelPanel = new LabelPanel(extensible, model.colorMapProvider()).getComponent();
+		JComponent labelPanel = new LabelPanel(extensible, model).getComponent();
 		panel.setOneTouchExpandable(true);
 		panel.setLeftComponent(labelPanel);
 		MeasureConnectedComponents.addAction(extensible);

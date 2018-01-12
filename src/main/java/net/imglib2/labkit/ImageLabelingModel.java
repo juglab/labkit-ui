@@ -19,10 +19,13 @@ public class ImageLabelingModel implements LabelingModel {
 
 	private Notifier<Runnable> dataChangedNotifier = new Notifier<>();
 
+	private Holder<String> selectedLabelHolder;
+
 	ImageLabelingModel(RandomAccessibleInterval<? extends NumericType<?>> image) {
 		this.rawData = image;
 		Labeling labeling = new Labeling(Arrays.asList("background", "foreground"), image);
 		this.labelingHolder = new CheckedHolder(labeling);
+		this.selectedLabelHolder = new DefaultHolder<>(labeling.getLabels().stream().findAny().orElse(""));
 		colorProvider = new ColorMapProvider(labelingHolder);
 	}
 
@@ -41,6 +44,9 @@ public class ImageLabelingModel implements LabelingModel {
 	public Holder<Labeling> labeling() {
 		return labelingHolder;
 	}
+
+	@Override
+	public Holder<String> selectedLabel() { return selectedLabelHolder; }
 
 	@Override
 	public void requestRepaint() {

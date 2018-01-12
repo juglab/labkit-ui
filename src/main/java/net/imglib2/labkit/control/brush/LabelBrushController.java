@@ -4,9 +4,9 @@ import java.awt.Cursor;
 import java.awt.event.ActionEvent;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 import net.imglib2.*;
@@ -14,6 +14,7 @@ import net.imglib2.algorithm.fill.Filter;
 import net.imglib2.algorithm.neighborhood.DiamondShape;
 import net.imglib2.algorithm.neighborhood.Neighborhood;
 import net.imglib2.labkit.ActionsAndBehaviours;
+import net.imglib2.labkit.Holder;
 import net.imglib2.labkit.LabelingModel;
 import net.imglib2.labkit.control.brush.neighborhood.NeighborhoodFactories;
 import net.imglib2.labkit.control.brush.neighborhood.NeighborhoodFactory;
@@ -53,7 +54,7 @@ public class LabelBrushController
 
 	final private ViewerPanel viewer;
 
-	private List<RandomAccessibleInterval<BitType>> regions;
+	private Map<String, RandomAccessibleInterval<BitType>> regions;
 
 	private List<String> labels;
 
@@ -66,7 +67,7 @@ public class LabelBrushController
 
 	private int brushRadius = 5;
 
-	private int currentLabel = 0;
+	private final Holder<String> selectedLabel;
 
 	boolean sliceTime;
 
@@ -75,14 +76,14 @@ public class LabelBrushController
 		return brushOverlay;
 	}
 
-	private int getCurrentLabel()
+	private String getCurrentLabel()
 	{
-		return currentLabel;
+		return selectedLabel.get();
 	}
 
-	private void setCurrentLabel(int index) {
-		currentLabel = index;
-		brushOverlay.setLabel( labels.get(index) );
+	private void setCurrentLabel(String label) {
+		brushOverlay.setLabel(label);
+		selectedLabel.set(label);
 	}
 
 	public LabelBrushController(
@@ -98,6 +99,9 @@ public class LabelBrushController
 		this.sliceTime = sliceTime;
 		updateLabeling(model.labeling().get());
 		model.labeling().notifier().add(this::updateLabeling);
+		selectedLabel = model.selectedLabel();
+		setCurrentLabel(selectedLabel.get());
+		selectedLabel.notifier().add( label -> setCurrentLabel(label) );
 
 		behaviors.addBehaviour( new PaintBehavior(true), "paint", "D button1", "SPACE button1" );
 		RunnableAction nop = new RunnableAction("nop", () -> { });
@@ -112,15 +116,13 @@ public class LabelBrushController
 	}
 
 	void updateLabeling(Labeling labeling) {
-		List<Map.Entry<String, RandomAccessibleInterval<BitType>>> entries =
-				new ArrayList<>(labeling.regions().entrySet());
-		if(entries.isEmpty()) {
+		Map<String, RandomAccessibleInterval<BitType>> regions = new HashMap<>(labeling.regions());
+		if(regions.isEmpty()) {
 			RandomAccessibleInterval<BitType> dummy = ConstantUtils.constantRandomAccessibleInterval(new BitType(), labeling.numDimensions(), labeling);
-			entries = new ArrayList<>(Collections.singletonMap("no label", dummy).entrySet());
+			regions = Collections.singletonMap("no label", dummy);
 		}
-		this.labels = entries.stream().map(Map.Entry::getKey).collect(Collectors.toList());
-		this.regions = entries.stream().map(Map.Entry::getValue).collect(Collectors.toList());
-		setCurrentLabel(Math.min(currentLabel, regions.size()-1));
+		this.labels = new ArrayList<>(regions.keySet());
+		this.regions = regions;
 	}
 
 	private RealPoint displayToImageCoordinates( final int x, final int y )
@@ -148,8 +150,7 @@ public class LabelBrushController
 		{
 			synchronized ( viewer )
 			{
-				final int v = getValue();
-				RandomAccessibleInterval<BitType> label = regions.get(v);
+				RandomAccessibleInterval<BitType> label = regions.get(getCurrentLabel());
 				if(sliceTime)
 					label = Views.hyperSlice(label, label.numDimensions()-1,
 							viewer.getState().getCurrentTimepoint());
@@ -188,11 +189,6 @@ public class LabelBrushController
 			double[] result = new double[a.numDimensions()];
 			a.localize(result);
 			return result;
-		}
-
-		private int getValue()
-		{
-			return getCurrentLabel();
 		}
 
 		@Override
@@ -248,9 +244,17 @@ public class LabelBrushController
 
 		@Override
 		public void actionPerformed(ActionEvent actionEvent) {
-			setCurrentLabel(currentLabel >= (regions.size() - 1) ? 0 : currentLabel + 1);
+			setCurrentLabel(next(labels, getCurrentLabel()));
 			// TODO request only overlays to repaint
 			viewer.getDisplay().repaint();
+		}
+
+		private String next(List<String> labels, String currentLabel) {
+			if(labels.isEmpty())
+				return null;
+			int index = labels.indexOf(currentLabel) + 1;
+			if(index >= labels.size()) index = 0;
+			return labels.get(index);
 		}
 	}
 

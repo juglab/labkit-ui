@@ -5,6 +5,8 @@ import net.imglib2.labkit.labeling.Labeling;
 
 public interface LabelingModel {
 
+	Holder<String> selectedLabel();
+
 	ColorMapProvider colorMapProvider();
 
 	Holder<Labeling> labeling();
