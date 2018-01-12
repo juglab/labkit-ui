@@ -17,6 +17,8 @@ public class DefaultHolder<T> implements Holder<T> {
 
 	@Override
 	public void set(T value) {
+		if(value == this.value)
+			return;
 		this.value = value;
 		notifier.forEach(listener -> listener.accept(value));
 	}
