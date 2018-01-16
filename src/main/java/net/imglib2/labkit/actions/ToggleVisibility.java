@@ -19,7 +19,7 @@ public class ToggleVisibility extends AbstractNamedAction
 
 	public ToggleVisibility( final String name, final BdvSource source)
 	{
-		super( "Toggle " + name );
+		super( name );
 		putValue(ACTION_COMMAND_KEY, "toggle" + name);
 		this.viewer = source.getBdvHandle().getViewerPanel();
 		source.setCurrent();

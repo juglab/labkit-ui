@@ -27,6 +27,7 @@ import net.imglib2.labkit.inputimage.DefaultInputImage;
 import net.imglib2.labkit.inputimage.InputImage;
 import net.imglib2.labkit.labeling.Labeling;
 import net.imglib2.labkit.panel.LabelPanel;
+import net.imglib2.labkit.panel.VisibilityPanel;
 import net.imglib2.labkit.plugin.MeasureConnectedComponents;
 import net.imglib2.realtransform.AffineTransform3D;
 import net.imglib2.trainable_segmention.RevampUtils;
@@ -39,6 +40,7 @@ import net.imglib2.type.numeric.IntegerType;
 import net.imglib2.type.numeric.NumericType;
 import net.imglib2.type.numeric.real.FloatType;
 import net.imglib2.ui.OverlayRenderer;
+import net.miginfocom.swing.MigLayout;
 import org.scijava.Context;
 import org.scijava.ui.behaviour.Behaviour;
 import org.scijava.ui.behaviour.util.AbstractNamedAction;
@@ -120,9 +122,12 @@ public class SegmentationComponent {
 		new BatchSegmentAction(extensible, classifier);
 		new ChangeFeatureSettingsAction(extensible, classifier);
 		new SegmentationAsLabelAction(extensible, predictionLayer, model.labeling());
-		JComponent labelPanel = new LabelPanel(extensible, model).getComponent();
+		JPanel leftPanel = new JPanel();
+		leftPanel.setLayout(new MigLayout("","[grow]","[][grow]"));
+		leftPanel.add(new VisibilityPanel(getActions()), "wrap");
+		leftPanel.add(new LabelPanel(extensible, model).getComponent(), "grow");
 		panel.setOneTouchExpandable(true);
-		panel.setLeftComponent(labelPanel);
+		panel.setLeftComponent(leftPanel);
 		MeasureConnectedComponents.addAction(extensible);
 	}
 

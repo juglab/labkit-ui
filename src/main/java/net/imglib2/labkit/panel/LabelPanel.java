@@ -44,7 +44,7 @@ public class LabelPanel {
 	private JPanel initPanel() {
 		JPanel panel = new JPanel();
 		panel.setPreferredSize(new Dimension(200, 100));
-		panel.setLayout(new MigLayout("","[grow]", "[][grow][][][]"));
+		panel.setLayout(new MigLayout("insets 0","[grow]", "[][grow][][][]"));
 		panel.add(new JLabel("Labels:"), "wrap");
 		list.listeners().add(this::changeSelectedLabel);
 		panel.add(list.getCompnent(), "grow, wrap");
