@@ -44,10 +44,11 @@ public class LabelPanel {
 	private JPanel initPanel() {
 		JPanel panel = new JPanel();
 		panel.setPreferredSize(new Dimension(200, 100));
-		panel.setLayout(new MigLayout("","[grow]", "[grow][][][]"));
+		panel.setLayout(new MigLayout("","[grow]", "[][grow][][][]"));
+		panel.add(new JLabel("Labels:"), "wrap");
 		list.listeners().add(this::changeSelectedLabel);
 		panel.add(list.getCompnent(), "grow, wrap");
-		panel.add(new JButton(new RunnableAction("add", this::addLabel)), "grow, wrap");
+		panel.add(new JButton(new RunnableAction("add", this::addLabel)), "grow, split 2");
 		panel.add(new JButton(new RunnableAction("remove", () -> doForSelectedLabel(this::removeLabel))), "grow, wrap");
 		panel.add(new JButton(new RunnableAction("rename", () -> doForSelectedLabel(this::renameLabel))), "grow, wrap");
 		return panel;
