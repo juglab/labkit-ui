@@ -29,6 +29,7 @@ public class HelpPanel extends JPanel {
 	private JButton initHelpButton(String buttonTitle, String helpText) {
 		JButton button = new JButton(buttonTitle);
 		button.addActionListener(l -> showMessage(buttonTitle, helpText));
+		button.setFocusable(false);
 		return button;
 	}
 

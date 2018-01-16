@@ -10,9 +10,7 @@ import net.imglib2.labkit.panel.HelpPanel;
 import net.imglib2.realtransform.AffineTransform3D;
 import net.imglib2.trainable_segmention.RevampUtils;
 import net.imglib2.type.numeric.NumericType;
-import net.imglib2.ui.OverlayRenderer;
 import net.imglib2.util.Pair;
-import org.scijava.ui.behaviour.Behaviour;
 import org.scijava.ui.behaviour.util.AbstractNamedAction;
 
 import javax.swing.*;
@@ -50,24 +48,10 @@ public class LabelingComponent {
 		final int nDim = model.image().numDimensions() - (isTimeSeries ? 1 : 0);
 
 		initBdv(nDim  < 3);
-		panel.add(new HelpPanel(), BorderLayout.PAGE_START);
-
+		initPanel();
 		actionsAndBehaviours = new ActionsAndBehaviours(bdvHandle);
-
 		initLabelsLayer(isTimeSeries);
-
-		Pair<Double, Double> p = AtlasUtils.estimateMinMax(model.image());
-		BdvStackSource<?> source = addLayer(RevampUtils.uncheckedCast(model.image()), "original");
-		source.setDisplayRange(p.getA(), p.getB());
-		addAction(new ToggleVisibility("Image", source));
-	}
-
-	public void addAction(AbstractNamedAction action) {
-		actionsAndBehaviours.addAction(action);
-	}
-
-	public void addBehaviour(Behaviour behaviour, String name, String defaultTriggers) {
-		actionsAndBehaviours.addBehaviour(behaviour, name, defaultTriggers);
+		initImageLayer(model.image());
 	}
 
 	private void initBdv(boolean is2D) {
@@ -75,9 +59,20 @@ public class LabelingComponent {
 		if (is2D)
 			options.is2D();
 		bdvHandle = new BdvHandlePanel(dialogBoxOwner, options);
-		panel.setLayout(new BorderLayout());
-		panel.add(bdvHandle.getViewerPanel());
 		bdvHandle.getViewerPanel().setDisplayMode( DisplayMode.FUSED );
+	}
+
+	private void initPanel() {
+		panel.setLayout(new BorderLayout());
+		panel.add(new HelpPanel(), BorderLayout.PAGE_START);
+		panel.add(bdvHandle.getViewerPanel());
+	}
+
+	private void initImageLayer(RandomAccessibleInterval<? extends NumericType<?>> image) {
+		Pair<Double, Double> p = AtlasUtils.estimateMinMax(image);
+		BdvStackSource<?> source = addLayer(RevampUtils.uncheckedCast(image), "original");
+		source.setDisplayRange(p.getA(), p.getB());
+		addAction(new ToggleVisibility("Image", source));
 	}
 
 	private void initLabelsLayer(boolean isTimeSeries) {
@@ -91,6 +86,10 @@ public class LabelingComponent {
 				sourceTransformation,
 				isTimeSeries);
 		bdvHandle.getViewerPanel().getDisplay().addOverlayRenderer( brushController.getBrushOverlay() );
+	}
+
+	public void addAction(AbstractNamedAction action) {
+		actionsAndBehaviours.addAction(action);
 	}
 
 	private void requestRepaint() {
