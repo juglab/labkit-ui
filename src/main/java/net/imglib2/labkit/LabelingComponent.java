@@ -6,6 +6,7 @@ import net.imglib2.RandomAccessibleInterval;
 import net.imglib2.labkit.actions.ToggleVisibility;
 import net.imglib2.labkit.control.brush.*;
 import net.imglib2.labkit.labeling.LabelsLayer;
+import net.imglib2.labkit.panel.HelpPanel;
 import net.imglib2.realtransform.AffineTransform3D;
 import net.imglib2.trainable_segmention.RevampUtils;
 import net.imglib2.type.numeric.NumericType;
@@ -49,6 +50,7 @@ public class LabelingComponent {
 		final int nDim = model.image().numDimensions() - (isTimeSeries ? 1 : 0);
 
 		initBdv(nDim  < 3);
+		panel.add(new HelpPanel(), BorderLayout.PAGE_START);
 
 		actionsAndBehaviours = new ActionsAndBehaviours(bdvHandle);
 
