@@ -10,7 +10,7 @@
 
 	<groupId>net.imglib2</groupId>
 	<artifactId>imglib2-labkit</artifactId>
-	<version>0.1.1-SNAPSHOT</version>
+	<version>0.1.2-SNAPSHOT</version>
 
 	<name>ImgLib2 Labkit</name>
 	<description>ImgLib2 Labkit</description>
