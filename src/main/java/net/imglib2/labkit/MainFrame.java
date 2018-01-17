@@ -3,7 +3,8 @@ package net.imglib2.labkit;
 import io.scif.services.DatasetIOService;
 import net.imagej.Dataset;
 import net.imglib2.labkit.actions.SetLabelsAction;
-import net.imglib2.labkit.inputimage.DatasetInputImage;
+import net.imglib2.labkit.inputimage.DefaultInputImage;
+import net.imglib2.labkit.inputimage.InputImage;
 import net.imglib2.labkit.labeling.Labeling;
 import net.imglib2.labkit.labeling.LabelingSerializer;
 import net.imglib2.trainable_segmention.RevampUtils;
@@ -21,7 +22,7 @@ import java.util.List;
  */
 public class MainFrame {
 
-	private final DatasetInputImage inputImage;
+	private final InputImage inputImage;
 
 	private JFrame frame = initFrame();
 
@@ -34,15 +35,16 @@ public class MainFrame {
 	public static MainFrame open(Context context, String filename, boolean isTimeSeries) {
 		final Context context2 = (context == null) ? new Context() : context;
 		Dataset dataset = RevampUtils.wrapException( () -> context2.service(DatasetIOService.class).open(filename) );
-		return new MainFrame(context2, dataset, isTimeSeries);
+		DefaultInputImage inputImage = new DefaultInputImage(dataset);
+		inputImage.setTimeSeries(isTimeSeries);
+		return new MainFrame(context2, inputImage);
 	}
 
-	public MainFrame(final Context context, final Dataset dataset, final boolean isTimeSeries)
+	public MainFrame(final Context context, final InputImage inputImage)
 	{
 		this.context = context;
 		this.preferences = new Preferences(context);
-		this.inputImage = new DatasetInputImage(dataset);
-		inputImage.setTimeSeries(isTimeSeries);
+		this.inputImage = inputImage;
 		this.segmentationComponent = new SegmentationComponent(context, frame, inputImage);
 		segmentationComponent.labeling().set(getInitialLabeling());
 		// --

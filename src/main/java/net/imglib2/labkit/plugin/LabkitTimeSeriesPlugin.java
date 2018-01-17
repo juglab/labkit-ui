@@ -2,6 +2,7 @@ package net.imglib2.labkit.plugin;
 
 import net.imagej.Dataset;
 import net.imglib2.labkit.MainFrame;
+import net.imglib2.labkit.inputimage.DatasetInputImage;
 import org.scijava.Context;
 import org.scijava.command.Command;
 import org.scijava.plugin.Parameter;
@@ -21,6 +22,8 @@ public class LabkitTimeSeriesPlugin implements Command {
 
 	@Override
 	public void run() {
-		new MainFrame(context, dataset, true);
+		DatasetInputImage input = new DatasetInputImage(dataset);
+		input.setTimeSeries(true);
+		new MainFrame(context, input);
 	}
 }
