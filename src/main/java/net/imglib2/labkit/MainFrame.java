@@ -8,12 +8,14 @@ import net.imglib2.labkit.inputimage.InputImage;
 import net.imglib2.labkit.labeling.Labeling;
 import net.imglib2.labkit.labeling.LabelingSerializer;
 import net.imglib2.trainable_segmention.RevampUtils;
+import net.imglib2.util.Intervals;
 import org.scijava.Context;
 
 import javax.swing.*;
 import java.io.File;
 import java.io.IOException;
 import java.util.List;
+import java.util.stream.IntStream;
 
 /**
  * A component that supports labeling an image.
@@ -45,8 +47,9 @@ public class MainFrame {
 		this.context = context;
 		this.preferences = new Preferences(context);
 		this.inputImage = inputImage;
-		this.segmentationComponent = new SegmentationComponent(context, frame, inputImage);
-		segmentationComponent.labeling().set(getInitialLabeling());
+		Labeling initialLabeling = getInitialLabeling();
+		inputImage.setScaling(getScaling(inputImage, initialLabeling));
+		this.segmentationComponent = new SegmentationComponent(context, frame, inputImage, initialLabeling);
 		// --
 		new SetLabelsAction(segmentationComponent, preferences);
 		setTitle();
@@ -54,6 +57,12 @@ public class MainFrame {
 		frame.setJMenuBar(menubar);
 		frame.add(segmentationComponent.getComponent());
 		frame.setVisible(true);
+	}
+
+	private double getScaling(InputImage inputImage, Labeling initialLabeling) {
+		long[] dimensionsA = Intervals.dimensionsAsLongArray(inputImage.displayImage());
+		long[] dimensionsB = Intervals.dimensionsAsLongArray(initialLabeling);
+		return IntStream.range(0, dimensionsA.length).mapToDouble(i -> (double) dimensionsB[i] / (double) dimensionsA[i]).average().orElse(1.0);
 	}
 
 	private Labeling getInitialLabeling() {

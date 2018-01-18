@@ -21,4 +21,8 @@ public interface InputImage {
 	List<CalibratedAxis> axes();
 
 	boolean isTimeSeries();
+
+	void setScaling(double scaling);
+
+	double scaling();
 }

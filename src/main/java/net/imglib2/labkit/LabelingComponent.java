@@ -8,6 +8,7 @@ import net.imglib2.labkit.control.brush.*;
 import net.imglib2.labkit.labeling.LabelsLayer;
 import net.imglib2.labkit.panel.HelpPanel;
 import net.imglib2.realtransform.AffineTransform3D;
+import net.imglib2.realtransform.Scale;
 import net.imglib2.trainable_segmention.RevampUtils;
 import net.imglib2.type.numeric.NumericType;
 import net.imglib2.util.Pair;
@@ -28,7 +29,7 @@ public class LabelingComponent {
 
 	private AffineTransform3D sourceTransformation = new AffineTransform3D();
 
-	private LabelingModel model;
+	private ImageLabelingModel model;
 
 	public JComponent getComponent() {
 		return panel;
@@ -51,7 +52,7 @@ public class LabelingComponent {
 		initPanel();
 		actionsAndBehaviours = new ActionsAndBehaviours(bdvHandle);
 		initLabelsLayer(isTimeSeries);
-		initImageLayer(model.image());
+		initImageLayer();
 	}
 
 	private void initBdv(boolean is2D) {
@@ -68,16 +69,23 @@ public class LabelingComponent {
 		panel.add(bdvHandle.getViewerPanel());
 	}
 
-	private void initImageLayer(RandomAccessibleInterval<? extends NumericType<?>> image) {
+	private void initImageLayer() {
+		RandomAccessibleInterval<? extends NumericType<?>> image = model.image();
 		Pair<Double, Double> p = AtlasUtils.estimateMinMax(image);
-		BdvStackSource<?> source = addLayer(RevampUtils.uncheckedCast(image), "original");
+		BdvStackSource<?> source = addLayer(RevampUtils.uncheckedCast(image), "original", scaledTransformation());
 		source.setDisplayRange(p.getA(), p.getB());
 		addAction(new ToggleVisibility("Image", source));
 	}
 
+	private AffineTransform3D scaledTransformation() {
+		AffineTransform3D transformation = new AffineTransform3D();
+		transformation.scale(model.scaling());
+		return transformation;
+	}
+
 	private void initLabelsLayer(boolean isTimeSeries) {
 		model.dataChangedNotifier().add(this::requestRepaint);
-		BdvSource source = addLayer(new LabelsLayer(model).view(), "labels");
+		BdvSource source = addLayer(new LabelsLayer(model).view(), "labels", new AffineTransform3D());
 		addAction(new ToggleVisibility( "Labeling", source ));
 		final LabelBrushController brushController = new LabelBrushController(
 				bdvHandle.getViewerPanel(),
@@ -96,8 +104,8 @@ public class LabelingComponent {
 		bdvHandle.getViewerPanel().requestRepaint();
 	}
 
-	public <T extends NumericType<T>> BdvStackSource<T> addLayer(RandomAccessibleInterval<T> interval, String prediction) {
-		return BdvFunctions.show(interval, prediction, BdvOptions.options().addTo(bdvHandle).sourceTransform(sourceTransformation));
+	public <T extends NumericType<T>> BdvStackSource<T> addLayer(RandomAccessibleInterval<T> image, String title, AffineTransform3D transformation) {
+		return BdvFunctions.show(image, title, BdvOptions.options().addTo(bdvHandle).sourceTransform(transformation));
 	}
 
 	public AffineTransform3D sourceTransformation() {

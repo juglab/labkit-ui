@@ -26,12 +26,15 @@ public class FeatureStack {
 
 	private RandomAccessibleInterval<?> original;
 
+	private final double scaling;
+
 	private final CellGrid grid;
 
 	private final RandomAccessibleInterval<?> preparedOriginal;
 
-	public FeatureStack(RandomAccessibleInterval<?> original, boolean isTimeSeries) {
+	public FeatureStack(RandomAccessibleInterval<?> original, double scaling, boolean isTimeSeries) {
 		this.original = original;
+		this.scaling = scaling;
 		this.grid = initGrid(original, isTimeSeries);
 		this.preparedOriginal = prepareOriginal(original);
 	}
@@ -75,6 +78,10 @@ public class FeatureStack {
 		final DiskCachedCellImgFactory< FloatType > featureFactory = new DiskCachedCellImgFactory<>( featureOpts );
 		CellLoader<FloatType> loader = target -> feature.apply(extendedOriginal, RevampUtils.slices(target));
 		return featureFactory.create(dimensions, new FloatType(), loader);
+	}
+
+	public double scaling() {
+		return scaling;
 	}
 
 	public Interval interval() {

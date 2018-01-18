@@ -28,8 +28,9 @@ public class LabelsLayer {
 
 	public LabelsLayer(LabelingModel model) {
 		this.model = model;
-		container = new RandomAccessibleContainer<>(colorView());
-		view = Views.interval(container, model.labeling().get());
+		RandomAccessibleInterval<ARGBType> view = colorView();
+		container = new RandomAccessibleContainer<>(view);
+		this.view = Views.interval(container, view);
 		model.labeling().notifier().add(this::updateLabeling);
 	}
 

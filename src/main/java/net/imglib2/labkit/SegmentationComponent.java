@@ -39,15 +39,14 @@ import net.imglib2.type.NativeType;
 import net.imglib2.type.numeric.IntegerType;
 import net.imglib2.type.numeric.NumericType;
 import net.imglib2.type.numeric.real.FloatType;
-import net.imglib2.ui.OverlayRenderer;
 import net.miginfocom.swing.MigLayout;
 import org.scijava.Context;
-import org.scijava.ui.behaviour.Behaviour;
 import org.scijava.ui.behaviour.util.AbstractNamedAction;
 import org.scijava.ui.behaviour.util.RunnableAction;
 
 import javax.swing.*;
 import java.awt.*;
+import java.util.Arrays;
 
 public class SegmentationComponent {
 
@@ -74,8 +73,8 @@ public class SegmentationComponent {
 	public SegmentationComponent(Context context,
 			JFrame dialogBoxOwner,
 			RandomAccessibleInterval<? extends NumericType<?>> image,
-			boolean isTimeSeries) {
-		this(context, dialogBoxOwner, initInputImage(image, isTimeSeries));
+			boolean isTimeSeries ) {
+		this(context, dialogBoxOwner, initInputImage(image, isTimeSeries), new Labeling(Arrays.asList("background", "foreground"), image));
 	}
 
 	private static DefaultInputImage initInputImage(RandomAccessibleInterval<? extends NumericType<?>> image, boolean isTimeSeries) {
@@ -84,12 +83,12 @@ public class SegmentationComponent {
 		return defaultInputImage;
 	}
 
-	public SegmentationComponent(Context context, JFrame dialogBoxOwner, InputImage image) {
+	public SegmentationComponent(Context context, JFrame dialogBoxOwner, InputImage image, Labeling labeling) {
 		this.dialogBoxOwner = dialogBoxOwner;
 		this.inputImage = image;
 		this.context = context;
 		RandomAccessibleInterval<? extends NumericType<?>> displayImage = image.displayImage();
-		model = new ImageLabelingModel(displayImage);
+		model = new ImageLabelingModel(displayImage, image.scaling(), labeling);
 		labelingComponent = new LabelingComponent(dialogBoxOwner, model, inputImage.isTimeSeries());
 		panel.setRightComponent(labelingComponent.getComponent());
 		// --
@@ -98,7 +97,7 @@ public class SegmentationComponent {
 		FeatureSettings setting = new FeatureSettings(globalSettings, SingleFeatures.identity(), GroupedFeatures.gauss());
 		TrainableSegmentationClassifier classifier1 = new TrainableSegmentationClassifier(ops, new FastRandomForest(), model.labeling().get().getLabels(), setting);
 		this.classifier = inputImage.isTimeSeries() ? new TimeSeriesClassifier(classifier1) : classifier1;
-		featureStack = new FeatureStack(displayImage, inputImage.isTimeSeries());
+		featureStack = new FeatureStack(displayImage, image.scaling(), inputImage.isTimeSeries());
 		initClassification();
 	}
 
@@ -199,8 +198,8 @@ public class SegmentationComponent {
 		}
 
 		@Override
-		public <T extends NumericType<T>> BdvStackSource<T> addLayer(RandomAccessibleInterval<T> interval, String prediction) {
-			return labelingComponent.addLayer(interval, prediction);
+		public <T extends NumericType<T>> BdvStackSource<T> addLayer(RandomAccessibleInterval<T> interval, String prediction, AffineTransform3D t) {
+			return labelingComponent.addLayer(interval, prediction, t);
 		}
 
 		@Override

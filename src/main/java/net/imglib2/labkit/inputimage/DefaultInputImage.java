@@ -12,13 +12,15 @@ import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
-public class DefaultInputImage implements InputImage {
+public class DefaultInputImage extends AbstractInputImage {
 
 	private final RandomAccessibleInterval<? extends NumericType<?>> image;
 
 	private final NumericType type;
 
 	private boolean isTimeSeries = false;
+
+	private String filename;
 
 	public DefaultInputImage(RandomAccessibleInterval<? extends NumericType<?>> image) {
 		this.image = image;
@@ -42,12 +44,12 @@ public class DefaultInputImage implements InputImage {
 
 	@Override
 	public String getFilename() {
-		return "";
+		return filename;
 	}
 
 	@Override
 	public String getName() {
-		return "";
+		return filename;
 	}
 
 	@Override
@@ -64,5 +66,9 @@ public class DefaultInputImage implements InputImage {
 
 	public void setTimeSeries(boolean value) {
 		isTimeSeries = value;
+	}
+
+	public void setFilename(String filename) {
+		this.filename = filename;
 	}
 }

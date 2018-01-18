@@ -13,6 +13,8 @@ public class ImageLabelingModel implements LabelingModel {
 
 	final RandomAccessibleInterval<? extends NumericType<?>> rawData;
 
+	private final double scaling;
+
 	private ColorMapProvider colorProvider;
 
 	private Holder<Labeling> labelingHolder;
@@ -21,9 +23,9 @@ public class ImageLabelingModel implements LabelingModel {
 
 	private Holder<String> selectedLabelHolder;
 
-	ImageLabelingModel(RandomAccessibleInterval<? extends NumericType<?>> image) {
+	ImageLabelingModel(RandomAccessibleInterval<? extends NumericType<?>> image, double scaling, Labeling labeling) {
 		this.rawData = image;
-		Labeling labeling = new Labeling(Arrays.asList("background", "foreground"), image);
+		this.scaling = scaling;
 		this.labelingHolder = new CheckedHolder(labeling);
 		this.selectedLabelHolder = new DefaultHolder<>(labeling.getLabels().stream().findAny().orElse(""));
 		colorProvider = new ColorMapProvider(labelingHolder);
@@ -31,6 +33,10 @@ public class ImageLabelingModel implements LabelingModel {
 
 	public RandomAccessibleInterval<? extends NumericType<?>> image() {
 		return rawData;
+	}
+
+	public double scaling() {
+		return scaling;
 	}
 
 	// -- LabelingModel methods --

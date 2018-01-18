@@ -15,6 +15,7 @@ import net.imglib2.converter.Converter;
 import net.imglib2.converter.Converters;
 import net.imglib2.img.Img;
 import net.imglib2.img.cell.CellGrid;
+import net.imglib2.realtransform.AffineTransform3D;
 import net.imglib2.trainable_segmention.RevampUtils;
 import net.imglib2.type.NativeType;
 import net.imglib2.type.numeric.ARGBType;
@@ -52,7 +53,9 @@ public class PredictionLayer implements Classifier.Listener
 		this.featureStack = featureStack;
 		this.colorProvider = colorProvider;
 		this.segmentationContainer = new RandomAccessibleContainer<>( emptyPrediction );
-		BdvStackSource<VolatileARGBType> source = extensible.addLayer(Views.interval(segmentationContainer, featureStack.interval()), "prediction");
+		AffineTransform3D t = new AffineTransform3D();
+		t.scale(featureStack.scaling());
+		BdvStackSource<VolatileARGBType> source = extensible.addLayer(Views.interval(segmentationContainer, featureStack.interval()), "prediction", t);
 		extensible.addAction(new ToggleVisibility( "Segmentation", source ));
 		classifier.listeners().add( this );
 	}
