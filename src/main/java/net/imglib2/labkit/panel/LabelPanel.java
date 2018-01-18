@@ -27,6 +27,7 @@ public class LabelPanel {
 		this.extensible = extensible;
 		this.labeling = extensible.labeling();
 		labeling.notifier().add(this::updateLabeling);
+		updateLabeling(labeling.get());
 		model.selectedLabel().notifier().add(this::viewSelectedLabel);
 	}
 
