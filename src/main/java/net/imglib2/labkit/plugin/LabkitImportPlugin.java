@@ -24,6 +24,16 @@ public class LabkitImportPlugin implements Command {
 
 	@Override
 	public void run() {
-		new MainFrame(context, new DefaultInputImage(BFTiledImport.openImage(file.getAbsolutePath())));
+		run(context, file);
+	}
+
+	private static void run(Context context, File file) {
+		DefaultInputImage image = new DefaultInputImage(BFTiledImport.openImage(file.getAbsolutePath()));
+		image.setFilename(file.getAbsolutePath());
+		new MainFrame(context, image);
+	}
+
+	public static void main(String... args) {
+		run(new Context(), new File("/home/arzt/Documents/Datasets/Lung IMages/2017_08_03__0007.czi"));
 	}
 }

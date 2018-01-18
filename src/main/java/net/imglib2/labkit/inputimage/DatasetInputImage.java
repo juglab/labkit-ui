@@ -15,7 +15,7 @@ import net.imglib2.view.composite.GenericComposite;
 import java.util.ArrayList;
 import java.util.List;
 
-public class DatasetInputImage implements InputImage {
+public class DatasetInputImage extends AbstractInputImage {
 
 	private final Dataset dataset;
 	private boolean isTimeSeries;
