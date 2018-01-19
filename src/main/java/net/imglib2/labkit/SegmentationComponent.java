@@ -170,7 +170,7 @@ public class SegmentationComponent {
 
 		@Override
 		public void repaint() {
-			model.dataChangedNotifier();
+			model.dataChangedNotifier().forEach(Runnable::run);
 		}
 
 		@Override
