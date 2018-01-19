@@ -23,7 +23,7 @@ public class ComponentList<K, C extends JComponent> {
 	private Notifier<Runnable> listeners = new Notifier<>();
 
 	public ComponentList() {
-		background.setLayout(new MigLayout("", "[grow]"));
+		background.setLayout(new MigLayout("insets 4pt, gap 4pt", "[grow]"));
 		background.setBackground(BACKGROUND);
 	}
 

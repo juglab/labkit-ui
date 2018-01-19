@@ -45,7 +45,7 @@ public class LabelPanel {
 	private JPanel initPanel() {
 		JPanel panel = new JPanel();
 		panel.setPreferredSize(new Dimension(200, 100));
-		panel.setLayout(new MigLayout("insets 0","[grow]", "[][grow][][][]"));
+		panel.setLayout(new MigLayout("insets 0, gap 4pt","[grow]", "[][grow][][][]"));
 		panel.add(new JLabel("Labels:"), "wrap");
 		list.listeners().add(this::changeSelectedLabel);
 		panel.add(list.getCompnent(), "grow, wrap");
@@ -120,7 +120,7 @@ public class LabelPanel {
 		EntryPanel(String value) {
 			ARGBType color = model.colorMapProvider().colorMap().getColor(value);
 			setOpaque(true);
-			setLayout(new MigLayout());
+			setLayout(new MigLayout("insets 4pt, gap 4pt"));
 			JButton comp = new JButton();
 			comp.setBackground(new Color(color.get()));
 			comp.setOpaque(true); // Hope this makes the color visible on Mac

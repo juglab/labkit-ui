@@ -7,7 +7,7 @@ import javax.swing.*;
 public class HelpPanel extends JPanel {
 
 	public HelpPanel() {
-		setLayout(new MigLayout());
+		setLayout(new MigLayout("insets 0, gap 0"));
 		add(initHelpButton("Draw (D)",
 				"To draw a label: Press \"D\" on the keyboard,\n" +
 						"(keep it pressed) and click with the mouse on the image."));
