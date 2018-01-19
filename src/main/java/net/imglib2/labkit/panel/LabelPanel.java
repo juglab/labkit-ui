@@ -123,6 +123,7 @@ public class LabelPanel {
 			setLayout(new MigLayout());
 			JButton comp = new JButton();
 			comp.setBackground(new Color(color.get()));
+			comp.setOpaque(true); // Hope this makes the color visible on Mac
 			comp.addActionListener(l -> changeColor(value));
 			add(comp);
 			add(new JLabel(value));
