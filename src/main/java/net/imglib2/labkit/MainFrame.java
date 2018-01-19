@@ -3,17 +3,14 @@ package net.imglib2.labkit;
 import io.scif.services.DatasetIOService;
 import net.imagej.Dataset;
 import net.imglib2.labkit.actions.SetLabelsAction;
-import net.imglib2.labkit.inputimage.DefaultInputImage;
+import net.imglib2.labkit.inputimage.DatasetInputImage;
 import net.imglib2.labkit.inputimage.InputImage;
 import net.imglib2.labkit.labeling.Labeling;
-import net.imglib2.labkit.labeling.LabelingSerializer;
 import net.imglib2.trainable_segmention.RevampUtils;
 import net.imglib2.util.Intervals;
 import org.scijava.Context;
 
 import javax.swing.*;
-import java.io.File;
-import java.io.IOException;
 import java.util.List;
 import java.util.stream.IntStream;
 
@@ -37,7 +34,7 @@ public class MainFrame {
 	public static MainFrame open(Context context, String filename, boolean isTimeSeries) {
 		final Context context2 = (context == null) ? new Context() : context;
 		Dataset dataset = RevampUtils.wrapException( () -> context2.service(DatasetIOService.class).open(filename) );
-		DefaultInputImage inputImage = new DefaultInputImage(dataset);
+		DatasetInputImage inputImage = new DatasetInputImage(dataset);
 		inputImage.setTimeSeries(isTimeSeries);
 		return new MainFrame(context2, inputImage);
 	}
@@ -66,19 +63,8 @@ public class MainFrame {
 	}
 
 	private Labeling getInitialLabeling() {
-		List<String> classLabels = preferences.getDefaultLabels();
-		String filename = inputImage.getFilename();
-		if(new File(filename + ".labeling").exists()) {
-			try {
-				Labeling labeling = new LabelingSerializer(context).open(filename + ".labeling");
-				return labeling;
-			} catch (IOException e) {
-				e.printStackTrace();
-			}
-		}
-		Labeling labeling = new Labeling(classLabels, inputImage.displayImage());
-		labeling.setAxes(inputImage.axes());
-		return labeling;
+		List<String> defaultLabels = preferences.getDefaultLabels();
+		return InitialLabeling.initLabeling(inputImage, context, defaultLabels);
 	}
 
 	private JFrame initFrame() {
