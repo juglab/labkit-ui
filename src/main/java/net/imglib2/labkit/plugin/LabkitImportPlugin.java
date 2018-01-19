@@ -2,6 +2,7 @@ package net.imglib2.labkit.plugin;
 
 import net.imagej.Dataset;
 import net.imglib2.labkit.MainFrame;
+import net.imglib2.labkit.inputimage.DatasetInputImage;
 import net.imglib2.labkit.inputimage.DefaultInputImage;
 import org.scijava.Context;
 import org.scijava.command.Command;
@@ -28,8 +29,7 @@ public class LabkitImportPlugin implements Command {
 	}
 
 	private static void run(Context context, File file) {
-		DefaultInputImage image = new DefaultInputImage(BFTiledImport.openImage(file.getAbsolutePath()));
-		image.setFilename(file.getAbsolutePath());
+		DatasetInputImage image = new DatasetInputImage(BFTiledImport.openImage(file.getAbsolutePath()));
 		new MainFrame(context, image);
 	}
 

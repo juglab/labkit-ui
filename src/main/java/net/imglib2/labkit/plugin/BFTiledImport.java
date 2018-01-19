@@ -1,23 +1,30 @@
 package net.imglib2.labkit.plugin;
 
+import bdv.util.BdvFunctions;
 import loci.formats.ClassList;
 import loci.formats.FormatException;
 import loci.formats.IFormatReader;
 import loci.formats.ImageReader;
+import loci.formats.MetadataTools;
 import loci.formats.in.JPEGReader;
 import loci.formats.in.ZeissCZIReader;
+import loci.formats.meta.IMetadata;
+import net.imagej.ImgPlus;
+import net.imagej.axis.Axes;
+import net.imagej.axis.AxisType;
+import net.imagej.axis.CalibratedAxis;
+import net.imagej.axis.DefaultLinearAxis;
 import net.imglib2.Cursor;
 import net.imglib2.RandomAccessibleInterval;
 import net.imglib2.img.Img;
 import net.imglib2.img.cell.CellGrid;
 import net.imglib2.img.cell.CellImgFactory;
-import net.imglib2.labkit.MainFrame;
 import net.imglib2.labkit.ParallelUtils;
-import net.imglib2.labkit.inputimage.DefaultInputImage;
 import net.imglib2.type.numeric.ARGBType;
 import net.imglib2.util.Intervals;
 import net.imglib2.view.Views;
-import org.scijava.Context;
+import ome.units.UNITS;
+import ome.units.quantity.Length;
 
 import javax.swing.*;
 import java.io.IOException;
@@ -31,11 +38,11 @@ import java.util.stream.IntStream;
 public class BFTiledImport {
 
 	public static void main(String... args) throws IOException, FormatException {
-		Img<ARGBType> out = openImage("/home/arzt/Documents/Datasets/Lung IMages/2017_08_03__0004-1.czi");
-		new MainFrame(new Context(), new DefaultInputImage(out));
+		ImgPlus<ARGBType> out = openImage("/home/arzt/Documents/Datasets/Lung IMages/2017_08_03__0004-1.czi");
+		BdvFunctions.show(out, "Image");
 	}
 
-	static Img<ARGBType> openImage(String filename) {
+	static ImgPlus<ARGBType> openImage(String filename) {
 		final int series = selectSeries(filename);
 		ThreadLocal<ImageReader> tl = ThreadLocal.withInitial(() -> {
 			ImageReader reader = initReader(filename);
@@ -58,7 +65,34 @@ public class BFTiledImport {
 			}
 		});
 		ParallelUtils.executeInParallel(Executors.newFixedThreadPool(8), ParallelUtils.addShowProgress(chunks));
-		return out;
+		CalibratedAxis[] axis = printCalibration(filename, series);
+		ImgPlus<ARGBType> imgPlus = new ImgPlus<>(out, filename, axis);
+		imgPlus.setSource(filename);
+		return imgPlus;
+	}
+
+	private static CalibratedAxis[] printCalibration(String filename, int series) {
+		ClassList<IFormatReader> cl = new ClassList<>(IFormatReader.class);
+		cl.addClass(JPEGReader.class);
+		cl.addClass(ZeissCZIReader.class);
+		ImageReader reader = new ImageReader(cl);
+		IMetadata metadata = MetadataTools.createOMEXMLMetadata();
+		reader.setMetadataStore(metadata);
+		try {
+			reader.setId(filename);
+		} catch (FormatException | IOException e) {
+			throw new RuntimeException(e);
+		}
+		return new CalibratedAxis[] {
+				initAxis(Axes.X, metadata.getPixelsPhysicalSizeX(series)),
+				initAxis(Axes.Y, metadata.getPixelsPhysicalSizeY(series))
+		};
+	}
+
+	private static DefaultLinearAxis initAxis(AxisType axisType, Length physicalSize) {
+		double scale = physicalSize.value(UNITS.MICROMETER).doubleValue();
+		System.out.println("Axis " + axisType + " = " + scale + "microm");
+		return new DefaultLinearAxis(axisType, "microm", scale);
 	}
 
 	private static int selectSeries(String filename) {

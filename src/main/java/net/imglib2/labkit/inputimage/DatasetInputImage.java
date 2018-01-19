@@ -1,6 +1,7 @@
 package net.imglib2.labkit.inputimage;
 
 import net.imagej.Dataset;
+import net.imagej.ImgPlus;
 import net.imagej.axis.Axes;
 import net.imagej.axis.CalibratedAxis;
 import net.imglib2.RandomAccessibleInterval;
@@ -17,26 +18,33 @@ import java.util.List;
 
 public class DatasetInputImage extends AbstractInputImage {
 
-	private final Dataset dataset;
+	private final ImgPlus<?> image;
 	private boolean isTimeSeries;
 
-	public DatasetInputImage(Dataset dataset) {
-		this.dataset = dataset;
-		this.isTimeSeries = dataset.axis(Axes.TIME).isPresent();
+	public DatasetInputImage(ImgPlus<?> image) {
+		this.image = image;
+		this.isTimeSeries = image.dimensionIndex(Axes.TIME) >= 0;
+	}
+
+	public DatasetInputImage(Dataset image) {
+		this(image.getImgPlus());
 	}
 
 	@Override
 	public RandomAccessibleInterval<? extends NumericType<?>> displayImage() {
-		if(dataset.dimension(Axes.CHANNEL) != 3)
-			return dataset;
+		if (image.randomAccess().get() instanceof ARGBType)
+			return (RandomAccessibleInterval<? extends NumericType<?>>) image;
+		int index = image.dimensionIndex(Axes.CHANNEL);
+		if(index >= 0 && image.dimension(index) != 3)
+			return (RandomAccessibleInterval<? extends NumericType<?>>) image;
 		else
-			return fuseColors(dataset);
+			return fuseColors((ImgPlus<RealType<?>>) image);
 	}
 
-	private RandomAccessibleInterval<ARGBType> fuseColors(Dataset dataset) {
-		if(dataset.dimension(Axes.CHANNEL) != 3)
-			throw new UnsupportedOperationException();
+	private RandomAccessibleInterval<ARGBType> fuseColors(ImgPlus<RealType<?>> dataset) {
 		int colorAxis = dataset.dimensionIndex(Axes.CHANNEL);
+		if(colorAxis < 0)
+			throw new UnsupportedOperationException();
 		int lastAxis = dataset.numDimensions() - 1;
 		RandomAccessibleInterval<RealType<?>> sorted = colorAxis == lastAxis ? dataset :
 				Views.permute(dataset, colorAxis, lastAxis);
@@ -53,10 +61,10 @@ public class DatasetInputImage extends AbstractInputImage {
 
 	@Override
 	public ChannelSetting getChannelSetting() {
-		int channelIndex = dataset.dimensionIndex(Axes.CHANNEL);
+		int channelIndex = image.dimensionIndex(Axes.CHANNEL);
 		if(channelIndex < 0)
 			return ChannelSetting.SINGLE;
-		long numberOfChannels = dataset.dimension(channelIndex);
+		long numberOfChannels = image.dimension(channelIndex);
 		if(numberOfChannels == 3)
 			return ChannelSetting.RGB;
 		throw new IllegalArgumentException("Image must be single channel or rgb.");
@@ -64,24 +72,24 @@ public class DatasetInputImage extends AbstractInputImage {
 
 	@Override
 	public int getSpatialDimensions() {
-		return dataset.numDimensions() - (isTimeSeries() ? 1 : 0) - (hasColorChannel() ? 1 : 0);
+		return image.numDimensions() - (isTimeSeries() ? 1 : 0) - (hasColorChannel() ? 1 : 0);
 	}
 
 	@Override
 	public String getFilename() {
-		return dataset.getSource();
+		return image.getSource();
 	}
 
 	@Override
 	public String getName() {
-		return dataset.getName();
+		return image.getName();
 	}
 
 	@Override
 	public List<CalibratedAxis> axes() {
 		List<CalibratedAxis> axes = new ArrayList<>();
-		for (int i = 0; i < dataset.numDimensions(); i++) {
-			CalibratedAxis axis = dataset.axis(i);
+		for (int i = 0; i < image.numDimensions(); i++) {
+			CalibratedAxis axis = image.axis(i);
 			if(axis.type() != Axes.CHANNEL)
 				axes.add(axis);
 		}
@@ -94,7 +102,7 @@ public class DatasetInputImage extends AbstractInputImage {
 	}
 
 	private boolean hasColorChannel() {
-		return dataset.axis(Axes.CHANNEL).isPresent();
+		return image.dimensionIndex(Axes.CHANNEL) >= 0;
 	}
 
 	public void setTimeSeries(boolean value) {
