@@ -1,4 +1,4 @@
-package net.imglib2.labkit;
+package net.imglib2.labkit.utils;
 
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;

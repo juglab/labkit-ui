@@ -1,7 +1,7 @@
 package net.imglib2.labkit.classification;
 
 import net.imglib2.RandomAccessibleInterval;
-import net.imglib2.labkit.Notifier;
+import net.imglib2.labkit.utils.Notifier;
 import net.imglib2.labkit.labeling.Labeling;
 import net.imglib2.trainable_segmention.pixel_feature.settings.FeatureSettings;
 import net.imglib2.type.numeric.IntegerType;

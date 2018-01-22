@@ -1,7 +1,7 @@
 package net.imglib2.labkit.classification.weka;
 
 import net.imglib2.RandomAccessibleInterval;
-import net.imglib2.labkit.Notifier;
+import net.imglib2.labkit.utils.Notifier;
 import net.imglib2.labkit.classification.Classifier;
 import net.imglib2.labkit.labeling.Labeling;
 import net.imglib2.labkit.labeling.Labelings;

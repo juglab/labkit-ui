@@ -1,6 +1,6 @@
 package net.imglib2.labkit.panel;
 
-import net.imglib2.labkit.Notifier;
+import net.imglib2.labkit.utils.Notifier;
 import net.miginfocom.swing.MigLayout;
 import org.scijava.ui.behaviour.util.RunnableAction;
 
