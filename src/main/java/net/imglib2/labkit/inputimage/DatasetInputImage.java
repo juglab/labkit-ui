@@ -35,10 +35,10 @@ public class DatasetInputImage extends AbstractInputImage {
 		if (image.randomAccess().get() instanceof ARGBType)
 			return (RandomAccessibleInterval<? extends NumericType<?>>) image;
 		int index = image.dimensionIndex(Axes.CHANNEL);
-		if(index >= 0 && image.dimension(index) != 3)
-			return (RandomAccessibleInterval<? extends NumericType<?>>) image;
-		else
+		if(index >= 0 && image.dimension(index) == 3)
 			return fuseColors((ImgPlus<RealType<?>>) image);
+		else
+			return (RandomAccessibleInterval<? extends NumericType<?>>) image;
 	}
 
 	private RandomAccessibleInterval<ARGBType> fuseColors(ImgPlus<RealType<?>> dataset) {
