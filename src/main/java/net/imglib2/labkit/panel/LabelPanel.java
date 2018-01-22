@@ -8,9 +8,12 @@ import net.imglib2.labkit.labeling.Labeling;
 import net.imglib2.type.numeric.ARGBType;
 import net.miginfocom.swing.MigLayout;
 import org.scijava.ui.behaviour.util.RunnableAction;
+import org.scijava.ui.swing.widget.SwingColorWidget;
 
 import javax.swing.*;
+import javax.swing.border.EmptyBorder;
 import java.awt.*;
+import java.awt.image.BufferedImage;
 import java.util.List;
 import java.util.function.Consumer;
 
@@ -122,11 +125,21 @@ public class LabelPanel {
 			setOpaque(true);
 			setLayout(new MigLayout("insets 4pt, gap 4pt"));
 			JButton comp = new JButton();
-			comp.setBackground(new Color(color.get()));
-			comp.setOpaque(true); // Hope this makes the color visible on Mac
+			comp.setBorder(new EmptyBorder(1,1,1,1));
+			comp.setIcon(createIcon(new Color(color.get())));
 			comp.addActionListener(l -> changeColor(value));
 			add(comp);
 			add(new JLabel(value));
+		}
+
+		private ImageIcon createIcon(Color color) {
+			final BufferedImage image =
+					new BufferedImage( 20, 10, BufferedImage.TYPE_INT_RGB);
+			final Graphics g = image.getGraphics();
+			g.setColor(color);
+			g.fillRect(0, 0, image.getWidth(), image.getHeight());
+			g.dispose();
+			return new ImageIcon(image);
 		}
 	}
 }
