@@ -1,14 +1,13 @@
 package net.imglib2.labkit.panel;
 
 import net.imglib2.labkit.Extensible;
-import net.imglib2.labkit.Holder;
-import net.imglib2.labkit.ImageLabelingModel;
+import net.imglib2.labkit.models.Holder;
+import net.imglib2.labkit.models.ImageLabelingModel;
 import net.imglib2.labkit.color.ColorMap;
 import net.imglib2.labkit.labeling.Labeling;
 import net.imglib2.type.numeric.ARGBType;
 import net.miginfocom.swing.MigLayout;
 import org.scijava.ui.behaviour.util.RunnableAction;
-import org.scijava.ui.swing.widget.SwingColorWidget;
 
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;

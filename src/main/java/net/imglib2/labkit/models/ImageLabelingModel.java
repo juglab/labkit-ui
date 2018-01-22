@@ -1,12 +1,12 @@
-package net.imglib2.labkit;
+package net.imglib2.labkit.models;
 
 import net.imglib2.RandomAccessibleInterval;
+import net.imglib2.labkit.Notifier;
 import net.imglib2.labkit.color.ColorMapProvider;
 import net.imglib2.labkit.labeling.Labeling;
 import net.imglib2.type.numeric.NumericType;
 import net.imglib2.util.Intervals;
 
-import java.util.Arrays;
 import java.util.function.Consumer;
 
 public class ImageLabelingModel implements LabelingModel {
@@ -23,7 +23,7 @@ public class ImageLabelingModel implements LabelingModel {
 
 	private Holder<String> selectedLabelHolder;
 
-	ImageLabelingModel(RandomAccessibleInterval<? extends NumericType<?>> image, double scaling, Labeling labeling) {
+	public ImageLabelingModel(RandomAccessibleInterval<? extends NumericType<?>> image, double scaling, Labeling labeling) {
 		this.rawData = image;
 		this.scaling = scaling;
 		this.labelingHolder = new CheckedHolder(labeling);

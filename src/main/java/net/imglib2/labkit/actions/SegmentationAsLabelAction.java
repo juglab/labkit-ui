@@ -4,7 +4,7 @@ import net.imglib2.Cursor;
 import net.imglib2.IterableInterval;
 import net.imglib2.RandomAccess;
 import net.imglib2.labkit.Extensible;
-import net.imglib2.labkit.Holder;
+import net.imglib2.labkit.models.Holder;
 import net.imglib2.labkit.classification.PredictionLayer;
 import net.imglib2.labkit.labeling.Labeling;
 import net.imglib2.converter.Converter;

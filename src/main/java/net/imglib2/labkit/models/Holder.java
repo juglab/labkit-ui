@@ -1,4 +1,6 @@
-package net.imglib2.labkit;
+package net.imglib2.labkit.models;
+
+import net.imglib2.labkit.Notifier;
 
 import java.util.function.Consumer;
 

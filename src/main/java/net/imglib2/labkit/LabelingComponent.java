@@ -6,6 +6,7 @@ import net.imglib2.RandomAccessibleInterval;
 import net.imglib2.labkit.actions.ToggleVisibility;
 import net.imglib2.labkit.control.brush.*;
 import net.imglib2.labkit.labeling.LabelsLayer;
+import net.imglib2.labkit.models.ImageLabelingModel;
 import net.imglib2.labkit.panel.HelpPanel;
 import net.imglib2.labkit.utils.LabkitUtils;
 import net.imglib2.realtransform.AffineTransform3D;

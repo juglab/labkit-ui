@@ -4,7 +4,7 @@ import java.awt.*;
 import java.util.*;
 import java.util.function.Supplier;
 
-import net.imglib2.labkit.Holder;
+import net.imglib2.labkit.models.Holder;
 import net.imglib2.labkit.labeling.Labeling;
 import net.imglib2.type.numeric.ARGBType;
 

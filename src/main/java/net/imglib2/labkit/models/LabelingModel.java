@@ -1,5 +1,6 @@
-package net.imglib2.labkit;
+package net.imglib2.labkit.models;
 
+import net.imglib2.labkit.Notifier;
 import net.imglib2.labkit.color.ColorMapProvider;
 import net.imglib2.labkit.labeling.Labeling;
 

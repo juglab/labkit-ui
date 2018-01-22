@@ -3,7 +3,7 @@ package net.imglib2.labkit.actions;
 import net.imglib2.Cursor;
 import net.imglib2.RandomAccess;
 import net.imglib2.labkit.Extensible;
-import net.imglib2.labkit.Holder;
+import net.imglib2.labkit.models.Holder;
 import net.imglib2.labkit.labeling.Labeling;
 import net.imglib2.labkit.labeling.LabelingSerializer;
 import net.imglib2.roi.IterableRegion;
