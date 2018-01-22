@@ -31,4 +31,6 @@ public interface Extensible {
 	Component dialogParent();
 
 	Holder<Labeling> labeling();
+
+	void setViewerTransformation(AffineTransform3D affineTransform3D);
 }

@@ -3,6 +3,7 @@ package net.imglib2.labkit;
 import bdv.util.BdvStackSource;
 import bdv.util.volatiles.SharedQueue;
 import bdv.util.volatiles.VolatileViews;
+import bdv.viewer.ViewerPanel;
 import hr.irb.fastRandomForest.FastRandomForest;
 import net.imagej.ops.OpService;
 import net.imglib2.RandomAccessibleInterval;
@@ -118,7 +119,7 @@ public class SegmentationComponent {
 		new SegmentationSave(extensible, predictionLayer);
 		new OpenImageAction(extensible);
 		new ZAxisScaling(extensible, labelingComponent.sourceTransformation());
-		new OrthogonalView(extensible, new AffineTransform3D());
+		new OrthogonalView(extensible);
 		new SelectClassifier(extensible, classifier);
 		new BatchSegmentAction(extensible, classifier);
 		new ChangeFeatureSettingsAction(extensible, classifier);
@@ -212,6 +213,11 @@ public class SegmentationComponent {
 		@Override
 		public Holder<Labeling> labeling() {
 			return model.labeling();
+		}
+
+		@Override
+		public void setViewerTransformation(AffineTransform3D affineTransform3D) {
+			labelingComponent.viewerPanel().setCurrentViewerTransform(new AffineTransform3D());
 		}
 	}
 }

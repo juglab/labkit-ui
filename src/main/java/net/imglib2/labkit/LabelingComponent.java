@@ -2,6 +2,7 @@ package net.imglib2.labkit;
 
 import bdv.util.*;
 import bdv.viewer.DisplayMode;
+import bdv.viewer.ViewerPanel;
 import net.imglib2.RandomAccessibleInterval;
 import net.imglib2.labkit.actions.ToggleVisibility;
 import net.imglib2.labkit.control.brush.*;
@@ -114,6 +115,10 @@ public class LabelingComponent {
 	}
 
 	public Object viewerSync() {
+		return bdvHandle.getViewerPanel();
+	}
+
+	public ViewerPanel viewerPanel() {
 		return bdvHandle.getViewerPanel();
 	}
 }
