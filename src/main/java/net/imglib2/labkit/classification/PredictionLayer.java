@@ -5,7 +5,7 @@ import net.imglib2.RandomAccessible;
 import net.imglib2.RandomAccessibleInterval;
 import net.imglib2.labkit.Extensible;
 import net.imglib2.labkit.FeatureStack;
-import net.imglib2.labkit.RandomAccessibleContainer;
+import net.imglib2.labkit.utils.RandomAccessibleContainer;
 import net.imglib2.labkit.actions.ToggleVisibility;
 import net.imglib2.labkit.color.ColorMapProvider;
 import net.imglib2.cache.img.CellLoader;
