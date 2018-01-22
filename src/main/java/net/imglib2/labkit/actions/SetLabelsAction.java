@@ -1,9 +1,7 @@
 package net.imglib2.labkit.actions;
 
-import net.imglib2.Interval;
 import net.imglib2.labkit.Preferences;
 import net.imglib2.labkit.SegmentationComponent;
-import net.imglib2.labkit.labeling.Labeling;
 import org.scijava.ui.behaviour.util.RunnableAction;
 
 import javax.swing.*;
@@ -22,9 +20,7 @@ public class SetLabelsAction {
 		// TODO: clean this mess up
 		this.segmentationComponent = segmentationComponent;
 		this.preference = preferences;
-		addAction("Change Available Labels ...", "changeLabels", this::changeLabels);
 		addAction("Default Available Labels ...", "defaultLabels", this::defaultLabels);
-		addAction("Delete All Labels", "clearLabeling", this::clearLabels);
 	}
 
 	private void addAction(String title, String command, Runnable action) {
@@ -32,25 +28,6 @@ public class SetLabelsAction {
 		a.putValue(Action.ACTION_COMMAND_KEY, command);
 		segmentationComponent.getActions().put(command, a);
 	}
-
-	private void changeLabels() {
-		Labeling labeling = segmentationComponent.labeling().get();
-		List<String> labels = labeling.getLabels();
-		Optional<List<String>> results = dialog(labels);
-		if(results.isPresent()) {
-			Labeling newLabeling = new Labeling(results.get(), (Interval) labeling);
-			newLabeling.setAxes(labeling.axes());
-			segmentationComponent.labeling().set(newLabeling);
-		}
-	}
-
-	private void clearLabels() {
-		Labeling oldLabeling = segmentationComponent.labeling().get();
-		Labeling newLabeling = new Labeling(oldLabeling.getLabels(), (Interval) oldLabeling);
-		newLabeling.setAxes(oldLabeling.axes());
-		segmentationComponent.labeling().set(newLabeling);
-	}
-
 
 	private void defaultLabels() {
 		Optional<List<String>> result = dialog(preference.getDefaultLabels());

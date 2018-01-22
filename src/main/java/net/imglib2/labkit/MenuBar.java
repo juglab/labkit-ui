@@ -29,9 +29,7 @@ public class MenuBar extends JMenuBar {
 		addMenu("Labels")
 				.addItem("openLabeling")
 				.addItem("saveLabeling")
-				.addItem("showLabeling")
-				.addItem("changeLabels")
-				.addItem("clearLabeling");
+				.addItem("showLabeling");
 		addMenu("Classifier")
 				.addItem("trainClassifier")
 				.addItem("saveClassifier")
