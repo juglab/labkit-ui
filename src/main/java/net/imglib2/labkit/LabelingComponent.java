@@ -29,8 +29,6 @@ public class LabelingComponent {
 
 	private ActionsAndBehaviours actionsAndBehaviours;
 
-	private AffineTransform3D sourceTransformation = new AffineTransform3D();
-
 	private ImageLabelingModel model;
 
 	public JComponent getComponent() {
@@ -93,7 +91,6 @@ public class LabelingComponent {
 				bdvHandle.getViewerPanel(),
 				model,
 				actionsAndBehaviours,
-				sourceTransformation,
 				isTimeSeries);
 		bdvHandle.getViewerPanel().getDisplay().addOverlayRenderer( brushController.getBrushOverlay() );
 	}
@@ -108,10 +105,6 @@ public class LabelingComponent {
 
 	public <T extends NumericType<T>> BdvStackSource<T> addLayer(RandomAccessibleInterval<T> image, String title, AffineTransform3D transformation) {
 		return BdvFunctions.show(image, title, BdvOptions.options().addTo(bdvHandle).sourceTransform(transformation));
-	}
-
-	public AffineTransform3D sourceTransformation() {
-		return sourceTransformation;
 	}
 
 	public Object viewerSync() {

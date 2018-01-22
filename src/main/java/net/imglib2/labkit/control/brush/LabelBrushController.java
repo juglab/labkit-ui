@@ -60,8 +60,6 @@ public class LabelBrushController
 	private final NeighborhoodFactory pixelsGenerator =
 		NeighborhoodFactories.hyperSphere();
 
-	final private AffineTransform3D labelTransform;
-
 	final private BrushOverlay brushOverlay;
 
 	private int brushRadius = 5;
@@ -89,11 +87,9 @@ public class LabelBrushController
 			final ViewerPanel viewer,
 			final LabelingModel model,
 			final ActionsAndBehaviours behaviors,
-			final AffineTransform3D labelTransform,
 			final boolean sliceTime)
 	{
 		this.viewer = viewer;
-		this.labelTransform = labelTransform;
 		this.brushOverlay = new BrushOverlay( viewer, "", model.colorMapProvider() );
 		this.sliceTime = sliceTime;
 		updateLabeling(model.labeling().get());
@@ -131,7 +127,6 @@ public class LabelBrushController
 		labelLocation.setPosition( y, 1 );
 		labelLocation.setPosition( 0, 2 );
 		viewer.displayToGlobalCoordinates( labelLocation );
-		labelTransform.applyInverse( labelLocation, labelLocation );
 		return labelLocation;
 	}
 
