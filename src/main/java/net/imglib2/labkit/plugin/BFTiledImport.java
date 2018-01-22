@@ -19,7 +19,7 @@ import net.imglib2.RandomAccessibleInterval;
 import net.imglib2.img.Img;
 import net.imglib2.img.cell.CellGrid;
 import net.imglib2.img.cell.CellImgFactory;
-import net.imglib2.labkit.ParallelUtils;
+import net.imglib2.labkit.utils.ParallelUtils;
 import net.imglib2.type.numeric.ARGBType;
 import net.imglib2.util.Intervals;
 import net.imglib2.view.Views;

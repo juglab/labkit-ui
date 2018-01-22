@@ -1,4 +1,4 @@
-package net.imglib2.labkit;
+package net.imglib2.labkit.utils;
 
 import net.imglib2.RandomAccess;
 import net.imglib2.RandomAccessible;
@@ -29,8 +29,8 @@ import java.util.function.Consumer;
 /*
  * @author Matthias Arzt
  */
-public class AtlasUtils {
-	static long[] extend(long[] array, long value) {
+public class LabkitUtils {
+	public static long[] extend(long[] array, long value) {
 		int length = array.length;
 		long[] result = new long[length + 1];
 		System.arraycopy(array, 0, result, 0, length);
@@ -38,7 +38,7 @@ public class AtlasUtils {
 		return result;
 	}
 
-	static int[] extend(int[] array, int value) {
+	public static int[] extend(int[] array, int value) {
 		int length = array.length;
 		int[] result = new int[length + 1];
 		System.arraycopy(array, 0, result, 0, length);
@@ -51,7 +51,7 @@ public class AtlasUtils {
 		return r;
 	}
 
-	static RandomAccessibleInterval<FloatType> toFloat(RandomAccessibleInterval<? extends RealType<?>> rawData) {
+	public static RandomAccessibleInterval<FloatType> toFloat(RandomAccessibleInterval<? extends RealType<?>> rawData) {
 		return Converters.convert(rawData, (in, out) -> out.set(in.getRealFloat()), new FloatType());
 	}
 
@@ -98,7 +98,7 @@ public class AtlasUtils {
 
 	public static <T> Img<T> populateCachedImg(Img<T> img) {
 		if(img instanceof CachedCellImg)
-			internPopulateCachedImg(AtlasUtils.uncheckedCast(img));
+			internPopulateCachedImg(LabkitUtils.uncheckedCast(img));
 		return img;
 	}
 

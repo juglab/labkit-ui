@@ -9,6 +9,7 @@ import net.imglib2.cache.img.DiskCachedCellImgFactory;
 import net.imglib2.cache.img.DiskCachedCellImgOptions;
 import net.imglib2.img.Img;
 import net.imglib2.img.cell.CellGrid;
+import net.imglib2.labkit.utils.LabkitUtils;
 import net.imglib2.trainable_segmention.RevampUtils;
 import net.imglib2.trainable_segmention.pixel_feature.calculator.FeatureCalculator;
 import net.imglib2.type.numeric.RealType;
@@ -59,7 +60,7 @@ public class FeatureStack {
 	private RandomAccessibleInterval<?> prepareOriginal(RandomAccessibleInterval<?> original) {
 		Object voxel = original.randomAccess().get();
 		if(voxel instanceof RealType && !(voxel instanceof FloatType))
-			return AtlasUtils.toFloat(RevampUtils.uncheckedCast(original));
+			return LabkitUtils.toFloat(RevampUtils.uncheckedCast(original));
 		return original;
 	}
 
@@ -71,8 +72,8 @@ public class FeatureStack {
 		int count = feature.count();
 		if(count <= 0)
 			throw new IllegalArgumentException();
-		long[] dimensions = AtlasUtils.extend(grid.getImgDimensions(), count);
-		int[] cellDimensions = AtlasUtils.extend(new int[grid.numDimensions()], count);
+		long[] dimensions = LabkitUtils.extend(grid.getImgDimensions(), count);
+		int[] cellDimensions = LabkitUtils.extend(new int[grid.numDimensions()], count);
 		grid.cellDimensions(cellDimensions);
 		final DiskCachedCellImgOptions featureOpts = DiskCachedCellImgOptions.options().cellDimensions( cellDimensions ).dirtyAccesses( false );
 		final DiskCachedCellImgFactory< FloatType > featureFactory = new DiskCachedCellImgFactory<>( featureOpts );

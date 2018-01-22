@@ -7,8 +7,8 @@ import net.imglib2.labkit.actions.ToggleVisibility;
 import net.imglib2.labkit.control.brush.*;
 import net.imglib2.labkit.labeling.LabelsLayer;
 import net.imglib2.labkit.panel.HelpPanel;
+import net.imglib2.labkit.utils.LabkitUtils;
 import net.imglib2.realtransform.AffineTransform3D;
-import net.imglib2.realtransform.Scale;
 import net.imglib2.trainable_segmention.RevampUtils;
 import net.imglib2.type.numeric.NumericType;
 import net.imglib2.util.Pair;
@@ -71,7 +71,7 @@ public class LabelingComponent {
 
 	private void initImageLayer() {
 		RandomAccessibleInterval<? extends NumericType<?>> image = model.image();
-		Pair<Double, Double> p = AtlasUtils.estimateMinMax(image);
+		Pair<Double, Double> p = LabkitUtils.estimateMinMax(image);
 		BdvStackSource<?> source = addLayer(RevampUtils.uncheckedCast(image), "original", scaledTransformation());
 		source.setDisplayRange(p.getA(), p.getB());
 		addAction(new ToggleVisibility("Image", source));

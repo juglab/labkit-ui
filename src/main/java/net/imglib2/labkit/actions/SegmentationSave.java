@@ -1,7 +1,7 @@
 package net.imglib2.labkit.actions;
 
 import io.scif.img.ImgSaver;
-import net.imglib2.labkit.AtlasUtils;
+import net.imglib2.labkit.utils.LabkitUtils;
 import net.imglib2.labkit.Extensible;
 import net.imglib2.labkit.classification.PredictionLayer;
 import net.imglib2.img.Img;
@@ -29,7 +29,7 @@ public class SegmentationSave extends AbstractFileIoAcion {
 	}
 
 	private <T extends NumericType<T> & NativeType<T>> Runnable getShowAction(Supplier<Img<T>> supplier) {
-		return () -> ImageJFunctions.show(AtlasUtils.populateCachedImg(supplier.get()));
+		return () -> ImageJFunctions.show(LabkitUtils.populateCachedImg(supplier.get()));
 	}
 
 	private <T> Action getSaveAction(Supplier<Img<T>> supplier) {

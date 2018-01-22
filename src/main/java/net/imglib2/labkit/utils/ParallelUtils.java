@@ -1,4 +1,4 @@
-package net.imglib2.labkit;
+package net.imglib2.labkit.utils;
 
 import net.imglib2.FinalInterval;
 import net.imglib2.Interval;

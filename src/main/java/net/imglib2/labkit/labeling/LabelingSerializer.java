@@ -15,7 +15,7 @@ import net.imglib2.FinalInterval;
 import net.imglib2.Interval;
 import net.imglib2.Point;
 import net.imglib2.RandomAccessibleInterval;
-import net.imglib2.labkit.AtlasUtils;
+import net.imglib2.labkit.utils.LabkitUtils;
 import net.imglib2.img.Img;
 import net.imglib2.roi.IterableRegion;
 import net.imglib2.roi.labeling.ImgLabeling;
@@ -76,7 +76,7 @@ public class LabelingSerializer
 	}
 
 	private ImgLabeling<String,?> fromImageAndLabelSets(Img<? extends IntegerType<?>> img, List<Set<String>> labelSets) {
-		ImgLabeling<String, ?> result = new ImgLabeling<>(AtlasUtils.uncheckedCast(img));
+		ImgLabeling<String, ?> result = new ImgLabeling<>(LabkitUtils.uncheckedCast(img));
 		new LabelingMapping.SerialisationAccess<String>(result.getMapping()){
 			public void run() {
 				setLabelSets(labelSets);
@@ -87,7 +87,7 @@ public class LabelingSerializer
 
 	private Img<? extends IntegerType<?>> openImageFromTiff(String filename) throws IOException {
 		DatasetIOService io = context.service(DatasetIOService.class);
-		return AtlasUtils.uncheckedCast(io.open(filename).getImgPlus().getImg());
+		return LabkitUtils.uncheckedCast(io.open(filename).getImgPlus().getImg());
 	}
 
 	private LabelsMetaData openMetaData(String filename) throws IOException {
@@ -117,7 +117,7 @@ public class LabelingSerializer
 		}
 		DatasetIOService io = context.service(DatasetIOService.class);
 		DatasetService ds = context.service(DatasetService.class);
-		RandomAccessibleInterval<I> imgPlus = AtlasUtils.uncheckedCast(labeling.getIndexImg());
+		RandomAccessibleInterval<I> imgPlus = LabkitUtils.uncheckedCast(labeling.getIndexImg());
 		io.save(ds.create(imgPlus), filename);
 	}
 

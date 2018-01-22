@@ -12,6 +12,7 @@ import net.imglib2.exception.IncompatibleTypeException;
 import net.imglib2.img.Img;
 import net.imglib2.img.array.ArrayImgs;
 import net.imglib2.img.display.imagej.ImageJFunctions;
+import net.imglib2.labkit.utils.ParallelUtils;
 import net.imglib2.trainable_segmention.classification.Segmenter;
 import net.imglib2.trainable_segmention.gson.GsonUtils;
 import net.imglib2.type.numeric.ARGBType;

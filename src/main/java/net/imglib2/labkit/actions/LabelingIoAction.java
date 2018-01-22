@@ -1,7 +1,7 @@
 package net.imglib2.labkit.actions;
 
 import net.imglib2.RandomAccessibleInterval;
-import net.imglib2.labkit.AtlasUtils;
+import net.imglib2.labkit.utils.LabkitUtils;
 import net.imglib2.labkit.Extensible;
 import net.imglib2.labkit.Holder;
 import net.imglib2.labkit.inputimage.InputImage;
@@ -39,7 +39,7 @@ public class LabelingIoAction extends AbstractFileIoAcion {
 		initOpenAction("Open Labeling ...", "openLabeling", this::open, "ctrl O");
 		extensible.addAction("Show Labeling in ImageJ", "showLabeling", () -> {
 			RandomAccessibleInterval<? extends IntegerType<?>> img = labeling.get().getIndexImg();
-			ImageJFunctions.show(AtlasUtils.uncheckedCast(img), "Labeling");
+			ImageJFunctions.show(LabkitUtils.uncheckedCast(img), "Labeling");
 		}, "");
 	}
 

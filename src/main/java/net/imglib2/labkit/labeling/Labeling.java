@@ -5,7 +5,7 @@ import net.imagej.axis.CalibratedAxis;
 import net.imagej.axis.DefaultLinearAxis;
 import net.imglib2.*;
 import net.imglib2.RandomAccess;
-import net.imglib2.labkit.AtlasUtils;
+import net.imglib2.labkit.utils.LabkitUtils;
 import net.imglib2.converter.Converter;
 import net.imglib2.converter.Converters;
 import net.imglib2.roi.IterableRegion;
@@ -219,11 +219,11 @@ public class Labeling extends AbstractWrappedInterval implements RandomAccessibl
 
 	@Override
 	public RandomAccess<Set<String>> randomAccess() {
-		return AtlasUtils.uncheckedCast(imgLabeling.randomAccess());
+		return LabkitUtils.uncheckedCast(imgLabeling.randomAccess());
 	}
 
 	@Override
 	public RandomAccess<Set<String>> randomAccess(Interval interval) {
-		return AtlasUtils.uncheckedCast(imgLabeling.randomAccess(interval));
+		return LabkitUtils.uncheckedCast(imgLabeling.randomAccess(interval));
 	}
 }
