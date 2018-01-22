@@ -10,8 +10,9 @@ import java.util.function.Consumer;
  * @author Matthias Arzt
  */
 public class Main {
+
 	public static void main(String... args) {
-		fileChooserAndThen(filename -> PaintLabelsAndTrain.start(filename));
+		fileChooserAndThen(filename -> Main.start(filename));
 	}
 
 	static private void fileChooserAndThen(Consumer<String> action) {
@@ -24,5 +25,9 @@ public class Main {
 		final int returnVal = fileChooser.showOpenDialog(null);
 		if ( returnVal == JFileChooser.APPROVE_OPTION )
 			action.accept(fileChooser.getSelectedFile().getAbsolutePath());
+	}
+
+	public static void start(String filename) {
+		MainFrame.open(null, filename, false);
 	}
 }
