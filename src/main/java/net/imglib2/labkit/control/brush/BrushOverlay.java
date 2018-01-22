@@ -1,7 +1,7 @@
 /**
  *
  */
-package net.imglib2.labkit;
+package net.imglib2.labkit.control.brush;
 
 import java.awt.AlphaComposite;
 import java.awt.BasicStroke;

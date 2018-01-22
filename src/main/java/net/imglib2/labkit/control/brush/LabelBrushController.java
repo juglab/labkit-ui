@@ -31,7 +31,6 @@ import org.scijava.ui.behaviour.DragBehaviour;
 import org.scijava.ui.behaviour.ScrollBehaviour;
 
 import bdv.viewer.ViewerPanel;
-import net.imglib2.labkit.BrushOverlay;
 import net.imglib2.realtransform.AffineTransform3D;
 import net.imglib2.ui.TransformEventHandler;
 import net.imglib2.util.LinAlgHelpers;
