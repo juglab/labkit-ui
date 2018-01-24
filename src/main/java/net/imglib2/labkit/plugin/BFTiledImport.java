@@ -25,6 +25,7 @@ import net.imglib2.util.Intervals;
 import net.imglib2.view.Views;
 import ome.units.UNITS;
 import ome.units.quantity.Length;
+import ome.xml.model.primitives.PositiveInteger;
 
 import javax.swing.*;
 import java.io.IOException;
@@ -32,6 +33,7 @@ import java.util.List;
 import java.util.concurrent.Callable;
 import java.util.concurrent.CancellationException;
 import java.util.concurrent.Executors;
+import java.util.function.IntFunction;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
@@ -84,15 +86,21 @@ public class BFTiledImport {
 			throw new RuntimeException(e);
 		}
 		return new CalibratedAxis[] {
-				initAxis(Axes.X, metadata.getPixelsPhysicalSizeX(series)),
-				initAxis(Axes.Y, metadata.getPixelsPhysicalSizeY(series))
+				initAxis(Axes.X, series, metadata::getPixelsPhysicalSizeX, metadata::getPixelsSizeX),
+				initAxis(Axes.Y, series, metadata::getPixelsPhysicalSizeY, metadata::getPixelsSizeY)
 		};
 	}
 
-	private static DefaultLinearAxis initAxis(AxisType axisType, Length physicalSize) {
-		double scale = physicalSize.value(UNITS.MICROMETER).doubleValue();
-		System.out.println("Axis " + axisType + " = " + scale + "microm");
-		return new DefaultLinearAxis(axisType, "microm", scale);
+	private static DefaultLinearAxis initAxis(AxisType axisType, int series, IntFunction<Length> pixelSize, IntFunction<PositiveInteger> imageSize) {
+		// NB: metadata.getPixelsPhysicalSizeX/Y return the same pixel size for each image in the resolution pyramid
+		// The following 4 lines of code, calculate the correct pixel size for the scaled down images.
+		// This is a workaround until metadata.getPixelPysicalSizeX/Y are fixed.
+		double fullResolutionPixelSize = pixelSize.apply(0).value(UNITS.MICROMETER).doubleValue();
+		double fullResolutionImageSize = imageSize.apply(0).getValue();
+		double lowResolutionImageSize = imageSize.apply(series).getValue();
+		double lowResolutionPixelSize = fullResolutionPixelSize * fullResolutionImageSize / lowResolutionImageSize;
+		System.out.println("Axis " + axisType + " = " + lowResolutionPixelSize + "microm");
+		return new DefaultLinearAxis(axisType, "microm", lowResolutionPixelSize);
 	}
 
 	private static int selectSeries(String filename) {
