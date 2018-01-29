@@ -13,3 +13,4 @@ target
 *.orig
 # For Fiji #
 *.jar
+/src/test/java/Start.java
