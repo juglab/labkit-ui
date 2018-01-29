@@ -6,7 +6,12 @@ import net.imglib2.Cursor;
 import net.imglib2.RandomAccess;
 import net.imglib2.RandomAccessible;
 import net.imglib2.RandomAccessibleInterval;
-import net.imglib2.labkit.FeatureStack;
+import net.imglib2.cache.img.CellLoader;
+import net.imglib2.cache.img.DiskCachedCellImgFactory;
+import net.imglib2.cache.img.DiskCachedCellImgOptions;
+import net.imglib2.img.Img;
+import net.imglib2.img.cell.CellGrid;
+import net.imglib2.labkit.utils.LabkitUtils;
 import net.imglib2.labkit.utils.Notifier;
 import net.imglib2.labkit.actions.SelectClassifier;
 import net.imglib2.labkit.classification.Classifier;
@@ -16,6 +21,7 @@ import net.imglib2.trainable_segmention.RevampUtils;
 import net.imglib2.trainable_segmention.classification.Segmenter;
 import net.imglib2.trainable_segmention.classification.Training;
 import net.imglib2.trainable_segmention.gson.GsonUtils;
+import net.imglib2.trainable_segmention.pixel_feature.calculator.FeatureCalculator;
 import net.imglib2.trainable_segmention.pixel_feature.settings.FeatureSettings;
 import net.imglib2.type.numeric.IntegerType;
 import net.imglib2.type.numeric.RealType;
@@ -121,10 +127,28 @@ implements Classifier
 		listeners.forEach(l -> l.notify(this));
 	}
 
+	// TODO: caching the Feature Stack while training could be part of imglib2-trainable-segmentation
+	private static Img<FloatType> cachedFeatureBlock(FeatureCalculator feature, RandomAccessibleInterval<?> image) {
+		return cachedFeatureBlock(feature, Views.extendBorder(image), LabkitUtils.suggestGrid(image, false));
+	}
+
+	private static Img<FloatType> cachedFeatureBlock(FeatureCalculator feature, RandomAccessible<?> extendedOriginal, CellGrid grid) {
+		int count = feature.count();
+		if(count <= 0)
+			throw new IllegalArgumentException();
+		long[] dimensions = LabkitUtils.extend(grid.getImgDimensions(), count);
+		int[] cellDimensions = LabkitUtils.extend(new int[grid.numDimensions()], count);
+		grid.cellDimensions(cellDimensions);
+		final DiskCachedCellImgOptions featureOpts = DiskCachedCellImgOptions.options().cellDimensions( cellDimensions ).dirtyAccesses( false );
+		final DiskCachedCellImgFactory< FloatType > featureFactory = new DiskCachedCellImgFactory<>( featureOpts );
+		CellLoader<FloatType> loader = target -> feature.apply(extendedOriginal, RevampUtils.slices(target));
+		return featureFactory.create(dimensions, new FloatType(), loader);
+	}
+
 	private void train(Training training, List<String> classes, Labeling labeling, RandomAccessibleInterval<?> image) {
 		SparseRandomAccessIntType classIndices = getClassIndices(labeling, classes);
 		RandomAccessible<? extends Composite<FloatType>> features =
-				Views.collapse(FeatureStack.cachedFeatureBlock(classifier.features(), image));
+				Views.collapse( cachedFeatureBlock(classifier.features(), image));
 		addSamples(training, classIndices, features);
 	}
 
