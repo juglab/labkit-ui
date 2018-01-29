@@ -46,15 +46,21 @@ public class FeatureStack {
 	}
 
 	private static int[] initCellDimension(int n, boolean isTimeSeries) {
-		if(n == 3)
-			return new int[] {256, 256, 4};
 		return isTimeSeries ? RevampUtils.extend(initCellDimension(n - 1), 1) :
 				initCellDimension(n);
 	}
 
 	private static int[] initCellDimension(int n) {
-		int size = (int) Math.round(Math.pow(128. * 128., 1. / n) + 0.5);
+		int size = cellLength(n);
 		return IntStream.range(0, n).map(x -> size).toArray();
+	}
+
+	private static int cellLength(int n) {
+		switch (n) {
+			case 2: return 128;
+			case 3: return 32;
+			default: return (int) Math.round(Math.pow(128. * 128., 1. / n) + 0.5);
+		}
 	}
 
 	private RandomAccessibleInterval<?> prepareOriginal(RandomAccessibleInterval<?> original) {
