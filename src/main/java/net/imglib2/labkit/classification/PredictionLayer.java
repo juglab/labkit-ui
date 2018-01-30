@@ -4,7 +4,9 @@ import bdv.util.BdvStackSource;
 import net.imglib2.RandomAccessible;
 import net.imglib2.RandomAccessibleInterval;
 import net.imglib2.labkit.Extensible;
-import net.imglib2.labkit.FeatureStack;
+import net.imglib2.labkit.classification.weka.TrainableSegmentationClassifier;
+import net.imglib2.labkit.models.ImageLabelingModel;
+import net.imglib2.labkit.utils.LabkitUtils;
 import net.imglib2.labkit.utils.RandomAccessibleContainer;
 import net.imglib2.labkit.actions.ToggleVisibility;
 import net.imglib2.labkit.color.ColorMapProvider;
@@ -34,28 +36,28 @@ public class PredictionLayer implements Classifier.Listener
 
 	private final Extensible extensible;
 
+	// This information should be stored in a segmentation model
 	private final ColorMapProvider colorProvider;
-
-	private final RandomAccessibleContainer< VolatileARGBType > segmentationContainer;
-
-	private final FeatureStack featureStack;
-
-	private Img<ShortType> segmentation;
-
-	private Img<FloatType> prediction;
-
+	private final RandomAccessibleInterval< ? > compatibleImage;
+	private CellGrid grid;
 	private List<String> labels;
 
-	public PredictionLayer(Extensible extensible, ColorMapProvider colorProvider, Classifier classifier, FeatureStack featureStack) {
-		super();
-		final RandomAccessible< VolatileARGBType > emptyPrediction = ConstantUtils.constantRandomAccessible( new VolatileARGBType( 0 ), featureStack.grid().numDimensions());
+	private final RandomAccessibleContainer< VolatileARGBType > segmentationContainer;
+	private Img<ShortType> segmentation;
+	private Img<FloatType> prediction;
+
+
+	public PredictionLayer( Extensible extensible, ImageLabelingModel model, Classifier classifier, boolean isTimeSeries )
+	{
+		this.compatibleImage = TrainableSegmentationClassifier.prepareOriginal( model.image() );
+		this.grid = LabkitUtils.suggestGrid( this.compatibleImage, isTimeSeries );
+		final RandomAccessible< VolatileARGBType > emptyPrediction = ConstantUtils.constantRandomAccessible( new VolatileARGBType( 0 ), compatibleImage.numDimensions() );
 		this.extensible = extensible;
-		this.featureStack = featureStack;
-		this.colorProvider = colorProvider;
+		this.colorProvider = model.colorMapProvider();
 		this.segmentationContainer = new RandomAccessibleContainer<>( emptyPrediction );
 		AffineTransform3D t = new AffineTransform3D();
-		t.scale(featureStack.scaling());
-		BdvStackSource<VolatileARGBType> source = extensible.addLayer(Views.interval(segmentationContainer, featureStack.interval()), "prediction", t);
+		t.scale(model.scaling());
+		BdvStackSource<VolatileARGBType> source = extensible.addLayer(Views.interval(segmentationContainer, compatibleImage ), "prediction", t);
 		extensible.addAction(new ToggleVisibility( "Segmentation", source ));
 		classifier.listeners().add( this );
 	}
@@ -115,16 +117,13 @@ public class PredictionLayer implements Classifier.Listener
 	}
 
 	private void updatePrediction(Classifier classifier) {
-		RandomAccessibleInterval<?> image = featureStack.compatibleOriginal();
-		CellGrid grid = featureStack.grid();
 		int count = classifier.classNames().size();
 		CellGrid extended = new CellGrid(RevampUtils.extend(grid.getImgDimensions(), count), RevampUtils.extend(getCellDimensions(grid), count));
-		prediction = setupCachedImage(target -> classifier.predict(image, target), extended, new FloatType());
+		prediction = setupCachedImage(target -> classifier.predict( compatibleImage, target), extended, new FloatType());
 	}
 
 	private void updateSegmentation(Classifier classifier) {
-		RandomAccessibleInterval<?> image = featureStack.compatibleOriginal();
-		segmentation = setupCachedImage(target -> classifier.segment(image, target), featureStack.grid(), new ShortType());
+		segmentation = setupCachedImage(target -> classifier.segment( compatibleImage, target), grid, new ShortType());
 	}
 
 	private <T extends NativeType<T>> Img<T> setupCachedImage(CellLoader<T> loader, CellGrid grid, T type) {

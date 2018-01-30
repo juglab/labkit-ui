@@ -63,8 +63,6 @@ public class SegmentationComponent {
 
 	private ImageLabelingModel model;
 
-	private FeatureStack featureStack;
-
 	private MyExtensible extensible = new MyExtensible();
 
 	private final Context context;
@@ -88,8 +86,7 @@ public class SegmentationComponent {
 		this.dialogBoxOwner = dialogBoxOwner;
 		this.inputImage = image;
 		this.context = context;
-		RandomAccessibleInterval<? extends NumericType<?>> displayImage = image.displayImage();
-		model = new ImageLabelingModel(displayImage, image.scaling(), labeling);
+		model = new ImageLabelingModel( image.displayImage(), image.scaling(), labeling);
 		labelingComponent = new LabelingComponent(dialogBoxOwner, model, inputImage.isTimeSeries());
 		panel.setRightComponent(labelingComponent.getComponent());
 		// --
@@ -98,7 +95,6 @@ public class SegmentationComponent {
 		FeatureSettings setting = new FeatureSettings(globalSettings, SingleFeatures.identity(), GroupedFeatures.gauss());
 		TrainableSegmentationClassifier classifier1 = new TrainableSegmentationClassifier(ops, new FastRandomForest(), model.labeling().get().getLabels(), setting);
 		this.classifier = inputImage.isTimeSeries() ? new TimeSeriesClassifier(classifier1) : classifier1;
-		featureStack = new FeatureStack(displayImage, image.scaling(), inputImage.isTimeSeries());
 		initClassification();
 	}
 
@@ -109,8 +105,9 @@ public class SegmentationComponent {
 	// -- Helper methods --
 
 	private void initClassification() {
-		new TrainClassifier(extensible, classifier, model.labeling()::get, featureStack.compatibleOriginal());
-		PredictionLayer predictionLayer = new PredictionLayer(extensible, model.colorMapProvider(), classifier, featureStack);
+		RandomAccessibleInterval< ? > image = TrainableSegmentationClassifier.prepareOriginal( inputImage.displayImage() );
+		new TrainClassifier(extensible, classifier, model.labeling()::get, image );
+		PredictionLayer predictionLayer = new PredictionLayer(extensible, model, classifier, inputImage.isTimeSeries() );
 		new ClassifierIoAction(extensible, this.classifier);
 		new LabelingIoAction(extensible, model.labeling(), inputImage);
 		new AddLabelingIoAction(extensible, model.labeling());

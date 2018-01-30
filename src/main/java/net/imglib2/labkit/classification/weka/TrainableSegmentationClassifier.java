@@ -53,6 +53,15 @@ implements Classifier
 
 	private boolean isTrained = false;
 
+	// This method is used to prepare the image for segmentation.
+	// TODO: make this a private method. consider moving image preparation to imglib2-trainable-segmentation.
+	public static RandomAccessibleInterval<?> prepareOriginal(RandomAccessibleInterval<?> original) {
+		Object voxel = original.randomAccess().get();
+		if(voxel instanceof RealType && !(voxel instanceof FloatType))
+			return LabkitUtils.toFloat(RevampUtils.uncheckedCast(original));
+		return original;
+	}
+
 	@Override
 	public Notifier<Listener> listeners() {
 		return listeners;
