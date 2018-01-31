@@ -5,11 +5,11 @@ import net.imglib2.IterableInterval;
 import net.imglib2.RandomAccess;
 import net.imglib2.labkit.Extensible;
 import net.imglib2.labkit.models.Holder;
-import net.imglib2.labkit.classification.PredictionLayer;
 import net.imglib2.labkit.labeling.Labeling;
 import net.imglib2.converter.Converter;
 import net.imglib2.converter.Converters;
 import net.imglib2.img.Img;
+import net.imglib2.labkit.models.SegmentationResultsModel;
 import net.imglib2.type.logic.BitType;
 import net.imglib2.type.numeric.integer.ShortType;
 
@@ -23,25 +23,25 @@ import java.util.Set;
 public class SegmentationAsLabelAction extends AbstractFileIoAcion {
 
 	private final Holder<Labeling> labelingHolder;
-	private final PredictionLayer predictionLayer;
+	private final SegmentationResultsModel model;
 
-	public SegmentationAsLabelAction(Extensible extensible, PredictionLayer predictionLayer, Holder<Labeling> labelingHolder) {
+	public SegmentationAsLabelAction(Extensible extensible, SegmentationResultsModel model, Holder<Labeling> labelingHolder) {
 		super(extensible, AbstractFileIoAcion.TIFF_FILTER);
 		this.labelingHolder = labelingHolder;
-		this.predictionLayer = predictionLayer;
+		this.model = model;
 		extensible.addAction("Create Label from Segmentation...", "addSegmentationAsLabel",
 				this::addSegmentationAsLabels, "");
 	}
 
 	private void addSegmentationAsLabels() {
-		List<String> labels = predictionLayer.labels();
+		List<String> labels = model.labels();
 		String selected = (String) JOptionPane.showInputDialog(null, "Select label to be added",
 				"Add Segmentation as Labels ...", JOptionPane.PLAIN_MESSAGE,
 				null, labels.toArray(), labels.get(labels.size() - 1));
 		int index = labels.indexOf(selected);
 		if(index < 0)
 			return;
-		addLabel(selected, index, predictionLayer.segmentation());
+		addLabel(selected, index, model.segmentation());
 	}
 
 	private void addLabel(String selected, int index, Img<ShortType> segmentation) {

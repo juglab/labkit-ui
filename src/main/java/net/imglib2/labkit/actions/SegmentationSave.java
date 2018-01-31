@@ -1,9 +1,9 @@
 package net.imglib2.labkit.actions;
 
 import io.scif.img.ImgSaver;
+import net.imglib2.labkit.models.SegmentationResultsModel;
 import net.imglib2.labkit.utils.LabkitUtils;
 import net.imglib2.labkit.Extensible;
-import net.imglib2.labkit.classification.PredictionLayer;
 import net.imglib2.img.Img;
 import net.imglib2.img.display.imagej.ImageJFunctions;
 import net.imglib2.type.NativeType;
@@ -18,12 +18,12 @@ import java.util.function.Supplier;
  */
 public class SegmentationSave extends AbstractFileIoAcion {
 
-	public SegmentationSave(Extensible extensible, PredictionLayer predictionLayer) {
+	public SegmentationSave(Extensible extensible, SegmentationResultsModel model ) {
 		super(extensible, AbstractFileIoAcion.TIFF_FILTER);
-		Supplier<Img<ShortType>> segmentation = predictionLayer::segmentation;
+		Supplier<Img<ShortType>> segmentation = model::segmentation;
 		initSaveAction("Save Segmentation ...", "saveSegmentation", getSaveAction(segmentation), "");
 		extensible.addAction("Show Segmentation in ImageJ", "showSegmentation", getShowAction(segmentation), "");
-		Supplier<Img<FloatType>> prediction = predictionLayer::prediction;
+		Supplier<Img<FloatType>> prediction = model::prediction;
 		initSaveAction("Save Prediction ...", "savePrediction", getSaveAction(prediction), "");
 		extensible.addAction("Show Prediction in ImageJ", "showPrediction", getShowAction(prediction), "");
 	}
