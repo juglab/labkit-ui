@@ -28,6 +28,7 @@ import net.imglib2.labkit.labeling.BdvLayer;
 import net.imglib2.labkit.labeling.Labeling;
 import net.imglib2.labkit.models.Holder;
 import net.imglib2.labkit.models.ImageLabelingModel;
+import net.imglib2.labkit.models.SegmentationModel;
 import net.imglib2.labkit.panel.LabelPanel;
 import net.imglib2.labkit.panel.VisibilityPanel;
 import net.imglib2.labkit.plugin.MeasureConnectedComponents;
@@ -106,9 +107,9 @@ public class SegmentationComponent {
 	// -- Helper methods --
 
 	private void initClassification() {
-		RandomAccessibleInterval< ? > image = TrainableSegmentationClassifier.prepareOriginal( inputImage.displayImage() );
-		new TrainClassifier(extensible, classifier, model.labeling()::get, image );
-		PredictionLayer predictionLayer = new PredictionLayer(extensible, model, classifier, inputImage.isTimeSeries() );
+		SegmentationModel segmentationModel = new SegmentationModel( model, classifier, inputImage.isTimeSeries() );
+		new TrainClassifier(extensible, segmentationModel );
+		PredictionLayer predictionLayer = new PredictionLayer( extensible, segmentationModel );
 		labelingComponent.addBdvLayer( predictionLayer );
 		new ClassifierIoAction(extensible, this.classifier);
 		new LabelingIoAction(extensible, model.labeling(), inputImage);

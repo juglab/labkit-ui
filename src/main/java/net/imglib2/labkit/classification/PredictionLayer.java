@@ -3,13 +3,10 @@ package net.imglib2.labkit.classification;
 import net.imglib2.RandomAccessible;
 import net.imglib2.RandomAccessibleInterval;
 import net.imglib2.labkit.Extensible;
-import net.imglib2.labkit.classification.weka.TrainableSegmentationClassifier;
 import net.imglib2.labkit.labeling.BdvLayer;
-import net.imglib2.labkit.models.ImageLabelingModel;
-import net.imglib2.labkit.utils.LabkitUtils;
+import net.imglib2.labkit.models.SegmentationModel;
 import net.imglib2.labkit.utils.Notifier;
 import net.imglib2.labkit.utils.RandomAccessibleContainer;
-import net.imglib2.labkit.color.ColorMapProvider;
 import net.imglib2.cache.img.CellLoader;
 import net.imglib2.cache.img.DiskCachedCellImgFactory;
 import net.imglib2.cache.img.DiskCachedCellImgOptions;
@@ -37,15 +34,12 @@ public class PredictionLayer implements BdvLayer
 
 	private final Extensible extensible;
 
-	// This information should be stored in a segmentation model
-	private final ColorMapProvider colorProvider;
-	private final RandomAccessibleInterval< ? > compatibleImage;
-	private CellGrid grid;
-	private List<String> labels;
+	private final SegmentationModel model;
 
 	private final RandomAccessibleContainer< VolatileARGBType > segmentationContainer;
 	private Img<ShortType> segmentation;
 	private Img<FloatType> prediction;
+	private List< String > labels;
 
 	private Notifier< Runnable > listeners = new Notifier<>();
 
@@ -53,17 +47,15 @@ public class PredictionLayer implements BdvLayer
 
 	private AffineTransform3D transformation;
 
-	public PredictionLayer( Extensible extensible, ImageLabelingModel model, Classifier classifier, boolean isTimeSeries )
+	public PredictionLayer( Extensible extensible, SegmentationModel model )
 	{
-		this.compatibleImage = TrainableSegmentationClassifier.prepareOriginal( model.image() );
-		this.grid = LabkitUtils.suggestGrid( this.compatibleImage, isTimeSeries );
-		final RandomAccessible< VolatileARGBType > emptyPrediction = ConstantUtils.constantRandomAccessible( new VolatileARGBType( 0 ), compatibleImage.numDimensions() );
+		this.model = model;
 		this.extensible = extensible;
-		this.colorProvider = model.colorMapProvider();
+		final RandomAccessible< VolatileARGBType > emptyPrediction = ConstantUtils.constantRandomAccessible( new VolatileARGBType( 0 ), model.image().numDimensions() );
 		this.segmentationContainer = new RandomAccessibleContainer<>( emptyPrediction );
 		this.transformation = scaleTransformation( model.scaling() );
-		this.view = Views.interval( segmentationContainer, compatibleImage );
-		classifier.listeners().add( this::classifierChanged );
+		this.view = Views.interval( segmentationContainer, model.image() );
+		model.segmenter().listeners().add( this::classifierChanged );
 	}
 
 	private static AffineTransform3D scaleTransformation( double scaling )
@@ -75,16 +67,13 @@ public class PredictionLayer implements BdvLayer
 
 	public void classifierChanged(final Classifier classifier)
 	{
-		if ( classifier.isTrained() )
-			synchronized ( extensible.viewerSync() )
-			{
+		if ( classifier.isTrained() ) {
 				updateSegmentation(classifier);
 				updateContainer(classifier);
 				updatePrediction(classifier);
 				updateLabels(classifier);
 				listeners.forEach( Runnable::run );
-			}
-		else
+		} else
 			segmentationContainer.setSource(ConstantUtils.constantRandomAccessible(new VolatileARGBType(Color.red.getRGB()), segmentationContainer.numDimensions()));
 	}
 
@@ -99,7 +88,7 @@ public class PredictionLayer implements BdvLayer
 
 	private RandomAccessibleInterval<VolatileARGBType> coloredVolatileView(Classifier classifier) {
 		ARGBType[] colors = classifier.classNames().stream()
-				.map(colorProvider.colorMap()::getColor)
+				.map(model.colorMap()::getColor)
 				.toArray(ARGBType[]::new);
 
 		return mapColors(colors, extensible.wrapAsVolatile(segmentation));
@@ -128,12 +117,13 @@ public class PredictionLayer implements BdvLayer
 
 	private void updatePrediction(Classifier classifier) {
 		int count = classifier.classNames().size();
+		CellGrid grid = model.grid();
 		CellGrid extended = new CellGrid(RevampUtils.extend(grid.getImgDimensions(), count), RevampUtils.extend(getCellDimensions(grid), count));
-		prediction = setupCachedImage(target -> classifier.predict( compatibleImage, target), extended, new FloatType());
+		prediction = setupCachedImage(target -> classifier.predict( model.image(), target), extended, new FloatType());
 	}
 
 	private void updateSegmentation(Classifier classifier) {
-		segmentation = setupCachedImage(target -> classifier.segment( compatibleImage, target), grid, new ShortType());
+		segmentation = setupCachedImage(target -> classifier.segment( model.image(), target), model.grid(), new ShortType());
 	}
 
 	private <T extends NativeType<T>> Img<T> setupCachedImage(CellLoader<T> loader, CellGrid grid, T type) {
