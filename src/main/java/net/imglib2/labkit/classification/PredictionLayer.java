@@ -1,10 +1,11 @@
 package net.imglib2.labkit.classification;
 
+import bdv.util.volatiles.SharedQueue;
+import bdv.util.volatiles.VolatileViews;
 import net.imglib2.RandomAccessible;
 import net.imglib2.RandomAccessibleInterval;
 import net.imglib2.converter.Converter;
 import net.imglib2.converter.Converters;
-import net.imglib2.labkit.Extensible;
 import net.imglib2.labkit.labeling.BdvLayer;
 import net.imglib2.labkit.models.SegmentationResultsModel;
 import net.imglib2.labkit.utils.Notifier;
@@ -20,11 +21,11 @@ import net.imglib2.view.Views;
 public class PredictionLayer implements BdvLayer
 {
 
-	private final Extensible extensible;
-
 	private final SegmentationResultsModel model;
 
 	private final RandomAccessibleContainer< VolatileARGBType > segmentationContainer;
+
+	private final SharedQueue queue = new SharedQueue(Runtime.getRuntime().availableProcessors());
 
 	private Notifier< Runnable > listeners = new Notifier<>();
 
@@ -32,10 +33,9 @@ public class PredictionLayer implements BdvLayer
 
 	private AffineTransform3D transformation;
 
-	public PredictionLayer( Extensible extensible, SegmentationResultsModel model )
+	public PredictionLayer( SegmentationResultsModel model )
 	{
 		this.model = model;
-		this.extensible = extensible;
 		final RandomAccessible< VolatileARGBType > emptyPrediction = ConstantUtils.constantRandomAccessible( new VolatileARGBType( 0 ), model.interval().numDimensions() );
 		this.segmentationContainer = new RandomAccessibleContainer<>( emptyPrediction );
 		this.transformation = scaleTransformation( model.scaling() );
@@ -59,7 +59,7 @@ public class PredictionLayer implements BdvLayer
 
 	private RandomAccessibleInterval<VolatileARGBType > coloredVolatileView() {
 		ARGBType[] colors = model.colors().toArray(new ARGBType[0]);
-		return mapColors(colors, extensible.wrapAsVolatile(model.segmentation()));
+		return mapColors(colors, VolatileViews.wrapAsVolatile( model.segmentation(), queue ) );
 	}
 
 	private RandomAccessibleInterval<VolatileARGBType> mapColors(ARGBType[] colors, RandomAccessibleInterval<VolatileShortType > source) {

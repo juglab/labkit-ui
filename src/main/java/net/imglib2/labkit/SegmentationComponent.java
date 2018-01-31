@@ -1,12 +1,8 @@
 package net.imglib2.labkit;
 
-import bdv.util.BdvSource;
-import bdv.util.volatiles.SharedQueue;
-import bdv.util.volatiles.VolatileViews;
 import hr.irb.fastRandomForest.FastRandomForest;
 import net.imagej.ops.OpService;
 import net.imglib2.RandomAccessibleInterval;
-import net.imglib2.Volatile;
 import net.imglib2.labkit.actions.AddLabelingIoAction;
 import net.imglib2.labkit.actions.BatchSegmentAction;
 import net.imglib2.labkit.actions.ChangeFeatureSettingsAction;
@@ -24,7 +20,6 @@ import net.imglib2.labkit.classification.weka.TimeSeriesClassifier;
 import net.imglib2.labkit.classification.weka.TrainableSegmentationClassifier;
 import net.imglib2.labkit.inputimage.DefaultInputImage;
 import net.imglib2.labkit.inputimage.InputImage;
-import net.imglib2.labkit.labeling.BdvLayer;
 import net.imglib2.labkit.labeling.Labeling;
 import net.imglib2.labkit.models.Holder;
 import net.imglib2.labkit.models.ImageLabelingModel;
@@ -45,7 +40,6 @@ import net.imglib2.type.numeric.NumericType;
 import net.imglib2.type.numeric.real.FloatType;
 import net.miginfocom.swing.MigLayout;
 import org.scijava.Context;
-import org.scijava.ui.behaviour.util.AbstractNamedAction;
 import org.scijava.ui.behaviour.util.RunnableAction;
 
 import javax.swing.*;
@@ -59,8 +53,6 @@ public class SegmentationComponent {
 	private final Classifier classifier;
 
 	private final JFrame dialogBoxOwner;
-
-	private SharedQueue queue = new SharedQueue(Runtime.getRuntime().availableProcessors());
 
 	private LabelingComponent labelingComponent;
 
@@ -111,8 +103,7 @@ public class SegmentationComponent {
 		SegmentationModel segmentationModel = new SegmentationModel( model, classifier, inputImage.isTimeSeries() );
 		new TrainClassifier(extensible, segmentationModel );
 		SegmentationResultsModel segmentationResultsModel = new SegmentationResultsModel( segmentationModel );
-		PredictionLayer predictionLayer = new PredictionLayer( extensible, segmentationResultsModel );
-		labelingComponent.addBdvLayer( predictionLayer );
+		labelingComponent.addBdvLayer( new PredictionLayer( segmentationResultsModel ) );
 		new ClassifierIoAction(extensible, this.classifier);
 		new LabelingIoAction(extensible, model.labeling(), inputImage);
 		new AddLabelingIoAction(extensible, model.labeling());
@@ -174,24 +165,7 @@ public class SegmentationComponent {
 			RunnableAction a = new RunnableAction(title, action);
 			a.putValue(Action.ACTION_COMMAND_KEY, command);
 			a.putValue(Action.ACCELERATOR_KEY, KeyStroke.getKeyStroke(keyStroke));
-			addAction(a);
-		}
-
-		@Override
-		public void addAction(AbstractNamedAction action) {
-			labelingComponent.addAction(action);
-		}
-
-		@Override
-		public < T, V extends Volatile< T >> RandomAccessibleInterval< V > wrapAsVolatile(
-				RandomAccessibleInterval<T> img)
-		{
-			return VolatileViews.wrapAsVolatile( img, queue );
-		}
-
-		@Override
-		public Object viewerSync() {
-			return labelingComponent.viewerSync();
+			labelingComponent.addAction( a );
 		}
 
 		@Override
