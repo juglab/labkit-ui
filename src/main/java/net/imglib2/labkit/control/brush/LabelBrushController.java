@@ -53,6 +53,8 @@ public class LabelBrushController
 
 	final private ViewerPanel viewer;
 
+	private final LabelingModel model;
+
 	private Map<String, RandomAccessibleInterval<BitType>> regions;
 
 	private List<String> labels;
@@ -92,6 +94,7 @@ public class LabelBrushController
 		this.viewer = viewer;
 		this.brushOverlay = new BrushOverlay( viewer, "", model.colorMapProvider() );
 		this.sliceTime = sliceTime;
+		this.model = model;
 		updateLabeling(model.labeling().get());
 		model.labeling().notifier().add(this::updateLabeling);
 		selectedLabel = model.selectedLabel();
@@ -192,7 +195,7 @@ public class LabelBrushController
 			this.before = coords;
 			paint(coords);
 
-			viewer.requestRepaint();
+			fireBitmapChanged();
 		}
 
 		@Override
@@ -202,13 +205,18 @@ public class LabelBrushController
 			paint(before, coords );
 			this.before = coords;
 			brushOverlay.setPosition( x, y );
-			viewer.requestRepaint();
+			fireBitmapChanged();
 		}
 
 		@Override
 		public void end( final int x, final int y )
 		{
 		}
+	}
+
+	private void fireBitmapChanged()
+	{
+		model.dataChangedNotifier().forEach( Runnable::run );
 	}
 
 	private class ChangeBrushRadius implements ScrollBehaviour
@@ -310,7 +318,7 @@ public class LabelBrushController
 		@Override
 		public void click(int x, int y) {
 			floodFill( displayToImageCoordinates(x, y) );
-			viewer.requestRepaint();
+			fireBitmapChanged();
 		}
 	}
 

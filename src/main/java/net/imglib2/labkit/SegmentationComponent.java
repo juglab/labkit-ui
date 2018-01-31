@@ -1,6 +1,6 @@
 package net.imglib2.labkit;
 
-import bdv.util.BdvStackSource;
+import bdv.util.BdvSource;
 import bdv.util.volatiles.SharedQueue;
 import bdv.util.volatiles.VolatileViews;
 import hr.irb.fastRandomForest.FastRandomForest;
@@ -24,6 +24,7 @@ import net.imglib2.labkit.classification.weka.TimeSeriesClassifier;
 import net.imglib2.labkit.classification.weka.TrainableSegmentationClassifier;
 import net.imglib2.labkit.inputimage.DefaultInputImage;
 import net.imglib2.labkit.inputimage.InputImage;
+import net.imglib2.labkit.labeling.BdvLayer;
 import net.imglib2.labkit.labeling.Labeling;
 import net.imglib2.labkit.models.Holder;
 import net.imglib2.labkit.models.ImageLabelingModel;
@@ -108,6 +109,7 @@ public class SegmentationComponent {
 		RandomAccessibleInterval< ? > image = TrainableSegmentationClassifier.prepareOriginal( inputImage.displayImage() );
 		new TrainClassifier(extensible, classifier, model.labeling()::get, image );
 		PredictionLayer predictionLayer = new PredictionLayer(extensible, model, classifier, inputImage.isTimeSeries() );
+		labelingComponent.addBdvLayer( predictionLayer );
 		new ClassifierIoAction(extensible, this.classifier);
 		new LabelingIoAction(extensible, model.labeling(), inputImage);
 		new AddLabelingIoAction(extensible, model.labeling());
@@ -165,11 +167,6 @@ public class SegmentationComponent {
 		}
 
 		@Override
-		public void repaint() {
-			model.dataChangedNotifier().forEach(Runnable::run);
-		}
-
-		@Override
 		public void addAction(String title, String command, Runnable action, String keyStroke) {
 			RunnableAction a = new RunnableAction(title, action);
 			a.putValue(Action.ACTION_COMMAND_KEY, command);
@@ -192,11 +189,6 @@ public class SegmentationComponent {
 		@Override
 		public Object viewerSync() {
 			return labelingComponent.viewerSync();
-		}
-
-		@Override
-		public <T extends NumericType<T>> BdvStackSource<T> addLayer(RandomAccessibleInterval<T> interval, String prediction, AffineTransform3D t) {
-			return labelingComponent.addLayer(interval, prediction, t);
 		}
 
 		@Override

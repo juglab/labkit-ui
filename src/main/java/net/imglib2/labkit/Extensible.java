@@ -1,8 +1,9 @@
 package net.imglib2.labkit;
 
-import bdv.util.BdvStackSource;
+import bdv.util.BdvSource;
 import net.imglib2.RandomAccessibleInterval;
 import net.imglib2.Volatile;
+import net.imglib2.labkit.labeling.BdvLayer;
 import net.imglib2.labkit.labeling.Labeling;
 import net.imglib2.labkit.models.Holder;
 import net.imglib2.realtransform.AffineTransform3D;
@@ -15,8 +16,6 @@ import java.awt.*;
 public interface Extensible {
 	Context context();
 
-	void repaint();
-
 	void addAction(String title, String command, Runnable action, String keyStroke);
 
 	void addAction(AbstractNamedAction action);
@@ -25,8 +24,6 @@ public interface Extensible {
 			RandomAccessibleInterval<T> img);
 
 	Object viewerSync();
-
-	<T extends NumericType<T>> BdvStackSource<T> addLayer(RandomAccessibleInterval<T> interval, String prediction, AffineTransform3D t);
 
 	Component dialogParent();
 

@@ -1,14 +1,14 @@
 package net.imglib2.labkit.classification;
 
-import bdv.util.BdvStackSource;
 import net.imglib2.RandomAccessible;
 import net.imglib2.RandomAccessibleInterval;
 import net.imglib2.labkit.Extensible;
 import net.imglib2.labkit.classification.weka.TrainableSegmentationClassifier;
+import net.imglib2.labkit.labeling.BdvLayer;
 import net.imglib2.labkit.models.ImageLabelingModel;
 import net.imglib2.labkit.utils.LabkitUtils;
+import net.imglib2.labkit.utils.Notifier;
 import net.imglib2.labkit.utils.RandomAccessibleContainer;
-import net.imglib2.labkit.actions.ToggleVisibility;
 import net.imglib2.labkit.color.ColorMapProvider;
 import net.imglib2.cache.img.CellLoader;
 import net.imglib2.cache.img.DiskCachedCellImgFactory;
@@ -21,6 +21,7 @@ import net.imglib2.realtransform.AffineTransform3D;
 import net.imglib2.trainable_segmention.RevampUtils;
 import net.imglib2.type.NativeType;
 import net.imglib2.type.numeric.ARGBType;
+import net.imglib2.type.numeric.NumericType;
 import net.imglib2.type.numeric.integer.ShortType;
 import net.imglib2.type.numeric.real.FloatType;
 import net.imglib2.type.volatiles.VolatileARGBType;
@@ -31,7 +32,7 @@ import net.imglib2.view.Views;
 import java.awt.*;
 import java.util.List;
 
-public class PredictionLayer implements Classifier.Listener
+public class PredictionLayer implements BdvLayer
 {
 
 	private final Extensible extensible;
@@ -46,6 +47,11 @@ public class PredictionLayer implements Classifier.Listener
 	private Img<ShortType> segmentation;
 	private Img<FloatType> prediction;
 
+	private Notifier< Runnable > listeners = new Notifier<>();
+
+	private RandomAccessibleInterval< ? extends NumericType< ? > > view;
+
+	private AffineTransform3D transformation;
 
 	public PredictionLayer( Extensible extensible, ImageLabelingModel model, Classifier classifier, boolean isTimeSeries )
 	{
@@ -55,15 +61,19 @@ public class PredictionLayer implements Classifier.Listener
 		this.extensible = extensible;
 		this.colorProvider = model.colorMapProvider();
 		this.segmentationContainer = new RandomAccessibleContainer<>( emptyPrediction );
-		AffineTransform3D t = new AffineTransform3D();
-		t.scale(model.scaling());
-		BdvStackSource<VolatileARGBType> source = extensible.addLayer(Views.interval(segmentationContainer, compatibleImage ), "prediction", t);
-		extensible.addAction(new ToggleVisibility( "Segmentation", source ));
-		classifier.listeners().add( this );
+		this.transformation = scaleTransformation( model.scaling() );
+		this.view = Views.interval( segmentationContainer, compatibleImage );
+		classifier.listeners().add( this::classifierChanged );
 	}
 
-	@Override
-	public void notify(final Classifier classifier)
+	private static AffineTransform3D scaleTransformation( double scaling )
+	{
+		AffineTransform3D transformation = new AffineTransform3D();
+		transformation.scale( scaling );
+		return transformation;
+	}
+
+	public void classifierChanged(final Classifier classifier)
 	{
 		if ( classifier.isTrained() )
 			synchronized ( extensible.viewerSync() )
@@ -72,7 +82,7 @@ public class PredictionLayer implements Classifier.Listener
 				updateContainer(classifier);
 				updatePrediction(classifier);
 				updateLabels(classifier);
-				extensible.repaint();
+				listeners.forEach( Runnable::run );
 			}
 		else
 			segmentationContainer.setSource(ConstantUtils.constantRandomAccessible(new VolatileARGBType(Color.red.getRGB()), segmentationContainer.numDimensions()));
@@ -144,5 +154,25 @@ public class PredictionLayer implements Classifier.Listener
 
 	public List<String> labels() {
 		return labels;
+	}
+
+	@Override public RandomAccessibleInterval< ? extends NumericType< ? > > image()
+	{
+		return view;
+	}
+
+	@Override public Notifier< Runnable > listeners()
+	{
+		return listeners;
+	}
+
+	@Override public String title()
+	{
+		return "Segmentation";
+	}
+
+	@Override public AffineTransform3D transformation()
+	{
+		return transformation;
 	}
 }

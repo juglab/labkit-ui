@@ -12,7 +12,5 @@ public interface LabelingModel {
 
 	Holder<Labeling> labeling();
 
-	void requestRepaint();
-
 	Notifier<Runnable> dataChangedNotifier();
 }

@@ -55,11 +55,6 @@ public class ImageLabelingModel implements LabelingModel {
 	public Holder<String> selectedLabel() { return selectedLabelHolder; }
 
 	@Override
-	public void requestRepaint() {
-		dataChangedNotifier.forEach(Runnable::run);
-	}
-
-	@Override
 	public Notifier<Runnable> dataChangedNotifier() {
 		return dataChangedNotifier;
 	}
