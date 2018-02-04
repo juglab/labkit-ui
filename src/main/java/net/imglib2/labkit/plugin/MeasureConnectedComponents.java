@@ -69,11 +69,11 @@ public class MeasureConnectedComponents implements Command {
 	private static Table<?, ?> createTable(Labeling labeling, boolean calibratedSize) {
 		TableBuilder builder = new TableBuilder();
 		builder.setPixelSize(labeling.axes());
-		labeling.iterableRegions().forEach((label, mask) -> builder.add(label, connectedComponets(mask)));
+		labeling.iterableRegions().forEach((label, mask) -> builder.add(label, connectedComponetsSizes(mask)));
 		return builder.getTable(calibratedSize);
 	}
 
-	static List<Long> connectedComponets(IterableRegion<BitType> region) {
+	static List<Long> connectedComponetsSizes(IterableRegion<BitType> region) {
 		List<Long> sizes = new ArrayList<>();
 		Cursor<Void> cursor = region.cursor();
 		SparseRandomAccessIntType visitedImage = new SparseRandomAccessIntType(region);

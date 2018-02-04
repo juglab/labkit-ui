@@ -44,7 +44,7 @@ public class MeasureConnectedComponentsTest {
 
 	@Test
 	public void test() {
-		List<Long> result = MeasureConnectedComponents.connectedComponets(input);
+		List<Long> result = MeasureConnectedComponents.connectedComponetsSizes(input);
 		result.sort(Long::compare);
 		assertEquals(Arrays.asList(1L, 1L, 2L, 8L, 12L), result);
 	}
