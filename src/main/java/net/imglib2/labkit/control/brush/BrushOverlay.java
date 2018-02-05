@@ -14,7 +14,7 @@ import java.awt.geom.Rectangle2D;
 
 import bdv.util.Affine3DHelpers;
 import bdv.viewer.ViewerPanel;
-import net.imglib2.labkit.color.ColorMapProvider;
+import net.imglib2.labkit.models.BitmapModel;
 import net.imglib2.realtransform.AffineTransform3D;
 import net.imglib2.ui.OverlayRenderer;
 
@@ -24,31 +24,19 @@ import net.imglib2.ui.OverlayRenderer;
  */
 public class BrushOverlay implements OverlayRenderer
 {
-	final static BasicStroke stroke = new BasicStroke( 1 );
-	final protected ViewerPanel viewer;
-	protected int x, y, width, height, radius = 5;
-	protected boolean visible = false;
+	private final static BasicStroke stroke = new BasicStroke( 1 );
+	private final ViewerPanel viewer;
+
+	private final BitmapModel model;
+
+	private int x, y, width, height, radius = 5;
+	private boolean visible = false;
 	final AffineTransform3D viewerTransform = new AffineTransform3D();
 
-	private String label;
-
-	private final ColorMapProvider colorProvider;
-
-	public String getLabel()
-	{
-		return label;
-	}
-
-	public void setLabel( final String label )
-	{
-		this.label = label;
-	}
-
-	public BrushOverlay( final ViewerPanel viewer, final String label, final ColorMapProvider colorProvider )
+	public BrushOverlay( ViewerPanel viewer, BitmapModel model )
 	{
 		this.viewer = viewer;
-		this.label = label;
-		this.colorProvider = colorProvider;
+		this.model = model;
 	}
 
 	public void setPosition( final int x, final int y )
@@ -65,6 +53,11 @@ public class BrushOverlay implements OverlayRenderer
 	public void setVisible( final boolean visible )
 	{
 		this.visible = visible;
+	}
+
+	public void requestRepaint()
+	{
+		viewer.getDisplay().repaint();
 	}
 
 	@Override
@@ -93,14 +86,14 @@ public class BrushOverlay implements OverlayRenderer
 			{
 				final int roundScaledRadius = ( int )Math.round( scaledRadius );
 				final FontMetrics fm = g.getFontMetrics();
-				final String str = "" + label;
-				final Rectangle2D rect = fm.getStringBounds( str, g );
+				final String title = model.label();
+				final Rectangle2D rect = fm.getStringBounds( title, g );
 				g2d.setColor( Color.WHITE );
 				g2d.fillRect( x + roundScaledRadius, y + roundScaledRadius - fm.getAscent(), ( int ) rect.getWidth(), ( int ) rect.getHeight() );
-				g2d.setColor( new Color( colorProvider.colorMap().getColor( label ).get() ) );
+				g2d.setColor( new Color(model.color().get()) );
 				g2d.setStroke( stroke );
 				g2d.drawOval( x - roundScaledRadius, y - roundScaledRadius, 2 * roundScaledRadius + 1, 2 * roundScaledRadius + 1 );
-				g2d.drawString( str, x + roundScaledRadius, y + roundScaledRadius );
+				g2d.drawString( title, x + roundScaledRadius, y + roundScaledRadius );
 
 			}
 		}
@@ -112,5 +105,4 @@ public class BrushOverlay implements OverlayRenderer
 		this.width = width;
 		this.height = height;
 	}
-
 }

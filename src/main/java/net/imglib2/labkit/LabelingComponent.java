@@ -7,6 +7,7 @@ import net.imglib2.labkit.actions.ToggleVisibility;
 import net.imglib2.labkit.control.brush.*;
 import net.imglib2.labkit.labeling.BdvLayer;
 import net.imglib2.labkit.labeling.LabelsLayer;
+import net.imglib2.labkit.models.BitmapModel;
 import net.imglib2.labkit.models.ImageLabelingModel;
 import net.imglib2.labkit.panel.HelpPanel;
 import net.imglib2.labkit.utils.LabkitUtils;
@@ -98,9 +99,10 @@ public class LabelingComponent {
 	{
 		final LabelBrushController brushController = new LabelBrushController(
 				bdvHandle.getViewerPanel(),
-				model,
+				new BitmapModel( model ),
 				actionsAndBehaviours,
 				isTimeSeries);
+		actionsAndBehaviours.addAction( new ChangeLabel( model ) );
 		bdvHandle.getViewerPanel().getDisplay().addOverlayRenderer( brushController.getBrushOverlay() );
 	}
 
