@@ -21,7 +21,6 @@ import net.imglib2.labkit.classification.weka.TrainableSegmentationClassifier;
 import net.imglib2.labkit.inputimage.DefaultInputImage;
 import net.imglib2.labkit.inputimage.InputImage;
 import net.imglib2.labkit.labeling.Labeling;
-import net.imglib2.labkit.models.Holder;
 import net.imglib2.labkit.models.ImageLabelingModel;
 import net.imglib2.labkit.models.SegmentationModel;
 import net.imglib2.labkit.models.SegmentationResultsModel;
@@ -127,10 +126,6 @@ public class SegmentationComponent {
 		JSplitPane panel = new JSplitPane();
 		panel.setSize(100, 100);
 		return panel;
-	}
-
-	public Holder<Labeling> labeling() {
-		return model.labeling();
 	}
 
 	public ActionMap getActions() {

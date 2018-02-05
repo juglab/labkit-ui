@@ -114,10 +114,6 @@ public class LabelingComponent {
 		bdvHandle.getViewerPanel().requestRepaint();
 	}
 
-	public Object viewerSync() {
-		return bdvHandle.getViewerPanel();
-	}
-
 	public ViewerPanel viewerPanel() {
 		return bdvHandle.getViewerPanel();
 	}
