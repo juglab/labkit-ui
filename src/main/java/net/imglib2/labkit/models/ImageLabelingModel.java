@@ -7,6 +7,7 @@ import net.imglib2.labkit.labeling.Labeling;
 import net.imglib2.type.numeric.NumericType;
 import net.imglib2.util.Intervals;
 
+import java.util.List;
 import java.util.function.Consumer;
 
 public class ImageLabelingModel implements LabelingModel {
@@ -27,8 +28,17 @@ public class ImageLabelingModel implements LabelingModel {
 		this.rawData = image;
 		this.scaling = scaling;
 		this.labelingHolder = new CheckedHolder(labeling);
+		this.labelingHolder.notifier().add(this::labelingReplacedEvent);
 		this.selectedLabelHolder = new DefaultHolder<>(labeling.getLabels().stream().findAny().orElse(""));
 		colorProvider = new ColorMapProvider(labelingHolder);
+	}
+
+	private void labelingReplacedEvent( Labeling labeling )
+	{
+		String selectedLabel = selectedLabelHolder.get();
+		List< String > labels = labelingHolder.get().getLabels();
+		if ( ! labels.contains( selectedLabel ) )
+			selectedLabelHolder.set( labels.isEmpty() ? null : labels.get( 0 ) );
 	}
 
 	public RandomAccessibleInterval<? extends NumericType<?>> image() {
