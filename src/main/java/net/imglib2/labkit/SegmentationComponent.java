@@ -119,7 +119,7 @@ public class SegmentationComponent {
 		leftPanel.add(new LabelPanel(extensible, model).getComponent(), "grow");
 		panel.setOneTouchExpandable(true);
 		panel.setLeftComponent(leftPanel);
-		MeasureConnectedComponents.addAction(extensible);
+		MeasureConnectedComponents.addAction(extensible, model);
 	}
 
 	private static JSplitPane initPanel() {
@@ -166,11 +166,6 @@ public class SegmentationComponent {
 		@Override
 		public Component dialogParent() {
 			return dialogBoxOwner;
-		}
-
-		@Override
-		public Holder<Labeling> labeling() {
-			return model.labeling();
 		}
 
 		@Override

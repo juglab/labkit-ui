@@ -22,6 +22,6 @@ public class ChangeFeatureSettingsAction {
 		Optional<FeatureSettings> fs = FeatureSettingsGui.show(extensible.context(), classifier.settings());
 		if(!fs.isPresent())
 			return;
-		classifier.reset(fs.get(), extensible.labeling().get().getLabels());
+		classifier.reset(fs.get(), null);
 	}
 }

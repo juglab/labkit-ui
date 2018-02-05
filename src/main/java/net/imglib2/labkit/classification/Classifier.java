@@ -9,6 +9,7 @@ import net.imglib2.type.numeric.RealType;
 
 import java.util.List;
 
+// TODO: Rename to Segmenter and remote FeatureSettings from the interface
 public interface Classifier
 {
 

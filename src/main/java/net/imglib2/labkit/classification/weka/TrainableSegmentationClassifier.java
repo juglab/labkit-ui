@@ -85,6 +85,8 @@ implements Classifier
 
 	@Override
 	public void reset(FeatureSettings settings, List<String> classLabels) {
+		if(classLabels == null)
+			classLabels = classifier.classNames();
 		weka.classifiers.Classifier wekaClassifier = RevampUtils.wrapException(() ->
 				AbstractClassifier.makeCopy(this.initialWekaClassifier));
 		reset(new Segmenter(ops, classLabels, settings, wekaClassifier));

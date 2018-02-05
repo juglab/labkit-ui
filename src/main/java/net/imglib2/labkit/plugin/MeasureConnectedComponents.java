@@ -16,6 +16,7 @@ import net.imglib2.algorithm.neighborhood.DiamondShape;
 import net.imglib2.labkit.Extensible;
 import net.imglib2.labkit.labeling.Labeling;
 import net.imglib2.labkit.labeling.LabelingSerializer;
+import net.imglib2.labkit.models.LabelingModel;
 import net.imglib2.roi.IterableRegion;
 import net.imglib2.sparse.SparseRandomAccessIntType;
 import net.imglib2.type.logic.BitType;
@@ -59,9 +60,9 @@ public class MeasureConnectedComponents implements Command {
 		}
 	}
 
-	public static void addAction(Extensible extensible) {
+	public static void addAction(Extensible extensible, LabelingModel model) {
 		extensible.addAction("Measure Connected Components ...", "measureConnectedComponents", () -> {
-			Table<?, ?> table = createTable(extensible.labeling().get(), true);
+			Table<?, ?> table = createTable(model.labeling().get(), true);
 			extensible.context().service(UIService.class).show(table);
 		}, "");
 	}
