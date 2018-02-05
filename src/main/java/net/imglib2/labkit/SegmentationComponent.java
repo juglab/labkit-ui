@@ -21,6 +21,7 @@ import net.imglib2.labkit.classification.weka.TrainableSegmentationClassifier;
 import net.imglib2.labkit.inputimage.DefaultInputImage;
 import net.imglib2.labkit.inputimage.InputImage;
 import net.imglib2.labkit.labeling.Labeling;
+import net.imglib2.labkit.models.ColoredLabelsModel;
 import net.imglib2.labkit.models.ImageLabelingModel;
 import net.imglib2.labkit.models.SegmentationModel;
 import net.imglib2.labkit.models.SegmentationResultsModel;
@@ -116,7 +117,7 @@ public class SegmentationComponent {
 		JPanel leftPanel = new JPanel();
 		leftPanel.setLayout(new MigLayout("","[grow]","[][grow]"));
 		leftPanel.add(new VisibilityPanel(getActions()), "wrap");
-		leftPanel.add(new LabelPanel(extensible, model).getComponent(), "grow");
+		leftPanel.add(new LabelPanel(extensible, new ColoredLabelsModel( model )).getComponent(), "grow");
 		panel.setOneTouchExpandable(true);
 		panel.setLeftComponent(leftPanel);
 		MeasureConnectedComponents.addAction(extensible, model);
