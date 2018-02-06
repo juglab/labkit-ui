@@ -9,7 +9,7 @@ import net.imglib2.labkit.labeling.Labeling;
 import net.imglib2.labkit.utils.LabkitUtils;
 
 /**
- * Serves as a model for PredictionLayer & TrainClassifierAction
+ * Serves as a model for PredictionLayer and TrainClassifierAction
  */
 public class SegmentationModel
 {
