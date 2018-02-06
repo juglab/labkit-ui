@@ -87,9 +87,9 @@ public class SegmentationComponent {
 		initModels();
 		labelingComponent = new LabelingComponent(dialogBoxOwner, model, inputImage.isTimeSeries());
 		labelingComponent.addBdvLayer( new PredictionLayer( segmentationResultsModel ) );
+		initActions();
 		JPanel leftPanel = initLeftPanel();
 		this.panel = initPanel( leftPanel, labelingComponent.getComponent() );
-		initActions();
 	}
 
 	private void initModels()
@@ -108,15 +108,6 @@ public class SegmentationComponent {
 		return inputImage.isTimeSeries() ? new TimeSeriesClassifier(classifier1) : classifier1;
 	}
 
-	private JPanel initLeftPanel()
-	{
-		JPanel leftPanel = new JPanel();
-		leftPanel.setLayout(new MigLayout("","[grow]","[][grow]"));
-		leftPanel.add(new VisibilityPanel(getActions()), "wrap");
-		leftPanel.add(new LabelPanel(dialogBoxOwner, new ColoredLabelsModel( model )).getComponent(), "grow");
-		return leftPanel;
-	}
-
 	private void initActions()
 	{
 		MyExtensible extensible = new MyExtensible();
@@ -132,6 +123,24 @@ public class SegmentationComponent {
 		new ChangeFeatureSettingsAction(extensible, classifier);
 		new SegmentationAsLabelAction(extensible, segmentationResultsModel, model.labeling());
 		MeasureConnectedComponents.addAction(extensible, model);
+	}
+
+	private JPanel initLeftPanel()
+	{
+		JPanel leftPanel = new JPanel();
+		leftPanel.setLayout(new MigLayout("","[grow]","[][][grow]"));
+		ActionMap actions = getActions();
+		leftPanel.add( trainClassifierButton( actions ), "grow, wrap");
+		leftPanel.add(new VisibilityPanel( actions ), "wrap");
+		leftPanel.add(new LabelPanel(dialogBoxOwner, new ColoredLabelsModel( model )).getComponent(), "grow");
+		return leftPanel;
+	}
+
+	private JButton trainClassifierButton( ActionMap actions )
+	{
+		JButton button = new JButton( actions.get( "Train Classifier" ) );
+		button.setFocusable( false );
+		return button;
 	}
 
 	private JSplitPane initPanel( JComponent left, JComponent right )
