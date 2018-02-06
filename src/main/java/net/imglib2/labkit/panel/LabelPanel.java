@@ -17,11 +17,11 @@ public class LabelPanel {
 	private final ColoredLabelsModel model;
 	private ComponentList<String, JPanel> list = new ComponentList<>();
 	private final JPanel panel = initPanel();
-	private final Extensible extensible;
+	private final JFrame dialogParent;
 
-	public LabelPanel(Extensible extensible, ColoredLabelsModel model) {
+	public LabelPanel(JFrame dialogParent, ColoredLabelsModel model) {
 		this.model = model;
-		this.extensible = extensible;
+		this.dialogParent = dialogParent;
 		model.listeners().add( this::update );
 		update();
 	}
@@ -68,7 +68,7 @@ public class LabelPanel {
 
 	private void renameLabel() {
 		String label = model.selected();
-		String newLabel = JOptionPane.showInputDialog(extensible.dialogParent(), "Rename label \"" + label + "\" to:");
+		String newLabel = JOptionPane.showInputDialog(dialogParent, "Rename label \"" + label + "\" to:");
 		if(newLabel == null)
 			return;
 		model.renameLabel( label, newLabel );
@@ -76,7 +76,7 @@ public class LabelPanel {
 
 	private void changeColor(String label) {
 		ARGBType color = model.items().get(label);
-		Color newColor = JColorChooser.showDialog(extensible.dialogParent(), "Choose Color for Label \"" + label + "\"", new Color(color.get()));
+		Color newColor = JColorChooser.showDialog(dialogParent, "Choose Color for Label \"" + label + "\"", new Color(color.get()));
 		if(newColor == null) return;
 		model.setColor( label, new ARGBType( newColor.getRGB() ) );
 	}

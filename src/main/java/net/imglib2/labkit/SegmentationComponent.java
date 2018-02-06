@@ -48,9 +48,9 @@ import java.util.Arrays;
 
 public class SegmentationComponent {
 
-	private final JSplitPane panel = initPanel();
+	private final JSplitPane panel;
 
-	private final Classifier classifier;
+	private Classifier classifier;
 
 	private final JFrame dialogBoxOwner;
 
@@ -58,11 +58,13 @@ public class SegmentationComponent {
 
 	private ImageLabelingModel model;
 
-	private MyExtensible extensible = new MyExtensible();
-
 	private final Context context;
 
 	private final InputImage inputImage;
+
+	private SegmentationModel segmentationModel;
+
+	private SegmentationResultsModel segmentationResultsModel;
 
 	public SegmentationComponent(Context context,
 			JFrame dialogBoxOwner,
@@ -82,50 +84,67 @@ public class SegmentationComponent {
 		this.inputImage = image;
 		this.context = context;
 		model = new ImageLabelingModel( image.displayImage(), image.scaling(), labeling);
+		initModels();
 		labelingComponent = new LabelingComponent(dialogBoxOwner, model, inputImage.isTimeSeries());
-		panel.setRightComponent(labelingComponent.getComponent());
-		// --
+		labelingComponent.addBdvLayer( new PredictionLayer( segmentationResultsModel ) );
+		JPanel leftPanel = initLeftPanel();
+		this.panel = initPanel( leftPanel, labelingComponent.getComponent() );
+		initActions();
+	}
+
+	private void initModels()
+	{
+		classifier = initClassifier( context );
+		segmentationModel = new SegmentationModel( model, classifier, inputImage.isTimeSeries() );
+		segmentationResultsModel = new SegmentationResultsModel( segmentationModel );
+	}
+
+	private Classifier initClassifier( Context context )
+	{
 		GlobalSettings globalSettings = new GlobalSettings(inputImage.getChannelSetting(), inputImage.getSpatialDimensions(), 1.0, 16.0, 1.0);
 		OpService ops = context.service(OpService.class);
 		FeatureSettings setting = new FeatureSettings(globalSettings, SingleFeatures.identity(), GroupedFeatures.gauss());
 		TrainableSegmentationClassifier classifier1 = new TrainableSegmentationClassifier(ops, new FastRandomForest(), model.labeling().get().getLabels(), setting);
-		this.classifier = inputImage.isTimeSeries() ? new TimeSeriesClassifier(classifier1) : classifier1;
-		initClassification();
+		return inputImage.isTimeSeries() ? new TimeSeriesClassifier(classifier1) : classifier1;
 	}
 
-	public JComponent getComponent() {
-		return panel;
+	private JPanel initLeftPanel()
+	{
+		JPanel leftPanel = new JPanel();
+		leftPanel.setLayout(new MigLayout("","[grow]","[][grow]"));
+		leftPanel.add(new VisibilityPanel(getActions()), "wrap");
+		leftPanel.add(new LabelPanel(dialogBoxOwner, new ColoredLabelsModel( model )).getComponent(), "grow");
+		return leftPanel;
 	}
 
-	// -- Helper methods --
-
-	private void initClassification() {
-		SegmentationModel segmentationModel = new SegmentationModel( model, classifier, inputImage.isTimeSeries() );
+	private void initActions()
+	{
+		MyExtensible extensible = new MyExtensible();
 		new TrainClassifier(extensible, segmentationModel );
-		SegmentationResultsModel segmentationResultsModel = new SegmentationResultsModel( segmentationModel );
-		labelingComponent.addBdvLayer( new PredictionLayer( segmentationResultsModel ) );
 		new ClassifierIoAction(extensible, this.classifier);
 		new LabelingIoAction(extensible, model.labeling(), inputImage);
 		new AddLabelingIoAction(extensible, model.labeling());
-		new SegmentationSave(extensible, segmentationResultsModel);
+		new SegmentationSave(extensible, segmentationResultsModel );
 		new OpenImageAction(extensible);
 		new OrthogonalView(extensible);
 		new SelectClassifier(extensible, classifier);
 		new BatchSegmentAction(extensible, classifier);
 		new ChangeFeatureSettingsAction(extensible, classifier);
 		new SegmentationAsLabelAction(extensible, segmentationResultsModel, model.labeling());
-		JPanel leftPanel = new JPanel();
-		leftPanel.setLayout(new MigLayout("","[grow]","[][grow]"));
-		leftPanel.add(new VisibilityPanel(getActions()), "wrap");
-		leftPanel.add(new LabelPanel(extensible, new ColoredLabelsModel( model )).getComponent(), "grow");
-		panel.setOneTouchExpandable(true);
-		panel.setLeftComponent(leftPanel);
 		MeasureConnectedComponents.addAction(extensible, model);
 	}
 
-	private static JSplitPane initPanel() {
+	private JSplitPane initPanel( JComponent left, JComponent right )
+	{
 		JSplitPane panel = new JSplitPane();
 		panel.setSize(100, 100);
+		panel.setOneTouchExpandable(true);
+		panel.setLeftComponent( left );
+		panel.setRightComponent( right );
+		return panel;
+	}
+
+	public JComponent getComponent() {
 		return panel;
 	}
 
