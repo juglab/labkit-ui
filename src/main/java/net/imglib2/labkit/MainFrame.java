@@ -46,7 +46,7 @@ public class MainFrame {
 		this.inputImage = inputImage;
 		Labeling initialLabeling = getInitialLabeling();
 		inputImage.setScaling(getScaling(inputImage, initialLabeling));
-		this.segmentationComponent = new SegmentationComponent(context, frame, inputImage, initialLabeling);
+		this.segmentationComponent = new SegmentationComponent(context, frame, inputImage, initialLabeling, false);
 		// --
 		new SetLabelsAction(segmentationComponent, preferences);
 		setTitle();

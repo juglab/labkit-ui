@@ -50,6 +50,8 @@ public class SegmentationComponent {
 
 	private final JSplitPane panel;
 
+	private final boolean fixedLabels;
+
 	private Classifier classifier;
 
 	private final JFrame dialogBoxOwner;
@@ -70,7 +72,7 @@ public class SegmentationComponent {
 			JFrame dialogBoxOwner,
 			RandomAccessibleInterval<? extends NumericType<?>> image,
 			boolean isTimeSeries ) {
-		this(context, dialogBoxOwner, initInputImage(image, isTimeSeries), new Labeling(Arrays.asList("background", "foreground"), image));
+		this(context, dialogBoxOwner, initInputImage(image, isTimeSeries), new Labeling(Arrays.asList("background", "foreground"), image), true);
 	}
 
 	private static DefaultInputImage initInputImage(RandomAccessibleInterval<? extends NumericType<?>> image, boolean isTimeSeries) {
@@ -79,10 +81,11 @@ public class SegmentationComponent {
 		return defaultInputImage;
 	}
 
-	public SegmentationComponent(Context context, JFrame dialogBoxOwner, InputImage image, Labeling labeling) {
+	public SegmentationComponent(Context context, JFrame dialogBoxOwner, InputImage image, Labeling labeling, boolean fixedLabels) {
 		this.dialogBoxOwner = dialogBoxOwner;
 		this.inputImage = image;
 		this.context = context;
+		this.fixedLabels = fixedLabels;
 		model = new ImageLabelingModel( image.displayImage(), image.scaling(), labeling, inputImage.isTimeSeries());
 		initModels();
 		labelingComponent = new LabelingComponent(dialogBoxOwner, model);
@@ -132,7 +135,7 @@ public class SegmentationComponent {
 		ActionMap actions = getActions();
 		leftPanel.add( trainClassifierButton( actions ), "grow, wrap");
 		leftPanel.add(new VisibilityPanel( actions ), "wrap");
-		leftPanel.add(new LabelPanel(dialogBoxOwner, new ColoredLabelsModel( model )).getComponent(), "grow");
+		leftPanel.add(new LabelPanel(dialogBoxOwner, new ColoredLabelsModel( model ), fixedLabels).getComponent(), "grow");
 		return leftPanel;
 	}
 

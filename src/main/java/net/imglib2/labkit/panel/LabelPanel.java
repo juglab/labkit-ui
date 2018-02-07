@@ -16,12 +16,13 @@ public class LabelPanel {
 
 	private final ColoredLabelsModel model;
 	private ComponentList<String, JPanel> list = new ComponentList<>();
-	private final JPanel panel = initPanel();
+	private final JPanel panel;
 	private final JFrame dialogParent;
 
-	public LabelPanel(JFrame dialogParent, ColoredLabelsModel model) {
+	public LabelPanel( JFrame dialogParent, ColoredLabelsModel model, boolean fixedLabels ) {
 		this.model = model;
 		this.dialogParent = dialogParent;
+		this.panel = initPanel(fixedLabels);
 		model.listeners().add( this::update );
 		update();
 	}
@@ -39,16 +40,18 @@ public class LabelPanel {
 		list.setSelected( model.selected() );
 	}
 
-	private JPanel initPanel() {
+	private JPanel initPanel( boolean fixedLabels ) {
 		JPanel panel = new JPanel();
 		panel.setPreferredSize(new Dimension(200, 100));
 		panel.setLayout(new MigLayout("insets 0, gap 4pt","[grow]", "[][grow][][][]"));
 		panel.add(new JLabel("Labels:"), "wrap");
 		list.listeners().add(this::changeSelectedLabel);
 		panel.add(list.getCompnent(), "grow, wrap");
-		panel.add(new JButton(new RunnableAction("add", this::addLabel)), "grow, split 2");
-		panel.add(new JButton(new RunnableAction("remove", this::removeLabel)), "grow, wrap");
-		panel.add(new JButton(new RunnableAction("rename", this::renameLabel)), "grow, wrap");
+		if ( !fixedLabels ) {
+			panel.add( new JButton( new RunnableAction( "add", this::addLabel ) ), "grow, split 2" );
+			panel.add( new JButton( new RunnableAction( "remove", this::removeLabel ) ), "grow, wrap" );
+			panel.add( new JButton( new RunnableAction( "rename", this::renameLabel ) ), "grow, wrap" );
+		}
 		return panel;
 	}
 
