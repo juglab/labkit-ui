@@ -40,20 +40,19 @@ public class LabelingComponent {
 	}
 
 	LabelingComponent(final JFrame dialogBoxOwner,
-			final ImageLabelingModel model,
-			final boolean isTimeSeries)
+			final ImageLabelingModel model)
 	{
 		this.model = model;
 		this.dialogBoxOwner = dialogBoxOwner;
 
-		final int nDim = model.image().numDimensions() - (isTimeSeries ? 1 : 0);
+		final int nDim = model.image().numDimensions() - (model.isTimeSeries() ? 1 : 0);
 
 		initBdv(nDim  < 3);
 		initPanel();
 		actionsAndBehaviours = new ActionsAndBehaviours(bdvHandle);
 		initLabelsLayer();
 		initImageLayer();
-		initBrushLayer( isTimeSeries );
+		initBrushLayer();
 	}
 
 	private void initBdv(boolean is2D) {
@@ -95,13 +94,13 @@ public class LabelingComponent {
 		return source;
 	}
 
-	private void initBrushLayer( boolean isTimeSeries )
+	private void initBrushLayer()
 	{
 		final LabelBrushController brushController = new LabelBrushController(
 				bdvHandle.getViewerPanel(),
 				new BitmapModel( model ),
 				actionsAndBehaviours,
-				isTimeSeries);
+				model.isTimeSeries());
 		actionsAndBehaviours.addAction( new ChangeLabel( model ) );
 		bdvHandle.getViewerPanel().getDisplay().addOverlayRenderer( brushController.getBrushOverlay() );
 	}

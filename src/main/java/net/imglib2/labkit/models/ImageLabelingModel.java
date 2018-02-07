@@ -24,12 +24,15 @@ public class ImageLabelingModel implements LabelingModel {
 
 	private Holder<String> selectedLabelHolder;
 
-	public ImageLabelingModel(RandomAccessibleInterval<? extends NumericType<?>> image, double scaling, Labeling labeling) {
+	private final boolean isTimeSeries;
+
+	public ImageLabelingModel(RandomAccessibleInterval<? extends NumericType<?>> image, double scaling, Labeling labeling, boolean isTimeSeries) {
 		this.rawData = image;
 		this.scaling = scaling;
 		this.labelingHolder = new CheckedHolder(labeling);
 		this.labelingHolder.notifier().add(this::labelingReplacedEvent);
 		this.selectedLabelHolder = new DefaultHolder<>(labeling.getLabels().stream().findAny().orElse(""));
+		this.isTimeSeries = isTimeSeries;
 		colorProvider = new ColorMapProvider(labelingHolder);
 	}
 
@@ -67,6 +70,12 @@ public class ImageLabelingModel implements LabelingModel {
 	@Override
 	public Notifier<Runnable> dataChangedNotifier() {
 		return dataChangedNotifier;
+	}
+
+	@Override
+	public boolean isTimeSeries()
+	{
+		return isTimeSeries;
 	}
 
 	private static class CheckedHolder implements Holder<Labeling> {

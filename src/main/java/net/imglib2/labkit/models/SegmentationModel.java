@@ -20,12 +20,12 @@ public class SegmentationModel
 	private final RandomAccessibleInterval< ? > compatibleImage;
 	private final CellGrid grid;
 
-	public SegmentationModel( ImageLabelingModel imageLabelingModel, Classifier segmenter, boolean isTimeSeries )
+	public SegmentationModel( ImageLabelingModel imageLabelingModel, Classifier segmenter )
 	{
 		this.imageLabelingModel = imageLabelingModel;
 		this.segmenter = segmenter;
 		this.compatibleImage = TrainableSegmentationClassifier.prepareOriginal( imageLabelingModel.image() );
-		this.grid = LabkitUtils.suggestGrid( this.compatibleImage, isTimeSeries );
+		this.grid = LabkitUtils.suggestGrid( this.compatibleImage, imageLabelingModel.isTimeSeries() );
 	}
 
 	public Labeling labeling() {

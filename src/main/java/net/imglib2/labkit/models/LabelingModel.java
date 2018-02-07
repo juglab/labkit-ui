@@ -13,4 +13,6 @@ public interface LabelingModel {
 	Holder<Labeling> labeling();
 
 	Notifier<Runnable> dataChangedNotifier();
+
+	boolean isTimeSeries();
 }

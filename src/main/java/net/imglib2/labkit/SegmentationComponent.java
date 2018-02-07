@@ -83,9 +83,9 @@ public class SegmentationComponent {
 		this.dialogBoxOwner = dialogBoxOwner;
 		this.inputImage = image;
 		this.context = context;
-		model = new ImageLabelingModel( image.displayImage(), image.scaling(), labeling);
+		model = new ImageLabelingModel( image.displayImage(), image.scaling(), labeling, inputImage.isTimeSeries());
 		initModels();
-		labelingComponent = new LabelingComponent(dialogBoxOwner, model, inputImage.isTimeSeries());
+		labelingComponent = new LabelingComponent(dialogBoxOwner, model);
 		labelingComponent.addBdvLayer( new PredictionLayer( segmentationResultsModel ) );
 		initActions();
 		JPanel leftPanel = initLeftPanel();
@@ -95,7 +95,7 @@ public class SegmentationComponent {
 	private void initModels()
 	{
 		classifier = initClassifier( context );
-		segmentationModel = new SegmentationModel( model, classifier, inputImage.isTimeSeries() );
+		segmentationModel = new SegmentationModel( model, classifier );
 		segmentationResultsModel = new SegmentationResultsModel( segmentationModel );
 	}
 
