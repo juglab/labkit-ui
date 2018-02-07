@@ -44,6 +44,8 @@ import java.util.stream.IntStream;
 public class LabelBrushController
 {
 
+	private static final double[] PIXEL_CENTER_OFFSET = { 0.5, 0.5, 0.5 };
+
 	final private ViewerPanel viewer;
 
 	private final BitmapModel model;
@@ -91,6 +93,7 @@ public class LabelBrushController
 		labelLocation.setPosition( y, 1 );
 		labelLocation.setPosition( 0, 2 );
 		viewer.displayToGlobalCoordinates( labelLocation );
+		labelLocation.move( PIXEL_CENTER_OFFSET );
 		return labelLocation;
 	}
 
