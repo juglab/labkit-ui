@@ -214,7 +214,7 @@ public class SegmentationComponent {
 
 		@Override
 		public void setViewerTransformation(AffineTransform3D affineTransform3D) {
-			labelingComponent.viewerPanel().setCurrentViewerTransform(new AffineTransform3D());
+			labelingComponent.viewerPanel().setCurrentViewerTransform(affineTransform3D);
 		}
 	}
 }

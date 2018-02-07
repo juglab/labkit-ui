@@ -1,27 +1,40 @@
 package net.imglib2.labkit.labeling;
 
 import com.google.gson.annotations.JsonAdapter;
+
+import java.util.AbstractList;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Set;
+import java.util.TreeMap;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
+
 import net.imagej.axis.CalibratedAxis;
 import net.imagej.axis.DefaultLinearAxis;
-import net.imglib2.*;
+import net.imglib2.AbstractWrappedInterval;
+import net.imglib2.Cursor;
+import net.imglib2.Interval;
 import net.imglib2.RandomAccess;
-import net.imglib2.labkit.utils.LabkitUtils;
+import net.imglib2.RandomAccessible;
+import net.imglib2.RandomAccessibleInterval;
 import net.imglib2.converter.Converter;
 import net.imglib2.converter.Converters;
+import net.imglib2.labkit.utils.LabkitUtils;
 import net.imglib2.roi.IterableRegion;
 import net.imglib2.roi.labeling.ImgLabeling;
 import net.imglib2.roi.labeling.LabelingMapping;
 import net.imglib2.roi.labeling.LabelingType;
 import net.imglib2.sparse.SparseIterableRegion;
 import net.imglib2.sparse.SparseRandomAccessIntType;
+import net.imglib2.transform.integer.BoundingBox;
 import net.imglib2.type.logic.BitType;
 import net.imglib2.type.numeric.IntegerType;
 import net.imglib2.util.ConstantUtils;
 import net.imglib2.view.Views;
-
-import java.util.*;
-import java.util.stream.Collectors;
-import java.util.stream.IntStream;
 
 /**
  * @author Matthias Arzt
@@ -179,6 +192,33 @@ public class Labeling extends AbstractWrappedInterval implements RandomAccessibl
 			set.remove(oldLabel);
 			set.add(newLabel);
 		}
+	}
+
+	public BoundingBox getBoundingBox( String label ) {
+		IterableRegion< BitType > region = iterableRegions().get( label );
+		//TODO no idea why this line does not work
+//		BoundingBox labelBox = new BoundingBox(region);
+		//workaround:
+		BoundingBox labelBox = new BoundingBox(region.numDimensions());
+		Cursor<?> cursor = region.cursor();
+		boolean first = true;
+		while( cursor.hasNext() )	{
+			cursor.fwd();
+			if( first ){
+				for(int i = 0; i < region.numDimensions(); i++){
+					labelBox.corner1[ i ] = cursor.getIntPosition( i );
+					labelBox.corner2[ i ] = cursor.getIntPosition( i );
+				}
+				first = false;
+			} else {
+				for(int i = 0; i < region.numDimensions(); i++){
+					int pos = cursor.getIntPosition( i );
+					labelBox.corner1[ i ] = Math.min(labelBox.corner1[ i ], pos);
+					labelBox.corner2[ i ] = Math.max(labelBox.corner2[ i ], pos);
+				}
+			}
+		}
+		return labelBox;
 	}
 
 	public static class SetEntryAsBitType<T> extends BitType {

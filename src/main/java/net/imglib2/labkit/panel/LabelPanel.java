@@ -1,20 +1,35 @@
 package net.imglib2.labkit.panel;
 
-import net.imglib2.labkit.Extensible;
-import net.imglib2.labkit.models.Holder;
-import net.imglib2.labkit.models.ImageLabelingModel;
-import net.imglib2.labkit.color.ColorMap;
-import net.imglib2.labkit.labeling.Labeling;
-import net.imglib2.type.numeric.ARGBType;
-import net.miginfocom.swing.MigLayout;
-import org.scijava.ui.behaviour.util.RunnableAction;
-
-import javax.swing.*;
-import javax.swing.border.EmptyBorder;
-import java.awt.*;
+import java.awt.Color;
+import java.awt.Dimension;
+import java.awt.Graphics;
 import java.awt.image.BufferedImage;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.function.Consumer;
+
+import javax.swing.BorderFactory;
+import javax.swing.ImageIcon;
+import javax.swing.JButton;
+import javax.swing.JColorChooser;
+import javax.swing.JComponent;
+import javax.swing.JLabel;
+import javax.swing.JOptionPane;
+import javax.swing.JPanel;
+import javax.swing.border.EmptyBorder;
+
+import net.imglib2.labkit.Extensible;
+import net.imglib2.labkit.color.ColorMap;
+import net.imglib2.labkit.labeling.Labeling;
+import net.imglib2.labkit.models.Holder;
+import net.imglib2.labkit.models.ImageLabelingModel;
+import net.imglib2.realtransform.AffineTransform3D;
+import net.imglib2.transform.integer.BoundingBox;
+import net.imglib2.type.numeric.ARGBType;
+import net.miginfocom.swing.MigLayout;
+
+import org.scijava.ui.behaviour.util.RunnableAction;
 
 public class LabelPanel {
 
@@ -87,6 +102,7 @@ public class LabelPanel {
 	private void removeLabel(String label) {
 		labeling.get().removeLabel(label);
 		labeling.notifier().forEach(l -> l.accept(labeling.get()));
+		//TODO remove selection
 	}
 
 	private void renameLabel(String label) {
@@ -106,6 +122,26 @@ public class LabelPanel {
 		labeling.notifier().forEach(l -> l.accept(labeling.get()));
 	}
 
+	private void localize(String label) {
+		BoundingBox labelBox = labeling.get().getBoundingBox(label);
+		AffineTransform3D transform = new AffineTransform3D();
+		if(labelBox.numDimensions() > 0 && (labelBox.corner2[ 0 ] > 0 || labelBox.corner2[ 0 ] < 0)) {
+			BoundingBox imgBox = new BoundingBox(model.image());
+			int dim = Math.min( transform.numDimensions(), labelBox.numDimensions() );
+			Float[] scales = new Float[dim];
+			double[] translate = new double[ transform.numDimensions() ];
+			for(int i = 0; i < dim; i++) {
+				translate[ i ] = -labelBox.corner1[ i ];
+				scales[ i ] = ( float ) imgBox.corner2[ i ] / ( float ) (labelBox.corner2[ i ] - labelBox.corner1[ i ] );
+			}
+			float scale = Collections.min( Arrays.asList( scales ) );
+			transform.translate( translate );
+			transform.scale( Collections.min( Arrays.asList( scale ) ) );
+		}
+		extensible.setViewerTransformation( transform );
+		labeling.notifier().forEach(l -> l.accept(labeling.get()));
+	}
+
 	private String suggestName(List<String> labels) {
 		for (int i = 1; i < 10000; i++) {
 			String label = "Label " + i;
@@ -122,13 +158,22 @@ public class LabelPanel {
 		EntryPanel(String value) {
 			ARGBType color = model.colorMapProvider().colorMap().getColor(value);
 			setOpaque(true);
-			setLayout(new MigLayout("insets 4pt, gap 4pt"));
+			setLayout(new MigLayout("insets 4pt, gap 4pt, fillx"));
 			JButton comp = new JButton();
 			comp.setBorder(new EmptyBorder(1,1,1,1));
 			comp.setIcon(createIcon(new Color(color.get())));
 			comp.addActionListener(l -> changeColor(value));
+			JButton finder = new JButton();
+//			finder.setBorderPainted(false);
+			finder.setBorder( BorderFactory.createEmptyBorder() );
+			finder.setContentAreaFilled(false); 
+//			finder.setFocusPainted(false); 
+			finder.setOpaque(false);
+			finder.setIcon(new ImageIcon(getClass().getResource( "/images/crosshair.png" )));
+			finder.addActionListener(l -> localize(value));
 			add(comp);
-			add(new JLabel(value));
+			add(new JLabel(value), "push");
+			add(finder);
 		}
 
 		private ImageIcon createIcon(Color color) {
