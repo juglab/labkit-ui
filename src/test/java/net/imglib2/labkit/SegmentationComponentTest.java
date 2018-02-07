@@ -44,14 +44,22 @@ public class SegmentationComponentTest {
 	}
 
 	private void showSegmentation() {
-		RandomAccessibleInterval<UnsignedByteType> segmentation = segmenter.getSegmentation(new UnsignedByteType());
-		Views.iterable(segmentation).forEach(x -> x.mul(128));
-		ImageJFunctions.show(segmentation);
+		if(!segmenter.isTrained())
+			System.out.println( "not trained yet" );
+		else {
+			RandomAccessibleInterval<UnsignedByteType> segmentation = segmenter.getSegmentation(new UnsignedByteType());
+			Views.iterable(segmentation).forEach(x -> x.mul(128));
+			ImageJFunctions.show(segmentation);
+		}
 	}
 
 	private void showPrediction() {
-		RandomAccessibleInterval<FloatType> prediction = segmenter.getPrediction();
-		ImageJFunctions.show(prediction);
+		if(!segmenter.isTrained())
+			System.out.println( "not trained yet" );
+		else {
+			RandomAccessibleInterval< FloatType > prediction = segmenter.getPrediction();
+			ImageJFunctions.show( prediction );
+		}
 	}
 
 	private static JFrame setupFrame() {

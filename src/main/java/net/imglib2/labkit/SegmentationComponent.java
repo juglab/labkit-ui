@@ -180,6 +180,11 @@ public class SegmentationComponent {
 		return prediction;
 	}
 
+	public boolean isTrained()
+	{
+		return classifier.isTrained();
+	}
+
 	private class MyExtensible implements Extensible {
 
 		@Override
