@@ -194,33 +194,6 @@ public class Labeling extends AbstractWrappedInterval implements RandomAccessibl
 		}
 	}
 
-	public BoundingBox getBoundingBox( String label ) {
-		IterableRegion< BitType > region = iterableRegions().get( label );
-		//TODO no idea why this line does not work
-//		BoundingBox labelBox = new BoundingBox(region);
-		//workaround:
-		BoundingBox labelBox = new BoundingBox(region.numDimensions());
-		Cursor<?> cursor = region.cursor();
-		boolean first = true;
-		while( cursor.hasNext() )	{
-			cursor.fwd();
-			if( first ){
-				for(int i = 0; i < region.numDimensions(); i++){
-					labelBox.corner1[ i ] = cursor.getIntPosition( i );
-					labelBox.corner2[ i ] = cursor.getIntPosition( i );
-				}
-				first = false;
-			} else {
-				for(int i = 0; i < region.numDimensions(); i++){
-					int pos = cursor.getIntPosition( i );
-					labelBox.corner1[ i ] = Math.min(labelBox.corner1[ i ], pos);
-					labelBox.corner2[ i ] = Math.max(labelBox.corner2[ i ], pos);
-				}
-			}
-		}
-		return labelBox;
-	}
-
 	public static class SetEntryAsBitType<T> extends BitType {
 		private Set<T> set = null;
 		private final T entry;

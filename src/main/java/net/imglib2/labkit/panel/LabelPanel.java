@@ -83,47 +83,28 @@ public class LabelPanel {
 		model.setColor( label, new ARGBType( newColor.getRGB() ) );
 	}
 
-	// -- Helper methods --
 	private void localize(String label) {
-		/*BoundingBox labelBox = labeling.get().getBoundingBox(label);
-		AffineTransform3D transform = new AffineTransform3D();
-		if(labelBox.numDimensions() > 0 && (labelBox.corner2[ 0 ] > 0 || labelBox.corner2[ 0 ] < 0)) {
-			BoundingBox imgBox = new BoundingBox(model.image());
-			int dim = Math.min( transform.numDimensions(), labelBox.numDimensions() );
-			Float[] scales = new Float[dim];
-			double[] translate = new double[ transform.numDimensions() ];
-			for(int i = 0; i < dim; i++) {
-				translate[ i ] = -labelBox.corner1[ i ];
-				scales[ i ] = ( float ) imgBox.corner2[ i ] / ( float ) (labelBox.corner2[ i ] - labelBox.corner1[ i ] );
-			}
-			float scale = Collections.min( Arrays.asList( scales ) );
-			transform.translate( translate );
-			transform.scale( Collections.min( Arrays.asList( scale ) ) );
-		}
-		extensible.setViewerTransformation( transform );
-		labeling.notifier().forEach(l -> l.accept(labeling.get()));*/
+		model.localizeLabel( label );
 	}
 
+	// -- Helper methods --
 	private class EntryPanel extends JPanel {
 
 		EntryPanel( String value, ARGBType color ) {
 			setOpaque(true);
 			setLayout(new MigLayout("insets 4pt, gap 4pt, fillx"));
-			JButton comp = new JButton();
-			comp.setBorder(new EmptyBorder(1,1,1,1));
-			comp.setIcon(createIcon(new Color(color.get())));
-			comp.addActionListener(l -> changeColor(value));
-			JButton finder = new JButton();
-//			finder.setBorderPainted(false);
-			finder.setBorder( BorderFactory.createEmptyBorder() );
-			finder.setContentAreaFilled(false); 
-//			finder.setFocusPainted(false); 
-			finder.setOpaque(false);
-			finder.setIcon(new ImageIcon(getClass().getResource( "/images/crosshair.png" )));
-			finder.addActionListener(l -> localize(value));
-			add(comp);
+			add( initColorButton( value, color ) );
 			add(new JLabel(value), "push");
-			add(finder);
+			add( initFinderButton( value ) );
+		}
+
+		private JButton initColorButton( String value, ARGBType color )
+		{
+			JButton colorButton = new JButton();
+			colorButton.setBorder(new EmptyBorder(1,1,1,1));
+			colorButton.setIcon(createIcon(new Color(color.get())));
+			colorButton.addActionListener(l -> changeColor(value));
+			return colorButton;
 		}
 
 		private ImageIcon createIcon(Color color) {
@@ -135,5 +116,17 @@ public class LabelPanel {
 			g.dispose();
 			return new ImageIcon(image);
 		}
+
+		private JButton initFinderButton( String value )
+		{
+			JButton finder = new JButton();
+			finder.setBorder( BorderFactory.createEmptyBorder() );
+			finder.setContentAreaFilled(false);
+			finder.setOpaque(false);
+			finder.setIcon(new ImageIcon(getClass().getResource( "/images/crosshair.png" )));
+			finder.addActionListener(l -> localize(value));
+			return finder;
+		}
+
 	}
 }

@@ -120,7 +120,7 @@ public class SegmentationComponent {
 		new AddLabelingIoAction(extensible, model.labeling());
 		new SegmentationSave(extensible, segmentationResultsModel );
 		new OpenImageAction(extensible);
-		new OrthogonalView(extensible);
+		new OrthogonalView(extensible, model);
 		new SelectClassifier(extensible, classifier);
 		new BatchSegmentAction(extensible, classifier);
 		new ChangeFeatureSettingsAction(extensible, classifier);
