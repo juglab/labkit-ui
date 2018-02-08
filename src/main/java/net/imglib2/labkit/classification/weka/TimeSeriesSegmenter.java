@@ -6,20 +6,21 @@ import net.imglib2.labkit.classification.Segmenter;
 import net.imglib2.labkit.labeling.Labeling;
 import net.imglib2.labkit.labeling.Labelings;
 import net.imglib2.trainable_segmention.RevampUtils;
-import net.imglib2.trainable_segmention.pixel_feature.settings.FeatureSettings;
 import net.imglib2.type.numeric.IntegerType;
 import net.imglib2.type.numeric.RealType;
 import net.imglib2.view.Views;
 
+import java.awt.*;
 import java.util.List;
 import java.util.function.BiConsumer;
+import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
 public class TimeSeriesSegmenter implements Segmenter
 {
 
 	private final Segmenter segmenter;
-	private final Notifier<Listener> listeners = new Notifier<>();
+	private final Notifier< Consumer< Segmenter > > listeners = new Notifier<>();
 
 	public TimeSeriesSegmenter(Segmenter segmenter ) {
 		this.segmenter = segmenter;
@@ -27,17 +28,12 @@ public class TimeSeriesSegmenter implements Segmenter
 	}
 
 	private void update(Segmenter segmenter ) {
-		listeners.forEach(l -> l.notify(this));
+		listeners.forEach(l -> l.accept(this));
 	}
 
 	@Override
-	public void editClassifier() {
-		segmenter.editClassifier();
-	}
-
-	@Override
-	public void reset(FeatureSettings features, List<String> classLabels) {
-		segmenter.reset(features, classLabels);
+	public void editSettings(Component dialogParent) {
+		segmenter.editSettings(dialogParent);
 	}
 
 	@Override
@@ -84,13 +80,8 @@ public class TimeSeriesSegmenter implements Segmenter
 	}
 
 	@Override
-	public Notifier<Listener> listeners() {
+	public Notifier< Consumer< Segmenter > > listeners() {
 		return listeners;
-	}
-
-	@Override
-	public FeatureSettings settings() {
-		return segmenter.settings();
 	}
 
 	@Override

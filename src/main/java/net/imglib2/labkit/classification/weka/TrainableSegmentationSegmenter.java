@@ -2,6 +2,7 @@ package net.imglib2.labkit.classification.weka;
 
 import hr.irb.fastRandomForest.FastRandomForest;
 import net.imagej.ops.OpEnvironment;
+import net.imagej.ops.OpService;
 import net.imglib2.Cursor;
 import net.imglib2.RandomAccess;
 import net.imglib2.RandomAccessible;
@@ -11,30 +12,41 @@ import net.imglib2.cache.img.DiskCachedCellImgFactory;
 import net.imglib2.cache.img.DiskCachedCellImgOptions;
 import net.imglib2.img.Img;
 import net.imglib2.img.cell.CellGrid;
+import net.imglib2.labkit.classification.Segmenter;
+import net.imglib2.labkit.inputimage.InputImage;
+import net.imglib2.labkit.labeling.Labeling;
 import net.imglib2.labkit.utils.LabkitUtils;
 import net.imglib2.labkit.utils.Notifier;
-import net.imglib2.labkit.actions.SelectClassifier;
-import net.imglib2.labkit.classification.Segmenter;
-import net.imglib2.labkit.labeling.Labeling;
 import net.imglib2.sparse.SparseRandomAccessIntType;
 import net.imglib2.trainable_segmention.RevampUtils;
 import net.imglib2.trainable_segmention.classification.Training;
 import net.imglib2.trainable_segmention.gson.GsonUtils;
+import net.imglib2.trainable_segmention.gui.FeatureSettingsGui;
 import net.imglib2.trainable_segmention.pixel_feature.calculator.FeatureCalculator;
+import net.imglib2.trainable_segmention.pixel_feature.filter.GroupedFeatures;
+import net.imglib2.trainable_segmention.pixel_feature.filter.SingleFeatures;
 import net.imglib2.trainable_segmention.pixel_feature.settings.FeatureSettings;
+import net.imglib2.trainable_segmention.pixel_feature.settings.GlobalSettings;
 import net.imglib2.type.numeric.IntegerType;
 import net.imglib2.type.numeric.RealType;
 import net.imglib2.type.numeric.integer.IntType;
 import net.imglib2.type.numeric.real.FloatType;
 import net.imglib2.view.Views;
 import net.imglib2.view.composite.Composite;
+import net.miginfocom.swing.MigLayout;
+import org.scijava.Context;
 import weka.classifiers.AbstractClassifier;
+import weka.classifiers.Classifier;
+import weka.gui.GenericObjectEditor;
 
+import javax.swing.*;
+import java.awt.*;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -42,15 +54,15 @@ import java.util.stream.Collectors;
 public class TrainableSegmentationSegmenter
 implements Segmenter
 {
-	private final OpEnvironment ops;
+	private final Context context;
 
 	private weka.classifiers.Classifier initialWekaClassifier;
 
+	private FeatureSettings featureSettings;
+
 	private net.imglib2.trainable_segmention.classification.Segmenter segmenter;
 
-	private final Notifier< Listener > listeners = new Notifier<>();
-
-	private boolean isTrained = false;
+	private final Notifier< Consumer< Segmenter > > listeners = new Notifier<>();
 
 	// This method is used to prepare the image for segmentation.
 	// TODO: make this a private method. consider moving image preparation to imglib2-trainable-segmentation.
@@ -61,14 +73,25 @@ implements Segmenter
 		return original;
 	}
 
-	@Override
-	public Notifier<Listener> listeners() {
-		return listeners;
+	public static Classifier selectWekaClassifierGui(Component dialogParent, Classifier defaultValue) {
+		JCheckBox checkBox = new JCheckBox("FastRandomForest");
+		GenericObjectEditor editor = new GenericObjectEditor();
+		editor.setClassType(Classifier.class);
+		if(defaultValue instanceof FastRandomForest)
+			checkBox.setSelected(true);
+		else
+			editor.setValue(defaultValue);
+		JPanel panel = new JPanel();
+		panel.setLayout(new MigLayout());
+		panel.add(checkBox, "wrap");
+		panel.add(editor.getCustomPanel());
+		JOptionPane.showMessageDialog(dialogParent, panel, "Select Classification Algorithm", JOptionPane.PLAIN_MESSAGE);
+		return checkBox.isSelected() ? new FastRandomForest() : (Classifier) editor.getValue();
 	}
 
 	@Override
-	public FeatureSettings settings() {
-		return segmenter.settings();
+	public Notifier< Consumer< Segmenter > > listeners() {
+		return listeners;
 	}
 
 	@Override
@@ -77,37 +100,25 @@ implements Segmenter
 	}
 
 	@Override
-	public void editClassifier() {
-		initialWekaClassifier = SelectClassifier.runStatic(null, initialWekaClassifier);
-		reset( segmenter.settings(), segmenter.classNames());
+	public void editSettings( Component dialogParent) {
+		initialWekaClassifier = selectWekaClassifierGui( dialogParent, initialWekaClassifier);
+		featureSettings = FeatureSettingsGui.show( context, featureSettings ).orElse( featureSettings );
 	}
 
-	@Override
-	public void reset(FeatureSettings settings, List<String> classLabels) {
-		if(classLabels == null)
-			classLabels = segmenter.classNames();
-		weka.classifiers.Classifier wekaClassifier = RevampUtils.wrapException(() ->
-				AbstractClassifier.makeCopy(this.initialWekaClassifier));
-		reset(new net.imglib2.trainable_segmention.classification.Segmenter(ops, classLabels, settings, wekaClassifier));
-	}
-
-	private void reset( net.imglib2.trainable_segmention.classification.Segmenter segmenter ) {
-		this.segmenter = segmenter;
-		isTrained = false;
-		listeners.forEach(l -> l.notify(this));
-	}
-
-	public TrainableSegmentationSegmenter(OpEnvironment ops, weka.classifiers.Classifier initialWekaClassifier, final List<String> classLabels, FeatureSettings features)
+	public TrainableSegmentationSegmenter(Context context, InputImage inputImage)
 	{
-		this.ops = ops;
-		this.initialWekaClassifier = initialWekaClassifier;
-		reset(features, classLabels);
-	}
-
-	public TrainableSegmentationSegmenter(OpEnvironment ops, net.imglib2.trainable_segmention.classification.Segmenter segmenter )
-	{
-		this.ops = ops;
+		GlobalSettings globalSettings = new GlobalSettings(inputImage.getChannelSetting(), inputImage.getSpatialDimensions(), 1.0, 16.0, 1.0);
+		this.context = context;
 		this.initialWekaClassifier = new FastRandomForest();
+		this.featureSettings = new FeatureSettings(globalSettings, SingleFeatures.identity(), GroupedFeatures.gauss());
+		this.segmenter = null;
+	}
+
+	public TrainableSegmentationSegmenter(Context context, net.imglib2.trainable_segmention.classification.Segmenter segmenter )
+	{
+		this.context = context;
+		this.initialWekaClassifier = new FastRandomForest();
+		this.featureSettings = segmenter.settings();
 		this.segmenter = segmenter;
 	}
 
@@ -125,16 +136,29 @@ implements Segmenter
 	public void train(List<? extends RandomAccessibleInterval<?>> images, List<? extends Labeling> labelings) {
 		if(labelings.size() != images.size())
 			throw new IllegalArgumentException();
-		weka.classifiers.Classifier wekaClassifier = RevampUtils.wrapException(() ->
-				AbstractClassifier.makeCopy(this.initialWekaClassifier));
 		List<String> classes = collectLabels(labelings);
-		segmenter = new net.imglib2.trainable_segmention.classification.Segmenter(ops, classes, segmenter.features(), wekaClassifier);
+		weka.classifiers.Classifier wekaClassifier = RevampUtils.wrapException(() -> AbstractClassifier.makeCopy(this.initialWekaClassifier));
+		OpEnvironment ops = context.service( OpService.class );
+		net.imglib2.trainable_segmention.classification.Segmenter segmenter = new net.imglib2.trainable_segmention.classification.Segmenter( ops, classes, featureSettings, wekaClassifier);
 		Training training = segmenter.training();
 		for (int i = 0; i < images.size(); i++)
-			train(training, classes, labelings.get(i), images.get(i));
+			train(training, classes, labelings.get(i), images.get(i), segmenter.features() );
 		training.train();
-		isTrained = true;
-		listeners.forEach(l -> l.notify(this));
+		this.segmenter = segmenter;
+		listeners.forEach(l -> l.accept(this));
+	}
+
+	private static List<String> collectLabels(List<? extends Labeling> labelings) {
+		return new ArrayList<>(labelings.stream().
+				flatMap(labeling -> labeling.getLabels().stream())
+				.collect(Collectors.toSet()));
+	}
+
+	private void train( Training training, List< String > classes, Labeling labeling, RandomAccessibleInterval< ? > image, FeatureCalculator featuresCalculator ) {
+		SparseRandomAccessIntType classIndices = getClassIndices(labeling, classes);
+		RandomAccessible<? extends Composite<FloatType>> features =
+				Views.collapse( cachedFeatureBlock( featuresCalculator, image));
+		addSamples(training, classIndices, features);
 	}
 
 	// TODO: caching the Feature Stack while training could be part of imglib2-trainable-segmentation
@@ -153,19 +177,6 @@ implements Segmenter
 		final DiskCachedCellImgFactory< FloatType > featureFactory = new DiskCachedCellImgFactory<>( featureOpts );
 		CellLoader<FloatType> loader = target -> feature.apply(extendedOriginal, RevampUtils.slices(target));
 		return featureFactory.create(dimensions, new FloatType(), loader);
-	}
-
-	private void train(Training training, List<String> classes, Labeling labeling, RandomAccessibleInterval<?> image) {
-		SparseRandomAccessIntType classIndices = getClassIndices(labeling, classes);
-		RandomAccessible<? extends Composite<FloatType>> features =
-				Views.collapse( cachedFeatureBlock( segmenter.features(), image));
-		addSamples(training, classIndices, features);
-	}
-
-	private List<String> collectLabels(List<? extends Labeling> labelings) {
-		return new ArrayList<>(labelings.stream().
-				flatMap(labeling -> labeling.getLabels().stream())
-				.collect(Collectors.toSet()));
 	}
 
 	private void addSamples(Training training, SparseRandomAccessIntType classIndices, RandomAccessible<? extends Composite<FloatType>> features) {
@@ -204,7 +215,7 @@ implements Segmenter
 
 	@Override
 	public boolean isTrained() {
-		return isTrained;
+		return segmenter != null;
 	}
 
 	@Override
@@ -216,8 +227,7 @@ implements Segmenter
 	@Override
 	public void openClassifier( final String path ) throws Exception
 	{
-		segmenter = net.imglib2.trainable_segmention.classification.Segmenter.fromJson(ops, GsonUtils.read(path));
-		isTrained = true;
-		listeners.forEach(l -> l.notify(this));
+		segmenter = net.imglib2.trainable_segmention.classification.Segmenter.fromJson( context.service( OpService.class ), GsonUtils.read(path));
+		listeners.forEach(l -> l.accept(this));
 	}
 }

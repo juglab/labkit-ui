@@ -44,9 +44,9 @@ public class BatchSegmenter {
 	}
 
 	public static void classifyLung() throws IOException, IncompatibleTypeException, ImgIOException, InterruptedException {
-		final OpService ops = new Context(OpService.class).service(OpService.class);
+		final Context context = new Context(OpService.class);
 		final Img<ARGBType> rawImg = openImage();
-		Segmenter segmenter = openClassifier(ops);
+		Segmenter segmenter = openClassifier(context);
 		final int[] cellDimensions = new int[] { 256, 256 };
 		Img<UnsignedByteType> segmentation = segment(rawImg, segmenter, cellDimensions);
 		new ImgSaver().saveImg("/home/arzt/test.tif", segmentation);
@@ -57,9 +57,10 @@ public class BatchSegmenter {
 		return ImageJFunctions.wrap( new ImagePlus( imgPath ) );
 	}
 
-	private static Segmenter openClassifier(OpEnvironment ops) throws IOException {
+	private static Segmenter openClassifier(Context context ) throws IOException {
 		final String classifierPath = "/home/arzt/Documents/20170804_LungImages/0006.classifier";
-		return new TrainableSegmentationSegmenter(ops, net.imglib2.trainable_segmention.classification.Segmenter.fromJson(ops, GsonUtils.read(classifierPath)));
+		OpEnvironment ops = context.service( OpService.class );
+		return new TrainableSegmentationSegmenter( context, net.imglib2.trainable_segmention.classification.Segmenter.fromJson( ops, GsonUtils.read(classifierPath)));
 	}
 
 	public static Img<UnsignedByteType> segment(Img<ARGBType> rawImg, Segmenter segmenter, int[] cellDimensions) throws InterruptedException {

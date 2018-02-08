@@ -1,11 +1,9 @@
 package net.imglib2.labkit;
 
-import hr.irb.fastRandomForest.FastRandomForest;
 import net.imagej.ops.OpService;
 import net.imglib2.RandomAccessibleInterval;
 import net.imglib2.labkit.actions.AddLabelingIoAction;
 import net.imglib2.labkit.actions.BatchSegmentAction;
-import net.imglib2.labkit.actions.ChangeFeatureSettingsAction;
 import net.imglib2.labkit.actions.ClassifierIoAction;
 import net.imglib2.labkit.actions.LabelingIoAction;
 import net.imglib2.labkit.actions.OpenImageAction;
@@ -13,8 +11,8 @@ import net.imglib2.labkit.actions.OrthogonalView;
 import net.imglib2.labkit.actions.SegmentationAsLabelAction;
 import net.imglib2.labkit.actions.SegmentationSave;
 import net.imglib2.labkit.actions.SelectClassifier;
-import net.imglib2.labkit.classification.Segmenter;
 import net.imglib2.labkit.classification.PredictionLayer;
+import net.imglib2.labkit.classification.Segmenter;
 import net.imglib2.labkit.classification.TrainClassifier;
 import net.imglib2.labkit.classification.weka.TimeSeriesSegmenter;
 import net.imglib2.labkit.classification.weka.TrainableSegmentationSegmenter;
@@ -29,10 +27,6 @@ import net.imglib2.labkit.panel.LabelPanel;
 import net.imglib2.labkit.panel.VisibilityPanel;
 import net.imglib2.labkit.plugin.MeasureConnectedComponents;
 import net.imglib2.trainable_segmention.RevampUtils;
-import net.imglib2.trainable_segmention.pixel_feature.filter.GroupedFeatures;
-import net.imglib2.trainable_segmention.pixel_feature.filter.SingleFeatures;
-import net.imglib2.trainable_segmention.pixel_feature.settings.FeatureSettings;
-import net.imglib2.trainable_segmention.pixel_feature.settings.GlobalSettings;
 import net.imglib2.type.NativeType;
 import net.imglib2.type.numeric.IntegerType;
 import net.imglib2.type.numeric.NumericType;
@@ -103,10 +97,7 @@ public class SegmentationComponent implements AutoCloseable {
 
 	private Segmenter initClassifier( Context context )
 	{
-		GlobalSettings globalSettings = new GlobalSettings(inputImage.getChannelSetting(), inputImage.getSpatialDimensions(), 1.0, 16.0, 1.0);
-		OpService ops = context.service(OpService.class);
-		FeatureSettings setting = new FeatureSettings(globalSettings, SingleFeatures.identity(), GroupedFeatures.gauss());
-		TrainableSegmentationSegmenter classifier1 = new TrainableSegmentationSegmenter(ops, new FastRandomForest(), model.labeling().get().getLabels(), setting);
+		TrainableSegmentationSegmenter classifier1 = new TrainableSegmentationSegmenter(context, inputImage);
 		return inputImage.isTimeSeries() ? new TimeSeriesSegmenter(classifier1) : classifier1;
 	}
 
@@ -122,7 +113,6 @@ public class SegmentationComponent implements AutoCloseable {
 		new OrthogonalView(extensible, model);
 		new SelectClassifier(extensible, segmenter );
 		new BatchSegmentAction(extensible, segmenter );
-		new ChangeFeatureSettingsAction(extensible, segmenter );
 		new SegmentationAsLabelAction(extensible, segmentationResultsModel, model.labeling());
 		MeasureConnectedComponents.addAction(extensible, model);
 	}
