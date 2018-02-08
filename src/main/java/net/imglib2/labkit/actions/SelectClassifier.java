@@ -2,6 +2,7 @@ package net.imglib2.labkit.actions;
 
 import hr.irb.fastRandomForest.FastRandomForest;
 import net.imglib2.labkit.Extensible;
+import net.imglib2.labkit.classification.Segmenter;
 import net.miginfocom.swing.MigLayout;
 import weka.classifiers.Classifier;
 import weka.gui.GenericObjectEditor;
@@ -14,15 +15,15 @@ import java.awt.*;
  */
 public class SelectClassifier {
 
-	private final net.imglib2.labkit.classification.Classifier classifier;
+	private final Segmenter segmenter;
 
-	public SelectClassifier(Extensible extensible, net.imglib2.labkit.classification.Classifier classifier) {
-		this.classifier = classifier;
+	public SelectClassifier(Extensible extensible, Segmenter segmenter ) {
+		this.segmenter = segmenter;
 		extensible.addAction("Select Classification Algorithm ...", "selectAlgorithm", this::run, "");
 	}
 
 	private void run() {
-		classifier.editClassifier();
+		segmenter.editClassifier();
 	}
 
 	public static Classifier runStatic(Component dialogParent, Classifier defaultValue) {

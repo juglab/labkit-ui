@@ -13,11 +13,11 @@ import net.imglib2.labkit.actions.OrthogonalView;
 import net.imglib2.labkit.actions.SegmentationAsLabelAction;
 import net.imglib2.labkit.actions.SegmentationSave;
 import net.imglib2.labkit.actions.SelectClassifier;
-import net.imglib2.labkit.classification.Classifier;
+import net.imglib2.labkit.classification.Segmenter;
 import net.imglib2.labkit.classification.PredictionLayer;
 import net.imglib2.labkit.classification.TrainClassifier;
-import net.imglib2.labkit.classification.weka.TimeSeriesClassifier;
-import net.imglib2.labkit.classification.weka.TrainableSegmentationClassifier;
+import net.imglib2.labkit.classification.weka.TimeSeriesSegmenter;
+import net.imglib2.labkit.classification.weka.TrainableSegmentationSegmenter;
 import net.imglib2.labkit.inputimage.DefaultInputImage;
 import net.imglib2.labkit.inputimage.InputImage;
 import net.imglib2.labkit.labeling.Labeling;
@@ -51,7 +51,7 @@ public class SegmentationComponent implements AutoCloseable {
 
 	private final boolean fixedLabels;
 
-	private Classifier classifier;
+	private Segmenter segmenter;
 
 	private final JFrame dialogBoxOwner;
 
@@ -96,33 +96,33 @@ public class SegmentationComponent implements AutoCloseable {
 
 	private void initModels()
 	{
-		classifier = initClassifier( context );
-		segmentationModel = new SegmentationModel( model, classifier );
+		segmenter = initClassifier( context );
+		segmentationModel = new SegmentationModel( model, segmenter );
 		segmentationResultsModel = new SegmentationResultsModel( segmentationModel );
 	}
 
-	private Classifier initClassifier( Context context )
+	private Segmenter initClassifier( Context context )
 	{
 		GlobalSettings globalSettings = new GlobalSettings(inputImage.getChannelSetting(), inputImage.getSpatialDimensions(), 1.0, 16.0, 1.0);
 		OpService ops = context.service(OpService.class);
 		FeatureSettings setting = new FeatureSettings(globalSettings, SingleFeatures.identity(), GroupedFeatures.gauss());
-		TrainableSegmentationClassifier classifier1 = new TrainableSegmentationClassifier(ops, new FastRandomForest(), model.labeling().get().getLabels(), setting);
-		return inputImage.isTimeSeries() ? new TimeSeriesClassifier(classifier1) : classifier1;
+		TrainableSegmentationSegmenter classifier1 = new TrainableSegmentationSegmenter(ops, new FastRandomForest(), model.labeling().get().getLabels(), setting);
+		return inputImage.isTimeSeries() ? new TimeSeriesSegmenter(classifier1) : classifier1;
 	}
 
 	private void initActions()
 	{
 		MyExtensible extensible = new MyExtensible();
 		new TrainClassifier(extensible, segmentationModel );
-		new ClassifierIoAction(extensible, this.classifier);
+		new ClassifierIoAction(extensible, this.segmenter );
 		new LabelingIoAction(extensible, model.labeling(), inputImage);
 		new AddLabelingIoAction(extensible, model.labeling());
 		new SegmentationSave(extensible, segmentationResultsModel );
 		new OpenImageAction(extensible);
 		new OrthogonalView(extensible, model);
-		new SelectClassifier(extensible, classifier);
-		new BatchSegmentAction(extensible, classifier);
-		new ChangeFeatureSettingsAction(extensible, classifier);
+		new SelectClassifier(extensible, segmenter );
+		new BatchSegmentAction(extensible, segmenter );
+		new ChangeFeatureSettingsAction(extensible, segmenter );
 		new SegmentationAsLabelAction(extensible, segmentationResultsModel, model.labeling());
 		MeasureConnectedComponents.addAction(extensible, model);
 	}
@@ -166,7 +166,7 @@ public class SegmentationComponent implements AutoCloseable {
 	public <T extends IntegerType<T> & NativeType<T>> RandomAccessibleInterval<T> getSegmentation(T type) {
 		RandomAccessibleInterval<T> labels =
 				context.service(OpService.class).create().img(inputImage.displayImage(), type);
-		classifier.segment(inputImage.displayImage(), labels);
+		segmenter.segment(inputImage.displayImage(), labels);
 		return labels;
 	}
 
@@ -175,13 +175,13 @@ public class SegmentationComponent implements AutoCloseable {
 				context.service(OpService.class).create().img(
 						RevampUtils.appendDimensionToInterval(inputImage.displayImage(), 0, 1),
 						new FloatType());
-		classifier.predict(inputImage.displayImage(), prediction);
+		segmenter.predict(inputImage.displayImage(), prediction);
 		return prediction;
 	}
 
 	public boolean isTrained()
 	{
-		return classifier.isTrained();
+		return segmenter.isTrained();
 	}
 
 	@Override

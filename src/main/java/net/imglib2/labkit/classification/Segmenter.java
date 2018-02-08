@@ -10,7 +10,7 @@ import net.imglib2.type.numeric.RealType;
 import java.util.List;
 
 // TODO: Rename to Segmenter and remote FeatureSettings from the interface
-public interface Classifier
+public interface Segmenter
 {
 
 	void editClassifier();
@@ -37,6 +37,6 @@ public interface Classifier
 
 	interface Listener
 	{
-		void notify(Classifier classifier);
+		void notify(Segmenter segmenter );
 	}
 }

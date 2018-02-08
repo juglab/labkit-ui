@@ -1,7 +1,7 @@
 package net.imglib2.labkit.actions;
 
 import net.imglib2.labkit.Extensible;
-import net.imglib2.labkit.classification.Classifier;
+import net.imglib2.labkit.classification.Segmenter;
 import net.imglib2.trainable_segmention.gui.FeatureSettingsGui;
 import net.imglib2.trainable_segmention.pixel_feature.settings.FeatureSettings;
 
@@ -10,18 +10,18 @@ import java.util.Optional;
 public class ChangeFeatureSettingsAction {
 
 	private final Extensible extensible;
-	private final Classifier classifier;
+	private final Segmenter segmenter;
 
-	public ChangeFeatureSettingsAction(Extensible extensible, Classifier classifier) {
+	public ChangeFeatureSettingsAction(Extensible extensible, Segmenter segmenter ) {
 		this.extensible = extensible;
-		this.classifier = classifier;
+		this.segmenter = segmenter;
 		extensible.addAction("Change Feature Settings ...", "changeFeatures", this::action, "");
 	}
 
 	private void action() {
-		Optional<FeatureSettings> fs = FeatureSettingsGui.show(extensible.context(), classifier.settings());
+		Optional<FeatureSettings> fs = FeatureSettingsGui.show(extensible.context(), segmenter.settings());
 		if(!fs.isPresent())
 			return;
-		classifier.reset(fs.get(), null);
+		segmenter.reset(fs.get(), null);
 	}
 }

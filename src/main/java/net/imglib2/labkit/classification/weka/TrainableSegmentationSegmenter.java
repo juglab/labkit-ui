@@ -14,11 +14,10 @@ import net.imglib2.img.cell.CellGrid;
 import net.imglib2.labkit.utils.LabkitUtils;
 import net.imglib2.labkit.utils.Notifier;
 import net.imglib2.labkit.actions.SelectClassifier;
-import net.imglib2.labkit.classification.Classifier;
+import net.imglib2.labkit.classification.Segmenter;
 import net.imglib2.labkit.labeling.Labeling;
 import net.imglib2.sparse.SparseRandomAccessIntType;
 import net.imglib2.trainable_segmention.RevampUtils;
-import net.imglib2.trainable_segmention.classification.Segmenter;
 import net.imglib2.trainable_segmention.classification.Training;
 import net.imglib2.trainable_segmention.gson.GsonUtils;
 import net.imglib2.trainable_segmention.pixel_feature.calculator.FeatureCalculator;
@@ -40,14 +39,14 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 
 
-public class TrainableSegmentationClassifier
-implements Classifier
+public class TrainableSegmentationSegmenter
+implements Segmenter
 {
 	private final OpEnvironment ops;
 
 	private weka.classifiers.Classifier initialWekaClassifier;
 
-	private Segmenter classifier;
+	private net.imglib2.trainable_segmention.classification.Segmenter segmenter;
 
 	private final Notifier< Listener > listeners = new Notifier<>();
 
@@ -69,57 +68,57 @@ implements Classifier
 
 	@Override
 	public FeatureSettings settings() {
-		return classifier.settings();
+		return segmenter.settings();
 	}
 
 	@Override
 	public List<String> classNames() {
-		return classifier.classNames();
+		return segmenter.classNames();
 	}
 
 	@Override
 	public void editClassifier() {
 		initialWekaClassifier = SelectClassifier.runStatic(null, initialWekaClassifier);
-		reset(classifier.settings(), classifier.classNames());
+		reset( segmenter.settings(), segmenter.classNames());
 	}
 
 	@Override
 	public void reset(FeatureSettings settings, List<String> classLabels) {
 		if(classLabels == null)
-			classLabels = classifier.classNames();
+			classLabels = segmenter.classNames();
 		weka.classifiers.Classifier wekaClassifier = RevampUtils.wrapException(() ->
 				AbstractClassifier.makeCopy(this.initialWekaClassifier));
-		reset(new Segmenter(ops, classLabels, settings, wekaClassifier));
+		reset(new net.imglib2.trainable_segmention.classification.Segmenter(ops, classLabels, settings, wekaClassifier));
 	}
 
-	private void reset(Segmenter classifier) {
-		this.classifier = classifier;
+	private void reset( net.imglib2.trainable_segmention.classification.Segmenter segmenter ) {
+		this.segmenter = segmenter;
 		isTrained = false;
 		listeners.forEach(l -> l.notify(this));
 	}
 
-	public TrainableSegmentationClassifier(OpEnvironment ops, weka.classifiers.Classifier initialWekaClassifier, final List<String> classLabels, FeatureSettings features)
+	public TrainableSegmentationSegmenter(OpEnvironment ops, weka.classifiers.Classifier initialWekaClassifier, final List<String> classLabels, FeatureSettings features)
 	{
 		this.ops = ops;
 		this.initialWekaClassifier = initialWekaClassifier;
 		reset(features, classLabels);
 	}
 
-	public TrainableSegmentationClassifier(OpEnvironment ops, Segmenter classifier)
+	public TrainableSegmentationSegmenter(OpEnvironment ops, net.imglib2.trainable_segmention.classification.Segmenter segmenter )
 	{
 		this.ops = ops;
 		this.initialWekaClassifier = new FastRandomForest();
-		this.classifier = classifier;
+		this.segmenter = segmenter;
 	}
 
 	@Override
 	public void segment(RandomAccessibleInterval<?> image, RandomAccessibleInterval<? extends IntegerType<?>> labels) {
-		classifier.segment(labels, Views.extendBorder(image));
+		segmenter.segment(labels, Views.extendBorder(image));
 	}
 
 	@Override
 	public void predict(RandomAccessibleInterval<?> image, RandomAccessibleInterval<? extends RealType<?>> prediction) {
-		classifier.predict(Views.collapse(prediction), Views.extendBorder(image));
+		segmenter.predict(Views.collapse(prediction), Views.extendBorder(image));
 	}
 
 	@Override
@@ -129,8 +128,8 @@ implements Classifier
 		weka.classifiers.Classifier wekaClassifier = RevampUtils.wrapException(() ->
 				AbstractClassifier.makeCopy(this.initialWekaClassifier));
 		List<String> classes = collectLabels(labelings);
-		classifier = new Segmenter(ops, classes, classifier.features(), wekaClassifier);
-		Training training = classifier.training();
+		segmenter = new net.imglib2.trainable_segmention.classification.Segmenter(ops, classes, segmenter.features(), wekaClassifier);
+		Training training = segmenter.training();
 		for (int i = 0; i < images.size(); i++)
 			train(training, classes, labelings.get(i), images.get(i));
 		training.train();
@@ -159,7 +158,7 @@ implements Classifier
 	private void train(Training training, List<String> classes, Labeling labeling, RandomAccessibleInterval<?> image) {
 		SparseRandomAccessIntType classIndices = getClassIndices(labeling, classes);
 		RandomAccessible<? extends Composite<FloatType>> features =
-				Views.collapse( cachedFeatureBlock(classifier.features(), image));
+				Views.collapse( cachedFeatureBlock( segmenter.features(), image));
 		addSamples(training, classIndices, features);
 	}
 
@@ -211,13 +210,13 @@ implements Classifier
 	@Override
 	synchronized public void saveClassifier( final String path, final boolean overwrite ) throws Exception
 	{
-		GsonUtils.write(classifier.toJsonTree(), path);
+		GsonUtils.write( segmenter.toJsonTree(), path);
 	}
 
 	@Override
 	public void openClassifier( final String path ) throws Exception
 	{
-		classifier = Segmenter.fromJson(ops, GsonUtils.read(path));
+		segmenter = net.imglib2.trainable_segmention.classification.Segmenter.fromJson(ops, GsonUtils.read(path));
 		isTrained = true;
 		listeners.forEach(l -> l.notify(this));
 	}

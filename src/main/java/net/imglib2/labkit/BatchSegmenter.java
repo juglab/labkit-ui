@@ -6,14 +6,13 @@ import io.scif.img.ImgSaver;
 import net.imagej.ops.OpEnvironment;
 import net.imagej.ops.OpService;
 import net.imglib2.RandomAccessibleInterval;
-import net.imglib2.labkit.classification.Classifier;
-import net.imglib2.labkit.classification.weka.TrainableSegmentationClassifier;
+import net.imglib2.labkit.classification.Segmenter;
+import net.imglib2.labkit.classification.weka.TrainableSegmentationSegmenter;
 import net.imglib2.exception.IncompatibleTypeException;
 import net.imglib2.img.Img;
 import net.imglib2.img.array.ArrayImgs;
 import net.imglib2.img.display.imagej.ImageJFunctions;
 import net.imglib2.labkit.utils.ParallelUtils;
-import net.imglib2.trainable_segmention.classification.Segmenter;
 import net.imglib2.trainable_segmention.gson.GsonUtils;
 import net.imglib2.type.numeric.ARGBType;
 import net.imglib2.type.numeric.integer.UnsignedByteType;
@@ -32,24 +31,24 @@ import java.util.function.Consumer;
  */
 public class BatchSegmenter {
 
-	private final Classifier classifier;
+	private final Segmenter segmenter;
 
-	public BatchSegmenter(Classifier classifier) {
-		this.classifier = classifier;
+	public BatchSegmenter(Segmenter segmenter ) {
+		this.segmenter = segmenter;
 	}
 
 	public void segment(File inputFile, File outputFile) throws Exception {
 		Img<ARGBType> img = ImageJFunctions.wrap( new ImagePlus( inputFile.getAbsolutePath() ) );
-		Img<UnsignedByteType> segmentation = segment(img, classifier, Intervals.dimensionsAsIntArray(img));
+		Img<UnsignedByteType> segmentation = segment(img, segmenter, Intervals.dimensionsAsIntArray(img));
 		new ImgSaver().saveImg(outputFile.getAbsolutePath(), segmentation);
 	}
 
 	public static void classifyLung() throws IOException, IncompatibleTypeException, ImgIOException, InterruptedException {
 		final OpService ops = new Context(OpService.class).service(OpService.class);
 		final Img<ARGBType> rawImg = openImage();
-		Classifier classifier = openClassifier(ops);
+		Segmenter segmenter = openClassifier(ops);
 		final int[] cellDimensions = new int[] { 256, 256 };
-		Img<UnsignedByteType> segmentation = segment(rawImg, classifier, cellDimensions);
+		Img<UnsignedByteType> segmentation = segment(rawImg, segmenter, cellDimensions);
 		new ImgSaver().saveImg("/home/arzt/test.tif", segmentation);
 	}
 
@@ -58,13 +57,13 @@ public class BatchSegmenter {
 		return ImageJFunctions.wrap( new ImagePlus( imgPath ) );
 	}
 
-	private static Classifier openClassifier(OpEnvironment ops) throws IOException {
+	private static Segmenter openClassifier(OpEnvironment ops) throws IOException {
 		final String classifierPath = "/home/arzt/Documents/20170804_LungImages/0006.classifier";
-		return new TrainableSegmentationClassifier(ops, Segmenter.fromJson(ops, GsonUtils.read(classifierPath)));
+		return new TrainableSegmentationSegmenter(ops, net.imglib2.trainable_segmention.classification.Segmenter.fromJson(ops, GsonUtils.read(classifierPath)));
 	}
 
-	public static Img<UnsignedByteType> segment(Img<ARGBType> rawImg, Classifier classifier, int[] cellDimensions) throws InterruptedException {
-		Consumer<RandomAccessibleInterval<UnsignedByteType>> loader = target -> classifier.segment(rawImg, target);
+	public static Img<UnsignedByteType> segment(Img<ARGBType> rawImg, Segmenter segmenter, int[] cellDimensions) throws InterruptedException {
+		Consumer<RandomAccessibleInterval<UnsignedByteType>> loader = target -> segmenter.segment(rawImg, target);
 		Img<UnsignedByteType> result = ArrayImgs.unsignedBytes(Intervals.dimensionsAsLongArray(rawImg));
 		List<Callable<Void>> chunks = ParallelUtils.chunkOperation(result, cellDimensions, loader);
 		ParallelUtils.executeInParallel(

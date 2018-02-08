@@ -7,7 +7,7 @@ import net.imglib2.cache.img.DiskCachedCellImgFactory;
 import net.imglib2.cache.img.DiskCachedCellImgOptions;
 import net.imglib2.img.Img;
 import net.imglib2.img.cell.CellGrid;
-import net.imglib2.labkit.classification.Classifier;
+import net.imglib2.labkit.classification.Segmenter;
 import net.imglib2.labkit.utils.Notifier;
 import net.imglib2.trainable_segmention.RevampUtils;
 import net.imglib2.type.NativeType;
@@ -41,13 +41,13 @@ public class SegmentationResultsModel
 		model.segmenter().listeners().add( this::segmenterTrained );
 	}
 
-	private void segmenterTrained( Classifier classifier )
+	private void segmenterTrained( Segmenter segmenter )
 	{
-		if(classifier.isTrained())
+		if( segmenter.isTrained())
 		{
-			updateSegmentation( classifier );
-			updatePrediction( classifier );
-			this.labels = classifier.classNames();
+			updateSegmentation( segmenter );
+			updatePrediction( segmenter );
+			this.labels = segmenter.classNames();
 			this.colors = this.labels.stream().map(model.colorMap()::getColor).collect( Collectors.toList() );
 			listeners.forEach( Runnable::run );
 		}
@@ -63,15 +63,15 @@ public class SegmentationResultsModel
 		return prediction;
 	}
 
-	private void updatePrediction(Classifier classifier) {
-		int count = classifier.classNames().size();
+	private void updatePrediction(Segmenter segmenter ) {
+		int count = segmenter.classNames().size();
 		CellGrid grid = model.grid();
 		CellGrid extended = new CellGrid(RevampUtils.extend(grid.getImgDimensions(), count), RevampUtils.extend(getCellDimensions(grid), count));
-		prediction = setupCachedImage(target -> classifier.predict( model.image(), target), extended, new FloatType());
+		prediction = setupCachedImage(target -> segmenter.predict( model.image(), target), extended, new FloatType());
 	}
 
-	private void updateSegmentation(Classifier classifier) {
-		segmentation = setupCachedImage(target -> classifier.segment( model.image(), target), model.grid(), new ShortType());
+	private void updateSegmentation(Segmenter segmenter ) {
+		segmentation = setupCachedImage(target -> segmenter.segment( model.image(), target), model.grid(), new ShortType());
 	}
 
 	private <T extends NativeType<T> > Img<T> setupCachedImage(CellLoader<T> loader, CellGrid grid, T type) {
