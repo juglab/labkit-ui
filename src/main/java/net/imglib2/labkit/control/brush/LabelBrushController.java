@@ -1,44 +1,37 @@
 package net.imglib2.labkit.control.brush;
 
-import java.awt.Cursor;
-import java.awt.event.ActionEvent;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.stream.IntStream;
-
-import net.imglib2.*;
+import bdv.viewer.ViewerPanel;
+import net.imglib2.Localizable;
+import net.imglib2.Point;
+import net.imglib2.RandomAccessible;
+import net.imglib2.RandomAccessibleInterval;
+import net.imglib2.RealLocalizable;
+import net.imglib2.RealPoint;
 import net.imglib2.algorithm.fill.Filter;
 import net.imglib2.algorithm.neighborhood.DiamondShape;
 import net.imglib2.algorithm.neighborhood.Neighborhood;
 import net.imglib2.labkit.ActionsAndBehaviours;
-import net.imglib2.labkit.models.Holder;
-import net.imglib2.labkit.models.LabelingModel;
 import net.imglib2.labkit.control.brush.neighborhood.NeighborhoodFactories;
 import net.imglib2.labkit.control.brush.neighborhood.NeighborhoodFactory;
-import net.imglib2.labkit.labeling.Labeling;
+import net.imglib2.labkit.models.BitmapModel;
+import net.imglib2.realtransform.AffineTransform3D;
 import net.imglib2.type.Type;
 import net.imglib2.type.logic.BitType;
 import net.imglib2.type.operators.ValueEquals;
-import net.imglib2.util.ConstantUtils;
+import net.imglib2.ui.TransformEventHandler;
+import net.imglib2.util.LinAlgHelpers;
 import net.imglib2.util.Pair;
 import net.imglib2.view.ExtendedRandomAccessibleInterval;
+import net.imglib2.view.Views;
 import org.scijava.ui.behaviour.Behaviour;
 import org.scijava.ui.behaviour.ClickBehaviour;
 import org.scijava.ui.behaviour.DragBehaviour;
 import org.scijava.ui.behaviour.ScrollBehaviour;
-
-import bdv.viewer.ViewerPanel;
-import net.imglib2.realtransform.AffineTransform3D;
-import net.imglib2.ui.TransformEventHandler;
-import net.imglib2.util.LinAlgHelpers;
-import net.imglib2.view.Views;
-import org.scijava.ui.behaviour.util.AbstractNamedAction;
 import org.scijava.ui.behaviour.util.RunnableAction;
 
 import javax.swing.*;
+import java.awt.*;
+import java.util.stream.IntStream;
 
 /**
  * A {@link TransformEventHandler} that changes an {@link AffineTransform3D}
@@ -51,11 +44,11 @@ import javax.swing.*;
 public class LabelBrushController
 {
 
+	private static final double[] PIXEL_CENTER_OFFSET = { 0.5, 0.5, 0.5 };
+
 	final private ViewerPanel viewer;
 
-	private Map<String, RandomAccessibleInterval<BitType>> regions;
-
-	private List<String> labels;
+	private final BitmapModel model;
 
 	private final NeighborhoodFactory pixelsGenerator =
 		NeighborhoodFactories.hyperSphere();
@@ -64,8 +57,6 @@ public class LabelBrushController
 
 	private int brushRadius = 5;
 
-	private final Holder<String> selectedLabel;
-
 	boolean sliceTime;
 
 	public BrushOverlay getBrushOverlay()
@@ -73,30 +64,16 @@ public class LabelBrushController
 		return brushOverlay;
 	}
 
-	private String getCurrentLabel()
-	{
-		return selectedLabel.get();
-	}
-
-	private void setCurrentLabel(String label) {
-		brushOverlay.setLabel(label);
-		selectedLabel.set(label);
-	}
-
 	public LabelBrushController(
 			final ViewerPanel viewer,
-			final LabelingModel model,
+			final BitmapModel model,
 			final ActionsAndBehaviours behaviors,
 			final boolean sliceTime)
 	{
 		this.viewer = viewer;
-		this.brushOverlay = new BrushOverlay( viewer, "", model.colorMapProvider() );
+		this.brushOverlay = new BrushOverlay( viewer, model );
 		this.sliceTime = sliceTime;
-		updateLabeling(model.labeling().get());
-		model.labeling().notifier().add(this::updateLabeling);
-		selectedLabel = model.selectedLabel();
-		setCurrentLabel(selectedLabel.get());
-		selectedLabel.notifier().add( label -> setCurrentLabel(label) );
+		this.model = model;
 
 		behaviors.addBehaviour( new PaintBehavior(true), "paint", "D button1", "SPACE button1" );
 		RunnableAction nop = new RunnableAction("nop", () -> { });
@@ -106,18 +83,7 @@ public class LabelBrushController
 		behaviors.addBehaviour( new FloodFillClick(true), "floodfill", "F button1" );
 		behaviors.addBehaviour( new FloodFillClick(false), "floodclear", "R button1", "F button2", "F button3" );
 		behaviors.addBehaviour( new ChangeBrushRadius(), "change brush radius", "D scroll", "E scroll", "SPACE scroll" );
-		behaviors.addAction( new ChangeLabel() );
 		behaviors.addBehaviour( new MoveBrush(), "move brush", "E", "D", "SPACE" );
-	}
-
-	void updateLabeling(Labeling labeling) {
-		Map<String, RandomAccessibleInterval<BitType>> regions = new HashMap<>(labeling.regions());
-		if(regions.isEmpty()) {
-			RandomAccessibleInterval<BitType> dummy = ConstantUtils.constantRandomAccessibleInterval(new BitType(), labeling.numDimensions(), labeling);
-			regions = Collections.singletonMap("no label", dummy);
-		}
-		this.labels = new ArrayList<>(regions.keySet());
-		this.regions = regions;
 	}
 
 	private RealPoint displayToImageCoordinates( final int x, final int y )
@@ -127,6 +93,7 @@ public class LabelBrushController
 		labelLocation.setPosition( y, 1 );
 		labelLocation.setPosition( 0, 2 );
 		viewer.displayToGlobalCoordinates( labelLocation );
+		labelLocation.move( PIXEL_CENTER_OFFSET );
 		return labelLocation;
 	}
 
@@ -144,7 +111,7 @@ public class LabelBrushController
 		{
 			synchronized ( viewer )
 			{
-				RandomAccessibleInterval<BitType> label = regions.get(getCurrentLabel());
+				RandomAccessibleInterval<BitType> label = model.bitmap();
 				if(sliceTime)
 					label = Views.hyperSlice(label, label.numDimensions()-1,
 							viewer.getState().getCurrentTimepoint());
@@ -192,7 +159,7 @@ public class LabelBrushController
 			this.before = coords;
 			paint(coords);
 
-			viewer.requestRepaint();
+			fireBitmapChanged();
 		}
 
 		@Override
@@ -202,13 +169,18 @@ public class LabelBrushController
 			paint(before, coords );
 			this.before = coords;
 			brushOverlay.setPosition( x, y );
-			viewer.requestRepaint();
+			fireBitmapChanged();
 		}
 
 		@Override
 		public void end( final int x, final int y )
 		{
 		}
+	}
+
+	private void fireBitmapChanged()
+	{
+		model.fireBitmapChanged();
 	}
 
 	private class ChangeBrushRadius implements ScrollBehaviour
@@ -221,34 +193,9 @@ public class LabelBrushController
 				int sign = ( wheelRotation < 0 ) ? 1 : -1;
 				int distance = Math.max( 1, (int) (brushRadius * 0.1) );
 				brushRadius = Math.min(Math.max( 0, brushRadius + sign * distance ), 50);
-
 				brushOverlay.setRadius( brushRadius );
-				// TODO request only overlays to repaint
-				viewer.getDisplay().repaint();
+				brushOverlay.requestRepaint();
 			}
-		}
-	}
-
-	private class ChangeLabel extends AbstractNamedAction {
-
-		public ChangeLabel() {
-			super("Next Label");
-			super.putValue(ACCELERATOR_KEY, KeyStroke.getKeyStroke("N"));
-		}
-
-		@Override
-		public void actionPerformed(ActionEvent actionEvent) {
-			setCurrentLabel(next(labels, getCurrentLabel()));
-			// TODO request only overlays to repaint
-			viewer.getDisplay().repaint();
-		}
-
-		private String next(List<String> labels, String currentLabel) {
-			if(labels.isEmpty())
-				return null;
-			int index = labels.indexOf(currentLabel) + 1;
-			if(index >= labels.size()) index = 0;
-			return labels.get(index);
 		}
 	}
 
@@ -260,9 +207,8 @@ public class LabelBrushController
 		{
 			brushOverlay.setPosition( x, y );
 			brushOverlay.setVisible( true );
-			// TODO request only overlays to repaint
 			viewer.setCursor( Cursor.getPredefinedCursor( Cursor.CROSSHAIR_CURSOR ) );
-			viewer.getDisplay().repaint();
+			brushOverlay.requestRepaint();
 		}
 
 		@Override
@@ -275,10 +221,8 @@ public class LabelBrushController
 		public void end( final int x, final int y )
 		{
 			brushOverlay.setVisible( false );
-			// TODO request only overlays to repaint
 			viewer.setCursor( Cursor.getPredefinedCursor( Cursor.DEFAULT_CURSOR ) );
-			viewer.getDisplay().repaint();
-
+			brushOverlay.requestRepaint();
 		}
 	}
 
@@ -294,7 +238,7 @@ public class LabelBrushController
 		{
 			synchronized ( viewer )
 			{
-				RandomAccessibleInterval<BitType> region = regions.get(getCurrentLabel());
+				RandomAccessibleInterval<BitType> region = model.bitmap();
 				Point seed = roundAndReduceDimension(coords, region.numDimensions());
 				LabelBrushController.floodFill(region, seed, new BitType(value));
 			}
@@ -310,7 +254,7 @@ public class LabelBrushController
 		@Override
 		public void click(int x, int y) {
 			floodFill( displayToImageCoordinates(x, y) );
-			viewer.requestRepaint();
+			fireBitmapChanged();
 		}
 	}
 

@@ -1,9 +1,11 @@
 package net.imglib2.labkit.utils;
 
+import net.imglib2.Interval;
 import net.imglib2.RandomAccess;
 import net.imglib2.RandomAccessible;
 import net.imglib2.RandomAccessibleInterval;
 import net.imglib2.cache.img.CachedCellImg;
+import net.imglib2.img.cell.CellGrid;
 import net.imglib2.trainable_segmention.RevampUtils;
 import net.imglib2.converter.Converters;
 import net.imglib2.img.Img;
@@ -25,6 +27,7 @@ import java.util.List;
 import java.util.concurrent.Callable;
 import java.util.concurrent.Executors;
 import java.util.function.Consumer;
+import java.util.stream.IntStream;
 
 /*
  * @author Matthias Arzt
@@ -116,5 +119,28 @@ public class LabkitUtils {
 				Executors.newFixedThreadPool(10),
 				ParallelUtils.addShowProgress(tasks)
 		);
+	}
+
+	public static CellGrid suggestGrid(Interval interval, boolean isTimeSeries) {
+		int[] cellDimension = initCellDimension(interval.numDimensions(), isTimeSeries);
+		return new CellGrid(Intervals.dimensionsAsLongArray(interval), cellDimension);
+	}
+
+	private static int[] initCellDimension(int n, boolean isTimeSeries) {
+		return isTimeSeries ? RevampUtils.extend(initCellDimension(n - 1), 1) :
+				initCellDimension(n);
+	}
+
+	private static int[] initCellDimension(int n) {
+		int size = cellLength(n);
+		return IntStream.range(0, n).map(x -> size).toArray();
+	}
+
+	private static int cellLength(int n) {
+		switch (n) {
+			case 2: return 128;
+			case 3: return 32;
+			default: return (int) Math.round(Math.pow(128. * 128., 1. / n) + 0.5);
+		}
 	}
 }

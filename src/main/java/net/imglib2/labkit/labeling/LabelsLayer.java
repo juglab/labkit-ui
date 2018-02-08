@@ -4,10 +4,13 @@ import gnu.trove.map.TIntObjectMap;
 import gnu.trove.map.hash.TIntObjectHashMap;
 import net.imglib2.RandomAccessibleInterval;
 import net.imglib2.labkit.models.LabelingModel;
+import net.imglib2.labkit.utils.Notifier;
 import net.imglib2.labkit.utils.RandomAccessibleContainer;
 import net.imglib2.labkit.color.ColorMap;
 import net.imglib2.converter.Converters;
+import net.imglib2.realtransform.AffineTransform3D;
 import net.imglib2.type.numeric.ARGBType;
+import net.imglib2.type.numeric.NumericType;
 import net.imglib2.view.Views;
 
 import java.util.Set;
@@ -15,13 +18,16 @@ import java.util.Set;
 /**
  * @author Matthias Arzt
  */
-public class LabelsLayer {
+public class LabelsLayer implements BdvLayer
+{
 
 	private final RandomAccessibleContainer<ARGBType> container;
 
 	private final LabelingModel model;
 
-	private RandomAccessibleInterval<ARGBType> view;
+	private final RandomAccessibleInterval<ARGBType> view;
+
+	private final Notifier<Runnable> listeners = new Notifier<>();
 
 	public LabelsLayer(LabelingModel model) {
 		this.model = model;
@@ -29,11 +35,12 @@ public class LabelsLayer {
 		container = new RandomAccessibleContainer<>(view);
 		this.view = Views.interval(container, view);
 		model.labeling().notifier().add(this::updateLabeling);
+		model.dataChangedNotifier().add( () -> listeners.forEach( Runnable::run ) );
 	}
 
 	private void updateLabeling(Labeling labeling) {
 		container.setSource(colorView());
-		model.requestRepaint();
+		listeners.forEach( Runnable::run );
 	}
 
 	private RandomAccessibleInterval<ARGBType> colorView() {
@@ -53,7 +60,21 @@ public class LabelsLayer {
 		}, new ARGBType());
 	}
 
-	public RandomAccessibleInterval<ARGBType> view() {
+	@Override public RandomAccessibleInterval< ? extends NumericType< ? > > image() {
 		return view;
+	}
+
+	@Override public Notifier<Runnable> listeners() {
+		return listeners;
+	}
+
+	@Override public String title()
+	{
+		return "Labeling";
+	}
+
+	@Override public AffineTransform3D transformation()
+	{
+		return new AffineTransform3D();
 	}
 }

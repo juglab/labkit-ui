@@ -3,16 +3,16 @@ package net.imglib2.labkit;
 import bdv.util.*;
 import bdv.viewer.DisplayMode;
 import bdv.viewer.ViewerPanel;
-import net.imglib2.RandomAccessibleInterval;
 import net.imglib2.labkit.actions.ToggleVisibility;
 import net.imglib2.labkit.control.brush.*;
+import net.imglib2.labkit.labeling.BdvLayer;
 import net.imglib2.labkit.labeling.LabelsLayer;
+import net.imglib2.labkit.models.BitmapModel;
 import net.imglib2.labkit.models.ImageLabelingModel;
 import net.imglib2.labkit.panel.HelpPanel;
 import net.imglib2.labkit.utils.LabkitUtils;
 import net.imglib2.realtransform.AffineTransform3D;
 import net.imglib2.trainable_segmention.RevampUtils;
-import net.imglib2.type.numeric.NumericType;
 import net.imglib2.util.Pair;
 import org.scijava.ui.behaviour.util.AbstractNamedAction;
 
@@ -40,19 +40,19 @@ public class LabelingComponent {
 	}
 
 	LabelingComponent(final JFrame dialogBoxOwner,
-			final ImageLabelingModel model,
-			final boolean isTimeSeries)
+			final ImageLabelingModel model)
 	{
 		this.model = model;
 		this.dialogBoxOwner = dialogBoxOwner;
 
-		final int nDim = model.image().numDimensions() - (isTimeSeries ? 1 : 0);
+		final int nDim = model.image().numDimensions() - (model.isTimeSeries() ? 1 : 0);
 
 		initBdv(nDim  < 3);
 		initPanel();
 		actionsAndBehaviours = new ActionsAndBehaviours(bdvHandle);
-		initLabelsLayer(isTimeSeries);
+		initLabelsLayer();
 		initImageLayer();
+		initBrushLayer();
 	}
 
 	private void initBdv(boolean is2D) {
@@ -70,11 +70,9 @@ public class LabelingComponent {
 	}
 
 	private void initImageLayer() {
-		RandomAccessibleInterval<? extends NumericType<?>> image = model.image();
-		Pair<Double, Double> p = LabkitUtils.estimateMinMax(image);
-		BdvStackSource<?> source = addLayer(RevampUtils.uncheckedCast(image), "original", scaledTransformation());
-		source.setDisplayRange(p.getA(), p.getB());
-		addAction(new ToggleVisibility("Image", source));
+		Pair<Double, Double> minMax = LabkitUtils.estimateMinMax( model.image() );
+		addBdvLayer( new BdvLayer.FinalLayer( model.image(), "Image", scaledTransformation() ) )
+				.setDisplayRange( minMax.getA(), minMax.getB());
 	}
 
 	private AffineTransform3D scaledTransformation() {
@@ -83,15 +81,27 @@ public class LabelingComponent {
 		return transformation;
 	}
 
-	private void initLabelsLayer(boolean isTimeSeries) {
-		model.dataChangedNotifier().add(this::requestRepaint);
-		BdvSource source = addLayer(new LabelsLayer(model).view(), "labels", new AffineTransform3D());
-		addAction(new ToggleVisibility( "Labeling", source ));
+	private void initLabelsLayer() {
+		addBdvLayer( new LabelsLayer( model ) );
+	}
+
+	public BdvSource addBdvLayer( BdvLayer layer )
+	{
+		BdvOptions options = BdvOptions.options().addTo( bdvHandle ).sourceTransform( layer.transformation() );
+		BdvSource source = BdvFunctions.show( RevampUtils.uncheckedCast( layer.image() ), layer.title(), options );
+		layer.listeners().add( this::requestRepaint );
+		addAction(new ToggleVisibility( layer.title(), source ));
+		return source;
+	}
+
+	private void initBrushLayer()
+	{
 		final LabelBrushController brushController = new LabelBrushController(
 				bdvHandle.getViewerPanel(),
-				model,
+				new BitmapModel( model ),
 				actionsAndBehaviours,
-				isTimeSeries);
+				model.isTimeSeries());
+		actionsAndBehaviours.addAction( new ChangeLabel( model ) );
 		bdvHandle.getViewerPanel().getDisplay().addOverlayRenderer( brushController.getBrushOverlay() );
 	}
 
@@ -101,14 +111,6 @@ public class LabelingComponent {
 
 	private void requestRepaint() {
 		bdvHandle.getViewerPanel().requestRepaint();
-	}
-
-	public <T extends NumericType<T>> BdvStackSource<T> addLayer(RandomAccessibleInterval<T> image, String title, AffineTransform3D transformation) {
-		return BdvFunctions.show(image, title, BdvOptions.options().addTo(bdvHandle).sourceTransform(transformation));
-	}
-
-	public Object viewerSync() {
-		return bdvHandle.getViewerPanel();
 	}
 
 	public ViewerPanel viewerPanel() {

@@ -1,12 +1,8 @@
 package net.imglib2.labkit;
 
-import bdv.util.BdvStackSource;
-import bdv.util.volatiles.SharedQueue;
-import bdv.util.volatiles.VolatileViews;
 import hr.irb.fastRandomForest.FastRandomForest;
 import net.imagej.ops.OpService;
 import net.imglib2.RandomAccessibleInterval;
-import net.imglib2.Volatile;
 import net.imglib2.labkit.actions.AddLabelingIoAction;
 import net.imglib2.labkit.actions.BatchSegmentAction;
 import net.imglib2.labkit.actions.ChangeFeatureSettingsAction;
@@ -25,8 +21,10 @@ import net.imglib2.labkit.classification.weka.TrainableSegmentationClassifier;
 import net.imglib2.labkit.inputimage.DefaultInputImage;
 import net.imglib2.labkit.inputimage.InputImage;
 import net.imglib2.labkit.labeling.Labeling;
-import net.imglib2.labkit.models.Holder;
+import net.imglib2.labkit.models.ColoredLabelsModel;
 import net.imglib2.labkit.models.ImageLabelingModel;
+import net.imglib2.labkit.models.SegmentationModel;
+import net.imglib2.labkit.models.SegmentationResultsModel;
 import net.imglib2.labkit.panel.LabelPanel;
 import net.imglib2.labkit.panel.VisibilityPanel;
 import net.imglib2.labkit.plugin.MeasureConnectedComponents;
@@ -42,7 +40,6 @@ import net.imglib2.type.numeric.NumericType;
 import net.imglib2.type.numeric.real.FloatType;
 import net.miginfocom.swing.MigLayout;
 import org.scijava.Context;
-import org.scijava.ui.behaviour.util.AbstractNamedAction;
 import org.scijava.ui.behaviour.util.RunnableAction;
 
 import javax.swing.*;
@@ -51,31 +48,31 @@ import java.util.Arrays;
 
 public class SegmentationComponent {
 
-	private final JSplitPane panel = initPanel();
+	private final JSplitPane panel;
 
-	private final Classifier classifier;
+	private final boolean fixedLabels;
+
+	private Classifier classifier;
 
 	private final JFrame dialogBoxOwner;
-
-	private SharedQueue queue = new SharedQueue(Runtime.getRuntime().availableProcessors());
 
 	private LabelingComponent labelingComponent;
 
 	private ImageLabelingModel model;
 
-	private FeatureStack featureStack;
-
-	private MyExtensible extensible = new MyExtensible();
-
 	private final Context context;
 
 	private final InputImage inputImage;
+
+	private SegmentationModel segmentationModel;
+
+	private SegmentationResultsModel segmentationResultsModel;
 
 	public SegmentationComponent(Context context,
 			JFrame dialogBoxOwner,
 			RandomAccessibleInterval<? extends NumericType<?>> image,
 			boolean isTimeSeries ) {
-		this(context, dialogBoxOwner, initInputImage(image, isTimeSeries), new Labeling(Arrays.asList("background", "foreground"), image));
+		this(context, dialogBoxOwner, initInputImage(image, isTimeSeries), new Labeling(Arrays.asList("background", "foreground"), image), true);
 	}
 
 	private static DefaultInputImage initInputImage(RandomAccessibleInterval<? extends NumericType<?>> image, boolean isTimeSeries) {
@@ -84,60 +81,83 @@ public class SegmentationComponent {
 		return defaultInputImage;
 	}
 
-	public SegmentationComponent(Context context, JFrame dialogBoxOwner, InputImage image, Labeling labeling) {
+	public SegmentationComponent(Context context, JFrame dialogBoxOwner, InputImage image, Labeling labeling, boolean fixedLabels) {
 		this.dialogBoxOwner = dialogBoxOwner;
 		this.inputImage = image;
 		this.context = context;
-		RandomAccessibleInterval<? extends NumericType<?>> displayImage = image.displayImage();
-		model = new ImageLabelingModel(displayImage, image.scaling(), labeling);
-		labelingComponent = new LabelingComponent(dialogBoxOwner, model, inputImage.isTimeSeries());
-		panel.setRightComponent(labelingComponent.getComponent());
-		// --
+		this.fixedLabels = fixedLabels;
+		model = new ImageLabelingModel( image.displayImage(), image.scaling(), labeling, inputImage.isTimeSeries());
+		initModels();
+		labelingComponent = new LabelingComponent(dialogBoxOwner, model);
+		labelingComponent.addBdvLayer( new PredictionLayer( segmentationResultsModel ) );
+		initActions();
+		JPanel leftPanel = initLeftPanel();
+		this.panel = initPanel( leftPanel, labelingComponent.getComponent() );
+	}
+
+	private void initModels()
+	{
+		classifier = initClassifier( context );
+		segmentationModel = new SegmentationModel( model, classifier );
+		segmentationResultsModel = new SegmentationResultsModel( segmentationModel );
+	}
+
+	private Classifier initClassifier( Context context )
+	{
 		GlobalSettings globalSettings = new GlobalSettings(inputImage.getChannelSetting(), inputImage.getSpatialDimensions(), 1.0, 16.0, 1.0);
 		OpService ops = context.service(OpService.class);
 		FeatureSettings setting = new FeatureSettings(globalSettings, SingleFeatures.identity(), GroupedFeatures.gauss());
 		TrainableSegmentationClassifier classifier1 = new TrainableSegmentationClassifier(ops, new FastRandomForest(), model.labeling().get().getLabels(), setting);
-		this.classifier = inputImage.isTimeSeries() ? new TimeSeriesClassifier(classifier1) : classifier1;
-		featureStack = new FeatureStack(displayImage, image.scaling(), inputImage.isTimeSeries());
-		initClassification();
+		return inputImage.isTimeSeries() ? new TimeSeriesClassifier(classifier1) : classifier1;
 	}
 
-	public JComponent getComponent() {
-		return panel;
-	}
-
-	// -- Helper methods --
-
-	private void initClassification() {
-		new TrainClassifier(extensible, classifier, model.labeling()::get, featureStack.compatibleOriginal());
-		PredictionLayer predictionLayer = new PredictionLayer(extensible, model.colorMapProvider(), classifier, featureStack);
+	private void initActions()
+	{
+		MyExtensible extensible = new MyExtensible();
+		new TrainClassifier(extensible, segmentationModel );
 		new ClassifierIoAction(extensible, this.classifier);
 		new LabelingIoAction(extensible, model.labeling(), inputImage);
 		new AddLabelingIoAction(extensible, model.labeling());
-		new SegmentationSave(extensible, predictionLayer);
+		new SegmentationSave(extensible, segmentationResultsModel );
 		new OpenImageAction(extensible);
 		new OrthogonalView(extensible);
 		new SelectClassifier(extensible, classifier);
 		new BatchSegmentAction(extensible, classifier);
 		new ChangeFeatureSettingsAction(extensible, classifier);
-		new SegmentationAsLabelAction(extensible, predictionLayer, model.labeling());
-		JPanel leftPanel = new JPanel();
-		leftPanel.setLayout(new MigLayout("","[grow]","[][grow]"));
-		leftPanel.add(new VisibilityPanel(getActions()), "wrap");
-		leftPanel.add(new LabelPanel(extensible, model).getComponent(), "grow");
-		panel.setOneTouchExpandable(true);
-		panel.setLeftComponent(leftPanel);
-		MeasureConnectedComponents.addAction(extensible);
+		new SegmentationAsLabelAction(extensible, segmentationResultsModel, model.labeling());
+		MeasureConnectedComponents.addAction(extensible, model);
 	}
 
-	private static JSplitPane initPanel() {
+	private JPanel initLeftPanel()
+	{
+		JPanel leftPanel = new JPanel();
+		leftPanel.setLayout(new MigLayout("","[grow]","[][][grow]"));
+		ActionMap actions = getActions();
+		leftPanel.add( trainClassifierButton( actions ), "grow, wrap");
+		leftPanel.add(new VisibilityPanel( actions ), "wrap");
+		leftPanel.add(new LabelPanel(dialogBoxOwner, new ColoredLabelsModel( model ), fixedLabels).getComponent(), "grow");
+		return leftPanel;
+	}
+
+	private JButton trainClassifierButton( ActionMap actions )
+	{
+		JButton button = new JButton( actions.get( "Train Classifier" ) );
+		button.setFocusable( false );
+		return button;
+	}
+
+	private JSplitPane initPanel( JComponent left, JComponent right )
+	{
 		JSplitPane panel = new JSplitPane();
 		panel.setSize(100, 100);
+		panel.setOneTouchExpandable(true);
+		panel.setLeftComponent( left );
+		panel.setRightComponent( right );
 		return panel;
 	}
 
-	public Holder<Labeling> labeling() {
-		return model.labeling();
+	public JComponent getComponent() {
+		return panel;
 	}
 
 	public ActionMap getActions() {
@@ -160,6 +180,11 @@ public class SegmentationComponent {
 		return prediction;
 	}
 
+	public boolean isTrained()
+	{
+		return classifier.isTrained();
+	}
+
 	private class MyExtensible implements Extensible {
 
 		@Override
@@ -168,48 +193,16 @@ public class SegmentationComponent {
 		}
 
 		@Override
-		public void repaint() {
-			model.dataChangedNotifier().forEach(Runnable::run);
-		}
-
-		@Override
 		public void addAction(String title, String command, Runnable action, String keyStroke) {
 			RunnableAction a = new RunnableAction(title, action);
 			a.putValue(Action.ACTION_COMMAND_KEY, command);
 			a.putValue(Action.ACCELERATOR_KEY, KeyStroke.getKeyStroke(keyStroke));
-			addAction(a);
-		}
-
-		@Override
-		public void addAction(AbstractNamedAction action) {
-			labelingComponent.addAction(action);
-		}
-
-		@Override
-		public < T, V extends Volatile< T >> RandomAccessibleInterval< V > wrapAsVolatile(
-				RandomAccessibleInterval<T> img)
-		{
-			return VolatileViews.wrapAsVolatile( img, queue );
-		}
-
-		@Override
-		public Object viewerSync() {
-			return labelingComponent.viewerSync();
-		}
-
-		@Override
-		public <T extends NumericType<T>> BdvStackSource<T> addLayer(RandomAccessibleInterval<T> interval, String prediction, AffineTransform3D t) {
-			return labelingComponent.addLayer(interval, prediction, t);
+			labelingComponent.addAction( a );
 		}
 
 		@Override
 		public Component dialogParent() {
 			return dialogBoxOwner;
-		}
-
-		@Override
-		public Holder<Labeling> labeling() {
-			return model.labeling();
 		}
 
 		@Override

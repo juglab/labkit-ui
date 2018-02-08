@@ -1,99 +1,68 @@
 package net.imglib2.labkit.classification;
 
-import bdv.util.BdvStackSource;
+import bdv.util.volatiles.SharedQueue;
+import bdv.util.volatiles.VolatileViews;
 import net.imglib2.RandomAccessible;
 import net.imglib2.RandomAccessibleInterval;
-import net.imglib2.labkit.Extensible;
-import net.imglib2.labkit.FeatureStack;
-import net.imglib2.labkit.utils.RandomAccessibleContainer;
-import net.imglib2.labkit.actions.ToggleVisibility;
-import net.imglib2.labkit.color.ColorMapProvider;
-import net.imglib2.cache.img.CellLoader;
-import net.imglib2.cache.img.DiskCachedCellImgFactory;
-import net.imglib2.cache.img.DiskCachedCellImgOptions;
 import net.imglib2.converter.Converter;
 import net.imglib2.converter.Converters;
-import net.imglib2.img.Img;
-import net.imglib2.img.cell.CellGrid;
+import net.imglib2.labkit.labeling.BdvLayer;
+import net.imglib2.labkit.models.SegmentationResultsModel;
+import net.imglib2.labkit.utils.Notifier;
+import net.imglib2.labkit.utils.RandomAccessibleContainer;
 import net.imglib2.realtransform.AffineTransform3D;
-import net.imglib2.trainable_segmention.RevampUtils;
-import net.imglib2.type.NativeType;
 import net.imglib2.type.numeric.ARGBType;
-import net.imglib2.type.numeric.integer.ShortType;
-import net.imglib2.type.numeric.real.FloatType;
+import net.imglib2.type.numeric.NumericType;
 import net.imglib2.type.volatiles.VolatileARGBType;
 import net.imglib2.type.volatiles.VolatileShortType;
 import net.imglib2.util.ConstantUtils;
 import net.imglib2.view.Views;
 
-import java.awt.*;
-import java.util.List;
-
-public class PredictionLayer implements Classifier.Listener
+public class PredictionLayer implements BdvLayer
 {
 
-	private final Extensible extensible;
-
-	private final ColorMapProvider colorProvider;
+	private final SegmentationResultsModel model;
 
 	private final RandomAccessibleContainer< VolatileARGBType > segmentationContainer;
 
-	private final FeatureStack featureStack;
+	private final SharedQueue queue = new SharedQueue(Runtime.getRuntime().availableProcessors());
 
-	private Img<ShortType> segmentation;
+	private Notifier< Runnable > listeners = new Notifier<>();
 
-	private Img<FloatType> prediction;
+	private RandomAccessibleInterval< ? extends NumericType< ? > > view;
 
-	private List<String> labels;
+	private AffineTransform3D transformation;
 
-	public PredictionLayer(Extensible extensible, ColorMapProvider colorProvider, Classifier classifier, FeatureStack featureStack) {
-		super();
-		final RandomAccessible< VolatileARGBType > emptyPrediction = ConstantUtils.constantRandomAccessible( new VolatileARGBType( 0 ), featureStack.grid().numDimensions());
-		this.extensible = extensible;
-		this.featureStack = featureStack;
-		this.colorProvider = colorProvider;
-		this.segmentationContainer = new RandomAccessibleContainer<>( emptyPrediction );
-		AffineTransform3D t = new AffineTransform3D();
-		t.scale(featureStack.scaling());
-		BdvStackSource<VolatileARGBType> source = extensible.addLayer(Views.interval(segmentationContainer, featureStack.interval()), "prediction", t);
-		extensible.addAction(new ToggleVisibility( "Segmentation", source ));
-		classifier.listeners().add( this );
-	}
-
-	@Override
-	public void notify(final Classifier classifier)
+	public PredictionLayer( SegmentationResultsModel model )
 	{
-		if ( classifier.isTrained() )
-			synchronized ( extensible.viewerSync() )
-			{
-				updateSegmentation(classifier);
-				updateContainer(classifier);
-				updatePrediction(classifier);
-				updateLabels(classifier);
-				extensible.repaint();
-			}
-		else
-			segmentationContainer.setSource(ConstantUtils.constantRandomAccessible(new VolatileARGBType(Color.red.getRGB()), segmentationContainer.numDimensions()));
+		this.model = model;
+		final RandomAccessible< VolatileARGBType > emptyPrediction = ConstantUtils.constantRandomAccessible( new VolatileARGBType( 0 ), model.interval().numDimensions() );
+		this.segmentationContainer = new RandomAccessibleContainer<>( emptyPrediction );
+		this.transformation = scaleTransformation( model.scaling() );
+		this.view = Views.interval( segmentationContainer, model.interval() );
+		model.segmentationChangedListeners().add( this::classifierChanged );
 	}
 
-	private void updateLabels(Classifier classifier) {
-		this.labels = classifier.classNames();
+	private static AffineTransform3D scaleTransformation( double scaling )
+	{
+		AffineTransform3D transformation = new AffineTransform3D();
+		transformation.scale( scaling );
+		return transformation;
 	}
 
-	private void updateContainer(Classifier classifier) {
-		final RandomAccessibleInterval<VolatileARGBType> converted = coloredVolatileView(classifier);
+	private void classifierChanged()
+	{
+		final RandomAccessibleInterval<VolatileARGBType> converted = coloredVolatileView();
 		segmentationContainer.setSource(Views.extendValue( converted, new VolatileARGBType(0)  ));
+		listeners.forEach( Runnable::run );
 	}
 
-	private RandomAccessibleInterval<VolatileARGBType> coloredVolatileView(Classifier classifier) {
-		ARGBType[] colors = classifier.classNames().stream()
-				.map(colorProvider.colorMap()::getColor)
-				.toArray(ARGBType[]::new);
-
-		return mapColors(colors, extensible.wrapAsVolatile(segmentation));
+	private RandomAccessibleInterval<VolatileARGBType > coloredVolatileView() {
+		ARGBType[] colors = model.colors().toArray(new ARGBType[0]);
+		return mapColors(colors, VolatileViews.wrapAsVolatile( model.segmentation(), queue ) );
 	}
 
-	private RandomAccessibleInterval<VolatileARGBType> mapColors(ARGBType[] colors, RandomAccessibleInterval<VolatileShortType> source) {
+	private RandomAccessibleInterval<VolatileARGBType> mapColors(ARGBType[] colors, RandomAccessibleInterval<VolatileShortType > source) {
 		final Converter< VolatileShortType, VolatileARGBType > conv = ( input, output ) -> {
 			final boolean isValid = input.isValid();
 			output.setValid( isValid );
@@ -104,46 +73,23 @@ public class PredictionLayer implements Classifier.Listener
 		return Converters.convert(source, conv, new VolatileARGBType() );
 	}
 
-	public Img<ShortType> segmentation() {
-		return segmentation;
+	@Override public RandomAccessibleInterval< ? extends NumericType< ? > > image()
+	{
+		return view;
 	}
 
-	public Img<FloatType> prediction() {
-		if(prediction == null)
-			throw new IllegalStateException("No classifier trained yet");
-		return prediction;
+	@Override public Notifier< Runnable > listeners()
+	{
+		return listeners;
 	}
 
-	private void updatePrediction(Classifier classifier) {
-		RandomAccessibleInterval<?> image = featureStack.compatibleOriginal();
-		CellGrid grid = featureStack.grid();
-		int count = classifier.classNames().size();
-		CellGrid extended = new CellGrid(RevampUtils.extend(grid.getImgDimensions(), count), RevampUtils.extend(getCellDimensions(grid), count));
-		prediction = setupCachedImage(target -> classifier.predict(image, target), extended, new FloatType());
+	@Override public String title()
+	{
+		return "Segmentation";
 	}
 
-	private void updateSegmentation(Classifier classifier) {
-		RandomAccessibleInterval<?> image = featureStack.compatibleOriginal();
-		segmentation = setupCachedImage(target -> classifier.segment(image, target), featureStack.grid(), new ShortType());
-	}
-
-	private <T extends NativeType<T>> Img<T> setupCachedImage(CellLoader<T> loader, CellGrid grid, T type) {
-		final int[] cellDimensions = getCellDimensions(grid);
-		DiskCachedCellImgOptions optional = DiskCachedCellImgOptions.options()
-				//.cacheType( CacheType.BOUNDED )
-				//.maxCacheSize( 1000 )
-				.cellDimensions(cellDimensions);
-		final DiskCachedCellImgFactory< T > factory = new DiskCachedCellImgFactory<>(optional);
-		return factory.create( grid.getImgDimensions(), type, loader );
-	}
-
-	private int[] getCellDimensions(CellGrid grid) {
-		final int[] cellDimensions = new int[ grid.numDimensions() ];
-		grid.cellDimensions( cellDimensions );
-		return cellDimensions;
-	}
-
-	public List<String> labels() {
-		return labels;
+	@Override public AffineTransform3D transformation()
+	{
+		return transformation;
 	}
 }

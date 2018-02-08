@@ -4,37 +4,28 @@ import java.util.Collections;
 import java.util.function.Supplier;
 
 import net.imglib2.labkit.Extensible;
+import net.imglib2.labkit.SegmentationComponent;
 import net.imglib2.labkit.labeling.Labeling;
 
 import net.imglib2.RandomAccessibleInterval;
+import net.imglib2.labkit.models.SegmentationModel;
 
 public class TrainClassifier
 {
 
-	private Supplier<Labeling> labelingSupplier;
+	SegmentationModel model;
 
-	public TrainClassifier(
-			final Extensible extensible,
-			final Classifier classifier,
-			final Supplier<Labeling> labelingSupplier,
-			final RandomAccessibleInterval<?> image
-	)
+	public TrainClassifier( Extensible extensible, SegmentationModel model )
 	{
-		this.classifier = classifier;
-		this.labelingSupplier = labelingSupplier;
-		this.image = image;
+		this.model = model;
 		extensible.addAction("Train Classifier", "trainClassifier", this::trainClassifier, "ctrl shift T");
 	}
-
-	private final Classifier classifier;
-
-	private final RandomAccessibleInterval<?> image;
 
 	private void trainClassifier()
 	{
 		try
 		{
-			classifier.train(Collections.singletonList(image), Collections.singletonList(labelingSupplier.get()));
+			model.segmenter().train(Collections.singletonList(model.image()), Collections.singletonList(model.labeling()));
 		}
 		catch ( final Exception e1 )
 		{

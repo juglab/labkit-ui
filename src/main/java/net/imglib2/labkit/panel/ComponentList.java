@@ -59,6 +59,7 @@ public class ComponentList<K, C extends JComponent> {
 
 			}
 		});
+		component.setBackground( key == selected ? SELECTED_BACKGROUND : BACKGROUND);
 		panels.put(component, key);
 		background.add(component, "grow, wrap");
 		background.revalidate();

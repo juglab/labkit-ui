@@ -7,6 +7,7 @@ import net.imglib2.labkit.labeling.Labeling;
 import net.imglib2.type.numeric.NumericType;
 import net.imglib2.util.Intervals;
 
+import java.util.List;
 import java.util.function.Consumer;
 
 public class ImageLabelingModel implements LabelingModel {
@@ -23,12 +24,24 @@ public class ImageLabelingModel implements LabelingModel {
 
 	private Holder<String> selectedLabelHolder;
 
-	public ImageLabelingModel(RandomAccessibleInterval<? extends NumericType<?>> image, double scaling, Labeling labeling) {
+	private final boolean isTimeSeries;
+
+	public ImageLabelingModel(RandomAccessibleInterval<? extends NumericType<?>> image, double scaling, Labeling labeling, boolean isTimeSeries) {
 		this.rawData = image;
 		this.scaling = scaling;
 		this.labelingHolder = new CheckedHolder(labeling);
+		this.labelingHolder.notifier().add(this::labelingReplacedEvent);
 		this.selectedLabelHolder = new DefaultHolder<>(labeling.getLabels().stream().findAny().orElse(""));
+		this.isTimeSeries = isTimeSeries;
 		colorProvider = new ColorMapProvider(labelingHolder);
+	}
+
+	private void labelingReplacedEvent( Labeling labeling )
+	{
+		String selectedLabel = selectedLabelHolder.get();
+		List< String > labels = labelingHolder.get().getLabels();
+		if ( ! labels.contains( selectedLabel ) )
+			selectedLabelHolder.set( labels.isEmpty() ? null : labels.get( 0 ) );
 	}
 
 	public RandomAccessibleInterval<? extends NumericType<?>> image() {
@@ -55,13 +68,14 @@ public class ImageLabelingModel implements LabelingModel {
 	public Holder<String> selectedLabel() { return selectedLabelHolder; }
 
 	@Override
-	public void requestRepaint() {
-		dataChangedNotifier.forEach(Runnable::run);
+	public Notifier<Runnable> dataChangedNotifier() {
+		return dataChangedNotifier;
 	}
 
 	@Override
-	public Notifier<Runnable> dataChangedNotifier() {
-		return dataChangedNotifier;
+	public boolean isTimeSeries()
+	{
+		return isTimeSeries;
 	}
 
 	private static class CheckedHolder implements Holder<Labeling> {
