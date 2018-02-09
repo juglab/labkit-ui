@@ -96,24 +96,46 @@ public class ColoredLabelsModel
 		return null;
 	}
 
-	public void localizeLabel( String label )
-	{
-		BoundingBox labelBox = getBoundingBox( model.labeling().get().iterableRegions().get(label) );
-		AffineTransform3D transform = new AffineTransform3D();
-		if(labelBox.numDimensions() > 0 && (labelBox.corner2[ 0 ] > 0 || labelBox.corner2[ 0 ] < 0)) {
-			BoundingBox imgBox = new BoundingBox(model.image());
-			int dim = Math.min( transform.numDimensions(), labelBox.numDimensions() );
-			Float[] scales = new Float[dim];
-			double[] translate = new double[ transform.numDimensions() ];
-			for(int i = 0; i < dim; i++) {
-				translate[ i ] = -labelBox.corner1[ i ];
-				scales[ i ] = ( float ) imgBox.corner2[ i ] / ( float ) (labelBox.corner2[ i ] - labelBox.corner1[ i ] );
-			}
-			float scale = Collections.min( Arrays.asList( scales ) );
+	public void localizeLabel( final String label ) {
+		final BoundingBox labelBox =
+				getBoundingBox( model.labeling().get().iterableRegions().get( label ) );
+		final AffineTransform3D transform = new AffineTransform3D();
+		final int dim = Math.min( transform.numDimensions(), labelBox.numDimensions() );
+		if ( dim > 0 && ( labelBox.corner2[ 0 ] > 0 ) ) {
+			final double[] screenSize =
+					{ model.transformationModel().width(), model.transformationModel().height() };
+			final float scale = getBiggestScaleFactor( screenSize, labelBox );
+			final double[] translate = getTranslation( screenSize, labelBox, scale );
+			transform.scale( scale );
 			transform.translate( translate );
-			transform.scale( Collections.min( Arrays.asList( scale ) ) );
+			model.transformationModel().setTransformation( transform );
 		}
-		model.transformationModel().setTransformation( transform );
+	}
+
+	private static double[] getTranslation(
+			final double[] screenSize,
+			final BoundingBox labelBox,
+			final float labelScale ) {
+		final double[] translate = new double[ 3 ];
+		for ( int i = 0; i < Math.min( translate.length, labelBox.numDimensions() ); i++ ) {
+			translate[ i ] = -labelBox.corner1[ i ] * labelScale;
+			if ( i < 2 ) {
+				final double length =
+						( labelBox.corner2[ i ] - labelBox.corner1[ i ] ) * labelScale;
+				translate[ i ] += ( screenSize[ i ] - length ) / 2;
+			}
+		}
+		return translate;
+	}
+
+	private static float
+			getBiggestScaleFactor( final double[] screenSize, final BoundingBox labelBox ) {
+		final Float[] scales = new Float[ 2 ];
+		for ( int i = 0; i < 2; i++ ) {
+			scales[ i ] =
+					( float ) screenSize[ i ] / ( labelBox.corner2[ i ] - labelBox.corner1[ i ] );
+		}
+		return Collections.min( Arrays.asList( scales ) );
 	}
 
 	private static BoundingBox getBoundingBox( IterableRegion< BitType > region )
