@@ -1,5 +1,7 @@
 package net.imglib2.labkit.models;
 
+import net.imglib2.Dimensions;
+import net.imglib2.FinalDimensions;
 import net.imglib2.RandomAccessibleInterval;
 import net.imglib2.labkit.utils.Notifier;
 import net.imglib2.labkit.color.ColorMapProvider;
@@ -9,6 +11,7 @@ import net.imglib2.util.Intervals;
 
 import java.util.List;
 import java.util.function.Consumer;
+import java.util.stream.IntStream;
 
 public class ImageLabelingModel implements LabelingModel {
 
@@ -25,6 +28,8 @@ public class ImageLabelingModel implements LabelingModel {
 	private Holder<String> selectedLabelHolder;
 
 	private final boolean isTimeSeries;
+
+	private final TransformationModel transformationModel = new TransformationModel();
 
 	public ImageLabelingModel(RandomAccessibleInterval<? extends NumericType<?>> image, double scaling, Labeling labeling, boolean isTimeSeries) {
 		this.rawData = image;
@@ -76,6 +81,14 @@ public class ImageLabelingModel implements LabelingModel {
 	public boolean isTimeSeries()
 	{
 		return isTimeSeries;
+	}
+
+	public TransformationModel transformationModel() { return transformationModel; }
+
+	public Dimensions spatialDimensions()
+	{
+		int n = image().numDimensions() - (isTimeSeries() ? 1 : 0);
+		return new FinalDimensions(IntStream.range(0, n).mapToLong(image()::dimension).toArray());
 	}
 
 	private static class CheckedHolder implements Holder<Labeling> {
