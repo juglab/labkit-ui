@@ -19,7 +19,7 @@ import org.scijava.ui.behaviour.util.AbstractNamedAction;
 import javax.swing.*;
 import java.awt.*;
 
-public class LabelingComponent {
+public class LabelingComponent implements AutoCloseable {
 
 	private BdvHandle bdvHandle;
 
@@ -115,5 +115,11 @@ public class LabelingComponent {
 
 	public ViewerPanel viewerPanel() {
 		return bdvHandle.getViewerPanel();
+	}
+
+	@Override
+	public void close()
+	{
+		bdvHandle.getViewerPanel().stop();
 	}
 }

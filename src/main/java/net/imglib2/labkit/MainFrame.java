@@ -11,6 +11,8 @@ import net.imglib2.util.Intervals;
 import org.scijava.Context;
 
 import javax.swing.*;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
 import java.util.List;
 import java.util.stream.IntStream;
 
@@ -46,14 +48,25 @@ public class MainFrame {
 		this.inputImage = inputImage;
 		Labeling initialLabeling = getInitialLabeling();
 		inputImage.setScaling(getScaling(inputImage, initialLabeling));
-		this.segmentationComponent = new SegmentationComponent(context, frame, inputImage, initialLabeling, false);
-		// --
+		this.segmentationComponent = initSegmentationComponent( context, inputImage, initialLabeling );
 		new SetLabelsAction(segmentationComponent, preferences);
 		setTitle();
-		MenuBar menubar = new MenuBar(segmentationComponent.getActions());
-		frame.setJMenuBar(menubar);
-		frame.add(segmentationComponent.getComponent());
+		frame.setJMenuBar( new MenuBar(segmentationComponent.getActions()) );
 		frame.setVisible(true);
+	}
+
+	private SegmentationComponent initSegmentationComponent( Context context, InputImage inputImage, Labeling initialLabeling )
+	{
+		SegmentationComponent segmentationComponent = new SegmentationComponent(context, frame, inputImage, initialLabeling, false);
+		frame.add(segmentationComponent.getComponent());
+		frame.addWindowListener( new WindowAdapter()
+		{
+			@Override public void windowClosed( WindowEvent e )
+			{
+				segmentationComponent.close();
+			}
+		} );
+		return segmentationComponent;
 	}
 
 	private double getScaling(InputImage inputImage, Labeling initialLabeling) {
@@ -70,6 +83,7 @@ public class MainFrame {
 	private JFrame initFrame() {
 		JFrame frame = new JFrame();
 		frame.setBounds( 50, 50, 1200, 900 );
+		frame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
 		return frame;
 	}
 

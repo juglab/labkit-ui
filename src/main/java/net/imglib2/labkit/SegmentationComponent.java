@@ -46,7 +46,7 @@ import javax.swing.*;
 import java.awt.*;
 import java.util.Arrays;
 
-public class SegmentationComponent {
+public class SegmentationComponent implements AutoCloseable {
 
 	private final JSplitPane panel;
 
@@ -183,6 +183,12 @@ public class SegmentationComponent {
 	public boolean isTrained()
 	{
 		return classifier.isTrained();
+	}
+
+	@Override
+	public void close()
+	{
+		labelingComponent.close();
 	}
 
 	private class MyExtensible implements Extensible {
