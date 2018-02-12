@@ -1,6 +1,5 @@
 package net.imglib2.labkit.panel;
 
-import net.imglib2.labkit.Extensible;
 import net.imglib2.labkit.models.ColoredLabelsModel;
 import net.imglib2.type.numeric.ARGBType;
 import net.miginfocom.swing.MigLayout;
@@ -84,19 +83,28 @@ public class LabelPanel {
 		model.setColor( label, new ARGBType( newColor.getRGB() ) );
 	}
 
-	// -- Helper methods --
+	private void localize(String label) {
+		model.localizeLabel( label );
+	}
 
+	// -- Helper methods --
 	private class EntryPanel extends JPanel {
 
 		EntryPanel( String value, ARGBType color ) {
 			setOpaque(true);
-			setLayout(new MigLayout("insets 4pt, gap 4pt"));
-			JButton comp = new JButton();
-			comp.setBorder(new EmptyBorder(1,1,1,1));
-			comp.setIcon(createIcon(new Color(color.get())));
-			comp.addActionListener(l -> changeColor(value));
-			add(comp);
-			add(new JLabel(value));
+			setLayout(new MigLayout("insets 4pt, gap 4pt, fillx"));
+			add( initColorButton( value, color ) );
+			add(new JLabel(value), "push");
+			add( initFinderButton( value ) );
+		}
+
+		private JButton initColorButton( String value, ARGBType color )
+		{
+			JButton colorButton = new JButton();
+			colorButton.setBorder(new EmptyBorder(1,1,1,1));
+			colorButton.setIcon(createIcon(new Color(color.get())));
+			colorButton.addActionListener(l -> changeColor(value));
+			return colorButton;
 		}
 
 		private ImageIcon createIcon(Color color) {
@@ -108,5 +116,17 @@ public class LabelPanel {
 			g.dispose();
 			return new ImageIcon(image);
 		}
+
+		private JButton initFinderButton( String value )
+		{
+			JButton finder = new JButton();
+			finder.setBorder( BorderFactory.createEmptyBorder() );
+			finder.setContentAreaFilled(false);
+			finder.setOpaque(false);
+			finder.setIcon(new ImageIcon(getClass().getResource( "/images/crosshair.png" )));
+			finder.addActionListener(l -> localize(value));
+			return finder;
+		}
+
 	}
 }
