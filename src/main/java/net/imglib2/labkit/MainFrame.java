@@ -23,15 +23,7 @@ import java.util.stream.IntStream;
  */
 public class MainFrame {
 
-	private final InputImage inputImage;
-
 	private JFrame frame = initFrame();
-
-	private final Preferences preferences;
-
-	private final Context context;
-
-	private final SegmentationComponent segmentationComponent;
 
 	public static MainFrame open(Context context, String filename, boolean isTimeSeries) {
 		final Context context2 = (context == null) ? new Context() : context;
@@ -43,15 +35,13 @@ public class MainFrame {
 
 	public MainFrame(final Context context, final InputImage inputImage)
 	{
-		this.context = context;
-		this.preferences = new Preferences(context);
-		this.inputImage = inputImage;
-		Labeling initialLabeling = getInitialLabeling();
+		Preferences preferences = new Preferences( context );
+		Labeling initialLabeling = getInitialLabeling(inputImage, context, preferences );
 		inputImage.setScaling(getScaling(inputImage, initialLabeling));
-		this.segmentationComponent = initSegmentationComponent( context, inputImage, initialLabeling );
-		new SetLabelsAction(segmentationComponent, preferences);
-		setTitle();
-		frame.setJMenuBar( new MenuBar(segmentationComponent.getActions()) );
+		SegmentationComponent segmentationComponent = initSegmentationComponent( context, inputImage, initialLabeling );
+		new SetLabelsAction( segmentationComponent, preferences );
+		setTitle( inputImage.getName() );
+		frame.setJMenuBar( new MenuBar( segmentationComponent.getActions()) );
 		frame.setVisible(true);
 	}
 
@@ -75,7 +65,7 @@ public class MainFrame {
 		return IntStream.range(0, dimensionsA.length).mapToDouble(i -> (double) dimensionsB[i] / (double) dimensionsA[i]).average().orElse(1.0);
 	}
 
-	private Labeling getInitialLabeling() {
+	private Labeling getInitialLabeling(InputImage inputImage, Context context, Preferences preferences) {
 		List<String> defaultLabels = preferences.getDefaultLabels();
 		return InitialLabeling.initLabeling(inputImage, context, defaultLabels);
 	}
@@ -87,8 +77,7 @@ public class MainFrame {
 		return frame;
 	}
 
-	private void setTitle() {
-		String name = inputImage.getName();
+	private void setTitle( String name ) {
 		if(name == null || name.isEmpty())
 			frame.setTitle("Labkit");
 		else frame.setTitle("Labkit - " + name);
