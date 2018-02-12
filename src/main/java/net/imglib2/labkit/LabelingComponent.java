@@ -45,14 +45,13 @@ public class LabelingComponent implements AutoCloseable {
 		this.model = model;
 		this.dialogBoxOwner = dialogBoxOwner;
 
-		final int nDim = model.image().numDimensions() - (model.isTimeSeries() ? 1 : 0);
-
-		initBdv(nDim  < 3);
+		initBdv( model.spatialDimensions().numDimensions() < 3);
 		initPanel();
 		actionsAndBehaviours = new ActionsAndBehaviours(bdvHandle);
 		initLabelsLayer();
 		initImageLayer();
 		initBrushLayer();
+		this.model.transformationModel().initialize( bdvHandle.getViewerPanel() );
 	}
 
 	private void initBdv(boolean is2D) {

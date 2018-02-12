@@ -28,7 +28,6 @@ import net.imglib2.labkit.models.SegmentationResultsModel;
 import net.imglib2.labkit.panel.LabelPanel;
 import net.imglib2.labkit.panel.VisibilityPanel;
 import net.imglib2.labkit.plugin.MeasureConnectedComponents;
-import net.imglib2.realtransform.AffineTransform3D;
 import net.imglib2.trainable_segmention.RevampUtils;
 import net.imglib2.trainable_segmention.pixel_feature.filter.GroupedFeatures;
 import net.imglib2.trainable_segmention.pixel_feature.filter.SingleFeatures;
@@ -120,7 +119,7 @@ public class SegmentationComponent implements AutoCloseable {
 		new AddLabelingIoAction(extensible, model.labeling());
 		new SegmentationSave(extensible, segmentationResultsModel );
 		new OpenImageAction(extensible);
-		new OrthogonalView(extensible);
+		new OrthogonalView(extensible, model);
 		new SelectClassifier(extensible, classifier);
 		new BatchSegmentAction(extensible, classifier);
 		new ChangeFeatureSettingsAction(extensible, classifier);
@@ -209,11 +208,6 @@ public class SegmentationComponent implements AutoCloseable {
 		@Override
 		public Component dialogParent() {
 			return dialogBoxOwner;
-		}
-
-		@Override
-		public void setViewerTransformation(AffineTransform3D affineTransform3D) {
-			labelingComponent.viewerPanel().setCurrentViewerTransform(new AffineTransform3D());
 		}
 	}
 }
