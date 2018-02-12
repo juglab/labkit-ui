@@ -11,6 +11,4 @@ public interface Extensible {
 	void addAction(String title, String command, Runnable action, String keyStroke);
 
 	Component dialogParent();
-
-	void setViewerTransformation(AffineTransform3D affineTransform3D);
 }
