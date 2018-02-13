@@ -1,5 +1,8 @@
 package net.imglib2.labkit.models;
 
+import java.util.List;
+import java.util.stream.Collectors;
+
 import net.imglib2.FinalInterval;
 import net.imglib2.Interval;
 import net.imglib2.cache.img.CellLoader;
@@ -15,9 +18,6 @@ import net.imglib2.type.numeric.ARGBType;
 import net.imglib2.type.numeric.integer.ShortType;
 import net.imglib2.type.numeric.real.FloatType;
 
-import java.util.List;
-import java.util.stream.Collectors;
-
 /**
  * SegmentationResultsModel is segmentation + probability map.
  * It wraps around a SegmentationModel and update whenever the Segmentation changes.
@@ -31,6 +31,7 @@ public class SegmentationResultsModel
 	private Img<FloatType > prediction;
 	private List< String > labels;
 	private List< ARGBType > colors;
+	private Holder<String> selectedLabelHolder;
 
 	private Notifier< Runnable > listeners = new Notifier<>();
 
@@ -39,6 +40,7 @@ public class SegmentationResultsModel
 	{
 		this.model = model;
 		model.segmenter().listeners().add( this::segmenterTrained );
+		this.selectedLabelHolder = new DefaultHolder<>("");
 	}
 
 	private void segmenterTrained( Classifier classifier )
@@ -112,5 +114,23 @@ public class SegmentationResultsModel
 	public Notifier<Runnable> segmentationChangedListeners()
 	{
 		return listeners;
+	}
+
+	public String selected() {
+		return selectedLabel().get();
+	}
+
+	public void setSelected(String value) {
+		selectedLabel().set( value );
+	}
+
+	public Holder<String> selectedLabel() {
+		return selectedLabelHolder;
+	}
+
+	public void setColor(String label, ARGBType newColor) {
+		int index = labels().indexOf( label );
+		colors().set( index, newColor );
+		selectedLabel().notifier().forEach( l -> l.accept( selectedLabel().get() ) );
 	}
 }

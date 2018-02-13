@@ -1,16 +1,26 @@
 package net.imglib2.labkit.panel;
 
-import net.imglib2.labkit.Extensible;
+import java.awt.Color;
+import java.awt.Dimension;
+import java.awt.Graphics;
+import java.awt.image.BufferedImage;
+import java.util.Map;
+
+import javax.swing.ImageIcon;
+import javax.swing.JButton;
+import javax.swing.JColorChooser;
+import javax.swing.JComponent;
+import javax.swing.JFrame;
+import javax.swing.JLabel;
+import javax.swing.JOptionPane;
+import javax.swing.JPanel;
+import javax.swing.border.EmptyBorder;
+
 import net.imglib2.labkit.models.ColoredLabelsModel;
 import net.imglib2.type.numeric.ARGBType;
 import net.miginfocom.swing.MigLayout;
-import org.scijava.ui.behaviour.util.RunnableAction;
 
-import javax.swing.*;
-import javax.swing.border.EmptyBorder;
-import java.awt.*;
-import java.awt.image.BufferedImage;
-import java.util.Map;
+import org.scijava.ui.behaviour.util.RunnableAction;
 
 public class LabelPanel {
 

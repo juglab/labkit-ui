@@ -1,6 +1,18 @@
 package net.imglib2.labkit;
 
-import hr.irb.fastRandomForest.FastRandomForest;
+import java.awt.Component;
+import java.util.Arrays;
+
+import javax.swing.Action;
+import javax.swing.ActionMap;
+import javax.swing.JButton;
+import javax.swing.JCheckBox;
+import javax.swing.JComponent;
+import javax.swing.JFrame;
+import javax.swing.JPanel;
+import javax.swing.JSplitPane;
+import javax.swing.KeyStroke;
+
 import net.imagej.ops.OpService;
 import net.imglib2.RandomAccessibleInterval;
 import net.imglib2.labkit.actions.AddLabelingIoAction;
@@ -26,7 +38,7 @@ import net.imglib2.labkit.models.ImageLabelingModel;
 import net.imglib2.labkit.models.SegmentationModel;
 import net.imglib2.labkit.models.SegmentationResultsModel;
 import net.imglib2.labkit.panel.LabelPanel;
-import net.imglib2.labkit.panel.VisibilityPanel;
+import net.imglib2.labkit.panel.SegmentationPanel;
 import net.imglib2.labkit.plugin.MeasureConnectedComponents;
 import net.imglib2.realtransform.AffineTransform3D;
 import net.imglib2.trainable_segmention.RevampUtils;
@@ -39,16 +51,15 @@ import net.imglib2.type.numeric.IntegerType;
 import net.imglib2.type.numeric.NumericType;
 import net.imglib2.type.numeric.real.FloatType;
 import net.miginfocom.swing.MigLayout;
+
 import org.scijava.Context;
 import org.scijava.ui.behaviour.util.RunnableAction;
 
-import javax.swing.*;
-import java.awt.*;
-import java.util.Arrays;
+import hr.irb.fastRandomForest.FastRandomForest;
 
 public class SegmentationComponent {
 
-	private final JSplitPane panel;
+	private final JPanel panel;
 
 	private final boolean fixedLabels;
 
@@ -92,7 +103,8 @@ public class SegmentationComponent {
 		labelingComponent.addBdvLayer( new PredictionLayer( segmentationResultsModel ) );
 		initActions();
 		JPanel leftPanel = initLeftPanel();
-		this.panel = initPanel( leftPanel, labelingComponent.getComponent() );
+		JPanel bottomPanel = initBottomPanel();
+		this.panel = initPanel( leftPanel, labelingComponent.getComponent(), bottomPanel );
 	}
 
 	private void initModels()
@@ -130,13 +142,30 @@ public class SegmentationComponent {
 
 	private JPanel initLeftPanel()
 	{
-		JPanel leftPanel = new JPanel();
-		leftPanel.setLayout(new MigLayout("","[grow]","[][][grow]"));
+		JPanel panel = new JPanel();
+		panel.setLayout(new MigLayout("","[grow]","[][][grow][][]"));
 		ActionMap actions = getActions();
-		leftPanel.add( trainClassifierButton( actions ), "grow, wrap");
-		leftPanel.add(new VisibilityPanel( actions ), "wrap");
-		leftPanel.add(new LabelPanel(dialogBoxOwner, new ColoredLabelsModel( model ), fixedLabels).getComponent(), "grow");
-		return leftPanel;
+		addCheckbox(panel, actions.get("Image"));
+		addCheckbox(panel, actions.get("Labeling"));
+		panel.add(new LabelPanel(dialogBoxOwner, new ColoredLabelsModel( model ), fixedLabels).getComponent(), "grow, wrap");
+		addCheckbox(panel, actions.get("Segmentation"));
+		panel.add(new SegmentationPanel(dialogBoxOwner, segmentationResultsModel, fixedLabels).getComponent(), "");
+		return panel;
+	}
+
+	private void addCheckbox(JPanel panel2, Action image) {
+		JCheckBox checkbox = new JCheckBox(image);
+		checkbox.setFocusable(false);
+		panel2.add(checkbox, "wrap");
+	}
+
+	private JPanel initBottomPanel() {
+		JPanel panel = new JPanel();
+		ActionMap actions = getActions();
+		panel.add( trainClassifierButton( actions ), "grow, wrap");
+		panel.add( selectClassifierButton( actions ), "grow, wrap");
+		panel.add( changeFeatureSettingsButton( actions ), "grow, wrap");
+		return panel;
 	}
 
 	private JButton trainClassifierButton( ActionMap actions )
@@ -146,13 +175,31 @@ public class SegmentationComponent {
 		return button;
 	}
 
-	private JSplitPane initPanel( JComponent left, JComponent right )
+	private JButton selectClassifierButton( ActionMap actions )
 	{
-		JSplitPane panel = new JSplitPane();
-		panel.setSize(100, 100);
-		panel.setOneTouchExpandable(true);
-		panel.setLeftComponent( left );
-		panel.setRightComponent( right );
+		JButton button = new JButton( actions.get( "Select Classification Algorithm ..." ) );
+		button.setFocusable( false );
+		return button;
+	}
+
+	private JButton changeFeatureSettingsButton( ActionMap actions )
+	{
+		JButton button = new JButton( actions.get( "Change Feature Settings ..." ) );
+		button.setFocusable( false );
+		return button;
+	}
+
+	private JPanel initPanel( JComponent left, JComponent right, JComponent bottom )
+	{
+		JPanel panel = new JPanel();
+		panel.setLayout(new MigLayout("fill","[grow]","[grow][]"));
+		JSplitPane center = new JSplitPane();
+		center.setSize(100, 100);
+		center.setOneTouchExpandable(true);
+		center.setLeftComponent( left );
+		center.setRightComponent( right );
+		panel.add( center, "wrap, grow" );
+		panel.add( bottom );
 		return panel;
 	}
 
