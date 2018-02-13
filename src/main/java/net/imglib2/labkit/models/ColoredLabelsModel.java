@@ -1,13 +1,18 @@
 package net.imglib2.labkit.models;
 
-import net.imglib2.labkit.color.ColorMap;
-import net.imglib2.labkit.labeling.Labeling;
-import net.imglib2.labkit.utils.Notifier;
-import net.imglib2.type.numeric.ARGBType;
-
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
+import net.imglib2.Cursor;
+import net.imglib2.FinalInterval;
+import net.imglib2.Interval;
+import net.imglib2.labkit.color.ColorMap;
+import net.imglib2.labkit.labeling.Labeling;
+import net.imglib2.labkit.utils.Notifier;
+import net.imglib2.roi.IterableRegion;
+import net.imglib2.type.logic.BitType;
+import net.imglib2.type.numeric.ARGBType;
 
 public class ColoredLabelsModel
 {
@@ -86,5 +91,33 @@ public class ColoredLabelsModel
 				return label;
 		}
 		return null;
+	}
+
+	public void localizeLabel( final String label ) {
+		final Interval labelBox = getBoundingBox( model.labeling().get().iterableRegions().get( label ) );
+		if ( labelBox != null )
+			model.transformationModel().transformToShowInterval( labelBox );
+	}
+
+	private static Interval getBoundingBox( IterableRegion< BitType > region )
+	{
+		int numDimensions = region.numDimensions();
+		Cursor<?> cursor = region.cursor();
+		if ( ! cursor.hasNext() )
+			return null;
+		long[] min = new long[ numDimensions ];
+		long[] max = new long[ numDimensions ];
+		cursor.fwd();
+		cursor.localize( min );
+		cursor.localize( max );
+		while( cursor.hasNext() )	{
+			cursor.fwd();
+			for( int i = 0; i < numDimensions; i++){
+				int pos = cursor.getIntPosition( i );
+				min[ i ] = Math.min( min[ i ], pos);
+				max[ i ] = Math.max( max[ i ], pos);
+			}
+		}
+		return new FinalInterval( min, max );
 	}
 }

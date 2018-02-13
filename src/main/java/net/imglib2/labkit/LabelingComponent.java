@@ -31,7 +31,7 @@ import bdv.util.BdvSource;
 import bdv.viewer.DisplayMode;
 import bdv.viewer.ViewerPanel;
 
-public class LabelingComponent {
+public class LabelingComponent implements AutoCloseable {
 
 	private BdvHandle bdvHandle;
 
@@ -56,15 +56,13 @@ public class LabelingComponent {
 	{
 		this.model = model;
 		this.dialogBoxOwner = dialogBoxOwner;
-
-		final int nDim = model.image().numDimensions() - (model.isTimeSeries() ? 1 : 0);
-
-		initBdv(nDim  < 3);
+		initBdv( model.spatialDimensions().numDimensions() < 3);
 		actionsAndBehaviours = new ActionsAndBehaviours(bdvHandle);
 		initPanel();
 		initLabelsLayer();
 		initImageLayer();
 		initBrushLayer();
+		this.model.transformationModel().initialize( bdvHandle.getViewerPanel() );
 	}
 
 	private void initBdv(boolean is2D) {
@@ -129,5 +127,11 @@ public class LabelingComponent {
 
 	public ViewerPanel viewerPanel() {
 		return bdvHandle.getViewerPanel();
+	}
+
+	@Override
+	public void close()
+	{
+		bdvHandle.getViewerPanel().stop();
 	}
 }
