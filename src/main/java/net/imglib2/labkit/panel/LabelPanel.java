@@ -1,15 +1,28 @@
 package net.imglib2.labkit.panel;
 
+import java.awt.Color;
+import java.awt.Dimension;
+import java.awt.Graphics;
+import java.awt.image.BufferedImage;
+import java.util.List;
+
+import javax.swing.BorderFactory;
+import javax.swing.ImageIcon;
+import javax.swing.JButton;
+import javax.swing.JColorChooser;
+import javax.swing.JComponent;
+import javax.swing.JFrame;
+import javax.swing.JLabel;
+import javax.swing.JOptionPane;
+import javax.swing.JPanel;
+import javax.swing.border.EmptyBorder;
+
+import net.imglib2.labkit.models.ColoredLabel;
 import net.imglib2.labkit.models.ColoredLabelsModel;
 import net.imglib2.type.numeric.ARGBType;
 import net.miginfocom.swing.MigLayout;
-import org.scijava.ui.behaviour.util.RunnableAction;
 
-import javax.swing.*;
-import javax.swing.border.EmptyBorder;
-import java.awt.*;
-import java.awt.image.BufferedImage;
-import java.util.Map;
+import org.scijava.ui.behaviour.util.RunnableAction;
 
 public class LabelPanel {
 
@@ -34,8 +47,8 @@ public class LabelPanel {
 
 	private void update() {
 		list.clear();
-		Map< String, ARGBType > items = model.items();
-		items.forEach( ( label, color) -> list.add( label, new EntryPanel( label, color )) );
+		List< ColoredLabel > items = model.items();
+		items.forEach( ( label ) -> list.add( label.name, new EntryPanel( label.name, label.color )) );
 		list.setSelected( model.selected() );
 	}
 
@@ -77,7 +90,7 @@ public class LabelPanel {
 	}
 
 	private void changeColor(String label) {
-		ARGBType color = model.items().get(label);
+		ARGBType color = model.getColor( label );
 		Color newColor = JColorChooser.showDialog(dialogParent, "Choose Color for Label \"" + label + "\"", new Color(color.get()));
 		if(newColor == null) return;
 		model.setColor( label, new ARGBType( newColor.getRGB() ) );

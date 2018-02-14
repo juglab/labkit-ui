@@ -176,8 +176,8 @@ public class Labeling extends AbstractWrappedInterval implements RandomAccessibl
 			cursor.fwd();
 			ra.setPosition(cursor);
 			Set<String> set = ra.get();
-			set.remove(oldLabel);
-			set.add(newLabel);
+			if(set.remove(oldLabel))
+				set.add( newLabel );
 		}
 	}
 
