@@ -1,8 +1,7 @@
 package net.imglib2.labkit.models;
 
-import java.util.HashMap;
+import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 
 import net.imglib2.Cursor;
 import net.imglib2.FinalInterval;
@@ -33,11 +32,11 @@ public class ColoredLabelsModel
 	}
 
 	// TODO: use a List instead of a Map to keep the Order
-	public Map<String, ARGBType > items() {
-		Map<String, ARGBType> result = new HashMap<>();
+	public List<ColoredLabel> items() {
+		List<ColoredLabel> result = new ArrayList<>();
 		ColorMap colors = model.colorMapProvider().colorMap();
 		List<String> labels = model.labeling().get().getLabels();
-		labels.forEach( label -> result.put( label, colors.getColor( label ) ) );
+		labels.forEach( label -> result.add( new ColoredLabel(label, colors.getColor( label ) ) ) );
 		return result;
 	}
 
@@ -74,6 +73,8 @@ public class ColoredLabelsModel
 		Holder< Labeling > holder = model.labeling();
 		Labeling labeling = holder.get();
 		holder.get().renameLabel( label, newLabel );
+		ARGBType color = model.colorMapProvider().colorMap().getColor( label );
+		model.colorMapProvider().colorMap().setColor( newLabel, color );
 		holder.notifier().forEach( l -> l.accept( labeling ) );
 	}
 
@@ -82,6 +83,10 @@ public class ColoredLabelsModel
 		Labeling labeling = holder.get();
 		model.colorMapProvider().colorMap().setColor(label, newColor);
 		holder.notifier().forEach( l -> l.accept( labeling ) );
+	}
+	
+	public ARGBType getColor(String label) {
+		return model.colorMapProvider().colorMap().getColor( label );
 	}
 
 	private String suggestName(List<String> labels) {
