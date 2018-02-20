@@ -39,8 +39,8 @@ public class LabelingComponent implements AutoCloseable {
 		return actionsAndBehaviours.getActions();
 	}
 
-	LabelingComponent(final JFrame dialogBoxOwner,
-			final ImageLabelingModel model)
+	public LabelingComponent( final JFrame dialogBoxOwner,
+			final ImageLabelingModel model )
 	{
 		this.model = model;
 		this.dialogBoxOwner = dialogBoxOwner;
@@ -119,6 +119,6 @@ public class LabelingComponent implements AutoCloseable {
 	@Override
 	public void close()
 	{
-		bdvHandle.getViewerPanel().stop();
+		bdvHandle.close();
 	}
 }
