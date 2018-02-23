@@ -1,8 +1,11 @@
 package net.imglib2.labkit.plugin;
 
+import bdv.BigDataViewer;
+import bdv.util.AbstractSource;
 import bdv.util.Bdv;
 import bdv.util.BdvFunctions;
 import bdv.util.BdvOptions;
+import bdv.util.volatiles.VolatileViews;
 import loci.formats.ClassList;
 import loci.formats.FormatException;
 import loci.formats.IFormatReader;
@@ -18,10 +21,16 @@ import net.imagej.axis.CalibratedAxis;
 import net.imagej.axis.DefaultLinearAxis;
 import net.imglib2.Cursor;
 import net.imglib2.RandomAccessibleInterval;
+import net.imglib2.cache.img.CellLoader;
+import net.imglib2.cache.img.DiskCachedCellImgFactory;
+import net.imglib2.cache.img.DiskCachedCellImgOptions;
 import net.imglib2.img.Img;
+import net.imglib2.img.cell.CellGrid;
 import net.imglib2.img.cell.CellImgFactory;
 import net.imglib2.labkit.utils.ParallelUtils;
+import net.imglib2.realtransform.AffineTransform3D;
 import net.imglib2.trainable_segmention.RevampUtils;
+import net.imglib2.type.NativeType;
 import net.imglib2.type.numeric.ARGBType;
 import net.imglib2.util.Intervals;
 import net.imglib2.util.ValuePair;
@@ -32,6 +41,7 @@ import ome.xml.model.primitives.PositiveInteger;
 
 import javax.swing.*;
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.Callable;
 import java.util.concurrent.CancellationException;
@@ -43,11 +53,41 @@ import java.util.stream.IntStream;
 public class BFTiledImport {
 
 	public static void main(String... args) throws IOException, FormatException {
-		ImgPlus<ARGBType> out = openImage("/home/arzt/Documents/Datasets/Lung IMages/2017_08_03__0004-1.czi");
-		BdvFunctions.show(out, "Image", Bdv.options().is2D());
+		String filename = "/home/arzt/Documents/Datasets/Lung IMages/2017_08_03__0007.czi";
+		List<RandomAccessibleInterval<ARGBType>> out = Arrays.asList(
+				openCachedImage( filename, 0 ).getImg(),
+				openCachedImage( filename, 1 ).getImg(),
+				openCachedImage( filename, 2 ).getImg(),
+				openCachedImage( filename, 3 ).getImg(),
+				openCachedImage( filename, 4 ).getImg(),
+				openCachedImage( filename, 5 ).getImg(),
+				openCachedImage( filename, 6 ).getImg()
+		);
+
+		AbstractSource< ARGBType > source = new AbstractSource< ARGBType >( new ARGBType(), "source" )
+		{
+
+			@Override public RandomAccessibleInterval< ARGBType > getSource( int t, int level )
+			{
+				return Views.stack(out.get(level));
+			}
+
+			@Override public int getNumMipmapLevels()
+			{
+				return out.size();
+			}
+
+			@Override public void getSourceTransform( int t, int level, AffineTransform3D transform )
+			{
+				transform.identity();
+				transform.scale( (double) out.get(0).dimension( 0 ) / (double) out.get(level).dimension( 0 )  );
+			}
+		};
+
+		BdvFunctions.show( source, Bdv.options().is2D());
 	}
 
-	static ImgPlus<ARGBType> openImage(String filename) {
+	public static ImgPlus<ARGBType> openImage(String filename) {
 		final int series = selectSeries(filename);
 		MyReader reader = new MyReader( filename );
 		long[] dimensions = reader.getImgDimensions( series );
@@ -56,6 +96,27 @@ public class BFTiledImport {
 		List<Callable<Void>> chunks = ParallelUtils.chunkOperation(out, cellDimensions, cell -> reader.readToInterval( series, cell ) );
 		ParallelUtils.executeInParallel(Executors.newFixedThreadPool(8), ParallelUtils.addShowProgress(chunks));
 		return imgPlus( filename, out, reader.printCalibration( series ) );
+	}
+
+	public static ImgPlus<ARGBType> openCachedImage(String filename, int series) {
+		MyReader reader = new MyReader( filename );
+		long[] dimensions = reader.getImgDimensions( series );
+		int[] cellDimensions = reader.getCellDimensions( series );
+		Img< ARGBType > out = setupCachedImage( cell -> reader.readToInterval( series, cell ), new CellGrid( dimensions, cellDimensions ), new ARGBType() );
+		return imgPlus( filename, out, reader.printCalibration( series ) );
+	}
+
+	private static <T extends NativeType<T> > Img<T> setupCachedImage(CellLoader<T> loader, CellGrid grid, T type) {
+		DiskCachedCellImgOptions optional = DiskCachedCellImgOptions.options().cellDimensions( getCellDimensions(grid) ).cacheType( DiskCachedCellImgOptions.CacheType.SOFTREF );
+		final DiskCachedCellImgFactory< T > factory = new DiskCachedCellImgFactory<>(optional);
+		return factory.create( grid.getImgDimensions(), type, loader );
+	}
+
+	private static int[] getCellDimensions( CellGrid grid )
+	{
+		int[] cellDimensions = new int[grid.numDimensions()];
+		grid.cellDimensions( cellDimensions );
+		return cellDimensions;
 	}
 
 	private static ImgPlus< ARGBType > imgPlus( String filename, Img< ARGBType > out, CalibratedAxis[] axis )
@@ -114,20 +175,19 @@ public class BFTiledImport {
 
 	private static class MyReader {
 
-		private final ThreadLocal< ImageReader > readers;
-
 		private final IMetadata metadata;
 
+		private final ImageReader reader;
+
 		public MyReader(String filename) {
-			readers = ThreadLocal.withInitial(() -> initReader(filename) );
 			ValuePair< ImageReader, IMetadata > readerAndMetaData = initReaderAndMetaData( filename );
-			readers.set( readerAndMetaData.getA() );
 			metadata = readerAndMetaData.getB();
+			reader = readerAndMetaData.getA();
 		}
 
 		private ImageReader getReader( int series )
 		{
-			ImageReader reader = readers.get();
+			ImageReader reader = this.reader; //readers.get();
 			reader.setSeries( series );
 			return reader;
 		}
@@ -139,7 +199,7 @@ public class BFTiledImport {
 
 		private int[] getCellDimensions( int series) {
 			ImageReader reader = getReader( series );
-			return new int[] { reader.getOptimalTileWidth(), reader.getOptimalTileHeight() };
+			return new int[] { reader.getOptimalTileWidth() / 2, reader.getOptimalTileHeight() / 2 };
 		}
 
 		private void readToInterval(int series, RandomAccessibleInterval<ARGBType> interval) {
