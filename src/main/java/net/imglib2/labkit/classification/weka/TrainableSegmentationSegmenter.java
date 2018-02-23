@@ -21,7 +21,6 @@ import net.imglib2.sparse.SparseRandomAccessIntType;
 import net.imglib2.trainable_segmention.RevampUtils;
 import net.imglib2.trainable_segmention.classification.Training;
 import net.imglib2.trainable_segmention.gson.GsonUtils;
-import net.imglib2.trainable_segmention.gui.FeatureSettingsGui;
 import net.imglib2.trainable_segmention.pixel_feature.calculator.FeatureCalculator;
 import net.imglib2.trainable_segmention.pixel_feature.filter.GroupedFeatures;
 import net.imglib2.trainable_segmention.pixel_feature.filter.SingleFeatures;
@@ -33,14 +32,10 @@ import net.imglib2.type.numeric.integer.IntType;
 import net.imglib2.type.numeric.real.FloatType;
 import net.imglib2.view.Views;
 import net.imglib2.view.composite.Composite;
-import net.miginfocom.swing.MigLayout;
 import org.scijava.Context;
 import weka.classifiers.AbstractClassifier;
-import weka.classifiers.Classifier;
-import weka.gui.GenericObjectEditor;
 
 import javax.swing.*;
-import java.awt.*;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -73,22 +68,6 @@ implements Segmenter
 		return original;
 	}
 
-	public static Classifier selectWekaClassifierGui(Component dialogParent, Classifier defaultValue) {
-		JCheckBox checkBox = new JCheckBox("FastRandomForest");
-		GenericObjectEditor editor = new GenericObjectEditor();
-		editor.setClassType(Classifier.class);
-		if(defaultValue instanceof FastRandomForest)
-			checkBox.setSelected(true);
-		else
-			editor.setValue(defaultValue);
-		JPanel panel = new JPanel();
-		panel.setLayout(new MigLayout());
-		panel.add(checkBox, "wrap");
-		panel.add(editor.getCustomPanel());
-		JOptionPane.showMessageDialog(dialogParent, panel, "Select Classification Algorithm", JOptionPane.PLAIN_MESSAGE);
-		return checkBox.isSelected() ? new FastRandomForest() : (Classifier) editor.getValue();
-	}
-
 	@Override
 	public Notifier< Consumer< Segmenter > > listeners() {
 		return listeners;
@@ -100,9 +79,13 @@ implements Segmenter
 	}
 
 	@Override
-	public void editSettings( Component dialogParent) {
-		initialWekaClassifier = selectWekaClassifierGui( dialogParent, initialWekaClassifier);
-		featureSettings = FeatureSettingsGui.show( context, featureSettings ).orElse( featureSettings );
+	public void editSettings( JFrame dialogParent) {
+		TrainableSegmentationSettingsDialog dialog = new TrainableSegmentationSettingsDialog( context, dialogParent, initialWekaClassifier, featureSettings );
+		dialog.show();
+		if(dialog.okClicked()) {
+			featureSettings = dialog.featureSettings();
+			initialWekaClassifier = dialog.wekaClassifier();
+		}
 	}
 
 	public TrainableSegmentationSegmenter(Context context, InputImage inputImage)

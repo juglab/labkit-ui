@@ -6,7 +6,7 @@ import net.imglib2.labkit.labeling.Labeling;
 import net.imglib2.type.numeric.IntegerType;
 import net.imglib2.type.numeric.RealType;
 
-import java.awt.*;
+import javax.swing.*;
 import java.util.List;
 import java.util.function.Consumer;
 
@@ -14,7 +14,7 @@ import java.util.function.Consumer;
 public interface Segmenter
 {
 
-	void editSettings(Component dialogParent);
+	void editSettings(JFrame dialogParent);
 
 	void segment(RandomAccessibleInterval<?> image, RandomAccessibleInterval<? extends IntegerType<?>> labels );
 

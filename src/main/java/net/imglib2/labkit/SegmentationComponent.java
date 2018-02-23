@@ -36,7 +36,6 @@ import org.scijava.Context;
 import org.scijava.ui.behaviour.util.RunnableAction;
 
 import javax.swing.*;
-import java.awt.*;
 import java.util.Arrays;
 
 public class SegmentationComponent implements AutoCloseable {
@@ -196,7 +195,7 @@ public class SegmentationComponent implements AutoCloseable {
 		}
 
 		@Override
-		public Component dialogParent() {
+		public JFrame dialogParent() {
 			return dialogBoxOwner;
 		}
 	}

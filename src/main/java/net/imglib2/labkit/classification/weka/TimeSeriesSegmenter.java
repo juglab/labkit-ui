@@ -10,7 +10,7 @@ import net.imglib2.type.numeric.IntegerType;
 import net.imglib2.type.numeric.RealType;
 import net.imglib2.view.Views;
 
-import java.awt.*;
+import javax.swing.*;
 import java.util.List;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
@@ -32,7 +32,7 @@ public class TimeSeriesSegmenter implements Segmenter
 	}
 
 	@Override
-	public void editSettings(Component dialogParent) {
+	public void editSettings(JFrame dialogParent) {
 		segmenter.editSettings(dialogParent);
 	}
 
