@@ -4,8 +4,9 @@ import bdv.util.*;
 import bdv.viewer.DisplayMode;
 import bdv.viewer.ViewerPanel;
 import net.imglib2.labkit.actions.ToggleVisibility;
+import net.imglib2.labkit.bdv.BdvShowable;
 import net.imglib2.labkit.control.brush.*;
-import net.imglib2.labkit.labeling.BdvLayer;
+import net.imglib2.labkit.bdv.BdvLayer;
 import net.imglib2.labkit.labeling.LabelsLayer;
 import net.imglib2.labkit.models.BitmapModel;
 import net.imglib2.labkit.models.ImageLabelingModel;
@@ -70,7 +71,7 @@ public class LabelingComponent implements AutoCloseable {
 
 	private void initImageLayer() {
 		Pair<Double, Double> minMax = LabkitUtils.estimateMinMax( model.image() );
-		addBdvLayer( new BdvLayer.FinalLayer( model.image(), "Image", scaledTransformation() ) )
+		addBdvLayer( new BdvLayer.FinalLayer( BdvShowable.wrap( model.image() ), "Image", scaledTransformation() ) )
 				.setDisplayRange( minMax.getA(), minMax.getB());
 	}
 
@@ -87,10 +88,19 @@ public class LabelingComponent implements AutoCloseable {
 	public BdvSource addBdvLayer( BdvLayer layer )
 	{
 		BdvOptions options = BdvOptions.options().addTo( bdvHandle ).sourceTransform( layer.transformation() );
-		BdvSource source = BdvFunctions.show( RevampUtils.uncheckedCast( layer.image() ), layer.title(), options );
+		BdvSource source = show( layer, options );
 		layer.listeners().add( this::requestRepaint );
 		addAction(new ToggleVisibility( layer.title(), source ));
 		return source;
+	}
+
+	private BdvSource show( BdvLayer layer, BdvOptions options )
+	{
+		BdvShowable showable = layer.image();
+		if( showable.isSpimData() )
+			return BdvFunctions.show( showable.spimData(), options ).get(0); // TODO: only taking the first BdvSource is hacky.
+		else
+			return BdvFunctions.show( RevampUtils.uncheckedCast( showable ), layer.title(), options );
 	}
 
 	private void initBrushLayer()

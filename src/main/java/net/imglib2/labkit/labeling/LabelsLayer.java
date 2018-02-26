@@ -3,6 +3,8 @@ package net.imglib2.labkit.labeling;
 import gnu.trove.map.TIntObjectMap;
 import gnu.trove.map.hash.TIntObjectHashMap;
 import net.imglib2.RandomAccessibleInterval;
+import net.imglib2.labkit.bdv.BdvLayer;
+import net.imglib2.labkit.bdv.BdvShowable;
 import net.imglib2.labkit.models.LabelingModel;
 import net.imglib2.labkit.utils.Notifier;
 import net.imglib2.labkit.utils.RandomAccessibleContainer;
@@ -10,7 +12,6 @@ import net.imglib2.labkit.color.ColorMap;
 import net.imglib2.converter.Converters;
 import net.imglib2.realtransform.AffineTransform3D;
 import net.imglib2.type.numeric.ARGBType;
-import net.imglib2.type.numeric.NumericType;
 import net.imglib2.view.Views;
 
 import java.util.Set;
@@ -60,8 +61,8 @@ public class LabelsLayer implements BdvLayer
 		}, new ARGBType());
 	}
 
-	@Override public RandomAccessibleInterval< ? extends NumericType< ? > > image() {
-		return view;
+	@Override public BdvShowable image() {
+		return BdvShowable.wrap( view );
 	}
 
 	@Override public Notifier<Runnable> listeners() {
