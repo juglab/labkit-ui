@@ -1,52 +1,49 @@
-package net.imglib2.labkit.classification.weka;
+package net.imglib2.labkit.segmentation.weka;
 
 import net.imglib2.RandomAccessibleInterval;
 import net.imglib2.labkit.utils.Notifier;
-import net.imglib2.labkit.classification.Classifier;
+import net.imglib2.labkit.segmentation.Segmenter;
 import net.imglib2.labkit.labeling.Labeling;
 import net.imglib2.labkit.labeling.Labelings;
 import net.imglib2.trainable_segmention.RevampUtils;
-import net.imglib2.trainable_segmention.pixel_feature.settings.FeatureSettings;
 import net.imglib2.type.numeric.IntegerType;
 import net.imglib2.type.numeric.RealType;
 import net.imglib2.view.Views;
 
+import javax.swing.*;
 import java.util.List;
 import java.util.function.BiConsumer;
+import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
-public class TimeSeriesClassifier implements Classifier{
+public class TimeSeriesSegmenter implements Segmenter
+{
 
-	private final Classifier classifier;
-	private final Notifier<Listener> listeners = new Notifier<>();
+	private final Segmenter segmenter;
+	private final Notifier< Consumer< Segmenter > > listeners = new Notifier<>();
 
-	public TimeSeriesClassifier(Classifier classifier) {
-		this.classifier = classifier;
-		classifier.listeners().add(this::update);
+	public TimeSeriesSegmenter(Segmenter segmenter ) {
+		this.segmenter = segmenter;
+		segmenter.listeners().add(this::update);
 	}
 
-	private void update(Classifier classifier) {
-		listeners.forEach(l -> l.notify(this));
-	}
-
-	@Override
-	public void editClassifier() {
-		classifier.editClassifier();
+	private void update(Segmenter segmenter ) {
+		listeners.forEach(l -> l.accept(this));
 	}
 
 	@Override
-	public void reset(FeatureSettings features, List<String> classLabels) {
-		classifier.reset(features, classLabels);
+	public void editSettings(JFrame dialogParent) {
+		segmenter.editSettings(dialogParent);
 	}
 
 	@Override
 	public void segment(RandomAccessibleInterval<?> image, RandomAccessibleInterval<? extends IntegerType<?>> labels) {
-		applyOnSlices(classifier::segment, image, labels);
+		applyOnSlices( segmenter::segment, image, labels);
 	}
 
 	@Override
 	public void predict(RandomAccessibleInterval<?> image, RandomAccessibleInterval<? extends RealType<?>> prediction) {
-		applyOnSlices(classifier::predict, image, prediction);
+		applyOnSlices( segmenter::predict, image, prediction);
 	}
 
 	private <T> void applyOnSlices(BiConsumer<RandomAccessibleInterval<?>, RandomAccessibleInterval<T>> action,
@@ -64,36 +61,31 @@ public class TimeSeriesClassifier implements Classifier{
 	public void train(List<? extends RandomAccessibleInterval<?>> image, List<? extends Labeling> groundTruth) {
 		List<RandomAccessibleInterval<?>> images = image.stream().flatMap(i -> RevampUtils.slices(i).stream()).collect(Collectors.toList());
 		List<Labeling> labels = groundTruth.stream().flatMap(g -> Labelings.slices(g).stream()).collect(Collectors.toList());
-		classifier.train(images, labels);
+		segmenter.train(images, labels);
 	}
 
 	@Override
 	public boolean isTrained() {
-		return classifier.isTrained();
+		return segmenter.isTrained();
 	}
 
 	@Override
-	public void saveClassifier(String path, boolean overwrite) throws Exception {
-		classifier.saveClassifier(path, overwrite);
+	public void saveModel(String path, boolean overwrite) throws Exception {
+		segmenter.saveModel(path, overwrite);
 	}
 
 	@Override
-	public void openClassifier(String path) throws Exception {
-		classifier.openClassifier(path);
+	public void openModel(String path) throws Exception {
+		segmenter.openModel(path);
 	}
 
 	@Override
-	public Notifier<Listener> listeners() {
+	public Notifier< Consumer< Segmenter > > listeners() {
 		return listeners;
 	}
 
 	@Override
-	public FeatureSettings settings() {
-		return classifier.settings();
-	}
-
-	@Override
 	public List<String> classNames() {
-		return classifier.classNames();
+		return segmenter.classNames();
 	}
 }

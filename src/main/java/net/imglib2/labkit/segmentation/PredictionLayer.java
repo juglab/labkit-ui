@@ -1,4 +1,4 @@
-package net.imglib2.labkit.classification;
+package net.imglib2.labkit.segmentation;
 
 import bdv.util.volatiles.SharedQueue;
 import bdv.util.volatiles.VolatileViews;

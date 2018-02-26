@@ -2,7 +2,7 @@ package net.imglib2.labkit.actions;
 
 import net.imglib2.labkit.BatchSegmenter;
 import net.imglib2.labkit.Extensible;
-import net.imglib2.labkit.classification.Classifier;
+import net.imglib2.labkit.segmentation.Segmenter;
 import net.imglib2.trainable_segmention.RevampUtils;
 import org.scijava.Cancelable;
 import org.scijava.Context;
@@ -27,17 +27,17 @@ import java.util.List;
 public class BatchSegmentAction {
 
 	private final Extensible extensible;
-	private final Classifier classifier;
+	private final Segmenter segmenter;
 
-	public BatchSegmentAction(Extensible extensible, Classifier classifier) {
+	public BatchSegmentAction(Extensible extensible, Segmenter segmenter ) {
 		this.extensible = extensible;
-		this.classifier = classifier;
+		this.segmenter = segmenter;
 		extensible.addAction("Batch Segment Images ...", "batchSegment", this::segmentImages, "");
 	}
 
 	private void segmentImages() {
 		BatchSegment commandInstance = new BatchSegment();
-		commandInstance.setClassifier(classifier);
+		commandInstance.setSegmenter( segmenter );
 		boolean success = harvest(commandInstance, "Batch Segment Images");
 		if(success) commandInstance.run();
 	}
@@ -69,15 +69,15 @@ public class BatchSegmentAction {
 		@Parameter(label = "output directory", style = FileWidget.DIRECTORY_STYLE)
 		private File outputDirectory;
 
-		private Classifier classifier;
+		private Segmenter segmenter;
 
-		public void setClassifier(Classifier classifier) {
-			this.classifier = classifier;
+		public void setSegmenter(Segmenter segmenter ) {
+			this.segmenter = segmenter;
 		}
 
 		@Override
 		public void run() {
-			BatchSegmenter batchSegmenter = new BatchSegmenter(classifier);
+			BatchSegmenter batchSegmenter = new BatchSegmenter( segmenter );
 			for(File file : inputDirectory.listFiles())
 				if(file.isFile())
 					processFile(batchSegmenter, file);

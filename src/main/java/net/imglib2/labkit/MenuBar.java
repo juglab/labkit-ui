@@ -39,8 +39,7 @@ public class MenuBar extends JMenuBar {
 				.addItem("showPrediction")
 				.addItem("savePrediction")
 				.addItem("addSegmentationAsLabel")
-				.addItem("changeFeatures")
-				.addItem("selectAlgorithm");
+				.addItem("segmenterSettings");
 		addMenu("View")
 				.addCheckBox("toggleImage")
 				.addCheckBox("toggleLabeling")
