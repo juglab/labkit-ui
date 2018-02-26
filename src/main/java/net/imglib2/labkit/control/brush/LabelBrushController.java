@@ -89,6 +89,7 @@ public class LabelBrushController
 		labelLocation.setPosition( y, 1 );
 		labelLocation.setPosition( 0, 2 );
 		viewer.displayToGlobalCoordinates( labelLocation );
+		model.transformation().applyInverse( labelLocation, labelLocation );
 		labelLocation.move( PIXEL_CENTER_OFFSET );
 		return labelLocation;
 	}

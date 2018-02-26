@@ -3,9 +3,11 @@ package net.imglib2.labkit;
 import bdv.spimdata.SpimDataMinimal;
 import bdv.spimdata.XmlIoSpimDataMinimal;
 import mpicbg.spim.data.SpimDataException;
+import mpicbg.spim.data.sequence.VoxelDimensions;
 import net.imglib2.labkit.bdv.BdvShowable;
 import net.imglib2.labkit.labeling.Labeling;
 import net.imglib2.labkit.models.ImageLabelingModel;
+import net.imglib2.realtransform.AffineTransform3D;
 
 import javax.swing.*;
 import java.awt.event.WindowAdapter;
@@ -48,10 +50,10 @@ public class LabelingComponentHdf5Demo
 	private static ImageLabelingModel initModel( SpimDataMinimal spimData )
 	{
 		// TODO simplify the creation of an ImageLabelingModel
-		double scaling = 1.0;
 		BdvShowable wrap = BdvShowable.wrap( spimData );
 		Labeling labeling = new Labeling( Arrays.asList("fg","bg"), wrap.interval());
 		boolean isTimeSeries = false;
-		return new ImageLabelingModel( wrap, scaling, labeling, isTimeSeries );
+		return new ImageLabelingModel( wrap, labeling, isTimeSeries );
 	}
+
 }

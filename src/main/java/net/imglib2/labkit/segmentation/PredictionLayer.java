@@ -39,7 +39,7 @@ public class PredictionLayer implements BdvLayer
 		this.model = model;
 		final RandomAccessible< VolatileARGBType > emptyPrediction = ConstantUtils.constantRandomAccessible( new VolatileARGBType( 0 ), model.interval().numDimensions() );
 		this.segmentationContainer = new RandomAccessibleContainer<>( emptyPrediction );
-		this.transformation = scaleTransformation( model.scaling() );
+		this.transformation = model.transformation();
 		this.view = Views.interval( segmentationContainer, model.interval() );
 		model.segmentationChangedListeners().add( this::classifierChanged );
 	}
@@ -76,7 +76,7 @@ public class PredictionLayer implements BdvLayer
 
 	@Override public BdvShowable image()
 	{
-		return BdvShowable.wrap( view );
+		return BdvShowable.wrap(view, transformation);
 	}
 
 	@Override public Notifier< Runnable > listeners()
@@ -87,10 +87,5 @@ public class PredictionLayer implements BdvLayer
 	@Override public String title()
 	{
 		return "Segmentation";
-	}
-
-	@Override public AffineTransform3D transformation()
-	{
-		return transformation;
 	}
 }

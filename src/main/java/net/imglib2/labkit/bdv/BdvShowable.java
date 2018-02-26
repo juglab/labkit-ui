@@ -12,9 +12,13 @@ import java.util.Objects;
 
 public interface BdvShowable {
 
-	static BdvShowable wrap(RandomAccessibleInterval<? extends NumericType<?>> image)
+	static BdvShowable wrap(RandomAccessibleInterval<? extends NumericType<?>> image) {
+		return wrap(image, new AffineTransform3D());
+	}
+
+	static BdvShowable wrap(RandomAccessibleInterval<? extends NumericType<?>> image, AffineTransform3D transformation)
 	{
-		return new SimpleBdvShowable( Objects.requireNonNull( image ) );
+		return new SimpleBdvShowable( Objects.requireNonNull( image ), transformation );
 	}
 
 	static BdvShowable wrap(AbstractSpimData<?> spimData)

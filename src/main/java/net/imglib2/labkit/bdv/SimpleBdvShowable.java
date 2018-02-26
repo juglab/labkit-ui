@@ -15,9 +15,11 @@ import net.imglib2.util.Pair;
 public class SimpleBdvShowable implements BdvShowable {
 
 	private final RandomAccessibleInterval< ? extends NumericType<?> > image;
+	private final AffineTransform3D transformation;
 
-	public SimpleBdvShowable(RandomAccessibleInterval<? extends NumericType<?>> image) {
+	public SimpleBdvShowable(RandomAccessibleInterval<? extends NumericType<?>> image, AffineTransform3D transformation) {
 		this.image = image;
+		this.transformation = transformation;
 	}
 
 	@Override
@@ -27,13 +29,13 @@ public class SimpleBdvShowable implements BdvShowable {
 
 	@Override
 	public AffineTransform3D transformation() {
-		return new AffineTransform3D();
+		return transformation;
 	}
 
 	@Override
 	public BdvSource show(String title, BdvOptions options) {
 		Pair< Double, Double > minMax = LabkitUtils.estimateMinMax(image);
-		BdvSource source = BdvFunctions.show( RevampUtils.uncheckedCast(image), title, options );
+		BdvSource source = BdvFunctions.show( RevampUtils.uncheckedCast(image), title, options.sourceTransform(transformation) );
 		source.setDisplayRange( minMax.getA(), minMax.getB() );
 		return source;
 	}

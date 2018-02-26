@@ -62,7 +62,7 @@ public class LabelsLayer implements BdvLayer
 	}
 
 	@Override public BdvShowable image() {
-		return BdvShowable.wrap( view );
+		return BdvShowable.wrap( view, model.labelTransformation() );
 	}
 
 	@Override public Notifier<Runnable> listeners() {
@@ -72,10 +72,5 @@ public class LabelsLayer implements BdvLayer
 	@Override public String title()
 	{
 		return "Labeling";
-	}
-
-	@Override public AffineTransform3D transformation()
-	{
-		return new AffineTransform3D();
 	}
 }

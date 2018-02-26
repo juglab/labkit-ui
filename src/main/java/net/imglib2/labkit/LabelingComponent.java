@@ -70,13 +70,7 @@ public class LabelingComponent implements AutoCloseable {
 	}
 
 	private void initImageLayer() {
-		addBdvLayer( new BdvLayer.FinalLayer( model.showable(), "Image", scaledTransformation() ) );
-	}
-
-	private AffineTransform3D scaledTransformation() {
-		AffineTransform3D transformation = new AffineTransform3D();
-		transformation.scale(model.scaling());
-		return transformation;
+		addBdvLayer( new BdvLayer.FinalLayer( model.showable(), "Image" ) );
 	}
 
 	private void initLabelsLayer() {
@@ -85,7 +79,7 @@ public class LabelingComponent implements AutoCloseable {
 
 	public BdvSource addBdvLayer( BdvLayer layer )
 	{
-		BdvOptions options = BdvOptions.options().addTo( bdvHandle ).sourceTransform( layer.transformation() );
+		BdvOptions options = BdvOptions.options().addTo( bdvHandle );
 		BdvSource source = layer.image().show(layer.title(), options);
 		layer.listeners().add( this::requestRepaint );
 		addAction(new ToggleVisibility( layer.title(), source ));
