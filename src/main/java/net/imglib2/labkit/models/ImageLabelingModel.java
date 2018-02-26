@@ -2,7 +2,9 @@ package net.imglib2.labkit.models;
 
 import net.imglib2.Dimensions;
 import net.imglib2.FinalDimensions;
+import net.imglib2.Interval;
 import net.imglib2.RandomAccessibleInterval;
+import net.imglib2.labkit.bdv.BdvShowable;
 import net.imglib2.labkit.utils.Notifier;
 import net.imglib2.labkit.color.ColorMapProvider;
 import net.imglib2.labkit.labeling.Labeling;
@@ -13,26 +15,33 @@ import java.util.List;
 import java.util.function.Consumer;
 import java.util.stream.IntStream;
 
-public class ImageLabelingModel implements LabelingModel {
-
-	final RandomAccessibleInterval<? extends NumericType<?>> rawData;
+public class ImageLabelingModel implements LabelingModel
+{
 
 	private final double scaling;
 
 	private ColorMapProvider colorProvider;
 
-	private Holder<Labeling> labelingHolder;
+	private Holder< Labeling > labelingHolder;
 
-	private Notifier<Runnable> dataChangedNotifier = new Notifier<>();
+	private Notifier< Runnable > dataChangedNotifier = new Notifier<>();
 
-	private Holder<String> selectedLabelHolder;
+	private Holder< String > selectedLabelHolder;
 
 	private final boolean isTimeSeries;
 
 	private final TransformationModel transformationModel = new TransformationModel();
 
-	public ImageLabelingModel(RandomAccessibleInterval<? extends NumericType<?>> image, double scaling, Labeling labeling, boolean isTimeSeries) {
-		this.rawData = image;
+	private BdvShowable showable;
+
+	public ImageLabelingModel( RandomAccessibleInterval< ? extends NumericType< ? > > image, double scaling, Labeling labeling, boolean isTimeSeries )
+	{
+		this(BdvShowable.wrap( image ), scaling, labeling, isTimeSeries );
+	}
+
+	public ImageLabelingModel( BdvShowable showable, double scaling, Labeling labeling, boolean isTimeSeries )
+	{
+		this.showable = showable;
 		this.scaling = scaling;
 		this.labelingHolder = new CheckedHolder(labeling);
 		this.labelingHolder.notifier().add(this::labelingReplacedEvent);
@@ -49,8 +58,8 @@ public class ImageLabelingModel implements LabelingModel {
 			selectedLabelHolder.set( labels.isEmpty() ? null : labels.get( 0 ) );
 	}
 
-	public RandomAccessibleInterval<? extends NumericType<?>> image() {
-		return rawData;
+	public BdvShowable showable() {
+		return showable;
 	}
 
 	public double scaling() {
@@ -87,8 +96,9 @@ public class ImageLabelingModel implements LabelingModel {
 
 	public Dimensions spatialDimensions()
 	{
-		int n = image().numDimensions() - (isTimeSeries() ? 1 : 0);
-		return new FinalDimensions(IntStream.range(0, n).mapToLong(image()::dimension).toArray());
+		Interval interval = labelingHolder.get().interval();
+		int n = interval.numDimensions() - (isTimeSeries() ? 1 : 0);
+		return new FinalDimensions(IntStream.range(0, n).mapToLong( interval::dimension).toArray());
 	}
 
 	private static class CheckedHolder implements Holder<Labeling> {

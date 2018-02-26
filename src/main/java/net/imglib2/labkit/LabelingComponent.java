@@ -70,9 +70,7 @@ public class LabelingComponent implements AutoCloseable {
 	}
 
 	private void initImageLayer() {
-		Pair<Double, Double> minMax = LabkitUtils.estimateMinMax( model.image() );
-		addBdvLayer( new BdvLayer.FinalLayer( BdvShowable.wrap( model.image() ), "Image", scaledTransformation() ) )
-				.setDisplayRange( minMax.getA(), minMax.getB());
+		addBdvLayer( new BdvLayer.FinalLayer( model.showable(), "Image", scaledTransformation() ) );
 	}
 
 	private AffineTransform3D scaledTransformation() {
@@ -98,9 +96,14 @@ public class LabelingComponent implements AutoCloseable {
 	{
 		BdvShowable showable = layer.image();
 		if( showable.isSpimData() )
-			return BdvFunctions.show( showable.spimData(), options ).get(0); // TODO: only taking the first BdvSource is hacky.
+			return BdvFunctions.show( showable.spimData(), options ).get(0);
 		else
-			return BdvFunctions.show( RevampUtils.uncheckedCast( showable ), layer.title(), options );
+		{
+			Pair< Double, Double > minMax = showable.minMax();
+			BdvSource source = BdvFunctions.show( RevampUtils.uncheckedCast( showable.image() ), layer.title(), options );
+			source.setDisplayRange( minMax.getA(), minMax.getB() );
+			return source;
+		}
 	}
 
 	private void initBrushLayer()

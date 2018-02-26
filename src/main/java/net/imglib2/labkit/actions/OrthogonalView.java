@@ -14,7 +14,7 @@ public class OrthogonalView {
 	public OrthogonalView( Extensible extensible, ImageLabelingModel model ) {
 		extensible.addAction("Orthogonal View", "resetView", () -> {
 			TransformationModel transformationModel = model.transformationModel();
-			transformationModel.transformToShowInterval( model.image() );
+			transformationModel.transformToShowInterval( model.labeling().get().interval() );
 		}, "");
 	}
 }
