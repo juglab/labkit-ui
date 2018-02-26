@@ -202,13 +202,13 @@ implements Segmenter
 	}
 
 	@Override
-	synchronized public void saveClassifier( final String path, final boolean overwrite ) throws Exception
+	synchronized public void saveModel( final String path, final boolean overwrite ) throws Exception
 	{
 		GsonUtils.write( segmenter.toJsonTree(), path);
 	}
 
 	@Override
-	public void openClassifier( final String path ) throws Exception
+	public void openModel( final String path ) throws Exception
 	{
 		segmenter = net.imglib2.trainable_segmention.classification.Segmenter.fromJson( context.service( OpService.class ), GsonUtils.read(path));
 		listeners.forEach(l -> l.accept(this));

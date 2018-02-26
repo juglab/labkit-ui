@@ -10,7 +10,6 @@ import javax.swing.*;
 import java.util.List;
 import java.util.function.Consumer;
 
-// TODO: Rename to Segmenter and remote FeatureSettings from the interface
 public interface Segmenter
 {
 
@@ -24,9 +23,9 @@ public interface Segmenter
 
 	boolean isTrained();
 
-	void saveClassifier( String path, boolean overwrite ) throws Exception;
+	void saveModel( String path, boolean overwrite ) throws Exception;
 
-	void openClassifier( String path ) throws Exception;
+	void openModel( String path ) throws Exception;
 
 	Notifier<Consumer<Segmenter> > listeners();
 

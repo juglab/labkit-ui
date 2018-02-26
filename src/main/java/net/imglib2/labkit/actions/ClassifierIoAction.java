@@ -20,10 +20,10 @@ public class ClassifierIoAction extends AbstractFileIoAcion {
 	}
 
 	private void save(String filename) throws Exception {
-		segmenter.saveClassifier(filename, true);
+		segmenter.saveModel(filename, true);
 	}
 
 	private void open(String filename) throws Exception {
-		segmenter.openClassifier(filename);
+		segmenter.openModel(filename);
 	}
 }

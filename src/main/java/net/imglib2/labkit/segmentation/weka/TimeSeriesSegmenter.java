@@ -70,13 +70,13 @@ public class TimeSeriesSegmenter implements Segmenter
 	}
 
 	@Override
-	public void saveClassifier(String path, boolean overwrite) throws Exception {
-		segmenter.saveClassifier(path, overwrite);
+	public void saveModel(String path, boolean overwrite) throws Exception {
+		segmenter.saveModel(path, overwrite);
 	}
 
 	@Override
-	public void openClassifier(String path) throws Exception {
-		segmenter.openClassifier(path);
+	public void openModel(String path) throws Exception {
+		segmenter.openModel(path);
 	}
 
 	@Override
