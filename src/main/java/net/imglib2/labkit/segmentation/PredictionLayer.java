@@ -6,7 +6,8 @@ import net.imglib2.RandomAccessible;
 import net.imglib2.RandomAccessibleInterval;
 import net.imglib2.converter.Converter;
 import net.imglib2.converter.Converters;
-import net.imglib2.labkit.labeling.BdvLayer;
+import net.imglib2.labkit.bdv.BdvLayer;
+import net.imglib2.labkit.bdv.BdvShowable;
 import net.imglib2.labkit.models.SegmentationResultsModel;
 import net.imglib2.labkit.utils.Notifier;
 import net.imglib2.labkit.utils.RandomAccessibleContainer;
@@ -73,9 +74,9 @@ public class PredictionLayer implements BdvLayer
 		return Converters.convert(source, conv, new VolatileARGBType() );
 	}
 
-	@Override public RandomAccessibleInterval< ? extends NumericType< ? > > image()
+	@Override public BdvShowable image()
 	{
-		return view;
+		return BdvShowable.wrap( view );
 	}
 
 	@Override public Notifier< Runnable > listeners()

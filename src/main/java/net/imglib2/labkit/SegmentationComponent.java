@@ -78,8 +78,7 @@ public class SegmentationComponent implements AutoCloseable {
 		this.inputImage = image;
 		this.context = context;
 		this.fixedLabels = fixedLabels;
-		model = new ImageLabelingModel( image.displayImage(), image.scaling(), labeling, inputImage.isTimeSeries());
-		initModels();
+		initModels(image, labeling);
 		labelingComponent = new LabelingComponent(dialogBoxOwner, model);
 		labelingComponent.addBdvLayer( new PredictionLayer( segmentationResultsModel ) );
 		initActions();
@@ -87,10 +86,11 @@ public class SegmentationComponent implements AutoCloseable {
 		this.panel = initPanel( leftPanel, labelingComponent.getComponent() );
 	}
 
-	private void initModels()
+	private void initModels( InputImage image, Labeling labeling )
 	{
+		model = new ImageLabelingModel( image.displayImage(), image.scaling(), labeling, inputImage.isTimeSeries());
 		segmenter = initClassifier( context );
-		segmentationModel = new SegmentationModel( model, segmenter );
+		segmentationModel = new SegmentationModel( image.displayImage(), model, segmenter );
 		segmentationResultsModel = new SegmentationResultsModel( segmentationModel );
 	}
 
