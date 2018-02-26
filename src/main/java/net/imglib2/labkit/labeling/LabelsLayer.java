@@ -76,6 +76,6 @@ public class LabelsLayer implements BdvLayer
 
 	@Override public AffineTransform3D transformation()
 	{
-		return new AffineTransform3D();
+		return model.labelTransformation();
 	}
 }

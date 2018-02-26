@@ -4,6 +4,7 @@ import net.imglib2.RandomAccessibleInterval;
 import net.imglib2.img.array.ArrayImgs;
 import net.imglib2.labkit.labeling.Labeling;
 import net.imglib2.labkit.models.ImageLabelingModel;
+import net.imglib2.realtransform.AffineTransform3D;
 import net.imglib2.type.numeric.NumericType;
 
 import javax.swing.*;
@@ -45,9 +46,8 @@ public class LabelingComponentDemo
 	{
 		// TODO simplify the creation of an ImageLabelingModel
 		RandomAccessibleInterval< ? extends NumericType< ? > > image = ArrayImgs.bytes(100, 100);
-		double scaling = 1.0;
 		Labeling labeling = new Labeling( Arrays.asList("fg","bg"), image);
 		boolean isTimeSeries = false;
-		return new ImageLabelingModel( image, scaling, labeling, isTimeSeries );
+		return new ImageLabelingModel( image, new AffineTransform3D(), labeling, isTimeSeries );
 	}
 }

@@ -39,7 +39,7 @@ public class PredictionLayer implements BdvLayer
 		this.model = model;
 		final RandomAccessible< VolatileARGBType > emptyPrediction = ConstantUtils.constantRandomAccessible( new VolatileARGBType( 0 ), model.interval().numDimensions() );
 		this.segmentationContainer = new RandomAccessibleContainer<>( emptyPrediction );
-		this.transformation = scaleTransformation( model.scaling() );
+		this.transformation = model.transformation();
 		this.view = Views.interval( segmentationContainer, model.interval() );
 		model.segmentationChangedListeners().add( this::classifierChanged );
 	}

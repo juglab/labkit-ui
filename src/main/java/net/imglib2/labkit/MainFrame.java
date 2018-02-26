@@ -2,10 +2,12 @@ package net.imglib2.labkit;
 
 import io.scif.services.DatasetIOService;
 import net.imagej.Dataset;
+import net.imglib2.Interval;
 import net.imglib2.labkit.actions.SetLabelsAction;
 import net.imglib2.labkit.inputimage.DatasetInputImage;
 import net.imglib2.labkit.inputimage.InputImage;
 import net.imglib2.labkit.labeling.Labeling;
+import net.imglib2.realtransform.AffineTransform3D;
 import net.imglib2.trainable_segmention.RevampUtils;
 import net.imglib2.util.Intervals;
 import org.scijava.Context;
@@ -13,6 +15,7 @@ import org.scijava.Context;
 import javax.swing.*;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
+import java.util.Arrays;
 import java.util.List;
 import java.util.stream.IntStream;
 
@@ -37,7 +40,7 @@ public class MainFrame {
 	{
 		Preferences preferences = new Preferences( context );
 		Labeling initialLabeling = getInitialLabeling(inputImage, context, preferences );
-		inputImage.setScaling(getScaling(inputImage, initialLabeling));
+		inputImage.setTransformation(getScaling(inputImage, initialLabeling));
 		SegmentationComponent segmentationComponent = initSegmentationComponent( context, inputImage, initialLabeling );
 		new SetLabelsAction( segmentationComponent, preferences );
 		setTitle( inputImage.getName() );
@@ -59,10 +62,25 @@ public class MainFrame {
 		return segmentationComponent;
 	}
 
-	private double getScaling(InputImage inputImage, Labeling initialLabeling) {
-		long[] dimensionsA = Intervals.dimensionsAsLongArray(inputImage.displayImage());
-		long[] dimensionsB = Intervals.dimensionsAsLongArray(initialLabeling);
-		return IntStream.range(0, dimensionsA.length).mapToDouble(i -> (double) dimensionsB[i] / (double) dimensionsA[i]).average().orElse(1.0);
+	private AffineTransform3D getScaling(InputImage inputImage, Labeling initialLabeling) {
+		long[] dimensionsA = getLongs( inputImage.displayImage() );
+		long[] dimensionsB = getLongs( initialLabeling.interval() );
+		double[] values = IntStream.range( 0, 3 ).mapToDouble( i -> ( double ) dimensionsA[ i ] / ( double ) dimensionsB[ i ] ).toArray();
+		AffineTransform3D affineTransform3D = new AffineTransform3D();
+		affineTransform3D.set(
+				values[0], 0.0, 0.0, 0.0,
+				0.0, values[1], 0.0, 0.0,
+				0.0, 0.0, values[2], 0.0
+				);
+		return affineTransform3D;
+	}
+
+	private long[] getLongs( Interval interval )
+	{
+		long[] dimensionsB = new long[Math.max( interval.numDimensions(), 3 )];
+		Arrays.fill(dimensionsB, 1);
+		interval.dimensions( dimensionsB );
+		return dimensionsB;
 	}
 
 	private Labeling getInitialLabeling(InputImage inputImage, Context context, Preferences preferences) {

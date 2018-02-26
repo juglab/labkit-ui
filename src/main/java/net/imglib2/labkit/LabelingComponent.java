@@ -11,7 +11,6 @@ import net.imglib2.labkit.labeling.LabelsLayer;
 import net.imglib2.labkit.models.BitmapModel;
 import net.imglib2.labkit.models.ImageLabelingModel;
 import net.imglib2.labkit.panel.HelpPanel;
-import net.imglib2.labkit.utils.LabkitUtils;
 import net.imglib2.realtransform.AffineTransform3D;
 import net.imglib2.trainable_segmention.RevampUtils;
 import net.imglib2.util.Pair;
@@ -70,13 +69,7 @@ public class LabelingComponent implements AutoCloseable {
 	}
 
 	private void initImageLayer() {
-		addBdvLayer( new BdvLayer.FinalLayer( model.showable(), "Image", scaledTransformation() ) );
-	}
-
-	private AffineTransform3D scaledTransformation() {
-		AffineTransform3D transformation = new AffineTransform3D();
-		transformation.scale(model.scaling());
-		return transformation;
+		addBdvLayer( new BdvLayer.FinalLayer( model.showable(), "Image", new AffineTransform3D() ) );
 	}
 
 	private void initLabelsLayer() {

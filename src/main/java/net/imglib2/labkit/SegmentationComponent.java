@@ -88,7 +88,7 @@ public class SegmentationComponent implements AutoCloseable {
 
 	private void initModels( InputImage image, Labeling labeling )
 	{
-		model = new ImageLabelingModel( image.displayImage(), image.scaling(), labeling, inputImage.isTimeSeries());
+		model = new ImageLabelingModel( image.displayImage(), image.transformation(), labeling, inputImage.isTimeSeries());
 		segmenter = initClassifier( context );
 		segmentationModel = new SegmentationModel( image.displayImage(), model, segmenter );
 		segmentationResultsModel = new SegmentationResultsModel( segmentationModel );

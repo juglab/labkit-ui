@@ -1,16 +1,18 @@
 package net.imglib2.labkit.inputimage;
 
+import net.imglib2.realtransform.AffineTransform3D;
+
 public abstract class AbstractInputImage implements InputImage{
 
-	private double scaling = 1.0;
+	private AffineTransform3D transformation = new AffineTransform3D();
 
 	@Override
-	public void setScaling(double scaling) {
-		this.scaling = scaling;
+	public void setTransformation(AffineTransform3D transformation ) {
+		this.transformation = transformation;
 	}
 
 	@Override
-	public double scaling() {
-		return scaling;
+	public AffineTransform3D transformation() {
+		return transformation;
 	}
 }

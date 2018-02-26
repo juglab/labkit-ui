@@ -9,6 +9,7 @@ import net.imglib2.img.Img;
 import net.imglib2.img.cell.CellGrid;
 import net.imglib2.labkit.segmentation.Segmenter;
 import net.imglib2.labkit.utils.Notifier;
+import net.imglib2.realtransform.AffineTransform3D;
 import net.imglib2.trainable_segmention.RevampUtils;
 import net.imglib2.type.NativeType;
 import net.imglib2.type.numeric.ARGBType;
@@ -94,11 +95,6 @@ public class SegmentationResultsModel
 		return labels;
 	}
 
-	public double scaling()
-	{
-		return model.scaling();
-	}
-
 	public Interval interval()
 	{
 		return new FinalInterval( model.image() );
@@ -112,5 +108,10 @@ public class SegmentationResultsModel
 	public Notifier<Runnable> segmentationChangedListeners()
 	{
 		return listeners;
+	}
+
+	public AffineTransform3D transformation()
+	{
+		return model.labelTransformation();
 	}
 }

@@ -3,10 +3,10 @@ package net.imglib2.labkit.models;
 import net.imglib2.RandomAccessibleInterval;
 import net.imglib2.img.cell.CellGrid;
 import net.imglib2.labkit.segmentation.Segmenter;
-import net.imglib2.labkit.segmentation.weka.TrainableSegmentationSegmenter;
 import net.imglib2.labkit.color.ColorMap;
 import net.imglib2.labkit.labeling.Labeling;
 import net.imglib2.labkit.utils.LabkitUtils;
+import net.imglib2.realtransform.AffineTransform3D;
 
 /**
  * Serves as a model for PredictionLayer and TrainClassifierAction
@@ -44,11 +44,12 @@ public class SegmentationModel
 		return segmenter;
 	}
 
-	public double scaling() {
-		return imageLabelingModel.scaling();
-	}
-
 	public ColorMap colorMap() {
 		return imageLabelingModel.colorMapProvider().colorMap();
+	}
+
+	public AffineTransform3D labelTransformation()
+	{
+		return imageLabelingModel.labelTransformation();
 	}
 }

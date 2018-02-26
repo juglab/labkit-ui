@@ -2,6 +2,7 @@ package net.imglib2.labkit.inputimage;
 
 import net.imagej.axis.CalibratedAxis;
 import net.imglib2.RandomAccessibleInterval;
+import net.imglib2.realtransform.AffineTransform3D;
 import net.imglib2.trainable_segmention.pixel_feature.settings.ChannelSetting;
 import net.imglib2.type.numeric.NumericType;
 
@@ -22,7 +23,7 @@ public interface InputImage {
 
 	boolean isTimeSeries();
 
-	void setScaling(double scaling);
+	void setTransformation(AffineTransform3D scaling);
 
-	double scaling();
+	AffineTransform3D transformation();
 }

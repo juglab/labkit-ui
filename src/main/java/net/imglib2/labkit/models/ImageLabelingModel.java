@@ -8,6 +8,7 @@ import net.imglib2.labkit.bdv.BdvShowable;
 import net.imglib2.labkit.utils.Notifier;
 import net.imglib2.labkit.color.ColorMapProvider;
 import net.imglib2.labkit.labeling.Labeling;
+import net.imglib2.realtransform.AffineTransform3D;
 import net.imglib2.type.numeric.NumericType;
 import net.imglib2.util.Intervals;
 
@@ -18,7 +19,7 @@ import java.util.stream.IntStream;
 public class ImageLabelingModel implements LabelingModel
 {
 
-	private final double scaling;
+	private final AffineTransform3D labelTransformation;
 
 	private ColorMapProvider colorProvider;
 
@@ -34,15 +35,15 @@ public class ImageLabelingModel implements LabelingModel
 
 	private BdvShowable showable;
 
-	public ImageLabelingModel( RandomAccessibleInterval< ? extends NumericType< ? > > image, double scaling, Labeling labeling, boolean isTimeSeries )
+	public ImageLabelingModel( RandomAccessibleInterval< ? extends NumericType< ? > > image, AffineTransform3D labelTransformation, Labeling labeling, boolean isTimeSeries )
 	{
-		this(BdvShowable.wrap( image ), scaling, labeling, isTimeSeries );
+		this(BdvShowable.wrap( image ), labelTransformation, labeling, isTimeSeries );
 	}
 
-	public ImageLabelingModel( BdvShowable showable, double scaling, Labeling labeling, boolean isTimeSeries )
+	public ImageLabelingModel( BdvShowable showable, AffineTransform3D labelTransformation, Labeling labeling, boolean isTimeSeries )
 	{
 		this.showable = showable;
-		this.scaling = scaling;
+		this.labelTransformation = labelTransformation;
 		this.labelingHolder = new CheckedHolder(labeling);
 		this.labelingHolder.notifier().add(this::labelingReplacedEvent);
 		this.selectedLabelHolder = new DefaultHolder<>(labeling.getLabels().stream().findAny().orElse(""));
@@ -62,11 +63,12 @@ public class ImageLabelingModel implements LabelingModel
 		return showable;
 	}
 
-	public double scaling() {
-		return scaling;
-	}
-
 	// -- LabelingModel methods --
+
+	@Override public AffineTransform3D labelTransformation()
+	{
+		return labelTransformation;
+	}
 
 	@Override
 	public ColorMapProvider colorMapProvider() {
