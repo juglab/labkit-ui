@@ -9,8 +9,8 @@ import net.imglib2.labkit.classification.Segmenter;
 public class SelectClassifier {
 
 	public SelectClassifier(Extensible extensible, Segmenter segmenter ) {
-		extensible.addAction("Select Classification Algorithm ...",
-				"selectAlgorithm",
+		extensible.addAction("Segmentation Settings ...",
+				"segmenterSettings",
 				() -> segmenter.editSettings(extensible.dialogParent()), "");
 	}
 }
