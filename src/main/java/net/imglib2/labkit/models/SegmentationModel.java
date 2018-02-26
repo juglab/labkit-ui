@@ -2,8 +2,8 @@ package net.imglib2.labkit.models;
 
 import net.imglib2.RandomAccessibleInterval;
 import net.imglib2.img.cell.CellGrid;
-import net.imglib2.labkit.classification.Segmenter;
-import net.imglib2.labkit.classification.weka.TrainableSegmentationSegmenter;
+import net.imglib2.labkit.segmentation.Segmenter;
+import net.imglib2.labkit.segmentation.weka.TrainableSegmentationSegmenter;
 import net.imglib2.labkit.color.ColorMap;
 import net.imglib2.labkit.labeling.Labeling;
 import net.imglib2.labkit.utils.LabkitUtils;

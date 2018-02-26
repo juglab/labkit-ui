@@ -2,7 +2,7 @@ package net.imglib2.labkit.actions;
 
 import net.imglib2.labkit.BatchSegmenter;
 import net.imglib2.labkit.Extensible;
-import net.imglib2.labkit.classification.Segmenter;
+import net.imglib2.labkit.segmentation.Segmenter;
 import net.imglib2.trainable_segmention.RevampUtils;
 import org.scijava.Cancelable;
 import org.scijava.Context;

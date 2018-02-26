@@ -7,7 +7,7 @@ import net.imglib2.cache.img.DiskCachedCellImgFactory;
 import net.imglib2.cache.img.DiskCachedCellImgOptions;
 import net.imglib2.img.Img;
 import net.imglib2.img.cell.CellGrid;
-import net.imglib2.labkit.classification.Segmenter;
+import net.imglib2.labkit.segmentation.Segmenter;
 import net.imglib2.labkit.utils.Notifier;
 import net.imglib2.trainable_segmention.RevampUtils;
 import net.imglib2.type.NativeType;

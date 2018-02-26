@@ -1,4 +1,4 @@
-package net.imglib2.labkit.classification.weka;
+package net.imglib2.labkit.segmentation.weka;
 
 import hr.irb.fastRandomForest.FastRandomForest;
 import net.imagej.ops.OpEnvironment;
@@ -12,7 +12,7 @@ import net.imglib2.cache.img.DiskCachedCellImgFactory;
 import net.imglib2.cache.img.DiskCachedCellImgOptions;
 import net.imglib2.img.Img;
 import net.imglib2.img.cell.CellGrid;
-import net.imglib2.labkit.classification.Segmenter;
+import net.imglib2.labkit.segmentation.Segmenter;
 import net.imglib2.labkit.inputimage.InputImage;
 import net.imglib2.labkit.labeling.Labeling;
 import net.imglib2.labkit.utils.LabkitUtils;

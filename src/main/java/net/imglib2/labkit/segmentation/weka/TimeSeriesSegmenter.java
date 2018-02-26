@@ -1,8 +1,8 @@
-package net.imglib2.labkit.classification.weka;
+package net.imglib2.labkit.segmentation.weka;
 
 import net.imglib2.RandomAccessibleInterval;
 import net.imglib2.labkit.utils.Notifier;
-import net.imglib2.labkit.classification.Segmenter;
+import net.imglib2.labkit.segmentation.Segmenter;
 import net.imglib2.labkit.labeling.Labeling;
 import net.imglib2.labkit.labeling.Labelings;
 import net.imglib2.trainable_segmention.RevampUtils;

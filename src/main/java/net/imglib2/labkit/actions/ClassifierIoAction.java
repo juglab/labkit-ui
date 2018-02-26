@@ -1,7 +1,7 @@
 package net.imglib2.labkit.actions;
 
 import net.imglib2.labkit.Extensible;
-import net.imglib2.labkit.classification.Segmenter;
+import net.imglib2.labkit.segmentation.Segmenter;
 
 import javax.swing.filechooser.FileNameExtensionFilter;
 

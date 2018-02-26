@@ -1,4 +1,4 @@
-package net.imglib2.labkit.classification.weka;
+package net.imglib2.labkit.segmentation.weka;
 
 import hr.irb.fastRandomForest.FastRandomForest;
 import net.imglib2.trainable_segmention.gui.FeatureSettingsGui;

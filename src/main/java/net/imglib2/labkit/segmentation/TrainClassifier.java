@@ -1,13 +1,9 @@
-package net.imglib2.labkit.classification;
+package net.imglib2.labkit.segmentation;
 
 import java.util.Collections;
-import java.util.function.Supplier;
 
 import net.imglib2.labkit.Extensible;
-import net.imglib2.labkit.SegmentationComponent;
-import net.imglib2.labkit.labeling.Labeling;
 
-import net.imglib2.RandomAccessibleInterval;
 import net.imglib2.labkit.models.SegmentationModel;
 
 public class TrainClassifier

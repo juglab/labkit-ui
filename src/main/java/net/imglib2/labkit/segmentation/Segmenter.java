@@ -1,4 +1,4 @@
-package net.imglib2.labkit.classification;
+package net.imglib2.labkit.segmentation;
 
 import net.imglib2.RandomAccessibleInterval;
 import net.imglib2.labkit.utils.Notifier;
