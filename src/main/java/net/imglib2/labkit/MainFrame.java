@@ -40,7 +40,6 @@ public class MainFrame {
 	{
 		Preferences preferences = new Preferences( context );
 		Labeling initialLabeling = getInitialLabeling(inputImage, context, preferences );
-		inputImage.setTransformation(getScaling(inputImage, initialLabeling));
 		SegmentationComponent segmentationComponent = initSegmentationComponent( context, inputImage, initialLabeling );
 		new SetLabelsAction( segmentationComponent, preferences );
 		setTitle( inputImage.getName() );
@@ -60,27 +59,6 @@ public class MainFrame {
 			}
 		} );
 		return segmentationComponent;
-	}
-
-	private AffineTransform3D getScaling(InputImage inputImage, Labeling initialLabeling) {
-		long[] dimensionsA = getLongs( inputImage.displayImage() );
-		long[] dimensionsB = getLongs( initialLabeling.interval() );
-		double[] values = IntStream.range( 0, 3 ).mapToDouble( i -> ( double ) dimensionsA[ i ] / ( double ) dimensionsB[ i ] ).toArray();
-		AffineTransform3D affineTransform3D = new AffineTransform3D();
-		affineTransform3D.set(
-				values[0], 0.0, 0.0, 0.0,
-				0.0, values[1], 0.0, 0.0,
-				0.0, 0.0, values[2], 0.0
-				);
-		return affineTransform3D;
-	}
-
-	private long[] getLongs( Interval interval )
-	{
-		long[] dimensionsB = new long[Math.max( interval.numDimensions(), 3 )];
-		Arrays.fill(dimensionsB, 1);
-		interval.dimensions( dimensionsB );
-		return dimensionsB;
 	}
 
 	private Labeling getInitialLabeling(InputImage inputImage, Context context, Preferences preferences) {

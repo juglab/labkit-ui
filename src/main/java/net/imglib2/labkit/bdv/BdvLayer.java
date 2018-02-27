@@ -20,11 +20,11 @@ public interface BdvLayer
 		private final Notifier< Runnable > listeners = new Notifier<>();
 		private final AffineTransform3D transformation;
 
-		public FinalLayer( BdvShowable image, String title, AffineTransform3D transformation )
+		public FinalLayer( BdvShowable image, String title )
 		{
 			this.image = image;
 			this.title = title;
-			this.transformation = transformation;
+			this.transformation = image.transformation();
 		}
 
 		@Override public BdvShowable image()

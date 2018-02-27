@@ -53,20 +53,7 @@ public class LabelingComponentHdf5Demo
 		BdvShowable wrap = BdvShowable.wrap( spimData );
 		Labeling labeling = new Labeling( Arrays.asList("fg","bg"), wrap.interval());
 		boolean isTimeSeries = false;
-		AffineTransform3D transformation = getVoxelTransformation( wrap.voxelSize() );
-		return new ImageLabelingModel( wrap, transformation, labeling, isTimeSeries );
+		return new ImageLabelingModel( wrap, labeling, isTimeSeries );
 	}
 
-	private static AffineTransform3D getVoxelTransformation( VoxelDimensions voxelSize )
-	{
-		double[] values = new double[Math.max( 3, voxelSize.numDimensions() ) ];
-		voxelSize.dimensions( values );
-		AffineTransform3D transformation = new AffineTransform3D();
-		transformation.set(
-				values[0], 0, 0, 0,
-				0, values[1], 0, 0,
-				0, 0, values[2], 0
-			);
-		return transformation;
-	}
 }

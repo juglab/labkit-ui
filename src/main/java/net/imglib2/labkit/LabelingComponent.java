@@ -69,7 +69,7 @@ public class LabelingComponent implements AutoCloseable {
 	}
 
 	private void initImageLayer() {
-		addBdvLayer( new BdvLayer.FinalLayer( model.showable(), "Image", new AffineTransform3D() ) );
+		addBdvLayer( new BdvLayer.FinalLayer( model.showable(), "Image" ) );
 	}
 
 	private void initLabelsLayer() {

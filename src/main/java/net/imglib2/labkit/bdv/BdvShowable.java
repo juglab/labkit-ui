@@ -9,6 +9,7 @@ import net.imglib2.FinalInterval;
 import net.imglib2.Interval;
 import net.imglib2.RandomAccessibleInterval;
 import net.imglib2.labkit.utils.LabkitUtils;
+import net.imglib2.realtransform.AffineTransform3D;
 import net.imglib2.type.numeric.NumericType;
 import net.imglib2.util.Pair;
 
@@ -69,15 +70,35 @@ public class BdvShowable
 		return new FinalInterval( setup.getSize() );
 	}
 
-	public VoxelDimensions voxelSize()
+	public AffineTransform3D transformation()
 	{
 		if(image != null)
-			return defaultVoxelSize();
+			return new AffineTransform3D();
+		return getVoxelTransformation( voxelSize() );
+	}
+
+	private VoxelDimensions voxelSize()
+	{
+		if(image != null)
+			throw new UnsupportedOperationException(  );
 		AbstractSequenceDescription< ?, ?, ? > seq = spimData.getSequenceDescription();
 		BasicViewSetup setup = getFirst( seq );
 		if(setup.hasVoxelSize())
 			return setup.getVoxelSize();
 		return defaultVoxelSize();
+	}
+
+	private static AffineTransform3D getVoxelTransformation( VoxelDimensions voxelSize )
+	{
+		double[] values = new double[Math.max( 3, voxelSize.numDimensions() ) ];
+		voxelSize.dimensions( values );
+		AffineTransform3D transformation = new AffineTransform3D();
+		transformation.set(
+				values[0], 0, 0, 0,
+				0, values[1], 0, 0,
+				0, 0, values[2], 0
+		);
+		return transformation;
 	}
 
 	private FinalVoxelDimensions defaultVoxelSize()

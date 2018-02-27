@@ -48,6 +48,6 @@ public class LabelingComponentDemo
 		RandomAccessibleInterval< ? extends NumericType< ? > > image = ArrayImgs.bytes(100, 100);
 		Labeling labeling = new Labeling( Arrays.asList("fg","bg"), image);
 		boolean isTimeSeries = false;
-		return new ImageLabelingModel( image, new AffineTransform3D(), labeling, isTimeSeries );
+		return new ImageLabelingModel( image, labeling, isTimeSeries );
 	}
 }
