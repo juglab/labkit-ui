@@ -14,17 +14,22 @@ import net.imglib2.labkit.utils.LabkitUtils;
 import net.imglib2.trainable_segmention.pixel_feature.settings.ChannelSetting;
 import net.imglib2.type.numeric.NumericType;
 
+import java.io.File;
 import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
+// TODO: Lot's of code in this class is hardcoded for a specific HDF5 image, it need's to be generalized to other hdf5 files.
 public class SpimDataInputImage implements InputImage
 {
 
 	private final AbstractSpimData< ? > spimData;
 
-	public SpimDataInputImage( AbstractSpimData<?> spimData ) {
+	private final String filename;
+
+	public SpimDataInputImage( AbstractSpimData<?> spimData, String filename ) {
 		this.spimData = spimData;
+		this.filename = filename;
 	}
 
 	@Override public BdvShowable showable()
@@ -53,12 +58,12 @@ public class SpimDataInputImage implements InputImage
 
 	@Override public String getFilename()
 	{
-		return spimData.getBasePath().getAbsolutePath();
+		return filename;
 	}
 
 	@Override public String getName()
 	{
-		return spimData.getBasePath().getName();
+		return new File(filename).getName();
 	}
 
 	@Override public List< CalibratedAxis > axes()

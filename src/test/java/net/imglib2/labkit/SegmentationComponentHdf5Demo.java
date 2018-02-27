@@ -20,25 +20,6 @@ public class SegmentationComponentHdf5Demo
 	private SegmentationComponentHdf5Demo() throws SpimDataException
 	{
 		final String fn = "/home/arzt/Documents/Datasets/Mouse Brain/hdf5/export.xml";
-		final SpimDataMinimal spimData = new XmlIoSpimDataMinimal().load( fn );
-		JFrame frame = setupFrame();
-		Context context = new Context();
-		SegmentationComponent segmenter = new SegmentationComponent(context, frame, new SpimDataInputImage( spimData ));
-		frame.add(segmenter.getComponent());
-		frame.addWindowListener( new WindowAdapter()
-		{
-			@Override public void windowClosed( WindowEvent e )
-			{
-				segmenter.close();
-			}
-		} );
-		frame.setVisible(true);
-	}
-
-	private static JFrame setupFrame() {
-		JFrame frame = new JFrame();
-		frame.setSize(500, 500);
-		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-		return frame;
+		MainFrame.openXml(new Context(), fn);
 	}
 }

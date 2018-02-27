@@ -1,11 +1,15 @@
 package net.imglib2.labkit;
 
+import bdv.spimdata.SpimDataMinimal;
+import bdv.spimdata.XmlIoSpimDataMinimal;
 import io.scif.services.DatasetIOService;
+import mpicbg.spim.data.SpimDataException;
 import net.imagej.Dataset;
 import net.imglib2.Interval;
 import net.imglib2.labkit.actions.SetLabelsAction;
 import net.imglib2.labkit.inputimage.DatasetInputImage;
 import net.imglib2.labkit.inputimage.InputImage;
+import net.imglib2.labkit.inputimage.SpimDataInputImage;
 import net.imglib2.labkit.labeling.Labeling;
 import net.imglib2.realtransform.AffineTransform3D;
 import net.imglib2.trainable_segmention.RevampUtils;
@@ -34,6 +38,12 @@ public class MainFrame {
 		DatasetInputImage inputImage = new DatasetInputImage(dataset);
 		inputImage.setTimeSeries(isTimeSeries);
 		return new MainFrame(context2, inputImage);
+	}
+
+	public static void openXml(Context context, String filename )
+	{
+		final SpimDataMinimal spimData = RevampUtils.wrapException( () -> new XmlIoSpimDataMinimal().load( filename ) );
+		new MainFrame( context, new SpimDataInputImage( spimData, filename ) );
 	}
 
 	public MainFrame(final Context context, final InputImage inputImage)
@@ -78,5 +88,4 @@ public class MainFrame {
 			frame.setTitle("Labkit");
 		else frame.setTitle("Labkit - " + name);
 	}
-
 }
