@@ -22,8 +22,4 @@ public interface InputImage {
 	List<CalibratedAxis> axes();
 
 	boolean isTimeSeries();
-
-	void setTransformation(AffineTransform3D scaling);
-
-	AffineTransform3D transformation();
 }
