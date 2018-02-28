@@ -112,10 +112,7 @@ public class LabelBrushController
 		{
 			synchronized ( viewer )
 			{
-				RandomAccessibleInterval<BitType> label = model.bitmap();
-				if(sliceTime)
-					label = Views.hyperSlice(label, label.numDimensions()-1,
-							viewer.getState().getCurrentTimepoint());
+				RandomAccessibleInterval< BitType > label = bitmap();
 				final RandomAccessible<BitType> extended = Views.extendValue(label, new BitType(false));
 				Neighborhood<BitType> neighborhood = pixelsGenerator.create(extended.randomAccess(),
 						toLongArray(coords, extended.numDimensions()), brushRadius);
@@ -179,6 +176,15 @@ public class LabelBrushController
 		}
 	}
 
+	private RandomAccessibleInterval< BitType > bitmap()
+	{
+		RandomAccessibleInterval<BitType> label = model.bitmap();
+		if(sliceTime)
+			return Views.hyperSlice(label, label.numDimensions()-1,
+					viewer.getState().getCurrentTimepoint());
+		return label;
+	}
+
 	private void fireBitmapChanged()
 	{
 		model.fireBitmapChanged();
@@ -239,9 +245,9 @@ public class LabelBrushController
 		{
 			synchronized ( viewer )
 			{
-				RandomAccessibleInterval<BitType> region = model.bitmap();
-				Point seed = roundAndReduceDimension(coords, region.numDimensions());
-				LabelBrushController.floodFill(region, seed, new BitType(value));
+				RandomAccessibleInterval<BitType> bitmap = bitmap();
+				Point seed = roundAndReduceDimension(coords, bitmap.numDimensions());
+				LabelBrushController.floodFill( bitmap, seed, new BitType(value));
 			}
 		}
 

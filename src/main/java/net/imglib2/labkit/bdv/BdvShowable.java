@@ -3,14 +3,19 @@ package net.imglib2.labkit.bdv;
 import mpicbg.spim.data.generic.AbstractSpimData;
 import mpicbg.spim.data.generic.sequence.AbstractSequenceDescription;
 import mpicbg.spim.data.generic.sequence.BasicViewSetup;
+import mpicbg.spim.data.registration.ViewRegistration;
 import mpicbg.spim.data.sequence.FinalVoxelDimensions;
+import mpicbg.spim.data.sequence.TimePoint;
 import mpicbg.spim.data.sequence.VoxelDimensions;
+import net.imglib2.Dimensions;
+import net.imglib2.FinalDimensions;
 import net.imglib2.FinalInterval;
 import net.imglib2.Interval;
 import net.imglib2.RandomAccessibleInterval;
 import net.imglib2.labkit.utils.LabkitUtils;
 import net.imglib2.realtransform.AffineTransform3D;
 import net.imglib2.type.numeric.NumericType;
+import net.imglib2.util.Intervals;
 import net.imglib2.util.Pair;
 
 import java.util.Objects;
@@ -67,43 +72,24 @@ public class BdvShowable
 			return new FinalInterval(image);
 		AbstractSequenceDescription< ?, ?, ? > seq = spimData.getSequenceDescription();
 		BasicViewSetup setup = getFirst( seq );
-		return new FinalInterval( setup.getSize() );
+		Dimensions size = setup.getSize();
+		if(size == null)
+		{
+			RandomAccessibleInterval< ? > image = seq.getImgLoader().getSetupImgLoader( setup.getId() ).getImage( 0 );
+			return new FinalInterval( image );
+		}
+		return new FinalInterval( size );
 	}
 
 	public AffineTransform3D transformation()
 	{
 		if(image != null)
 			return new AffineTransform3D();
-		return getVoxelTransformation( voxelSize() );
-	}
-
-	private VoxelDimensions voxelSize()
-	{
-		if(image != null)
-			throw new UnsupportedOperationException(  );
 		AbstractSequenceDescription< ?, ?, ? > seq = spimData.getSequenceDescription();
 		BasicViewSetup setup = getFirst( seq );
-		if(setup.hasVoxelSize())
-			return setup.getVoxelSize();
-		return defaultVoxelSize();
-	}
-
-	private static AffineTransform3D getVoxelTransformation( VoxelDimensions voxelSize )
-	{
-		double[] values = new double[Math.max( 3, voxelSize.numDimensions() ) ];
-		voxelSize.dimensions( values );
-		AffineTransform3D transformation = new AffineTransform3D();
-		transformation.set(
-				values[0], 0, 0, 0,
-				0, values[1], 0, 0,
-				0, 0, values[2], 0
-		);
-		return transformation;
-	}
-
-	private FinalVoxelDimensions defaultVoxelSize()
-	{
-		return new FinalVoxelDimensions( null, IntStream.range( 0, interval().numDimensions() ).mapToDouble( x -> 1.0 ).toArray() );
+		TimePoint firstTime = seq.getTimePoints().getTimePointsOrdered().get( 0 );
+		ViewRegistration registration = spimData.getViewRegistrations().getViewRegistration( firstTime.getId(), setup.getId() );
+		return registration.getModel();
 	}
 
 	private BasicViewSetup getFirst( AbstractSequenceDescription< ?, ?, ? > seq )

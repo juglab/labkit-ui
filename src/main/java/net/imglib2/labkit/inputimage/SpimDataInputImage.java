@@ -3,8 +3,9 @@ package net.imglib2.labkit.inputimage;
 import bdv.ViewerSetupImgLoader;
 import mpicbg.spim.data.generic.AbstractSpimData;
 import mpicbg.spim.data.generic.sequence.AbstractSequenceDescription;
-import mpicbg.spim.data.generic.sequence.BasicSetupImgLoader;
 import mpicbg.spim.data.generic.sequence.BasicViewSetup;
+import mpicbg.spim.data.sequence.FinalVoxelDimensions;
+import mpicbg.spim.data.sequence.TimePoint;
 import mpicbg.spim.data.sequence.VoxelDimensions;
 import net.imagej.axis.CalibratedAxis;
 import net.imagej.axis.DefaultLinearAxis;
@@ -13,6 +14,7 @@ import net.imglib2.labkit.bdv.BdvShowable;
 import net.imglib2.labkit.utils.LabkitUtils;
 import net.imglib2.trainable_segmention.pixel_feature.settings.ChannelSetting;
 import net.imglib2.type.numeric.NumericType;
+import net.imglib2.view.Views;
 
 import java.io.File;
 import java.util.List;
@@ -25,11 +27,17 @@ public class SpimDataInputImage implements InputImage
 
 	private final AbstractSpimData< ? > spimData;
 
+	private final RandomAccessibleInterval< ? > imageForSegmentation;
+
 	private final String filename;
+
+	private final boolean timeseries;
 
 	public SpimDataInputImage( AbstractSpimData<?> spimData, String filename ) {
 		this.spimData = spimData;
 		this.filename = filename;
+		this.timeseries = spimData.getSequenceDescription().getTimePoints().size() > 1;
+		this.imageForSegmentation = initImageForSegmentation();
 	}
 
 	@Override public BdvShowable showable()
@@ -39,11 +47,25 @@ public class SpimDataInputImage implements InputImage
 
 	@Override public RandomAccessibleInterval< ? extends NumericType< ? > > imageForSegmentation()
 	{
+		RandomAccessibleInterval< ? > image = initImageForSegmentation();
+		return LabkitUtils.uncheckedCast( image );
+	}
+
+	private RandomAccessibleInterval< ? > initImageForSegmentation()
+	{
 		BasicViewSetup setup = getSetup();
 		AbstractSequenceDescription< ?, ?, ? > seq = spimData.getSequenceDescription();
 		ViewerSetupImgLoader< ?, ? > imgLoader = ( ViewerSetupImgLoader ) seq.getImgLoader().getSetupImgLoader( setup.getId() );
-		RandomAccessibleInterval< ? > image = imgLoader.getImage( 0, 2 );
-		return LabkitUtils.uncheckedCast( image );
+		List< TimePoint > timePoints = seq.getTimePoints().getTimePointsOrdered();
+		return combineFrames( imgLoader, timePoints );
+	}
+
+	private <T> RandomAccessibleInterval< ? > combineFrames( ViewerSetupImgLoader< T, ? > imgLoader, List< TimePoint > timePoints )
+	{
+		if(timePoints.size() == 1)
+			return imgLoader.getImage( timePoints.get(0).getId(), 2 );
+		List< RandomAccessibleInterval< T > > slices = timePoints.stream().map( t -> imgLoader.getImage( t.getId(), 2 ) ).collect( Collectors.toList() );
+		return Views.stack(slices);
 	}
 
 	@Override public ChannelSetting getChannelSetting()
@@ -68,12 +90,25 @@ public class SpimDataInputImage implements InputImage
 
 	@Override public List< CalibratedAxis > axes()
 	{
-		BasicViewSetup setup = getSetup();
-		VoxelDimensions voxelSize = setup.getVoxelSize();
+		VoxelDimensions voxelSize = getVoxelDimensions();
 		return IntStream.range(0, voxelSize.numDimensions())
 				.mapToObj( index -> new DefaultLinearAxis( voxelSize.dimension( index ) ) )
 				.collect( Collectors.toList());
 	}
+
+	private VoxelDimensions getVoxelDimensions()
+	{
+		BasicViewSetup setup = getSetup();
+		if(setup.hasVoxelSize())
+			return setup.getVoxelSize();
+		return defaultVoxelSize();
+	}
+
+	private FinalVoxelDimensions defaultVoxelSize()
+	{
+		return new FinalVoxelDimensions( null, IntStream.range( 0, interval().numDimensions() ).mapToDouble( x -> 1.0 ).toArray() );
+	}
+
 
 	private BasicViewSetup getSetup()
 	{
@@ -82,6 +117,6 @@ public class SpimDataInputImage implements InputImage
 
 	@Override public boolean isTimeSeries()
 	{
-		return false;
+		return timeseries;
 	}
 }
