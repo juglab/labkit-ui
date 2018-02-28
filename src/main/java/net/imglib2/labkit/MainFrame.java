@@ -40,12 +40,6 @@ public class MainFrame {
 		return new MainFrame(context2, inputImage);
 	}
 
-	public static void openXml(Context context, String filename )
-	{
-		final SpimDataMinimal spimData = RevampUtils.wrapException( () -> new XmlIoSpimDataMinimal().load( filename ) );
-		new MainFrame( context, new SpimDataInputImage( spimData, filename ) );
-	}
-
 	public MainFrame(final Context context, final InputImage inputImage)
 	{
 		Preferences preferences = new Preferences( context );
