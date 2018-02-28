@@ -8,6 +8,7 @@ import mpicbg.spim.data.generic.sequence.BasicViewSetup;
 import mpicbg.spim.data.sequence.FinalVoxelDimensions;
 import mpicbg.spim.data.sequence.TimePoint;
 import mpicbg.spim.data.sequence.VoxelDimensions;
+import net.imagej.axis.Axes;
 import net.imagej.axis.CalibratedAxis;
 import net.imagej.axis.DefaultLinearAxis;
 import net.imglib2.RandomAccessibleInterval;
@@ -19,11 +20,11 @@ import net.imglib2.type.numeric.NumericType;
 import net.imglib2.view.Views;
 
 import java.io.File;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
-// TODO: Lot's of code in this class is hardcoded for a specific HDF5 image, it need's to be generalized to other hdf5 files.
 public class SpimDataInputImage implements InputImage
 {
 
@@ -49,8 +50,7 @@ public class SpimDataInputImage implements InputImage
 
 	@Override public RandomAccessibleInterval< ? extends NumericType< ? > > imageForSegmentation()
 	{
-		RandomAccessibleInterval< ? > image = initImageForSegmentation();
-		return LabkitUtils.uncheckedCast( image );
+		return LabkitUtils.uncheckedCast( imageForSegmentation );
 	}
 
 	private RandomAccessibleInterval< ? > initImageForSegmentation()
@@ -77,7 +77,7 @@ public class SpimDataInputImage implements InputImage
 
 	@Override public int getSpatialDimensions()
 	{
-		return 3;
+		return interval().numDimensions() - (isTimeSeries() ? 1 : 0);
 	}
 
 	@Override public String getFilename()
@@ -93,9 +93,12 @@ public class SpimDataInputImage implements InputImage
 	@Override public List< CalibratedAxis > axes()
 	{
 		VoxelDimensions voxelSize = getVoxelDimensions();
-		return IntStream.range(0, voxelSize.numDimensions())
-				.mapToObj( index -> new DefaultLinearAxis( voxelSize.dimension( index ) ) )
-				.collect( Collectors.toList());
+		List< CalibratedAxis > list = new ArrayList<>();
+		for ( int i = 0; i < voxelSize.numDimensions(); i++ )
+			list.add(new DefaultLinearAxis( voxelSize.dimension( i ) ));
+		if ( timeseries )
+			list.add(new DefaultLinearAxis( Axes.TIME ));
+		return list;
 	}
 
 	private VoxelDimensions getVoxelDimensions()
@@ -108,7 +111,7 @@ public class SpimDataInputImage implements InputImage
 
 	private FinalVoxelDimensions defaultVoxelSize()
 	{
-		return new FinalVoxelDimensions( null, IntStream.range( 0, interval().numDimensions() ).mapToDouble( x -> 1.0 ).toArray() );
+		return new FinalVoxelDimensions( null, IntStream.range( 0, getSpatialDimensions() ).mapToDouble( x -> 1.0 ).toArray() );
 	}
 
 
