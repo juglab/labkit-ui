@@ -1,8 +1,7 @@
-package net.imglib2.labkit.control.brush.neighboorhood;
+package net.imglib2.labkit.control.brush.neighborhood;
 
 import net.imglib2.Cursor;
 import net.imglib2.Interval;
-import net.imglib2.labkit.control.brush.neighborhood.HyperEllipsoidNeighborhood;
 import net.imglib2.img.Img;
 import net.imglib2.img.array.ArrayImgs;
 import net.imglib2.type.logic.BitType;
