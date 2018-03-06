@@ -2,6 +2,10 @@ package net.imglib2.labkit.control.brush.neighborhood;
 
 import net.imglib2.RealLocalizable;
 import net.imglib2.RealPoint;
+import net.imglib2.realtransform.AffineTransform3D;
+
+import java.util.List;
+import java.util.stream.Collectors;
 
 public class RealPoints
 {
@@ -85,5 +89,17 @@ public class RealPoints
 			if( Math.abs(expected.getDoublePosition( d ) - actual.getDoublePosition( d ) ) > delta )
 				return false;
 		return true;
+	}
+
+	public static List< RealLocalizable > transform( AffineTransform3D transform, List< ? extends  RealLocalizable > point )
+	{
+		return point.stream().map( x -> transform( transform, x )).collect( Collectors.toList());
+	}
+
+	private static RealLocalizable transform( AffineTransform3D transform, RealLocalizable point )
+	{
+		RealPoint result = new RealPoint( point.numDimensions() );
+		transform.apply( point, result );
+		return result;
 	}
 }

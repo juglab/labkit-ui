@@ -1,5 +1,6 @@
 package net.imglib2.labkit.control.brush;
 
+import bdv.util.Affine3DHelpers;
 import bdv.viewer.ViewerPanel;
 import net.imglib2.Localizable;
 import net.imglib2.Point;
@@ -70,6 +71,7 @@ public class LabelBrushController
 		this.brushOverlay = new BrushOverlay( viewer, model );
 		this.sliceTime = sliceTime;
 		this.model = model;
+		brushOverlay.setRadius( ( int ) getBrushRadius() );
 
 		behaviors.addBehaviour( new PaintBehavior(true), "paint", "D button1", "SPACE button1" );
 		RunnableAction nop = new RunnableAction("nop", () -> { });
@@ -112,7 +114,7 @@ public class LabelBrushController
 				final RandomAccessible<BitType> extended = Views.extendValue(label, new BitType(false));
 				long[] position = toLongArray( coords, extended.numDimensions() );
 				AffineTransform3D inverse = model.transformation().inverse().copy();
-				inverse.scale( brushRadius );
+				inverse.scale( getBrushRadius() );
 				Neighborhood<BitType> neighborhood = TransformedSphere.asNeighborhood( position, inverse, extended.randomAccess() );
 				neighborhood.forEach(pixel -> pixel.set( value ));
 			}
@@ -175,6 +177,17 @@ public class LabelBrushController
 		}
 	}
 
+	private double getBrushRadius()
+	{
+		return brushRadius * getScale( model.transformation() ) + 0.5;
+	}
+
+	// TODO: find a good place
+	private double getScale( AffineTransform3D transformation )
+	{
+		return IntStream.range( 0, 3 ).mapToDouble( i -> Affine3DHelpers.extractScale( transformation, i ) ).reduce( 0, Math::max );
+	}
+
 	private RandomAccessibleInterval< BitType > bitmap()
 	{
 		RandomAccessibleInterval<BitType> label = model.bitmap();
@@ -199,7 +212,7 @@ public class LabelBrushController
 				int sign = ( wheelRotation < 0 ) ? 1 : -1;
 				int distance = Math.max( 1, (int) (brushRadius * 0.1) );
 				brushRadius = Math.min(Math.max( 0, brushRadius + sign * distance ), 50);
-				brushOverlay.setRadius( brushRadius );
+				brushOverlay.setRadius( ( int ) getBrushRadius() );
 				brushOverlay.requestRepaint();
 			}
 		}
