@@ -106,25 +106,45 @@ public class LabelBrushController
 			this.value = value;
 		}
 
-		private void paint( final RealLocalizable coords)
+		private void paint( RealLocalizable coords)
 		{
 			synchronized ( viewer )
 			{
-				RandomAccessibleInterval< BitType > label = bitmap();
-				final RandomAccessible<BitType> extended = Views.extendValue(label, new BitType(false));
-				long[] position = toLongArray( coords, extended.numDimensions() );
-				AffineTransform3D inverse = model.transformation().inverse().copy();
-				inverse.scale( getBrushRadius() );
-				Neighborhood<BitType> neighborhood = TransformedSphere.asNeighborhood( position, inverse, extended.randomAccess() );
+				final RandomAccessible<BitType> extended = Views.extendValue( bitmap(), new BitType(false));
+				double brushWidth = getBrushRadius() * getScale( viewerTransformation() );
+				double brushDepth = brushWidth;
+				AffineTransform3D D = brushMatrix( coords, brushWidth, brushDepth );
+				AffineTransform3D m = displayToImageTransformation();
+				m.concatenate( D );
+				Neighborhood<BitType> neighborhood = TransformedSphere.asNeighborhood( new long[3], m, extended.randomAccess() );
 				neighborhood.forEach(pixel -> pixel.set( value ));
 			}
 
 		}
 
-		private long[] toLongArray(RealLocalizable coords, int numDimensions) {
-			return IntStream.range(0, numDimensions)
-					.mapToLong(d -> (long) coords.getDoublePosition(d))
-					.toArray();
+		private AffineTransform3D brushMatrix( RealLocalizable coords, double brushWidth, double brushDepth )
+		{
+			AffineTransform3D D = new AffineTransform3D();
+			D.set( brushWidth, 0.0, 0.0, coords.getDoublePosition( 0 ),
+					0.0, brushWidth, 0.0, coords.getDoublePosition( 1 ),
+					0.0, 0.0, brushDepth, 0.0);
+			return D;
+		}
+
+		private AffineTransform3D displayToImageTransformation()
+		{
+			AffineTransform3D m = new AffineTransform3D();
+			m.concatenate( model.transformation().inverse() );
+			m.concatenate( viewerTransformation().inverse() );
+			m.translate( PIXEL_CENTER_OFFSET );
+			return m;
+		}
+
+		private AffineTransform3D viewerTransformation()
+		{
+			AffineTransform3D t = new AffineTransform3D();
+			viewer.getState().getViewerTransform( t );
+			return t;
 		}
 
 		private void paint(RealLocalizable a, RealLocalizable b) {
@@ -154,7 +174,7 @@ public class LabelBrushController
 		@Override
 		public void init( final int x, final int y )
 		{
-			RealPoint coords = displayToImageCoordinates(x, y);
+			RealPoint coords = new RealPoint(x, y);
 			this.before = coords;
 			paint(coords);
 
@@ -164,7 +184,7 @@ public class LabelBrushController
 		@Override
 		public void drag( final int x, final int y )
 		{
-			RealPoint coords = displayToImageCoordinates(x, y);
+			RealPoint coords = new RealPoint(x, y);
 			paint(before, coords );
 			this.before = coords;
 			brushOverlay.setPosition( x, y );
