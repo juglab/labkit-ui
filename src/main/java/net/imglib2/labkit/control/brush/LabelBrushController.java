@@ -111,7 +111,7 @@ public class LabelBrushController
 				RandomAccessibleInterval< BitType > label = bitmap();
 				final RandomAccessible<BitType> extended = Views.extendValue(label, new BitType(false));
 				long[] position = toLongArray( coords, extended.numDimensions() );
-				AffineTransform3D inverse = new AffineTransform3D();
+				AffineTransform3D inverse = model.transformation().inverse().copy();
 				inverse.scale( brushRadius );
 				Neighborhood<BitType> neighborhood = TransformedSphere.asNeighborhood( position, inverse, extended.randomAccess() );
 				neighborhood.forEach(pixel -> pixel.set( value ));
