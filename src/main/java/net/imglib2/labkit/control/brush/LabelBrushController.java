@@ -11,6 +11,8 @@ import net.imglib2.algorithm.fill.Filter;
 import net.imglib2.algorithm.neighborhood.DiamondShape;
 import net.imglib2.algorithm.neighborhood.Neighborhood;
 import net.imglib2.labkit.ActionsAndBehaviours;
+import net.imglib2.labkit.control.brush.neighborhood.EllipsoidNeighborhood;
+import net.imglib2.labkit.control.brush.neighborhood.HyperEllipsoidNeighborhood;
 import net.imglib2.labkit.control.brush.neighborhood.NeighborhoodFactories;
 import net.imglib2.labkit.control.brush.neighborhood.NeighborhoodFactory;
 import net.imglib2.labkit.models.BitmapModel;
@@ -114,8 +116,11 @@ public class LabelBrushController
 			{
 				RandomAccessibleInterval< BitType > label = bitmap();
 				final RandomAccessible<BitType> extended = Views.extendValue(label, new BitType(false));
-				Neighborhood<BitType> neighborhood = pixelsGenerator.create(extended.randomAccess(),
-						toLongArray(coords, extended.numDimensions()), brushRadius);
+				long[] position = toLongArray( coords, extended.numDimensions() );
+				AffineTransform3D inverse = model.transformation().inverse().copy();
+				inverse.scale( brushRadius );
+				Neighborhood<BitType> neighborhood = new EllipsoidNeighborhood<>( position, inverse, extended.randomAccess() );
+				//Neighborhood<BitType> neighborhood = new Hy<>(  ).create(extended.randomAccess(), position, brushRadius);
 				neighborhood.forEach(pixel -> pixel.set( value ));
 			}
 
