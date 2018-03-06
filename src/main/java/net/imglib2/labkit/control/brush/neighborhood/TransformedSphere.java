@@ -4,18 +4,19 @@ import net.imglib2.Cursor;
 import net.imglib2.FinalInterval;
 import net.imglib2.FinalRealInterval;
 import net.imglib2.Interval;
+import net.imglib2.RandomAccess;
 import net.imglib2.RandomAccessibleInterval;
 import net.imglib2.RealInterval;
 import net.imglib2.RealLocalizable;
 import net.imglib2.RealPoint;
-import net.imglib2.img.array.ArrayImgs;
 import net.imglib2.realtransform.AffineTransform3D;
 import net.imglib2.roi.IterableRegion;
 import net.imglib2.sparse.SparseIterableRegion;
 import net.imglib2.type.logic.BitType;
 import net.imglib2.util.Intervals;
-import net.imglib2.view.IntervalView;
 import net.imglib2.view.Views;
+
+import java.util.Arrays;
 
 public class TransformedSphere
 {
@@ -28,7 +29,7 @@ public class TransformedSphere
 	}
 
 	public boolean contains( RealLocalizable point ) {
-		RealPoint out = new RealPoint( point.numDimensions() );
+		RealPoint out = new RealPoint( 3 );
 		transform.applyInverse( out, point );
 		return RealPoints.squaredLength( out ) <= 1;
 	}
@@ -56,10 +57,33 @@ public class TransformedSphere
 		return new FinalInterval( min, max );
 	}
 
-	public static RandomAccessibleInterval< BitType > bitmap(TransformedSphere sphere) {
-		Interval interval = sphere.boundingBox();
-		IntervalView< BitType > result = Views.translate( ArrayImgs.bits( Intervals.dimensionsAsLongArray( interval )), Intervals.minAsLongArray( interval ) );
-		Cursor< BitType > cursor = result.cursor();
+	// static methods
+
+	public static < T > IterableRegionAsNeighborhood< T > asNeighborhood( long position[], AffineTransform3D transformation, final RandomAccess< T > source )
+	{
+		TransformedSphere sphere = new TransformedSphere( transformation );
+		IterableRegion< BitType > region = iterableRegion( sphere, source.numDimensions() );
+		IterableRegionAsNeighborhood< T > neighborhood = new IterableRegionAsNeighborhood<>( region, source );
+		neighborhood.setPosition( position );
+		return neighborhood;
+	}
+
+	static IterableRegion< BitType > iterableRegion( TransformedSphere sphere, int numDimensions )
+	{
+		return iterableRegion( sphere, intervalChangeNumDimensions( sphere.boundingBox(), numDimensions ) );
+	}
+
+	private static Interval intervalChangeNumDimensions( final Interval interval, int numDimensions )
+	{
+		long[] min = Arrays.copyOf( Intervals.minAsLongArray( interval ), numDimensions );
+		long[] max = Arrays.copyOf( Intervals.maxAsLongArray( interval ), numDimensions );
+		return new FinalInterval( min, max );
+	}
+
+	private static IterableRegion< BitType > iterableRegion( TransformedSphere sphere, Interval interval )
+	{
+		SparseIterableRegion result = new SparseIterableRegion( interval );
+		Cursor< BitType > cursor = Views.flatIterable( adoptToDimension( result, 3 ) ).cursor();
 		while ( cursor.hasNext() ) {
 			cursor.fwd();
 			cursor.get().set( sphere.contains( cursor ) );
@@ -67,14 +91,12 @@ public class TransformedSphere
 		return result;
 	}
 
-	public static IterableRegion< BitType > iterableRegion(TransformedSphere sphere) {
-		Interval interval = sphere.boundingBox();
-		SparseIterableRegion result = new SparseIterableRegion( interval );
-		Cursor< BitType > cursor = Views.flatIterable( result ).cursor();
-		while ( cursor.hasNext() ) {
-			cursor.fwd();
-			cursor.get().set( sphere.contains( cursor ) );
-		}
+	private static <T> RandomAccessibleInterval<T> adoptToDimension( RandomAccessibleInterval<T> result, int numDimension )
+	{
+		while( result.numDimensions() < numDimension )
+			result = Views.addDimension( result, 0, 0 );
+		if ( result.numDimensions() > numDimension )
+			throw new UnsupportedOperationException(  );
 		return result;
 	}
 }

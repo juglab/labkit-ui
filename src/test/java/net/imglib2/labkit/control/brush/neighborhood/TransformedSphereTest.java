@@ -1,6 +1,7 @@
 package net.imglib2.labkit.control.brush.neighborhood;
 
 import net.imglib2.Interval;
+import net.imglib2.RandomAccess;
 import net.imglib2.RandomAccessibleInterval;
 import net.imglib2.RealLocalizable;
 import net.imglib2.RealPoint;
@@ -55,19 +56,18 @@ public class TransformedSphereTest
 	}
 
 	@Test
-	public void testBitmap() {
+	public void testIterableRegion() {
 		TransformedSphere sphere = new TransformedSphere( transform(
 						2, 0, 0, 0,
 						0, 1, 0, 0,
 						0, 0, 1, 0) );
-		RandomAccessibleInterval< BitType > bitmap = TransformedSphere.bitmap( sphere );
-		IntervalView< BitType > bitmapSlice = Views.hyperSlice( bitmap, 1, 0 );
+		RandomAccessibleInterval< BitType > bitmap = TransformedSphere.iterableRegion( sphere, 2 );
 		Img< IntType > expected = ArrayImgs.ints(
 				new int[] { 0, 0, 1, 0, 0,
 				         1, 1, 1, 1, 1,
 				         0, 0, 1, 0, 0 },
 				5, 3 );
-		LoopBuilder.setImages( expected, bitmapSlice ).forEachPixel( (e, a) -> assertEquals(e.getInteger(), a.getInteger()) );
+		LoopBuilder.setImages( expected, bitmap ).forEachPixel( (e, a) -> assertEquals(e.getInteger(), a.getInteger()) );
 	}
 
 	private static AffineTransform3D transform( double... values )

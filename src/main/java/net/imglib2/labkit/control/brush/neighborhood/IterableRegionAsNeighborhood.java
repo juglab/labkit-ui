@@ -1,8 +1,9 @@
 package net.imglib2.labkit.control.brush.neighborhood;
 
-import net.imglib2.AbstractLocalizable;
 import net.imglib2.Cursor;
+import net.imglib2.FinalInterval;
 import net.imglib2.Interval;
+import net.imglib2.Point;
 import net.imglib2.Positionable;
 import net.imglib2.RandomAccess;
 import net.imglib2.RealPositionable;
@@ -10,7 +11,9 @@ import net.imglib2.algorithm.neighborhood.Neighborhood;
 import net.imglib2.realtransform.AffineTransform3D;
 import net.imglib2.roi.IterableRegion;
 import net.imglib2.type.logic.BitType;
+import net.imglib2.util.Intervals;
 
+import java.util.Arrays;
 import java.util.Iterator;
 
 /**
@@ -21,28 +24,22 @@ import java.util.Iterator;
  * @author Stephan Saalfeld
  * @author Matthias Arzt
  */
-public class EllipsoidNeighborhood< T > extends AbstractLocalizable implements Neighborhood< T >
+public class IterableRegionAsNeighborhood< T > extends Point implements Neighborhood< T >
 {
 	private final RandomAccess< T > source;
 
-	private final Interval boundingBox;
-
 	private final IterableRegion< BitType > region;
 
-	public EllipsoidNeighborhood(long position[], AffineTransform3D transformation, final RandomAccess<T> source )
+	public IterableRegionAsNeighborhood( IterableRegion< BitType > region, final RandomAccess< T > source )
 	{
-		super(position);
-		if(source.numDimensions() != 3)
-			throw new IllegalArgumentException( "Only support 3d images" );
+		super( source.numDimensions() );
 		this.source = source;
-		TransformedSphere sphere = new TransformedSphere( transformation );
-		this.boundingBox = sphere.boundingBox();
-		this.region = TransformedSphere.iterableRegion( sphere );
+		this.region = region;
 	}
 
 	@Override public Interval getStructuringElementBoundingBox()
 	{
-		return boundingBox;
+		return region;
 	}
 
 	@Override public Cursor< T > cursor()
@@ -77,7 +74,7 @@ public class EllipsoidNeighborhood< T > extends AbstractLocalizable implements N
 
 	@Override public long min( int d )
 	{
-		return boundingBox.min( d ) + position[ d ];
+		return region.min( d ) + position[ d ];
 	}
 
 	@Override public void min( long[] min )
@@ -94,7 +91,7 @@ public class EllipsoidNeighborhood< T > extends AbstractLocalizable implements N
 
 	@Override public long max( int d )
 	{
-		return boundingBox.max( d ) + position[ d ];
+		return region.max( d ) + position[ d ];
 	}
 
 	@Override public void max( long[] max )
@@ -111,17 +108,17 @@ public class EllipsoidNeighborhood< T > extends AbstractLocalizable implements N
 
 	@Override public void dimensions( long[] dimensions )
 	{
-		boundingBox.dimensions( dimensions );
+		region.dimensions( dimensions );
 	}
 
 	@Override public long dimension( int d )
 	{
-		return boundingBox.dimension( d );
+		return region.dimension( d );
 	}
 
 	@Override public double realMin( int d )
 	{
-		return boundingBox.realMin( d ) + position[ d ];
+		return region.realMin( d ) + position[ d ];
 	}
 
 	@Override public void realMin( double[] min )
@@ -138,7 +135,7 @@ public class EllipsoidNeighborhood< T > extends AbstractLocalizable implements N
 
 	@Override public double realMax( int d )
 	{
-		return boundingBox.realMax( d ) + position[ d ];
+		return region.realMax( d ) + position[ d ];
 	}
 
 	@Override public void realMax( double[] max )

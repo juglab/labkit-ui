@@ -11,10 +11,7 @@ import net.imglib2.algorithm.fill.Filter;
 import net.imglib2.algorithm.neighborhood.DiamondShape;
 import net.imglib2.algorithm.neighborhood.Neighborhood;
 import net.imglib2.labkit.ActionsAndBehaviours;
-import net.imglib2.labkit.control.brush.neighborhood.EllipsoidNeighborhood;
-import net.imglib2.labkit.control.brush.neighborhood.HyperEllipsoidNeighborhood;
-import net.imglib2.labkit.control.brush.neighborhood.NeighborhoodFactories;
-import net.imglib2.labkit.control.brush.neighborhood.NeighborhoodFactory;
+import net.imglib2.labkit.control.brush.neighborhood.TransformedSphere;
 import net.imglib2.labkit.models.BitmapModel;
 import net.imglib2.realtransform.AffineTransform3D;
 import net.imglib2.type.Type;
@@ -51,9 +48,6 @@ public class LabelBrushController
 	final private ViewerPanel viewer;
 
 	private final BitmapModel model;
-
-	private final NeighborhoodFactory pixelsGenerator =
-		NeighborhoodFactories.hyperSphere();
 
 	final private BrushOverlay brushOverlay;
 
@@ -119,8 +113,7 @@ public class LabelBrushController
 				long[] position = toLongArray( coords, extended.numDimensions() );
 				AffineTransform3D inverse = model.transformation().inverse().copy();
 				inverse.scale( brushRadius );
-				Neighborhood<BitType> neighborhood = new EllipsoidNeighborhood<>( position, inverse, extended.randomAccess() );
-				//Neighborhood<BitType> neighborhood = new Hy<>(  ).create(extended.randomAccess(), position, brushRadius);
+				Neighborhood<BitType> neighborhood = TransformedSphere.asNeighborhood( position, inverse, extended.randomAccess() );
 				neighborhood.forEach(pixel -> pixel.set( value ));
 			}
 
