@@ -10,6 +10,7 @@ import net.imglib2.Localizable;
 import net.imglib2.Point;
 import net.imglib2.RandomAccess;
 import net.imglib2.Sampler;
+import net.imglib2.img.basictypeaccess.array.LongArray;
 import net.imglib2.roi.IterableRegion;
 import net.imglib2.type.logic.BitType;
 
@@ -149,7 +150,7 @@ public class SparseIterableRegion extends AbstractWrappedInterval<Interval>
 
 	private class SparseRoiRandomAccess extends Point implements RandomAccess<BitType> {
 
-		private BitType value = new BitType(false) {
+		private BitType value = new BitType( new LongArray( 1 ) ) {
 			@Override
 			public void set(boolean value) {
 				if(value)
