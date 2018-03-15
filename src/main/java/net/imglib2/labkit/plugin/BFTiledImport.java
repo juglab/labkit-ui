@@ -1,16 +1,9 @@
 package net.imglib2.labkit.plugin;
 
-import bdv.BigDataViewer;
 import bdv.util.AbstractSource;
 import bdv.util.Bdv;
 import bdv.util.BdvFunctions;
-import bdv.util.BdvOptions;
-import bdv.util.volatiles.VolatileViews;
-import loci.formats.ClassList;
-import loci.formats.FormatException;
-import loci.formats.IFormatReader;
-import loci.formats.ImageReader;
-import loci.formats.MetadataTools;
+import loci.formats.*;
 import loci.formats.in.JPEGReader;
 import loci.formats.in.ZeissCZIReader;
 import loci.formats.meta.IMetadata;
@@ -27,6 +20,7 @@ import net.imglib2.cache.img.DiskCachedCellImgOptions;
 import net.imglib2.img.Img;
 import net.imglib2.img.cell.CellGrid;
 import net.imglib2.img.cell.CellImgFactory;
+import net.imglib2.labkit.plugin.ui.SectionsDialog;
 import net.imglib2.labkit.utils.ParallelUtils;
 import net.imglib2.realtransform.AffineTransform3D;
 import net.imglib2.trainable_segmention.RevampUtils;
@@ -88,7 +82,8 @@ public class BFTiledImport {
 	}
 
 	public static ImgPlus<ARGBType> openImage(String filename) {
-		final int series = selectSeries(filename);
+		final int[] sectionIds = selectSection(filename);
+		final int series = selectSectionResolution(filename, sectionIds);
 		MyReader reader = new MyReader( filename );
 		long[] dimensions = reader.getImgDimensions( series );
 		int[] cellDimensions = reader.getCellDimensions( series );
@@ -126,16 +121,28 @@ public class BFTiledImport {
 		return imgPlus;
 	}
 
-	private static int selectSeries(String filename) {
+	private static int[] selectSection(String filename) {
 		ImageReader reader = initReader(filename);
-		List<String> list = IntStream.range(0, reader.getSeriesCount()).mapToObj(series -> {
+		SectionsDialog dialog = new SectionsDialog(reader);
+		dialog.showDialog();
+		return dialog.getSelectedSectionIndices();
+	}
+
+	private static int selectSectionResolution(String filename, int[] sectionIds) {
+		ImageReader reader = initReader(filename);
+		List<String> list = Arrays.stream(sectionIds).mapToObj(series -> {
 			reader.setSeries(series);
 			return reader.getSizeX() + " x " + reader.getSizeY();
 		}).collect(Collectors.toList());
 		Object result = JOptionPane.showInputDialog(null, "Select Image Resolution", "Labkit - Import Image", JOptionPane.PLAIN_MESSAGE, null, list.toArray(), list.get(0));
 		if(result == null)
 			throw new CancellationException();
-		return list.indexOf(result);
+		for(int i = 0; i < list.size(); i++) {
+			if(list.get(i).equals(result)) {
+				return sectionIds[i];
+			}
+		}
+		return -1;
 	}
 
 	// -- Helper methods --
