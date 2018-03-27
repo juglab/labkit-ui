@@ -43,7 +43,7 @@ public class DefaultInputImage extends AbstractInputImage {
 	}
 
 	@Override
-	public String getFilename() {
+	public String getLabelingName() {
 		return filename;
 	}
 
