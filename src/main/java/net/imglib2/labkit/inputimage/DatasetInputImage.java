@@ -20,14 +20,16 @@ public class DatasetInputImage extends AbstractInputImage {
 
 	private final ImgPlus<?> image;
 	private boolean isTimeSeries;
+	private int sectionIndex;
 
-	public DatasetInputImage(ImgPlus<?> image) {
+	public DatasetInputImage(ImgPlus<?> image, int sectionIndex) {
 		this.image = image;
 		this.isTimeSeries = image.dimensionIndex(Axes.TIME) >= 0;
+		this.sectionIndex = sectionIndex;
 	}
 
 	public DatasetInputImage(Dataset image) {
-		this(image.getImgPlus());
+		this(image.getImgPlus(), 0);
 	}
 
 	@Override
@@ -76,7 +78,13 @@ public class DatasetInputImage extends AbstractInputImage {
 	}
 
 	@Override
-	public String getFilename() {
+	public String getLabelingName() {
+		if(image.getSource().contains(".czi")){
+			String labelingName = image.getSource().replace(".czi", "");
+			if(sectionIndex > 0)
+				labelingName += "-" + sectionIndex;
+			return labelingName+".czi";
+		}
 		return image.getSource();
 	}
 
