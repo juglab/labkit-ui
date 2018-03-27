@@ -131,7 +131,8 @@ public class LabelBrushController
 
 		private void paint(RealLocalizable a, RealLocalizable b) {
 			long distance = (long) distance(a, b) + 1;
-			for ( long i = 0; i <= distance; ++i )
+			double step = Math.max(brushRadius * 0.5, 1.0);
+			for ( long i = 0; i < distance; i += step )
 				paint( interpolate((double) i / (double) distance, a, b) );
 		}
 

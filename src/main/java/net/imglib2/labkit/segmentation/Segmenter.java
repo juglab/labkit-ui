@@ -1,21 +1,19 @@
-package net.imglib2.labkit.classification;
+package net.imglib2.labkit.segmentation;
 
 import net.imglib2.RandomAccessibleInterval;
 import net.imglib2.labkit.utils.Notifier;
 import net.imglib2.labkit.labeling.Labeling;
-import net.imglib2.trainable_segmention.pixel_feature.settings.FeatureSettings;
 import net.imglib2.type.numeric.IntegerType;
 import net.imglib2.type.numeric.RealType;
 
+import javax.swing.*;
 import java.util.List;
+import java.util.function.Consumer;
 
-// TODO: Rename to Segmenter and remote FeatureSettings from the interface
-public interface Classifier
+public interface Segmenter
 {
 
-	void editClassifier();
-
-	void reset(FeatureSettings features, List<String> classLabels);
+	void editSettings(JFrame dialogParent);
 
 	void segment(RandomAccessibleInterval<?> image, RandomAccessibleInterval<? extends IntegerType<?>> labels );
 
@@ -25,18 +23,11 @@ public interface Classifier
 
 	boolean isTrained();
 
-	void saveClassifier( String path, boolean overwrite ) throws Exception;
+	void saveModel( String path, boolean overwrite ) throws Exception;
 
-	void openClassifier( String path ) throws Exception;
+	void openModel( String path ) throws Exception;
 
-	Notifier<Listener> listeners();
-
-	FeatureSettings settings();
+	Notifier<Consumer<Segmenter> > listeners();
 
 	List<String> classNames();
-
-	interface Listener
-	{
-		void notify(Classifier classifier);
-	}
 }

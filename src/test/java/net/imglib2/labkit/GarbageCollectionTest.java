@@ -4,18 +4,17 @@ import bdv.util.Bdv;
 import bdv.util.BdvFunctions;
 import bdv.util.BdvHandle;
 import bdv.util.BdvHandlePanel;
-import net.imglib2.RandomAccessibleInterval;
 import net.imglib2.img.array.ArrayImgs;
-import net.imglib2.type.numeric.integer.ByteType;
 import org.junit.Test;
 import org.scijava.Context;
 
 import javax.swing.*;
+import java.awt.*;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.function.Consumer;
+
+import static org.junit.Assume.assumeFalse;
 
 public class GarbageCollectionTest
 {
@@ -23,70 +22,15 @@ public class GarbageCollectionTest
 	private final Context context = new Context();
 
 	@Test
-	public void testButton() throws InterruptedException
-	{
-		showAndCloseManyJFrames( this::addButton );
-	}
-
-	// NB: Bdv seems to keep the JFrames from being garbage collected.
-	@Test
 	public void testBdv() throws InterruptedException
 	{
-		showAndCloseManyJFrames( this::addBigDataViewer );
-	}
-
-	@Test
-	public void testSegmentationComponent() throws InterruptedException
-	{
-		showAndCloseManyJFrames( this::addSegmentationComponent );
-	}
-
-	private void showAndCloseManyJFrames( Consumer< JFrame > componentAdder ) throws InterruptedException
-	{
-		int n = 5;
-		for ( int i = 0; i < n; i++ )
-		{
-			System.out.println( "Step " + i + " of " + n );
-			showAndCloseJFrames( componentAdder );
-		}
-	}
-
-	private void showAndCloseJFrames( Consumer< JFrame > componentAdder ) throws InterruptedException
-	{
-		List<JFrame> frames = new ArrayList<>();
-		for ( int i = 0; i < 3; i++ )
-			frames.add( showJFrame( componentAdder ) );
-		Thread.sleep( 1000 );
-		for ( JFrame frame : frames )
-			closeJFrame(frame);
-	}
-
-	private JFrame showJFrame( Consumer< JFrame > componentAdder )
-	{
-		JFrame frame = new JFrame() {
-			private byte[] data = allocateMemory();
-		};
-		frame.setDefaultCloseOperation( JFrame.DISPOSE_ON_CLOSE );
-		frame.setSize(500,500);
-		componentAdder.accept( frame );
-		frame.setVisible( true );
-		return frame;
-	}
-
-	private byte[] allocateMemory()
-	{
-		return new byte[ boundedConvertToInt( Runtime.getRuntime().maxMemory() / 10 ) ];
-	}
-
-	private void closeJFrame( JFrame frame )
-	{
-		frame.dispatchEvent(new WindowEvent(frame, WindowEvent.WINDOW_CLOSING));
+		testGarbageCollection( this::addBigDataViewer );
 	}
 
 	private void addBigDataViewer( JFrame frame )
 	{
 		BdvHandle handle = new BdvHandlePanel( frame, Bdv.options() );
-		BdvFunctions.show( createaImage(), "Image", Bdv.options().addTo( handle ));
+		BdvFunctions.show( ArrayImgs.bytes( 10, 10 ), "Image", Bdv.options().addTo( handle ));
 		frame.add(handle.getViewerPanel());
 		frame.addWindowListener( new WindowAdapter()
 		{
@@ -97,8 +41,14 @@ public class GarbageCollectionTest
 		} );
 	}
 
+	@Test
+	public void testSegmentationComponent() throws InterruptedException
+	{
+		testGarbageCollection( this::addSegmentationComponent );
+	}
+
 	private void addSegmentationComponent( JFrame frame ) {
-		SegmentationComponent component = new SegmentationComponent( context, frame, createaImage(), false );
+		SegmentationComponent component = new SegmentationComponent( context, frame, ArrayImgs.bytes( 10, 10 ), false );
 		frame.add(component.getComponent());
 		frame.addWindowListener( new WindowAdapter()
 		{
@@ -109,14 +59,41 @@ public class GarbageCollectionTest
 		} );
 	}
 
-	private RandomAccessibleInterval< ByteType > createaImage()
+	private void testGarbageCollection( Consumer< JFrame > componentAdder ) throws InterruptedException
 	{
-		return ArrayImgs.bytes( 10, 10 );
+		assumeFalse( GraphicsEnvironment.isHeadless() );
+		for ( int i = 0; i < 8; i++ )
+			showAndCloseJFrame( componentAdder );
 	}
 
-	private void addButton( JFrame frame )
+	private void showAndCloseJFrame( Consumer< JFrame > componentAdder ) throws InterruptedException
 	{
-		frame.add(new JButton("Hello World!"));
+		JFrame frame = showJFrame( componentAdder );
+		Thread.sleep( 200 );
+		closeJFrame(frame);
+	}
+
+	private JFrame showJFrame( Consumer< JFrame > componentAdder )
+	{
+		JFrame frame = new JFrame() {
+			// NB: we link so much memory with this JFrame object, that only 4 or less instances fit into memory.
+			private byte[] data = allocateLargeAmountOfMemory();
+		};
+		frame.setDefaultCloseOperation( JFrame.DISPOSE_ON_CLOSE );
+		frame.setSize(500,500);
+		componentAdder.accept( frame );
+		frame.setVisible( true );
+		return frame;
+	}
+
+	private void closeJFrame( JFrame frame )
+	{
+		frame.dispatchEvent(new WindowEvent(frame, WindowEvent.WINDOW_CLOSING));
+	}
+
+	private byte[] allocateLargeAmountOfMemory()
+	{
+		return new byte[ boundedConvertToInt( Runtime.getRuntime().maxMemory() / 5 ) ];
 	}
 
 	private int boundedConvertToInt( long dataSize )
