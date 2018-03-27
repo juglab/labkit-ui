@@ -29,7 +29,8 @@ public class LabkitImportPlugin implements Command {
 	}
 
 	private static void run(Context context, File file) {
-		DatasetInputImage image = new DatasetInputImage(BFTiledImport.openImage(file.getAbsolutePath()));
+		BFTiledImport.Section section = BFTiledImport.openImage(file.getAbsolutePath());
+		DatasetInputImage image = new DatasetInputImage(section.image, section.index);
 		new MainFrame(context, image);
 	}
 

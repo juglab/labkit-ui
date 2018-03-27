@@ -28,7 +28,7 @@ public class LabelingIoAction extends AbstractFileIoAcion {
 		initSaveAction("Save Labeling ...", "saveLabeling", new Action() {
 			@Override
 			public String suggestedFile() {
-				return inputImage.getFilename() + ".labeling";
+				return inputImage.getLabelingName() + ".labeling";
 			}
 
 			@Override

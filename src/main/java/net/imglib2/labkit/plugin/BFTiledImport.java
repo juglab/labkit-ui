@@ -32,7 +32,6 @@ import ome.xml.model.primitives.PositiveInteger;
 
 import javax.swing.*;
 import java.io.IOException;
-import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.Callable;
 import java.util.concurrent.CancellationException;
@@ -42,21 +41,36 @@ import java.util.stream.Collectors;
 
 public class BFTiledImport {
 
-	public static void main(String... args) throws IOException, FormatException {
-		ImgPlus<ARGBType> out = openImage("/home/arzt/Documents/Datasets/Lung IMages/2017_08_03__0004-1.czi");
-		BdvFunctions.show(out, "Image", Bdv.options().is2D());
+	public static class Section {
+		public int index;
+		public ImgPlus<ARGBType> image;
 	}
 
-	public static ImgPlus<ARGBType> openImage(String filename) {
-		final int[] sectionIds = selectSection(filename);
-		final int series = selectSectionResolution(filename, sectionIds);
+	public static void main(String... args) throws IOException, FormatException {
+		Section section = openImage("/home/arzt/Documents/Datasets/Lung IMages/2017_08_03__0004-1.czi");
+		BdvFunctions.show(section.image, "Image", Bdv.options().is2D());
+	}
+
+	public static Section openImage(String filename) {
 		MyReader reader = new MyReader( filename );
+		SectionsDialog dialog = new SectionsDialog(initReader(filename), filename);
+		dialog.pack();
+		dialog.setLocationRelativeTo(null);
+		dialog.setVisible(true);
+		int[] sectionIds = dialog.getSelectedSectionIndices();
+		if(sectionIds == null) {
+			throw new CancellationException();
+		}
+		Section res = new Section();
+		res.index = dialog.getSelectedSection();
+		final int series = selectSectionResolution(filename, sectionIds);
 		long[] dimensions = reader.getImgDimensions( series );
 		int[] cellDimensions = reader.getCellDimensions( series );
 		Img<ARGBType> out = new CellImgFactory<ARGBType>(cellDimensions).create( dimensions, new ARGBType() );
 		List<Callable<Void>> chunks = ParallelUtils.chunkOperation(out, cellDimensions, cell -> reader.readToInterval( series, cell ) );
 		ParallelUtils.executeInParallel(Executors.newFixedThreadPool(8), ParallelUtils.addShowProgress(chunks));
-		return imgPlus( filename, out, reader.printCalibration( series ) );
+		res.image = imgPlus( filename, out, reader.printCalibration( series ) );
+		return res;
 	}
 
 	private static ImgPlus< ARGBType > imgPlus( String filename, Img< ARGBType > out, CalibratedAxis[] axis )
@@ -64,13 +78,6 @@ public class BFTiledImport {
 		ImgPlus<ARGBType> imgPlus = new ImgPlus<>(out, filename, axis);
 		imgPlus.setSource(filename);
 		return imgPlus;
-	}
-
-	private static int[] selectSection(String filename) {
-		ImageReader reader = initReader(filename);
-		SectionsDialog dialog = new SectionsDialog(reader);
-		dialog.showDialog();
-		return dialog.getSelectedSectionIndices();
 	}
 
 	private static int selectSectionResolution(String filename, int[] sectionIds) {
