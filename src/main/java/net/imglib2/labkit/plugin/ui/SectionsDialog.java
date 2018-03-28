@@ -21,10 +21,7 @@ public class SectionsDialog extends JDialog {
 		dialog.pack();
 		dialog.setLocationRelativeTo(null);
 		dialog.setVisible(true);
-		int[] sectionIds = dialog.getSelectedSectionIndices();
-		if(sectionIds == null) {
-			throw new CancellationException();
-		}
+		if(dialog.wasCancelled()) throw new CancellationException();
 		return dialog;
 	}
 
@@ -127,6 +124,10 @@ public class SectionsDialog extends JDialog {
 	public int[] getSelectedSectionIndices() {
 		// TODO use list instead
 		return sectionIndices.get(selectedSection).stream().mapToInt(i -> i).toArray();
+	}
+
+	private boolean wasCancelled() {
+		return selectedSection == null;
 	}
 
 	public Panel createSections(String filename) {
