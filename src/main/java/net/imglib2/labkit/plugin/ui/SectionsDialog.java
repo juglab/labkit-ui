@@ -12,8 +12,21 @@ import java.awt.event.WindowEvent;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.CancellationException;
 
 public class SectionsDialog extends JDialog {
+
+	public static SectionsDialog show(ImageReader reader1) {
+		SectionsDialog dialog = new SectionsDialog(reader1, reader1.getCurrentFile());
+		dialog.pack();
+		dialog.setLocationRelativeTo(null);
+		dialog.setVisible(true);
+		int[] sectionIds = dialog.getSelectedSectionIndices();
+		if(sectionIds == null) {
+			throw new CancellationException();
+		}
+		return dialog;
+	}
 
 	private BufferedImageReader thumbReader;
 	private List<JRadioButton> boxes;
@@ -24,7 +37,7 @@ public class SectionsDialog extends JDialog {
 
 	private JOptionPane optionPane;
 
-	public SectionsDialog(ImageReader reader, String filename) {
+	private SectionsDialog(ImageReader reader, String filename) {
 		setTitle("Select a section");
 
 		setModal(true);
