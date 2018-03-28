@@ -107,9 +107,8 @@ public class SectionsDialog extends JDialog {
 		return optionPane;
 	}
 
-	//!important starts with 1
 	public Integer getSelectedSection() {
-		return selectedSection + 1;
+		return selectedSection;
 	}
 
 	public int[] getSelectedSectionIndices() {
