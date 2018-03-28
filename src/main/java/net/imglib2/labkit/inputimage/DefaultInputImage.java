@@ -44,7 +44,7 @@ public class DefaultInputImage extends AbstractInputImage {
 
 	@Override
 	public String getLabelingName() {
-		return filename;
+		return filename + ".labeling";
 	}
 
 	@Override

@@ -85,7 +85,7 @@ public class DatasetInputImage extends AbstractInputImage {
 				labelingName += "-" + (sectionIndex + 1);
 			return labelingName+".czi";
 		}
-		return image.getSource();
+		return image.getSource() + ".labeling";
 	}
 
 	@Override

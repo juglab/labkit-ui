@@ -19,9 +19,9 @@ import java.util.stream.LongStream;
 public class InitialLabeling {
 	static Labeling initLabeling(InputImage inputImage, Context context, List<String> defaultLabels) {
 		String filename = inputImage.getLabelingName();
-		if(new File(filename + ".labeling").exists()) {
+		if(new File(filename).exists()) {
 			try {
-				return new LabelingSerializer(context).open(filename + ".labeling");
+				return new LabelingSerializer(context).open(filename);
 			} catch (IOException e) {
 				e.printStackTrace();
 			}
