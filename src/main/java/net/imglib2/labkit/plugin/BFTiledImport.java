@@ -42,7 +42,7 @@ import java.util.stream.Collectors;
 public class BFTiledImport {
 
 	public static class Section {
-		public int index;
+		public Integer index;
 		public ImgPlus<ARGBType> image;
 	}
 

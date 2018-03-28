@@ -1,9 +1,7 @@
 package net.imglib2.labkit.plugin;
 
-import net.imagej.Dataset;
 import net.imglib2.labkit.MainFrame;
 import net.imglib2.labkit.inputimage.DatasetInputImage;
-import net.imglib2.labkit.inputimage.DefaultInputImage;
 import org.scijava.Context;
 import org.scijava.command.Command;
 import org.scijava.plugin.Parameter;
@@ -30,8 +28,18 @@ public class LabkitImportPlugin implements Command {
 
 	private static void run(Context context, File file) {
 		BFTiledImport.Section section = BFTiledImport.openImage(file.getAbsolutePath());
-		DatasetInputImage image = new DatasetInputImage(section.image, section.index);
+		DatasetInputImage image = new DatasetInputImage(section.image);
+		image.setLabelingName(getLabelingName(section));
 		new MainFrame(context, image);
+	}
+
+	private static String getLabelingName(BFTiledImport.Section section) {
+		String source = section.image.getSource();
+		if(source.endsWith(".czi") && section.index != null) {
+			return source.substring(0, source.length() - ".czi".length())
+					+ "-" + (section.index + 1) + ".czi.labeling";
+		}
+		return source + ".labeling";
 	}
 
 	public static void main(String... args) {
