@@ -93,7 +93,6 @@ public class SectionsDialog extends JDialog {
 					for (int i = 0; i < boxes.size(); i++) {
 						if (boxes.get(i).isSelected()) {
 							selectedSection = i;
-							System.out.println("selected section: " + i);
 							dispose();
 							setVisible(false);
 							return;
