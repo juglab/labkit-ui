@@ -2,7 +2,6 @@ package net.imglib2.labkit.plugin;
 
 import bdv.util.Bdv;
 import bdv.util.BdvFunctions;
-import bdv.util.BdvOptions;
 import loci.formats.ClassList;
 import loci.formats.FormatException;
 import loci.formats.IFormatReader;
@@ -114,20 +113,19 @@ public class BFTiledImport {
 
 	private static class MyReader {
 
-		private final ThreadLocal< ImageReader > readers;
+		private final ImageReader reader;
 
 		private final IMetadata metadata;
 
 		public MyReader(String filename) {
-			readers = ThreadLocal.withInitial(() -> initReader(filename) );
 			ValuePair< ImageReader, IMetadata > readerAndMetaData = initReaderAndMetaData( filename );
-			readers.set( readerAndMetaData.getA() );
+			reader = readerAndMetaData.getA();
 			metadata = readerAndMetaData.getB();
 		}
 
 		private ImageReader getReader( int series )
 		{
-			ImageReader reader = readers.get();
+			ImageReader reader = this.reader;
 			reader.setSeries( series );
 			return reader;
 		}
