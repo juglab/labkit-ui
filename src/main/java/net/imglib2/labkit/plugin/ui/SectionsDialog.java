@@ -99,11 +99,6 @@ public class SectionsDialog extends JDialog {
 							return;
 						}
 					}
-
-//          JOptionPane.showMessageDialog(this,
-//                  "Please select a section",
-//                  "No selection warning",
-//                  JOptionPane.WARNING_MESSAGE);
 				}
 				if (e.getNewValue().equals(JOptionPane.CANCEL_OPTION)) {
 					setVisible(false);
@@ -148,8 +143,6 @@ public class SectionsDialog extends JDialog {
 	}
 
 	private Component thumbPanel(int index) {
-		int sx = thumbReader.getThumbSizeX() + 10; // a little extra padding
-		int sy = thumbReader.getThumbSizeY();
 		Panel thumbPanel = new Panel();
 		ThumbLoader.loadThumb(thumbReader, index, thumbPanel, false);
 		return thumbPanel;
