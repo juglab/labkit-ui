@@ -17,10 +17,9 @@ public class SectionsDialog extends JDialog {
 
 	private BufferedImageReader thumbReader;
 	private List<JRadioButton> boxes;
-	private List<Integer> sectionIndices;
+	private List<List<Integer>> sectionIndices;
 	private final ButtonGroup buttonGroup;
 
-	private int seriesCount;
 	private Integer selectedSection = null;
 
 	private JOptionPane optionPane;
@@ -29,8 +28,6 @@ public class SectionsDialog extends JDialog {
 		setTitle("Select a section");
 
 		setModal(true);
-
-		seriesCount = reader.getSeriesCount();
 
 		buttonGroup = new ButtonGroup();
 
@@ -59,25 +56,26 @@ public class SectionsDialog extends JDialog {
 
 	}
 
-	private List<Integer> computeSectionIndices() {
-		ArrayList<Integer> indices = new ArrayList<>();
+	private List<List<Integer>> computeSectionIndices() {
+		List<List<Integer>> sections = new ArrayList<>();
+		List<Integer> indices = null;
 		int lastWidth = -1;
 		int lastHeight = -1;
-		for (int i = 0; i < seriesCount; i++) {
+		for (int i = 0; i < thumbReader.getSeriesCount(); i++) {
 			thumbReader.setSeries(i);
-			if (thumbReader.isThumbnailSeries()) {
-				seriesCount = i;
-				break;
-			}
+			if (thumbReader.isThumbnailSeries())
+				continue;
 			int width = thumbReader.getSizeX();
 			int height = thumbReader.getSizeY();
-			if (lastWidth < 0 || Math.abs(width - lastWidth / 2) > 2 || Math.abs(height - lastHeight / 2) > 2) {
-				indices.add(i);
+			if (indices == null || Math.abs(width - lastWidth / 2) > 2 || Math.abs(height - lastHeight / 2) > 2) {
+				indices = new ArrayList<>();
+				sections.add(indices);
 			}
+			indices.add(i);
 			lastWidth = width;
 			lastHeight = height;
 		}
-		return indices;
+		return sections;
 	}
 
 	private Container createOptionPane() {
@@ -121,22 +119,8 @@ public class SectionsDialog extends JDialog {
 	}
 
 	public int[] getSelectedSectionIndices() {
-
-		int firstIndex = sectionIndices.get(selectedSection);
-		int lastIndex;
-		if (sectionIndices.size() > selectedSection + 1) {
-			lastIndex = sectionIndices.get(selectedSection + 1) - 1;
-		} else {
-			lastIndex = seriesCount - 1;
-		}
-
-		int[] res = new int[lastIndex - firstIndex + 1];
-		for (int i = firstIndex; i <= lastIndex; i++) {
-			res[i - firstIndex] = i;
-		}
-
-		return res;
-
+		// TODO use list instead
+		return sectionIndices.get(selectedSection).stream().mapToInt(i -> i).toArray();
 	}
 
 	public Panel createSections(String filename) {
@@ -160,7 +144,7 @@ public class SectionsDialog extends JDialog {
 	}
 
 	private int thumbnailIndex(int i) {
-		return i + 1 < sectionIndices.size() ? sectionIndices.get(i + 1) - 1 : seriesCount - 1;
+		return sectionIndices.get(i).stream().max(Integer::compareTo).orElse(0);
 	}
 
 	private Component thumbPanel(int index) {
@@ -175,14 +159,12 @@ public class SectionsDialog extends JDialog {
 		JLabel label = new JLabel();
 		Font font = label.getFont();
 		label.setFont(font.deriveFont(font.getStyle() & ~Font.BOLD));
-		int sectionIndex = sectionIndices.get(i);
-		int lastIndex = i + 1 < sectionIndices.size() ? sectionIndices.get(i + 1) : seriesCount;
 		String labelText = "<html>";
 		if (labelingExists(filename, i)) {
 			labelText += "<b>[existing labeling found]</b><br />";
 		}
 		labelText += "<font face=\"verdana\">";
-		for (int j = sectionIndex; j < lastIndex; j++) {
+		for (int j : sectionIndices.get(i)) {
 			thumbReader.setSeries(j);
 			labelText += thumbReader.getSizeX() + " x " + thumbReader.getSizeY() + "<br/>";
 		}
