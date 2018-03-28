@@ -56,7 +56,7 @@ public class BFTiledImport {
 		SectionsDialog dialog = SectionsDialog.show(initReader(filename));
 		Section res = new Section();
 		res.index = dialog.getSelectedSection();
-		int[] sectionIds = dialog.getSelectedSectionIndices();
+		List<Integer> sectionIds = dialog.getSelectedSectionIndices();
 		final int series = selectSectionResolution(filename, sectionIds);
 		long[] dimensions = reader.getImgDimensions( series );
 		int[] cellDimensions = reader.getCellDimensions( series );
@@ -74,9 +74,9 @@ public class BFTiledImport {
 		return imgPlus;
 	}
 
-	private static int selectSectionResolution(String filename, int[] sectionIds) {
+	private static int selectSectionResolution(String filename, List<Integer> sectionIds) {
 		ImageReader reader = initReader(filename);
-		List<String> list = Arrays.stream(sectionIds).mapToObj(series -> {
+		List<String> list = sectionIds.stream().map(series -> {
 			reader.setSeries(series);
 			return reader.getSizeX() + " x " + reader.getSizeY();
 		}).collect(Collectors.toList());
@@ -85,7 +85,7 @@ public class BFTiledImport {
 			throw new CancellationException();
 		for(int i = 0; i < list.size(); i++) {
 			if(list.get(i).equals(result)) {
-				return sectionIds[i];
+				return sectionIds.get(i);
 			}
 		}
 		return -1;

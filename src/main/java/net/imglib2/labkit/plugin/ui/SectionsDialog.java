@@ -28,7 +28,7 @@ public class SectionsDialog {
 	private List<List<Integer>> sectionIndices;
 	private final ButtonGroup buttonGroup;
 
-	private Integer selectedSection = null;
+	private int selectedSection = 0;
 
 	private JComponent component;
 
@@ -81,9 +81,8 @@ public class SectionsDialog {
 		return selectedSection;
 	}
 
-	public int[] getSelectedSectionIndices() {
-		// TODO use list instead
-		return sectionIndices.get(selectedSection).stream().mapToInt(i -> i).toArray();
+	public List<Integer> getSelectedSectionIndices() {
+		return sectionIndices.get(selectedSection);
 	}
 
 	public Panel createSections(String filename) {
