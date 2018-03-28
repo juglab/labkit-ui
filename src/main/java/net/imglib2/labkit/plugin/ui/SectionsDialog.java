@@ -7,21 +7,19 @@ import net.miginfocom.swing.MigLayout;
 
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.WindowAdapter;
-import java.awt.event.WindowEvent;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CancellationException;
 
-public class SectionsDialog extends JDialog {
+public class SectionsDialog {
 
 	public static SectionsDialog show(ImageReader reader1) {
 		SectionsDialog dialog = new SectionsDialog(reader1, reader1.getCurrentFile());
-		dialog.pack();
-		dialog.setLocationRelativeTo(null);
-		dialog.setVisible(true);
-		if(dialog.wasCancelled()) throw new CancellationException();
+		int result = JOptionPane.showConfirmDialog(null, dialog.component(), "Select a section", JOptionPane.OK_CANCEL_OPTION);
+		if(result != JOptionPane.OK_OPTION)
+			throw new CancellationException();
+		dialog.updateSelectedSection();
 		return dialog;
 	}
 
@@ -32,13 +30,9 @@ public class SectionsDialog extends JDialog {
 
 	private Integer selectedSection = null;
 
-	private JOptionPane optionPane;
+	private JComponent component;
 
 	private SectionsDialog(ImageReader reader, String filename) {
-		setTitle("Select a section");
-
-		setModal(true);
-
 		buttonGroup = new ButtonGroup();
 
 		// construct thumbnail reader
@@ -46,24 +40,11 @@ public class SectionsDialog extends JDialog {
 
 		sectionIndices = computeSectionIndices();
 
-		//Handle window closing correctly.
-		setDefaultCloseOperation(DO_NOTHING_ON_CLOSE);
-		addWindowListener(new WindowAdapter() {
-			public void windowClosing(WindowEvent we) {
-		/*
-         * Instead of directly closing the window,
-         * we're going to change the JOptionPane's
-         * value property.
-         */
-				optionPane.setValue(new Integer(
-						JOptionPane.CLOSED_OPTION));
-			}
-		});
+		component = new JScrollPane(createSections(filename));
+	}
 
-		setContentPane(createOptionPane());
-		JScrollPane scrollPane = new JScrollPane(createSections(filename));
-		getContentPane().add(scrollPane, 0);
-
+	private JComponent component() {
+		return component;
 	}
 
 	private List<List<Integer>> computeSectionIndices() {
@@ -88,33 +69,12 @@ public class SectionsDialog extends JDialog {
 		return sections;
 	}
 
-	private Container createOptionPane() {
-		//Create the JOptionPane.
-		optionPane = new JOptionPane("",
-				JOptionPane.PLAIN_MESSAGE,
-				JOptionPane.OK_CANCEL_OPTION,
-				null);
-
-		optionPane.addPropertyChangeListener(e -> {
-			String prop = e.getPropertyName();
-
-			if (isVisible() && (e.getSource() == optionPane) && (JOptionPane.VALUE_PROPERTY.equals(prop))) {
-				if (e.getNewValue().equals(JOptionPane.OK_OPTION)) {
-					for (int i = 0; i < boxes.size(); i++) {
-						if (boxes.get(i).isSelected()) {
-							selectedSection = i;
-							dispose();
-							setVisible(false);
-							return;
-						}
-					}
-				}
-				if (e.getNewValue().equals(JOptionPane.CANCEL_OPTION)) {
-					setVisible(false);
-				}
+	private void updateSelectedSection() {
+		for (int i = 0; i < boxes.size(); i++) {
+			if (boxes.get(i).isSelected()) {
+				selectedSection = i;
 			}
-		});
-		return optionPane;
+		}
 	}
 
 	public Integer getSelectedSection() {
@@ -124,10 +84,6 @@ public class SectionsDialog extends JDialog {
 	public int[] getSelectedSectionIndices() {
 		// TODO use list instead
 		return sectionIndices.get(selectedSection).stream().mapToInt(i -> i).toArray();
-	}
-
-	private boolean wasCancelled() {
-		return selectedSection == null;
 	}
 
 	public Panel createSections(String filename) {
