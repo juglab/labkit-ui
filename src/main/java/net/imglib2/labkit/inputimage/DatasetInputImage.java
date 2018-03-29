@@ -31,7 +31,7 @@ public class DatasetInputImage extends AbstractInputImage {
 	}
 
 	@Override
-	public RandomAccessibleInterval<? extends NumericType<?>> displayImage() {
+	public RandomAccessibleInterval<? extends NumericType<?>> imageForSegmentation() {
 		if (image.randomAccess().get() instanceof ARGBType)
 			return (RandomAccessibleInterval<? extends NumericType<?>>) image;
 		int index = image.dimensionIndex(Axes.CHANNEL);
