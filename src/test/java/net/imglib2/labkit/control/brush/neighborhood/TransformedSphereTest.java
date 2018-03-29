@@ -1,7 +1,6 @@
 package net.imglib2.labkit.control.brush.neighborhood;
 
 import net.imglib2.Interval;
-import net.imglib2.RandomAccess;
 import net.imglib2.RandomAccessibleInterval;
 import net.imglib2.RealLocalizable;
 import net.imglib2.RealPoint;
@@ -16,7 +15,6 @@ import org.junit.Test;
 
 import java.util.Arrays;
 import java.util.List;
-import java.util.stream.Collectors;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -30,7 +28,7 @@ public class TransformedSphereTest
 	public void testTransformedSphereOutside() {
 		List< RealLocalizable > notContained = Arrays.asList( new RealPoint(1.0, 1.0, 1.0), new RealPoint(0, 1.1, 0) );
 		TransformedSphere sphere = new TransformedSphere( transform );
-		for( RealLocalizable x : transform( transform, notContained ) )
+		for( RealLocalizable x : RealPoints.transform( transform, notContained ) )
 			assertFalse( sphere.contains( x ) );
 	}
 
@@ -38,7 +36,7 @@ public class TransformedSphereTest
 	public void testTransformedSphereInside() {
 		List< RealLocalizable > contained = Arrays.asList( new RealPoint(0, 0, 0), new RealPoint(0, 1, 0) );
 		TransformedSphere sphere = new TransformedSphere( transform );
-		for( RealLocalizable x : transform( transform, contained ) )
+		for( RealLocalizable x : RealPoints.transform( transform, contained ) )
 			assertTrue( sphere.contains( x ) );
 	}
 
@@ -76,15 +74,4 @@ public class TransformedSphereTest
 		return transform;
 	}
 
-	private RealLocalizable transform( AffineTransform3D transform, RealLocalizable point )
-	{
-		RealPoint result = new RealPoint( point.numDimensions() );
-		transform.apply( point, result );
-		return result;
-	}
-
-	private List< RealLocalizable > transform( AffineTransform3D transform, List< RealLocalizable > point )
-	{
-		return point.stream().map( x -> transform( transform, x )).collect( Collectors.toList());
-	}
 }

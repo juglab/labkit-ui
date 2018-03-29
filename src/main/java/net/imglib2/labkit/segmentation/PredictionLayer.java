@@ -6,7 +6,8 @@ import net.imglib2.RandomAccessible;
 import net.imglib2.RandomAccessibleInterval;
 import net.imglib2.converter.Converter;
 import net.imglib2.converter.Converters;
-import net.imglib2.labkit.labeling.BdvLayer;
+import net.imglib2.labkit.bdv.BdvLayer;
+import net.imglib2.labkit.bdv.BdvShowable;
 import net.imglib2.labkit.models.SegmentationResultsModel;
 import net.imglib2.labkit.utils.Notifier;
 import net.imglib2.labkit.utils.RandomAccessibleContainer;
@@ -38,7 +39,7 @@ public class PredictionLayer implements BdvLayer
 		this.model = model;
 		final RandomAccessible< VolatileARGBType > emptyPrediction = ConstantUtils.constantRandomAccessible( new VolatileARGBType( 0 ), model.interval().numDimensions() );
 		this.segmentationContainer = new RandomAccessibleContainer<>( emptyPrediction );
-		this.transformation = scaleTransformation( model.scaling() );
+		this.transformation = model.transformation();
 		this.view = Views.interval( segmentationContainer, model.interval() );
 		model.segmentationChangedListeners().add( this::classifierChanged );
 	}
@@ -73,9 +74,9 @@ public class PredictionLayer implements BdvLayer
 		return Converters.convert(source, conv, new VolatileARGBType() );
 	}
 
-	@Override public RandomAccessibleInterval< ? extends NumericType< ? > > image()
+	@Override public BdvShowable image()
 	{
-		return view;
+		return BdvShowable.wrap(view, transformation);
 	}
 
 	@Override public Notifier< Runnable > listeners()
@@ -86,10 +87,5 @@ public class PredictionLayer implements BdvLayer
 	@Override public String title()
 	{
 		return "Segmentation";
-	}
-
-	@Override public AffineTransform3D transformation()
-	{
-		return transformation;
 	}
 }

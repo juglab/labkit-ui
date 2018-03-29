@@ -1,5 +1,6 @@
 package net.imglib2.labkit.control.brush;
 
+import bdv.util.Affine3DHelpers;
 import bdv.viewer.ViewerPanel;
 import net.imglib2.Localizable;
 import net.imglib2.Point;
@@ -70,6 +71,7 @@ public class LabelBrushController
 		this.brushOverlay = new BrushOverlay( viewer, model );
 		this.sliceTime = sliceTime;
 		this.model = model;
+		brushOverlay.setRadius( ( int ) getBrushRadius() );
 
 		behaviors.addBehaviour( new PaintBehavior(true), "paint", "D button1", "SPACE button1" );
 		RunnableAction nop = new RunnableAction("nop", () -> { });
@@ -89,6 +91,7 @@ public class LabelBrushController
 		labelLocation.setPosition( y, 1 );
 		labelLocation.setPosition( 0, 2 );
 		viewer.displayToGlobalCoordinates( labelLocation );
+		model.transformation().applyInverse( labelLocation, labelLocation );
 		labelLocation.move( PIXEL_CENTER_OFFSET );
 		return labelLocation;
 	}
@@ -103,28 +106,45 @@ public class LabelBrushController
 			this.value = value;
 		}
 
-		private void paint( final RealLocalizable coords)
+		private void paint( RealLocalizable coords)
 		{
 			synchronized ( viewer )
 			{
-				RandomAccessibleInterval<BitType> label = model.bitmap();
-				if(sliceTime)
-					label = Views.hyperSlice(label, label.numDimensions()-1,
-							viewer.getState().getCurrentTimepoint());
-				final RandomAccessible<BitType> extended = Views.extendValue(label, new BitType(false));
-				long[] position = toLongArray( coords, extended.numDimensions() );
-				AffineTransform3D inverse = new AffineTransform3D();
-				inverse.scale( brushRadius );
-				Neighborhood<BitType> neighborhood = TransformedSphere.asNeighborhood( position, inverse, extended.randomAccess() );
+				final RandomAccessible<BitType> extended = Views.extendValue( bitmap(), new BitType(false));
+				double brushWidth = getBrushRadius() * getScale( viewerTransformation() );
+				double brushDepth = brushWidth;
+				AffineTransform3D D = brushMatrix( coords, brushWidth, brushDepth );
+				AffineTransform3D m = displayToImageTransformation();
+				m.concatenate( D );
+				Neighborhood<BitType> neighborhood = TransformedSphere.asNeighborhood( new long[3], m, extended.randomAccess() );
 				neighborhood.forEach(pixel -> pixel.set( value ));
 			}
 
 		}
 
-		private long[] toLongArray(RealLocalizable coords, int numDimensions) {
-			return IntStream.range(0, numDimensions)
-					.mapToLong(d -> (long) coords.getDoublePosition(d))
-					.toArray();
+		private AffineTransform3D brushMatrix( RealLocalizable coords, double brushWidth, double brushDepth )
+		{
+			AffineTransform3D D = new AffineTransform3D();
+			D.set( brushWidth, 0.0, 0.0, coords.getDoublePosition( 0 ),
+					0.0, brushWidth, 0.0, coords.getDoublePosition( 1 ),
+					0.0, 0.0, brushDepth, 0.0);
+			return D;
+		}
+
+		private AffineTransform3D displayToImageTransformation()
+		{
+			AffineTransform3D m = new AffineTransform3D();
+			m.concatenate( model.transformation().inverse() );
+			m.concatenate( viewerTransformation().inverse() );
+			m.translate( PIXEL_CENTER_OFFSET );
+			return m;
+		}
+
+		private AffineTransform3D viewerTransformation()
+		{
+			AffineTransform3D t = new AffineTransform3D();
+			viewer.getState().getViewerTransform( t );
+			return t;
 		}
 
 		private void paint(RealLocalizable a, RealLocalizable b) {
@@ -154,7 +174,7 @@ public class LabelBrushController
 		@Override
 		public void init( final int x, final int y )
 		{
-			RealPoint coords = displayToImageCoordinates(x, y);
+			RealPoint coords = new RealPoint(x, y);
 			this.before = coords;
 			paint(coords);
 
@@ -164,7 +184,7 @@ public class LabelBrushController
 		@Override
 		public void drag( final int x, final int y )
 		{
-			RealPoint coords = displayToImageCoordinates(x, y);
+			RealPoint coords = new RealPoint(x, y);
 			paint(before, coords );
 			this.before = coords;
 			brushOverlay.setPosition( x, y );
@@ -175,6 +195,26 @@ public class LabelBrushController
 		public void end( final int x, final int y )
 		{
 		}
+	}
+
+	private double getBrushRadius()
+	{
+		return brushRadius * getScale( model.transformation() ) + 0.5;
+	}
+
+	// TODO: find a good place
+	private double getScale( AffineTransform3D transformation )
+	{
+		return IntStream.range( 0, 3 ).mapToDouble( i -> Affine3DHelpers.extractScale( transformation, i ) ).reduce( 0, Math::max );
+	}
+
+	private RandomAccessibleInterval< BitType > bitmap()
+	{
+		RandomAccessibleInterval<BitType> label = model.bitmap();
+		if(sliceTime)
+			return Views.hyperSlice(label, label.numDimensions()-1,
+					viewer.getState().getCurrentTimepoint());
+		return label;
 	}
 
 	private void fireBitmapChanged()
@@ -192,7 +232,7 @@ public class LabelBrushController
 				int sign = ( wheelRotation < 0 ) ? 1 : -1;
 				int distance = Math.max( 1, (int) (brushRadius * 0.1) );
 				brushRadius = Math.min(Math.max( 0, brushRadius + sign * distance ), 50);
-				brushOverlay.setRadius( brushRadius );
+				brushOverlay.setRadius( ( int ) getBrushRadius() );
 				brushOverlay.requestRepaint();
 			}
 		}
@@ -237,9 +277,9 @@ public class LabelBrushController
 		{
 			synchronized ( viewer )
 			{
-				RandomAccessibleInterval<BitType> region = model.bitmap();
-				Point seed = roundAndReduceDimension(coords, region.numDimensions());
-				LabelBrushController.floodFill(region, seed, new BitType(value));
+				RandomAccessibleInterval<BitType> bitmap = bitmap();
+				Point seed = roundAndReduceDimension(coords, bitmap.numDimensions());
+				LabelBrushController.floodFill( bitmap, seed, new BitType(value));
 			}
 		}
 

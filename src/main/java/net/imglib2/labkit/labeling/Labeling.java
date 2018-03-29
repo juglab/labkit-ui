@@ -70,6 +70,9 @@ public class Labeling extends AbstractWrappedInterval implements RandomAccessibl
 		this(labels, new ImgLabeling<>(new SparseRandomAccessIntType(interval)));
 	}
 
+	public Interval interval() {
+		return new FinalInterval( imgLabeling );
+	}
 
 	public List<String> getLabels() {
 		return labels;

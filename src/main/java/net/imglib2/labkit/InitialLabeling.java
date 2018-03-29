@@ -26,7 +26,7 @@ public class InitialLabeling {
 				e.printStackTrace();
 			}
 		}
-		Interval interval = inputImage.displayImage();
+		Interval interval = inputImage.interval();
 		Labeling labeling = new Labeling(defaultLabels, askShrinkInterval(interval));
 		labeling.setAxes(inputImage.axes());
 		return labeling;

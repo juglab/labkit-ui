@@ -1,6 +1,7 @@
 package net.imglib2.labkit;
 
 import net.imagej.ops.OpService;
+import net.imglib2.Interval;
 import net.imglib2.RandomAccessibleInterval;
 import net.imglib2.labkit.actions.AddLabelingIoAction;
 import net.imglib2.labkit.actions.BatchSegmentAction;
@@ -64,7 +65,17 @@ public class SegmentationComponent implements AutoCloseable {
 			JFrame dialogBoxOwner,
 			RandomAccessibleInterval<? extends NumericType<?>> image,
 			boolean isTimeSeries ) {
-		this(context, dialogBoxOwner, initInputImage(image, isTimeSeries), new Labeling(Arrays.asList("background", "foreground"), image), true);
+		this(context, dialogBoxOwner, initInputImage(image, isTimeSeries), defaultLabeling( image ), true);
+	}
+
+	private static Labeling defaultLabeling( Interval image )
+	{
+		return new Labeling( Arrays.asList("background", "foreground"), image);
+	}
+
+	public SegmentationComponent( Context context, JFrame dialogBoxOwner, InputImage image )
+	{
+		this(context, dialogBoxOwner, image, defaultLabeling( image.interval() ), false);
 	}
 
 	private static DefaultInputImage initInputImage(RandomAccessibleInterval<? extends NumericType<?>> image, boolean isTimeSeries) {
@@ -78,8 +89,7 @@ public class SegmentationComponent implements AutoCloseable {
 		this.inputImage = image;
 		this.context = context;
 		this.fixedLabels = fixedLabels;
-		model = new ImageLabelingModel( image.displayImage(), image.scaling(), labeling, inputImage.isTimeSeries());
-		initModels();
+		initModels(image, labeling);
 		labelingComponent = new LabelingComponent(dialogBoxOwner, model);
 		labelingComponent.addBdvLayer( new PredictionLayer( segmentationResultsModel ) );
 		initActions();
@@ -87,10 +97,11 @@ public class SegmentationComponent implements AutoCloseable {
 		this.panel = initPanel( leftPanel, labelingComponent.getComponent() );
 	}
 
-	private void initModels()
+	private void initModels( InputImage image, Labeling labeling )
 	{
+		model = new ImageLabelingModel( image.showable(), labeling, inputImage.isTimeSeries());
 		segmenter = initClassifier( context );
-		segmentationModel = new SegmentationModel( model, segmenter );
+		segmentationModel = new SegmentationModel( image.imageForSegmentation(), model, segmenter );
 		segmentationResultsModel = new SegmentationResultsModel( segmentationModel );
 	}
 
@@ -153,18 +164,18 @@ public class SegmentationComponent implements AutoCloseable {
 	}
 
 	public <T extends IntegerType<T> & NativeType<T>> RandomAccessibleInterval<T> getSegmentation(T type) {
-		RandomAccessibleInterval<T> labels =
-				context.service(OpService.class).create().img(inputImage.displayImage(), type);
-		segmenter.segment(inputImage.displayImage(), labels);
+		RandomAccessibleInterval< ? > image = segmentationModel.image();
+		RandomAccessibleInterval<T> labels = context.service(OpService.class).create().img( image, type);
+		segmenter.segment( image, labels);
 		return labels;
 	}
 
 	public RandomAccessibleInterval<FloatType> getPrediction() {
-		RandomAccessibleInterval<FloatType> prediction =
-				context.service(OpService.class).create().img(
-						RevampUtils.appendDimensionToInterval(inputImage.displayImage(), 0, 1),
+		RandomAccessibleInterval< ? > image = segmentationModel.image();
+		RandomAccessibleInterval<FloatType> prediction = context.service(OpService.class).create().img(
+						RevampUtils.appendDimensionToInterval(image, 0, 1),
 						new FloatType());
-		segmenter.predict(inputImage.displayImage(), prediction);
+		segmenter.predict(image, prediction);
 		return prediction;
 	}
 

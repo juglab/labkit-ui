@@ -1,19 +1,20 @@
 package net.imglib2.labkit;
 
-import bdv.util.*;
+import bdv.util.BdvHandle;
+import bdv.util.BdvHandlePanel;
+import bdv.util.BdvOptions;
+import bdv.util.BdvSource;
 import bdv.viewer.DisplayMode;
 import bdv.viewer.ViewerPanel;
 import net.imglib2.labkit.actions.ToggleVisibility;
-import net.imglib2.labkit.control.brush.*;
-import net.imglib2.labkit.labeling.BdvLayer;
+import net.imglib2.labkit.bdv.BdvLayer;
+import net.imglib2.labkit.control.brush.ChangeLabel;
+import net.imglib2.labkit.control.brush.LabelBrushController;
 import net.imglib2.labkit.labeling.LabelsLayer;
 import net.imglib2.labkit.models.BitmapModel;
 import net.imglib2.labkit.models.ImageLabelingModel;
 import net.imglib2.labkit.panel.HelpPanel;
-import net.imglib2.labkit.utils.LabkitUtils;
 import net.imglib2.realtransform.AffineTransform3D;
-import net.imglib2.trainable_segmention.RevampUtils;
-import net.imglib2.util.Pair;
 import org.scijava.ui.behaviour.util.AbstractNamedAction;
 
 import javax.swing.*;
@@ -69,15 +70,7 @@ public class LabelingComponent implements AutoCloseable {
 	}
 
 	private void initImageLayer() {
-		Pair<Double, Double> minMax = LabkitUtils.estimateMinMax( model.image() );
-		addBdvLayer( new BdvLayer.FinalLayer( model.image(), "Image", scaledTransformation() ) )
-				.setDisplayRange( minMax.getA(), minMax.getB());
-	}
-
-	private AffineTransform3D scaledTransformation() {
-		AffineTransform3D transformation = new AffineTransform3D();
-		transformation.scale(model.scaling());
-		return transformation;
+		addBdvLayer( new BdvLayer.FinalLayer( model.showable(), "Image" ) );
 	}
 
 	private void initLabelsLayer() {
@@ -86,8 +79,8 @@ public class LabelingComponent implements AutoCloseable {
 
 	public BdvSource addBdvLayer( BdvLayer layer )
 	{
-		BdvOptions options = BdvOptions.options().addTo( bdvHandle ).sourceTransform( layer.transformation() );
-		BdvSource source = BdvFunctions.show( RevampUtils.uncheckedCast( layer.image() ), layer.title(), options );
+		BdvOptions options = BdvOptions.options().addTo( bdvHandle );
+		BdvSource source = layer.image().show(layer.title(), options);
 		layer.listeners().add( this::requestRepaint );
 		addAction(new ToggleVisibility( layer.title(), source ));
 		return source;

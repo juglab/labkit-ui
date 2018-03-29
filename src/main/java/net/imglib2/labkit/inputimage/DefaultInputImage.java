@@ -28,7 +28,7 @@ public class DefaultInputImage extends AbstractInputImage {
 	}
 
 	@Override
-	public RandomAccessibleInterval<? extends NumericType<?>> displayImage() {
+	public RandomAccessibleInterval<? extends NumericType<?>> imageForSegmentation() {
 		return image;
 	}
 

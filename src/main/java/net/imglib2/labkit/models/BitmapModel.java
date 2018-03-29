@@ -1,6 +1,7 @@
 package net.imglib2.labkit.models;
 
 import net.imglib2.RandomAccessibleInterval;
+import net.imglib2.realtransform.AffineTransform3D;
 import net.imglib2.type.logic.BitType;
 import net.imglib2.type.numeric.ARGBType;
 
@@ -27,5 +28,9 @@ public class BitmapModel
 
 	public void fireBitmapChanged() {
 		model.dataChangedNotifier().forEach( Runnable::run );
+	}
+
+	public AffineTransform3D transformation() {
+		return model.labelTransformation();
 	}
 }
