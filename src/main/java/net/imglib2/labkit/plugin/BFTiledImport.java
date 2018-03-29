@@ -2,6 +2,7 @@ package net.imglib2.labkit.plugin;
 
 import bdv.util.Bdv;
 import bdv.util.BdvFunctions;
+import bdv.util.BdvOptions;
 import loci.formats.ClassList;
 import loci.formats.FormatException;
 import loci.formats.IFormatReader;
@@ -19,6 +20,8 @@ import net.imglib2.Cursor;
 import net.imglib2.RandomAccessibleInterval;
 import net.imglib2.img.Img;
 import net.imglib2.img.cell.CellImgFactory;
+import net.imglib2.labkit.inputimage.DatasetInputImage;
+import net.imglib2.labkit.plugin.ui.ImageSelectionDialog;
 import net.imglib2.labkit.utils.ParallelUtils;
 import net.imglib2.trainable_segmention.RevampUtils;
 import net.imglib2.type.numeric.ARGBType;
@@ -37,24 +40,30 @@ import java.util.concurrent.CancellationException;
 import java.util.concurrent.Executors;
 import java.util.function.IntFunction;
 import java.util.stream.Collectors;
-import java.util.stream.IntStream;
 
 public class BFTiledImport {
 
 	public static void main(String... args) throws IOException, FormatException {
-		ImgPlus<ARGBType> out = openImage("/home/arzt/Documents/Datasets/Lung IMages/2017_08_03__0004-1.czi");
-		BdvFunctions.show(out, "Image", Bdv.options().is2D());
+		DatasetInputImage out = openInputImage("/home/arzt/Documents/Datasets/Lung Images/labeled/2017_11_30__0033.czi");
+		out.showable().show("Image", BdvOptions.options().is2D());
 	}
 
-	public static ImgPlus<ARGBType> openImage(String filename) {
-		final int series = selectSeries(filename);
-		MyReader reader = new MyReader( filename );
+	public static DatasetInputImage openInputImage(String filename) {
+		ImageSelectionDialog dialog = ImageSelectionDialog.show(initReader(filename));
+		final int series = selectSectionResolution(filename, dialog.getSelectedSectionIndices());
+		DatasetInputImage result = new DatasetInputImage(openImage(filename, series));
+		result.setDefaultLabelingFilename(dialog.getLabelingFilename());
+		return result;
+	}
+
+	private static ImgPlus<ARGBType> openImage(String filename, int series) {
+		MyReader reader = new MyReader(filename);
 		long[] dimensions = reader.getImgDimensions( series );
 		int[] cellDimensions = reader.getCellDimensions( series );
 		Img<ARGBType> out = new CellImgFactory<ARGBType>(cellDimensions).create( dimensions, new ARGBType() );
 		List<Callable<Void>> chunks = ParallelUtils.chunkOperation(out, cellDimensions, cell -> reader.readToInterval( series, cell ) );
 		ParallelUtils.executeInParallel(Executors.newFixedThreadPool(8), ParallelUtils.addShowProgress(chunks));
-		return imgPlus( filename, out, reader.printCalibration( series ) );
+		return imgPlus(filename, out, reader.getCalibratedAxes(series));
 	}
 
 	private static ImgPlus< ARGBType > imgPlus( String filename, Img< ARGBType > out, CalibratedAxis[] axis )
@@ -64,16 +73,16 @@ public class BFTiledImport {
 		return imgPlus;
 	}
 
-	private static int selectSeries(String filename) {
+	private static int selectSectionResolution(String filename, List<Integer> sectionIds) {
 		ImageReader reader = initReader(filename);
-		List<String> list = IntStream.range(0, reader.getSeriesCount()).mapToObj(series -> {
+		List<String> list = sectionIds.stream().map(series -> {
 			reader.setSeries(series);
 			return reader.getSizeX() + " x " + reader.getSizeY();
 		}).collect(Collectors.toList());
 		Object result = JOptionPane.showInputDialog(null, "Select Image Resolution", "Labkit - Import Image", JOptionPane.PLAIN_MESSAGE, null, list.toArray(), list.get(0));
 		if(result == null)
 			throw new CancellationException();
-		return list.indexOf(result);
+		return sectionIds.get(list.indexOf(result));
 	}
 
 	// -- Helper methods --
@@ -154,7 +163,7 @@ public class BFTiledImport {
 			}
 		}
 
-		private CalibratedAxis[] printCalibration(int series) {
+		private CalibratedAxis[] getCalibratedAxes(int series) {
 			return new CalibratedAxis[] {
 					initAxis(Axes.X, series, metadata::getPixelsPhysicalSizeX, metadata::getPixelsSizeX),
 					initAxis(Axes.Y, series, metadata::getPixelsPhysicalSizeY, metadata::getPixelsSizeY)
