@@ -15,7 +15,7 @@ import net.imglib2.RandomAccessibleInterval;
 import net.imglib2.realtransform.AffineTransform3D;
 import net.imglib2.type.numeric.NumericType;
 
-public class SpimBdvShowable implements BdvShowable {
+class SpimBdvShowable implements BdvShowable {
 
 	private final AbstractSpimData< ? > spimData;
 

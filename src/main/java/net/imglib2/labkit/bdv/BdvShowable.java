@@ -2,6 +2,7 @@ package net.imglib2.labkit.bdv;
 
 import bdv.util.BdvOptions;
 import bdv.util.BdvSource;
+import bdv.viewer.Source;
 import mpicbg.spim.data.generic.AbstractSpimData;
 import net.imglib2.Interval;
 import net.imglib2.RandomAccessibleInterval;
@@ -24,6 +25,10 @@ public interface BdvShowable {
 	static BdvShowable wrap(AbstractSpimData<?> spimData)
 	{
 		return new SpimBdvShowable( Objects.requireNonNull( spimData ) );
+	}
+
+	static BdvShowable wrap(Source<? extends NumericType<?>> source) {
+		return new SourceBdvShowable( source );
 	}
 
 	Interval interval();
