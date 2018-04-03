@@ -9,11 +9,11 @@ import net.imglib2.Interval;
 import net.imglib2.realtransform.AffineTransform3D;
 import net.imglib2.type.numeric.NumericType;
 
-public class SourceBdvShowable implements BdvShowable {
+class SourceBdvShowable implements BdvShowable {
 
 	private final Source<? extends NumericType<?>> source;
 
-	public SourceBdvShowable(Source<? extends NumericType<?>> source) {
+	SourceBdvShowable(Source<? extends NumericType<?>> source) {
 		this.source = source;
 	}
 

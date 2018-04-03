@@ -12,12 +12,12 @@ import net.imglib2.trainable_segmention.RevampUtils;
 import net.imglib2.type.numeric.NumericType;
 import net.imglib2.util.Pair;
 
-public class SimpleBdvShowable implements BdvShowable {
+class SimpleBdvShowable implements BdvShowable {
 
 	private final RandomAccessibleInterval< ? extends NumericType<?> > image;
 	private final AffineTransform3D transformation;
 
-	public SimpleBdvShowable(RandomAccessibleInterval<? extends NumericType<?>> image, AffineTransform3D transformation) {
+	SimpleBdvShowable(RandomAccessibleInterval<? extends NumericType<?>> image, AffineTransform3D transformation) {
 		this.image = image;
 		this.transformation = transformation;
 	}
