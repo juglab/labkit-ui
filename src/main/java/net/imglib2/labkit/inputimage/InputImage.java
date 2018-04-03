@@ -26,7 +26,7 @@ public interface InputImage {
 
 	int getSpatialDimensions();
 
-	String getFilename();
+	String getDefaultLabelingFilename();
 
 	String getName();
 

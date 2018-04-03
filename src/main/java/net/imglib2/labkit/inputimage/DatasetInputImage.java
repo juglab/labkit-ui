@@ -20,10 +20,12 @@ public class DatasetInputImage extends AbstractInputImage {
 
 	private final ImgPlus<?> image;
 	private boolean isTimeSeries;
+	private String labelingName;
 
 	public DatasetInputImage(ImgPlus<?> image) {
 		this.image = image;
 		this.isTimeSeries = image.dimensionIndex(Axes.TIME) >= 0;
+		this.labelingName = image.getSource() + ".labeling";
 	}
 
 	public DatasetInputImage(Dataset image) {
@@ -75,9 +77,13 @@ public class DatasetInputImage extends AbstractInputImage {
 		return image.numDimensions() - (isTimeSeries() ? 1 : 0) - (hasColorChannel() ? 1 : 0);
 	}
 
+	public void setDefaultLabelingFilename(String filename) {
+		this.labelingName = filename;
+	}
+
 	@Override
-	public String getFilename() {
-		return image.getSource();
+	public String getDefaultLabelingFilename() {
+		return labelingName;
 	}
 
 	@Override

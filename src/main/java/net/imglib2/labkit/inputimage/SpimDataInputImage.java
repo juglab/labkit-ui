@@ -80,9 +80,9 @@ public class SpimDataInputImage implements InputImage
 		return interval().numDimensions() - (isTimeSeries() ? 1 : 0);
 	}
 
-	@Override public String getFilename()
-	{
-		return filename;
+	@Override
+	public String getDefaultLabelingFilename() {
+		return filename + ".labeling";
 	}
 
 	@Override public String getName()
