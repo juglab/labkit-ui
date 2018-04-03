@@ -47,7 +47,7 @@ import java.util.concurrent.Executors;
 import java.util.function.IntFunction;
 import java.util.stream.Collectors;
 
-public class BFTiledImport {
+public class CziOpener {
 
 	public static void main(String... args) throws IOException, FormatException {
 		DatasetInputImage out = openResolutionPyramid("/home/arzt/Documents/Datasets/Lung Images/labeled/2017_11_30__0033.czi");
