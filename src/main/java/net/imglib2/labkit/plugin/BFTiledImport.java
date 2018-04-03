@@ -1,7 +1,6 @@
 package net.imglib2.labkit.plugin;
 
-import bdv.util.Bdv;
-import bdv.util.BdvFunctions;
+import bdv.util.AbstractSource;
 import bdv.util.BdvOptions;
 import loci.formats.ClassList;
 import loci.formats.FormatException;
@@ -18,13 +17,20 @@ import net.imagej.axis.CalibratedAxis;
 import net.imagej.axis.DefaultLinearAxis;
 import net.imglib2.Cursor;
 import net.imglib2.RandomAccessibleInterval;
+import net.imglib2.cache.img.CellLoader;
+import net.imglib2.cache.img.DiskCachedCellImgFactory;
+import net.imglib2.cache.img.DiskCachedCellImgOptions;
 import net.imglib2.img.Img;
+import net.imglib2.img.cell.CellGrid;
 import net.imglib2.img.cell.CellImgFactory;
+import net.imglib2.labkit.bdv.BdvShowable;
 import net.imglib2.labkit.inputimage.DatasetInputImage;
 import net.imglib2.labkit.plugin.ui.ImageSelectionDialog;
 import net.imglib2.labkit.utils.ParallelUtils;
 import net.imglib2.trainable_segmention.RevampUtils;
+import net.imglib2.type.NativeType;
 import net.imglib2.type.numeric.ARGBType;
+import net.imglib2.type.numeric.NumericType;
 import net.imglib2.util.Intervals;
 import net.imglib2.util.ValuePair;
 import net.imglib2.view.Views;
@@ -44,8 +50,21 @@ import java.util.stream.Collectors;
 public class BFTiledImport {
 
 	public static void main(String... args) throws IOException, FormatException {
-		DatasetInputImage out = openInputImage("/home/arzt/Documents/Datasets/Lung Images/labeled/2017_11_30__0033.czi");
+		DatasetInputImage out = openResolutionPyramid("/home/arzt/Documents/Datasets/Lung Images/labeled/2017_11_30__0033.czi");
 		out.showable().show("Image", BdvOptions.options().is2D());
+	}
+
+	public static DatasetInputImage openResolutionPyramid(String filename) {
+		ImageSelectionDialog dialog = ImageSelectionDialog.show(initReader(filename));
+		List<Img<ARGBType>> pyramid = dialog.getSelectedSectionIndices().stream()
+				.map(series -> openCachedImage(filename, series))
+				.collect(Collectors.toList());
+		AbstractSource< ARGBType > source = new ResolutionPyramidSource<>( pyramid, new ARGBType(), "source" );
+		BdvShowable showable = BdvShowable.wrap(source);
+		ImgPlus<? extends NumericType<?>> imageForSegmentation = new ImgPlus<>(pyramid.get(2), filename, new AxisType[]{ Axes.X, Axes.Y });
+		DatasetInputImage result = new DatasetInputImage(imageForSegmentation, showable);
+		result.setDefaultLabelingFilename(dialog.getLabelingFilename());
+		return result;
 	}
 
 	public static DatasetInputImage openInputImage(String filename) {
@@ -64,6 +83,27 @@ public class BFTiledImport {
 		List<Callable<Void>> chunks = ParallelUtils.chunkOperation(out, cellDimensions, cell -> reader.readToInterval( series, cell ) );
 		ParallelUtils.executeInParallel(Executors.newFixedThreadPool(8), ParallelUtils.addShowProgress(chunks));
 		return imgPlus(filename, out, reader.getCalibratedAxes(series));
+	}
+
+	public static ImgPlus<ARGBType> openCachedImage(String filename, int series) {
+		MyReader reader = new MyReader( filename );
+		long[] dimensions = reader.getImgDimensions( series );
+		int[] cellDimensions = reader.getCellDimensions( series );
+		Img<ARGBType> image = setupCachedImage(cell -> reader.readToInterval(series, cell), new CellGrid(dimensions, cellDimensions), new ARGBType());
+		return imgPlus(filename, image, reader.getCalibratedAxes(series));
+	}
+
+	private static <T extends NativeType<T> > Img<T> setupCachedImage(CellLoader<T> loader, CellGrid grid, T type) {
+		DiskCachedCellImgOptions optional = DiskCachedCellImgOptions.options().cellDimensions( getCellDimensions(grid) ).cacheType( DiskCachedCellImgOptions.CacheType.SOFTREF );
+		final DiskCachedCellImgFactory< T > factory = new DiskCachedCellImgFactory<>(optional);
+		return factory.create( grid.getImgDimensions(), type, loader );
+	}
+
+	private static int[] getCellDimensions( CellGrid grid )
+	{
+		int[] cellDimensions = new int[grid.numDimensions()];
+		grid.cellDimensions( cellDimensions );
+		return cellDimensions;
 	}
 
 	private static ImgPlus< ARGBType > imgPlus( String filename, Img< ARGBType > out, CalibratedAxis[] axis )

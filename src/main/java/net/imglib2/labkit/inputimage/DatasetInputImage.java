@@ -5,6 +5,7 @@ import net.imagej.ImgPlus;
 import net.imagej.axis.Axes;
 import net.imagej.axis.CalibratedAxis;
 import net.imglib2.RandomAccessibleInterval;
+import net.imglib2.labkit.bdv.BdvShowable;
 import net.imglib2.trainable_segmention.pixel_feature.settings.ChannelSetting;
 import net.imglib2.type.numeric.ARGBType;
 import net.imglib2.type.numeric.NumericType;
@@ -18,16 +19,26 @@ import java.util.stream.IntStream;
 public class DatasetInputImage extends AbstractInputImage {
 
 	private final ImgPlus<? extends NumericType<?>> image;
+	private final BdvShowable showable;
 	private boolean isTimeSeries;
 	private String labelingName;
 
-	public DatasetInputImage(ImgPlus<? extends NumericType<?>> image) {
+	public DatasetInputImage(ImgPlus<? extends NumericType<?>> image, BdvShowable showable) {
+		this.showable = showable;
 		this.image = tryFuseColor(image);
 		this.isTimeSeries = image.dimensionIndex(Axes.TIME) >= 0;
 		this.labelingName = image.getSource() + ".labeling";
 	}
 
-	private ImgPlus<? extends NumericType<?>> tryFuseColor(ImgPlus<? extends NumericType<?>> image) {
+	public DatasetInputImage(ImgPlus<? extends NumericType<?>> image) {
+		this(image, BdvShowable.wrap(tryFuseColor(image)));
+	}
+
+	public DatasetInputImage(Dataset image) {
+		this(image.getImgPlus());
+	}
+
+	private static ImgPlus<? extends NumericType<?>> tryFuseColor(ImgPlus<? extends NumericType<?>> image) {
 		if(! (image.randomAccess().get() instanceof RealType))
 			return image;
 		@SuppressWarnings("unchecked")
@@ -37,8 +48,9 @@ public class DatasetInputImage extends AbstractInputImage {
 		return image1;
 	}
 
-	public DatasetInputImage(Dataset image) {
-		this(image.getImgPlus());
+	@Override
+	public BdvShowable showable() {
+		return showable;
 	}
 
 	@Override

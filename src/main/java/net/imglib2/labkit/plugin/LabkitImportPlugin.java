@@ -36,7 +36,7 @@ public class LabkitImportPlugin implements Command {
 	{
 		String filename = file.getAbsolutePath();
 		if(filename.endsWith( ".czi" ))
-			return BFTiledImport.openInputImage(file.getAbsolutePath());
+			return BFTiledImport.openResolutionPyramid(file.getAbsolutePath());
 		if(filename.endsWith( ".xml" ))
 			return new SpimDataInputImage( filename );
 		throw new UnsupportedOperationException( "Only files with extension czi / hdf5 are supported." );
