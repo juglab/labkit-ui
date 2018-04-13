@@ -66,37 +66,44 @@ public class BrushOverlay implements OverlayRenderer
 		if ( visible )
 		{
 			final Graphics2D g2d = ( Graphics2D )g;
-
 			g2d.setRenderingHint( RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON );
 			g2d.setComposite( AlphaComposite.SrcOver );
-
-			final double scale;
-			synchronized ( viewer )
-			{
-				viewer.getState().getViewerTransform( viewerTransform );
-				scale = Affine3DHelpers.extractScale( viewerTransform, 0 );
-			}
-			final double scaledRadius = scale * radius;
-
-			if (
-					x + scaledRadius > 0 &&
-					x - scaledRadius < width &&
-					y + scaledRadius > 0 &&
-					y - scaledRadius < height )
-			{
-				final int roundScaledRadius = ( int )Math.round( scaledRadius );
-				final FontMetrics fm = g.getFontMetrics();
-				final String title = model.label();
-				final Rectangle2D rect = fm.getStringBounds( title, g );
-				g2d.setColor( Color.WHITE );
-				g2d.fillRect( x + roundScaledRadius, y + roundScaledRadius - fm.getAscent(), ( int ) rect.getWidth(), ( int ) rect.getHeight() );
-				g2d.setColor( new Color(model.color().get()) );
-				g2d.setStroke( stroke );
-				g2d.drawOval( x - roundScaledRadius, y - roundScaledRadius, 2 * roundScaledRadius + 1, 2 * roundScaledRadius + 1 );
-				g2d.drawString( title, x + roundScaledRadius, y + roundScaledRadius );
-
-			}
+			final int roundScaledRadius = ( int )Math.round(getScale() * radius);
+			drawTitle(g2d, roundScaledRadius);
+			drawCircle(g2d, roundScaledRadius);
 		}
+	}
+
+	private double getScale() {
+		synchronized ( viewer )
+		{
+			viewer.getState().getViewerTransform( viewerTransform );
+			return Affine3DHelpers.extractScale( viewerTransform, 0 );
+		}
+	}
+
+	private void drawCircle(Graphics2D g2d, int roundScaledRadius) {
+		Color color = getColor();
+		g2d.setColor(color);
+		g2d.setStroke( stroke );
+		g2d.drawOval( x - roundScaledRadius, y - roundScaledRadius, 2 * roundScaledRadius + 1, 2 * roundScaledRadius + 1 );
+	}
+
+	private void drawTitle(Graphics2D g2d, int roundScaledRadius) {
+		if(!model.isValid())
+			return;
+		Color color = getColor();
+		final String title = model.label();
+		final FontMetrics fm = g2d.getFontMetrics();
+		final Rectangle2D rect = fm.getStringBounds( title, g2d );
+		g2d.setColor( Color.WHITE );
+		g2d.fillRect( x + roundScaledRadius, y + roundScaledRadius - fm.getAscent(), ( int ) rect.getWidth(), ( int ) rect.getHeight() );
+		g2d.setColor( color );
+		g2d.drawString( title, x + roundScaledRadius, y + roundScaledRadius );
+	}
+
+	private Color getColor() {
+		return model.isValid() ? new Color(model.color().get()) : Color.black;
 	}
 
 	@Override

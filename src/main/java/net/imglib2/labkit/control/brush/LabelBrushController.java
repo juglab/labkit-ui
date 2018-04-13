@@ -11,6 +11,7 @@ import net.imglib2.RealPoint;
 import net.imglib2.algorithm.fill.Filter;
 import net.imglib2.algorithm.neighborhood.DiamondShape;
 import net.imglib2.algorithm.neighborhood.Neighborhood;
+import net.imglib2.img.array.ArrayImgs;
 import net.imglib2.labkit.ActionsAndBehaviours;
 import net.imglib2.labkit.control.brush.neighborhood.TransformedSphere;
 import net.imglib2.labkit.models.BitmapModel;
@@ -210,6 +211,8 @@ public class LabelBrushController
 
 	private RandomAccessibleInterval< BitType > bitmap()
 	{
+		if(!model.isValid())
+			return ArrayImgs.bits(1,1,1);
 		RandomAccessibleInterval<BitType> label = model.bitmap();
 		if(sliceTime)
 			return Views.hyperSlice(label, label.numDimensions()-1,

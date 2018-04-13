@@ -14,6 +14,10 @@ public class BitmapModel
 		this.model = model;
 	}
 
+	public boolean isValid() {
+		return label() != null;
+	}
+
 	public String label() {
 		return model.selectedLabel().get();
 	}
@@ -23,7 +27,7 @@ public class BitmapModel
 	}
 
 	public RandomAccessibleInterval<BitType> bitmap() {
-		return model.labeling().get().regions().get( model.selectedLabel().get() );
+		return model.labeling().get().regions().get( label() );
 	}
 
 	public void fireBitmapChanged() {
