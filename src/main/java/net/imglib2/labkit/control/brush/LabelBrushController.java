@@ -137,7 +137,6 @@ public class LabelBrushController
 			AffineTransform3D m = new AffineTransform3D();
 			m.concatenate( model.transformation().inverse() );
 			m.concatenate( viewerTransformation().inverse() );
-			m.translate( PIXEL_CENTER_OFFSET );
 			return m;
 		}
 
