@@ -53,7 +53,7 @@ public class LabelBrushController
 
 	final private BrushOverlay brushOverlay;
 
-	private int brushRadius = 5;
+	private double brushRadius = 5;
 
 	boolean sliceTime;
 
@@ -199,7 +199,7 @@ public class LabelBrushController
 
 	private double getBrushRadius()
 	{
-		return brushRadius * getScale( model.transformation() ) + 0.5;
+		return brushRadius * getScale( model.transformation() );
 	}
 
 	// TODO: find a good place
@@ -232,8 +232,8 @@ public class LabelBrushController
 			if ( !isHorizontal )
 			{
 				int sign = ( wheelRotation < 0 ) ? 1 : -1;
-				int distance = Math.max( 1, (int) (brushRadius * 0.1) );
-				brushRadius = Math.min(Math.max( 0, brushRadius + sign * distance ), 50);
+				double distance = Math.max( 1, brushRadius * 0.1 );
+				brushRadius = Math.min(Math.max( 0.5, brushRadius + sign * distance ), 50);
 				brushOverlay.setRadius( ( int ) getBrushRadius() );
 				brushOverlay.requestRepaint();
 			}
