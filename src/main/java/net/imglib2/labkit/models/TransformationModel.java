@@ -31,9 +31,12 @@ public class TransformationModel
 			viewerPanel.setCurrentViewerTransform( transformation );
 	}
 
-	public void transformToShowInterval( Interval interval ) {
+	public void transformToShowInterval(Interval interval, AffineTransform3D transformation) {
 		final double[] screenSize = { width(), height() };
-		setTransformation( getTransformation( interval, screenSize ) );
+		AffineTransform3D concat = new AffineTransform3D();
+		concat.set(getTransformation( interval, screenSize ));
+		concat.concatenate(transformation.inverse());
+		setTransformation( concat );
 	}
 
 	private static AffineTransform3D getTransformation( Interval interval, double[] screenSize )

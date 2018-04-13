@@ -102,7 +102,7 @@ public class ColoredLabelsModel
 	public void localizeLabel( final String label ) {
 		final Interval labelBox = getBoundingBox( model.labeling().get().iterableRegions().get( label ) );
 		if ( labelBox != null )
-			model.transformationModel().transformToShowInterval( labelBox );
+			model.transformationModel().transformToShowInterval( labelBox, model.labelTransformation() );
 	}
 
 	private static Interval getBoundingBox( IterableRegion< BitType > region )
