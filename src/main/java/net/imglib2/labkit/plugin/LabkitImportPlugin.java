@@ -39,7 +39,7 @@ public class LabkitImportPlugin implements Command {
 			return CziOpener.openResolutionPyramid(file.getAbsolutePath());
 		if(filename.endsWith( ".xml" ))
 			return new SpimDataInputImage( filename );
-		throw new UnsupportedOperationException( "Only files with extension czi / hdf5 are supported." );
+		throw new UnsupportedOperationException( "Only files with extension czi / xml are supported." );
 	}
 
 	public static void main(String... args) {
