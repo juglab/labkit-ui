@@ -40,7 +40,24 @@ public class ResolutionPyramidSource< T extends NumericType< T > > extends Abstr
 
 	@Override public void getSourceTransform( int t, int level, AffineTransform3D transform )
 	{
-		transform.identity();
-		transform.scale( (double) resolutionPyramid.get(0).dimension( 0 ) / (double) resolutionPyramid.get(level).dimension( 0 )  );
+		getTransform(transform, getScale(level));
+	}
+
+	private double getScale(int level) {
+		long fullSizeX = resolutionPyramid.get(0).dimension(0);
+		long downscaledSizeX = resolutionPyramid.get(level).dimension(0);
+		long integerScale = fullSizeX / downscaledSizeX;
+		if( fullSizeX / integerScale == downscaledSizeX )
+			return integerScale;
+		return (double) fullSizeX / (double) downscaledSizeX;
+	}
+
+	private static void getTransform(AffineTransform3D transform, double scale) {
+		double translation = scale * 0.5 - 0.5;
+		transform.set(
+				scale, 0, 0, translation,
+				0, scale, 0, translation,
+				0, 0, scale, 0 // NB: assume 2d images here
+		);
 	}
 }
