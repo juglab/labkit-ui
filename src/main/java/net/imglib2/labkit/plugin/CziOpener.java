@@ -64,44 +64,45 @@ public class CziOpener {
 		String labelingFilename = dialog.getLabelingFilename();
 		final OptionalInt series = selectSectionResolution(filename, selectedSectionIndices);
 		if(series.isPresent())
-			return openInputImage(filename, labelingFilename, series.getAsInt());
+			return openInputImage(filename, labelingFilename, selectedSectionIndices.get(0), series.getAsInt());
 		return openResolutionPyramid(filename, labelingFilename, selectedSectionIndices);
 	}
 
 	private static DatasetInputImage openResolutionPyramid(String filename, String labelingFilename, List<Integer> selectedSectionIndices) {
-		List<Img<ARGBType>> pyramid = selectedSectionIndices.stream()
-				.map(series -> openCachedImage(filename, series))
+		int fullres = selectedSectionIndices.get(0);
+		List<ImgPlus<ARGBType>> pyramid = selectedSectionIndices.stream()
+				.map(series -> openCachedImage(filename, fullres, series))
 				.collect(Collectors.toList());
 		AbstractSource< ARGBType > source = new ResolutionPyramidSource<>( pyramid, new ARGBType(), "source" );
 		BdvShowable showable = BdvShowable.wrap(source);
-		ImgPlus<? extends NumericType<?>> imageForSegmentation = new ImgPlus<>(pyramid.get(2), filename, new AxisType[]{ Axes.X, Axes.Y });
+		ImgPlus<? extends NumericType<?>> imageForSegmentation = pyramid.get(2);
 		DatasetInputImage result = new DatasetInputImage(imageForSegmentation, showable);
 		result.setDefaultLabelingFilename(labelingFilename);
 		return result;
 	}
 
-	private static DatasetInputImage openInputImage(String filename, String labelingFilename, int series) {
-		DatasetInputImage result = new DatasetInputImage(openImage(filename, series));
+	private static DatasetInputImage openInputImage(String filename, String labelingFilename, int fullres, int series) {
+		DatasetInputImage result = new DatasetInputImage(openImage(filename, fullres, series));
 		result.setDefaultLabelingFilename(labelingFilename);
 		return result;
 	}
 
-	private static ImgPlus<ARGBType> openImage(String filename, int series) {
+	private static ImgPlus<ARGBType> openImage(String filename, int fullres, int series) {
 		MyReader reader = new MyReader(filename);
 		long[] dimensions = reader.getImgDimensions( series );
 		int[] cellDimensions = reader.getCellDimensions( series );
 		Img<ARGBType> out = new CellImgFactory<ARGBType>(cellDimensions).create( dimensions, new ARGBType() );
 		List<Callable<Void>> chunks = ParallelUtils.chunkOperation(out, cellDimensions, cell -> reader.readToInterval( series, cell ) );
 		ParallelUtils.executeInParallel(Executors.newFixedThreadPool(8), ParallelUtils.addShowProgress(chunks));
-		return imgPlus(filename, out, reader.getCalibratedAxes(series));
+		return imgPlus(filename, out, reader.getCalibratedAxes(fullres, series));
 	}
 
-	public static ImgPlus<ARGBType> openCachedImage(String filename, int series) {
+	public static ImgPlus<ARGBType> openCachedImage(String filename, int fullres, int series) {
 		MyReader reader = new MyReader( filename );
 		long[] dimensions = reader.getImgDimensions( series );
 		int[] cellDimensions = reader.getCellDimensions( series );
 		Img<ARGBType> image = setupCachedImage(cell -> reader.readToInterval(series, cell), new CellGrid(dimensions, cellDimensions), new ARGBType());
-		return imgPlus(filename, image, reader.getCalibratedAxes(series));
+		return imgPlus(filename, image, reader.getCalibratedAxes(fullres, series));
 	}
 
 	private static <T extends NativeType<T> > Img<T> setupCachedImage(CellLoader<T> loader, CellGrid grid, T type) {
@@ -226,23 +227,30 @@ public class CziOpener {
 			}
 		}
 
-		private CalibratedAxis[] getCalibratedAxes(int series) {
+		private CalibratedAxis[] getCalibratedAxes(int fullres, int series) {
 			return new CalibratedAxis[] {
-					initAxis(Axes.X, series, metadata::getPixelsPhysicalSizeX, metadata::getPixelsSizeX),
-					initAxis(Axes.Y, series, metadata::getPixelsPhysicalSizeY, metadata::getPixelsSizeY)
+					initAxis(Axes.X, fullres, series, metadata::getPixelsPhysicalSizeX, metadata::getPixelsSizeX),
+					initAxis(Axes.Y, fullres, series, metadata::getPixelsPhysicalSizeY, metadata::getPixelsSizeY)
 			};
 		}
 
-		private static DefaultLinearAxis initAxis(AxisType axisType, int series, IntFunction<Length> pixelSize, IntFunction<PositiveInteger> imageSize) {
+		private static DefaultLinearAxis initAxis(AxisType axisType, int fullres, int series, IntFunction<Length> pixelSize, IntFunction<PositiveInteger> imageSize) {
 			// NB: metadata.getPixelsPhysicalSizeX/Y return the same pixel size for each image in the resolution pyramid
 			// The following 4 lines of code, calculate the correct pixel size for the scaled down images.
 			// This is a workaround until metadata.getPixelPysicalSizeX/Y are fixed.
-			double fullResolutionPixelSize = pixelSize.apply(0).value(UNITS.MICROMETER).doubleValue();
-			double fullResolutionImageSize = imageSize.apply(0).getValue();
-			double lowResolutionImageSize = imageSize.apply(series).getValue();
-			double lowResolutionPixelSize = fullResolutionPixelSize * fullResolutionImageSize / lowResolutionImageSize;
+			double fullResolutionPixelSize = pixelSize.apply(fullres).value(UNITS.MICROMETER).doubleValue();
+			int fullResolutionImageSize = imageSize.apply(fullres).getValue();
+			int lowResolutionImageSize = imageSize.apply(series).getValue();
+			double lowResolutionPixelSize = fullResolutionPixelSize * getScale(fullResolutionImageSize , lowResolutionImageSize);
 			System.out.println("Axis " + axisType + " = " + lowResolutionPixelSize + "microm");
 			return new DefaultLinearAxis(axisType, "microm", lowResolutionPixelSize);
+		}
+
+		private static double getScale(int fullSize, int downscaledSize) {
+			long integerScale = fullSize / downscaledSize;
+			if( fullSize / integerScale == downscaledSize)
+				return integerScale;
+			return (double) fullSize / (double) downscaledSize;
 		}
 	}
 }
