@@ -2,6 +2,7 @@ package net.imglib2.labkit.plugin;
 
 import bdv.util.AbstractSource;
 import bdv.util.BdvOptions;
+import io.scif.img.ImgIOException;
 import loci.formats.ClassList;
 import loci.formats.FormatException;
 import loci.formats.IFormatReader;
@@ -20,6 +21,7 @@ import net.imglib2.RandomAccessibleInterval;
 import net.imglib2.cache.img.CellLoader;
 import net.imglib2.cache.img.DiskCachedCellImgFactory;
 import net.imglib2.cache.img.DiskCachedCellImgOptions;
+import net.imglib2.exception.IncompatibleTypeException;
 import net.imglib2.img.Img;
 import net.imglib2.img.cell.CellGrid;
 import net.imglib2.img.cell.CellImgFactory;
@@ -41,37 +43,46 @@ import ome.xml.model.primitives.PositiveInteger;
 import javax.swing.*;
 import java.io.IOException;
 import java.util.List;
+import java.util.OptionalInt;
 import java.util.concurrent.Callable;
 import java.util.concurrent.CancellationException;
 import java.util.concurrent.Executors;
 import java.util.function.IntFunction;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 public class CziOpener {
 
-	public static void main(String... args) throws IOException, FormatException {
-		DatasetInputImage out = openResolutionPyramid("/home/arzt/Documents/Datasets/Lung Images/labeled/2017_11_30__0033.czi");
+	public static void main(String... args) throws IOException, FormatException, IncompatibleTypeException, ImgIOException {
+		DatasetInputImage out = openWithDialog("/home/arzt/Documents/Datasets/Lung Images/labeled/2017_11_30__0033.czi");
 		out.showable().show("Image", BdvOptions.options().is2D());
 	}
 
-	public static DatasetInputImage openResolutionPyramid(String filename) {
+	public static DatasetInputImage openWithDialog(String filename) {
 		ImageSelectionDialog dialog = ImageSelectionDialog.show(initReader(filename));
-		List<Img<ARGBType>> pyramid = dialog.getSelectedSectionIndices().stream()
+		List<Integer> selectedSectionIndices = dialog.getSelectedSectionIndices();
+		String labelingFilename = dialog.getLabelingFilename();
+		final OptionalInt series = selectSectionResolution(filename, selectedSectionIndices);
+		if(series.isPresent())
+			return openInputImage(filename, labelingFilename, series.getAsInt());
+		return openResolutionPyramid(filename, labelingFilename, selectedSectionIndices);
+	}
+
+	private static DatasetInputImage openResolutionPyramid(String filename, String labelingFilename, List<Integer> selectedSectionIndices) {
+		List<Img<ARGBType>> pyramid = selectedSectionIndices.stream()
 				.map(series -> openCachedImage(filename, series))
 				.collect(Collectors.toList());
 		AbstractSource< ARGBType > source = new ResolutionPyramidSource<>( pyramid, new ARGBType(), "source" );
 		BdvShowable showable = BdvShowable.wrap(source);
 		ImgPlus<? extends NumericType<?>> imageForSegmentation = new ImgPlus<>(pyramid.get(2), filename, new AxisType[]{ Axes.X, Axes.Y });
 		DatasetInputImage result = new DatasetInputImage(imageForSegmentation, showable);
-		result.setDefaultLabelingFilename(dialog.getLabelingFilename());
+		result.setDefaultLabelingFilename(labelingFilename);
 		return result;
 	}
 
-	public static DatasetInputImage openInputImage(String filename) {
-		ImageSelectionDialog dialog = ImageSelectionDialog.show(initReader(filename));
-		final int series = selectSectionResolution(filename, dialog.getSelectedSectionIndices());
+	private static DatasetInputImage openInputImage(String filename, String labelingFilename, int series) {
 		DatasetInputImage result = new DatasetInputImage(openImage(filename, series));
-		result.setDefaultLabelingFilename(dialog.getLabelingFilename());
+		result.setDefaultLabelingFilename(labelingFilename);
 		return result;
 	}
 
@@ -113,16 +124,28 @@ public class CziOpener {
 		return imgPlus;
 	}
 
-	private static int selectSectionResolution(String filename, List<Integer> sectionIds) {
+	private static OptionalInt selectSectionResolution(String filename, List<Integer> sectionIds) {
+		List<String> list = listResolutions(filename, sectionIds);
+		String pyramid = "Resolution Pyramid";
+		Object[] options = Stream.concat(Stream.of(pyramid), list.stream()).toArray();
+		Object result = JOptionPane.showInputDialog(null,
+				"Select Image Resolution",
+				"Labkit - Import Image",
+				JOptionPane.PLAIN_MESSAGE,
+				null, options, list.get(0));
+		if(result == null)
+			throw new CancellationException();
+		if(result.equals(pyramid))
+			return OptionalInt.empty();
+		return OptionalInt.of(sectionIds.get(list.indexOf(result)));
+	}
+
+	private static List<String> listResolutions(String filename, List<Integer> sectionIds) {
 		ImageReader reader = initReader(filename);
-		List<String> list = sectionIds.stream().map(series -> {
+		return sectionIds.stream().map(series -> {
 			reader.setSeries(series);
 			return reader.getSizeX() + " x " + reader.getSizeY();
 		}).collect(Collectors.toList());
-		Object result = JOptionPane.showInputDialog(null, "Select Image Resolution", "Labkit - Import Image", JOptionPane.PLAIN_MESSAGE, null, list.toArray(), list.get(0));
-		if(result == null)
-			throw new CancellationException();
-		return sectionIds.get(list.indexOf(result));
 	}
 
 	// -- Helper methods --
