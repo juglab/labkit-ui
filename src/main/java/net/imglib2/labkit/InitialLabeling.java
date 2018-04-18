@@ -47,8 +47,14 @@ public class InitialLabeling {
 		Interval imageInterval = image.interval();
 		Interval labelingInterval = labeling.interval();
 		OptionalDouble optionalDouble = getScale(labelingInterval, imageInterval);
-		if(!optionalDouble.isPresent())
+		if(!optionalDouble.isPresent()) {
+			String message = "\"" + image.getDefaultLabelingFilename() + "\"\n" +
+					"The labeling does not match the image sizes.\n" +
+					"Labkit might give wrong results.\n" +
+					"It's recommended to delete the labeling and start from scratch again.";
+			JOptionPane.showMessageDialog(null, message, "WARNING", JOptionPane.ERROR_MESSAGE);
 			return;
+		}
 		double scale = optionalDouble.getAsDouble();
 		boolean calibrationCorrect = IntStream.range(0, labelingAxes.size())
 				.allMatch(i -> getLinearScale(imageAxes.get(i)) * scale == getLinearScale(labelingAxes.get(i)));

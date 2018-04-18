@@ -242,7 +242,6 @@ public class CziOpener {
 			int fullResolutionImageSize = imageSize.apply(fullres).getValue();
 			int lowResolutionImageSize = imageSize.apply(series).getValue();
 			double lowResolutionPixelSize = fullResolutionPixelSize * getScale(fullResolutionImageSize , lowResolutionImageSize);
-			System.out.println("Axis " + axisType + " = " + lowResolutionPixelSize + "microm");
 			return new DefaultLinearAxis(axisType, "microm", lowResolutionPixelSize);
 		}
 
