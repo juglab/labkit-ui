@@ -1,5 +1,7 @@
 package net.imglib2.labkit;
 
+import net.imagej.axis.CalibratedAxis;
+import net.imagej.axis.DefaultLinearAxis;
 import net.imglib2.FinalInterval;
 import net.imglib2.Interval;
 import net.imglib2.labkit.inputimage.InputImage;
@@ -13,7 +15,10 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.OptionalDouble;
+import java.util.OptionalInt;
 import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 import java.util.stream.LongStream;
 
 public class InitialLabeling {
@@ -21,15 +26,69 @@ public class InitialLabeling {
 		String filename = inputImage.getDefaultLabelingFilename();
 		if(new File(filename).exists()) {
 			try {
-				return new LabelingSerializer(context).open(filename);
+				Labeling open = new LabelingSerializer(context).open(filename);
+				fixAxes(open, inputImage);
+				return open;
 			} catch (IOException e) {
 				e.printStackTrace();
 			}
 		}
 		Interval interval = inputImage.interval();
 		Labeling labeling = new Labeling(defaultLabels, askShrinkInterval(interval));
-		labeling.setAxes(inputImage.axes());
+		labeling.setAxes(scaledAxes(getIntegerScale(labeling.interval(), interval).getAsInt(), inputImage.axes()));
 		return labeling;
+	}
+
+	private static void fixAxes(Labeling labeling, InputImage image) {
+		if(!image.getName().endsWith(".czi"))
+			return;
+		List<CalibratedAxis> labelingAxes = labeling.axes();
+		List<CalibratedAxis> imageAxes = image.axes();
+		Interval imageInterval = image.interval();
+		Interval labelingInterval = labeling.interval();
+		OptionalDouble optionalDouble = getScale(labelingInterval, imageInterval);
+		if(!optionalDouble.isPresent())
+			return;
+		double scale = optionalDouble.getAsDouble();
+		boolean calibrationCorrect = IntStream.range(0, labelingAxes.size())
+				.allMatch(i -> getLinearScale(imageAxes.get(i)) * scale == getLinearScale(labelingAxes.get(i)));
+		if(calibrationCorrect)
+			return;
+		int result = JOptionPane.showConfirmDialog(null, "Labeling contains wrong calibration information.\nFix it?",
+				"Open Labeling", JOptionPane.OK_CANCEL_OPTION);
+		if(result == JOptionPane.OK_OPTION)
+				labeling.setAxes(scaledAxes(scale, imageAxes));
+	}
+
+	private static OptionalDouble getScale(Interval labelingInterval, Interval imageInterval) {
+		OptionalInt scale = getIntegerScale(labelingInterval, imageInterval);
+		if(scale.isPresent())
+			return OptionalDouble.of(scale.getAsInt());
+		OptionalInt reverseScale = getIntegerScale(imageInterval, labelingInterval);
+		if(reverseScale.isPresent())
+			return OptionalDouble.of(1.0 / reverseScale.getAsInt());
+		return OptionalDouble.empty();
+	}
+
+	private static OptionalInt getIntegerScale(Interval small, Interval big) {
+		int scale = (int) (big.dimension(0) / small.dimension(0));
+		if (scale <= 0)
+			return OptionalInt.empty();
+		boolean isIntegerScale = IntStream.range(0, small.numDimensions())
+				.allMatch( i -> big.dimension(i) / scale == small.dimension(i) );
+		return isIntegerScale ? OptionalInt.of(scale) : OptionalInt.empty();
+	}
+
+	private static List<CalibratedAxis> scaledAxes(double factor, List<CalibratedAxis> imageAxes) {
+		return imageAxes.stream().map(axis -> scaledAxes(factor, (DefaultLinearAxis) axis)).collect(Collectors.toList());
+	}
+
+	private static CalibratedAxis scaledAxes(double factor, DefaultLinearAxis input) {
+		return new DefaultLinearAxis(input.type(), input.unit(), input.scale() * factor, input.origin());
+	}
+
+	private static double getLinearScale(CalibratedAxis downScaled) {
+		return ((DefaultLinearAxis) downScaled).scale();
 	}
 
 	static private Interval askShrinkInterval(Interval interval) {
