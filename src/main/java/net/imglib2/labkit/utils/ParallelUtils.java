@@ -1,5 +1,6 @@
 package net.imglib2.labkit.utils;
 
+import ij.IJ;
 import net.imglib2.FinalInterval;
 import net.imglib2.Interval;
 import net.imglib2.RandomAccessibleInterval;
@@ -51,6 +52,18 @@ public class ParallelUtils {
 				runnable -> (Callable<Void>) (() -> {
 					runnable.call();
 					System.out.print("Chunk " + i.addAndGet(1) + " of " + chunks.size() + "\n");
+					return null;
+				})
+		).collect(Collectors.toList());
+	}
+
+	public static List<Callable<Void>> addStatusBarProgress(List<Callable<Void>> chunks) {
+		AtomicInteger i = new AtomicInteger(0);
+		int n = chunks.size();
+		return chunks.stream().map(
+				runnable -> (Callable<Void>) (() -> {
+					runnable.call();
+					IJ.showProgress(i.incrementAndGet(), n);
 					return null;
 				})
 		).collect(Collectors.toList());

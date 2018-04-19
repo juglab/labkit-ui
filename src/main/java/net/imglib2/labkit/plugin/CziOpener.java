@@ -93,7 +93,7 @@ public class CziOpener {
 		int[] cellDimensions = reader.getCellDimensions( series );
 		Img<ARGBType> out = new CellImgFactory<ARGBType>(cellDimensions).create( dimensions, new ARGBType() );
 		List<Callable<Void>> chunks = ParallelUtils.chunkOperation(out, cellDimensions, cell -> reader.readToInterval( series, cell ) );
-		ParallelUtils.executeInParallel(Executors.newFixedThreadPool(8), ParallelUtils.addShowProgress(chunks));
+		ParallelUtils.executeInParallel(Executors.newFixedThreadPool(8), ParallelUtils.addStatusBarProgress(chunks));
 		return imgPlus(filename, out, reader.getCalibratedAxes(fullres, series));
 	}
 
