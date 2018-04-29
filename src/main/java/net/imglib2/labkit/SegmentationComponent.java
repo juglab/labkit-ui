@@ -27,6 +27,7 @@ import net.imglib2.labkit.models.SegmentationResultsModel;
 import net.imglib2.labkit.panel.LabelPanel;
 import net.imglib2.labkit.panel.VisibilityPanel;
 import net.imglib2.labkit.plugin.MeasureConnectedComponents;
+import net.imglib2.labkit.utils.ProgressConsumer;
 import net.imglib2.trainable_segmention.RevampUtils;
 import net.imglib2.type.NativeType;
 import net.imglib2.type.numeric.IntegerType;
@@ -34,6 +35,7 @@ import net.imglib2.type.numeric.NumericType;
 import net.imglib2.type.numeric.real.FloatType;
 import net.miginfocom.swing.MigLayout;
 import org.scijava.Context;
+import org.scijava.app.StatusService;
 import org.scijava.ui.behaviour.util.RunnableAction;
 
 import javax.swing.*;
@@ -208,6 +210,11 @@ public class SegmentationComponent implements AutoCloseable {
 		@Override
 		public JFrame dialogParent() {
 			return dialogBoxOwner;
+		}
+
+		@Override
+		public ProgressConsumer progressConsumer() {
+			return context.getService(StatusService.class)::showProgress;
 		}
 	}
 }

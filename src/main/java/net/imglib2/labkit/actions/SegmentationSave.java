@@ -11,6 +11,8 @@ import net.imglib2.type.numeric.NumericType;
 import net.imglib2.type.numeric.integer.ShortType;
 import net.imglib2.type.numeric.real.FloatType;
 
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.function.Supplier;
 
 /**
@@ -18,8 +20,11 @@ import java.util.function.Supplier;
  */
 public class SegmentationSave extends AbstractFileIoAcion {
 
+	private final Extensible extensible;
+
 	public SegmentationSave(Extensible extensible, SegmentationResultsModel model ) {
 		super(extensible, AbstractFileIoAcion.TIFF_FILTER);
+		this.extensible = extensible;
 		Supplier<Img<ShortType>> segmentation = model::segmentation;
 		initSaveAction("Save Segmentation ...", "saveSegmentation", getSaveAction(segmentation), "");
 		extensible.addAction("Show Segmentation in ImageJ", "showSegmentation", getShowAction(segmentation), "");
@@ -29,7 +34,12 @@ public class SegmentationSave extends AbstractFileIoAcion {
 	}
 
 	private <T extends NumericType<T> & NativeType<T>> Runnable getShowAction(Supplier<Img<T>> supplier) {
-		return () -> ImageJFunctions.show(LabkitUtils.populateCachedImg(supplier.get()));
+		return () -> {
+			ExecutorService executer = Executors.newSingleThreadExecutor();
+			executer.submit( () -> {
+				ImageJFunctions.show(LabkitUtils.populateCachedImg(supplier.get(), extensible.progressConsumer()));
+			});
+		};
 	}
 
 	private <T> Action getSaveAction(Supplier<Img<T>> supplier) {

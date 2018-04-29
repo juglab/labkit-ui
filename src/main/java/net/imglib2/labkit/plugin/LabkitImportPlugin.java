@@ -3,7 +3,9 @@ package net.imglib2.labkit.plugin;
 import net.imglib2.labkit.MainFrame;
 import net.imglib2.labkit.inputimage.InputImage;
 import net.imglib2.labkit.inputimage.SpimDataInputImage;
+import net.imglib2.labkit.utils.ProgressConsumer;
 import org.scijava.Context;
+import org.scijava.app.StatusService;
 import org.scijava.command.Command;
 import org.scijava.plugin.Parameter;
 import org.scijava.plugin.Plugin;
@@ -28,15 +30,16 @@ public class LabkitImportPlugin implements Command {
 	}
 
 	private static void run(Context context, File file) {
-		InputImage image = openImage( file );
+		ProgressConsumer progressConsumer = context.service(StatusService.class)::showProgress;
+		InputImage image = openImage(progressConsumer, file);
 		new MainFrame(context, image);
 	}
 
-	private static InputImage openImage( File file )
+	private static InputImage openImage(ProgressConsumer progressConsumer, File file)
 	{
 		String filename = file.getAbsolutePath();
 		if(filename.endsWith( ".czi" ))
-			return CziOpener.openWithDialog(file.getAbsolutePath());
+			return new CziOpener(progressConsumer).openWithDialog(file.getAbsolutePath());
 		if(filename.endsWith( ".xml" ))
 			return new SpimDataInputImage( filename );
 		throw new UnsupportedOperationException( "Only files with extension czi / xml are supported." );

@@ -1,6 +1,5 @@
 package net.imglib2.labkit.utils;
 
-import ij.IJ;
 import net.imglib2.FinalInterval;
 import net.imglib2.Interval;
 import net.imglib2.RandomAccessibleInterval;
@@ -14,6 +13,7 @@ import java.util.List;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Future;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
@@ -47,23 +47,16 @@ public class ParallelUtils {
 	}
 
 	public static List<Callable<Void>> addShowProgress(List<Callable<Void>> chunks) {
-		AtomicInteger i = new AtomicInteger(0);
-		return chunks.stream().map(
-				runnable -> (Callable<Void>) (() -> {
-					runnable.call();
-					System.out.print("Chunk " + i.addAndGet(1) + " of " + chunks.size() + "\n");
-					return null;
-				})
-		).collect(Collectors.toList());
+		return addProgress(chunks, ProgressConsumer.systemOut());
 	}
 
-	public static List<Callable<Void>> addStatusBarProgress(List<Callable<Void>> chunks) {
+	public static List<Callable<Void>> addProgress(List<Callable<Void>> chunks, ProgressConsumer progressConsumer) {
 		AtomicInteger i = new AtomicInteger(0);
 		int n = chunks.size();
 		return chunks.stream().map(
 				runnable -> (Callable<Void>) (() -> {
 					runnable.call();
-					IJ.showProgress(i.incrementAndGet(), n);
+					progressConsumer.showProgress(i.incrementAndGet(), n);
 					return null;
 				})
 		).collect(Collectors.toList());

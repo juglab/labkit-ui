@@ -3,9 +3,11 @@ package net.imglib2.labkit.actions;
 import net.imglib2.labkit.BatchSegmenter;
 import net.imglib2.labkit.Extensible;
 import net.imglib2.labkit.segmentation.Segmenter;
+import net.imglib2.labkit.utils.ProgressConsumer;
 import net.imglib2.trainable_segmention.RevampUtils;
 import org.scijava.Cancelable;
 import org.scijava.Context;
+import org.scijava.app.StatusService;
 import org.scijava.command.Command;
 import org.scijava.command.CommandInfo;
 import org.scijava.module.Module;
@@ -69,6 +71,9 @@ public class BatchSegmentAction {
 		@Parameter(label = "output directory", style = FileWidget.DIRECTORY_STYLE)
 		private File outputDirectory;
 
+		@Parameter
+		private StatusService statusService;
+
 		private Segmenter segmenter;
 
 		public void setSegmenter(Segmenter segmenter ) {
@@ -77,7 +82,7 @@ public class BatchSegmentAction {
 
 		@Override
 		public void run() {
-			BatchSegmenter batchSegmenter = new BatchSegmenter( segmenter );
+			BatchSegmenter batchSegmenter = new BatchSegmenter( segmenter, statusService::showProgress );
 			for(File file : inputDirectory.listFiles())
 				if(file.isFile())
 					processFile(batchSegmenter, file);

@@ -29,6 +29,7 @@ import net.imglib2.labkit.bdv.BdvShowable;
 import net.imglib2.labkit.inputimage.DatasetInputImage;
 import net.imglib2.labkit.plugin.ui.ImageSelectionDialog;
 import net.imglib2.labkit.utils.ParallelUtils;
+import net.imglib2.labkit.utils.ProgressConsumer;
 import net.imglib2.trainable_segmention.RevampUtils;
 import net.imglib2.type.NativeType;
 import net.imglib2.type.numeric.ARGBType;
@@ -53,12 +54,19 @@ import java.util.stream.Stream;
 
 public class CziOpener {
 
+	private ProgressConsumer progressConsumer;
+
+	public CziOpener(ProgressConsumer progressConsumer) {
+		this.progressConsumer = progressConsumer;
+	}
+
 	public static void main(String... args) throws IOException, FormatException, IncompatibleTypeException, ImgIOException {
-		DatasetInputImage out = openWithDialog("/home/arzt/Documents/Datasets/Lung Images/labeled/2017_11_30__0033.czi");
+		CziOpener opener = new CziOpener(ProgressConsumer.systemOut());
+		DatasetInputImage out = opener.openWithDialog("/home/arzt/Documents/Datasets/Lung Images/labeled/2017_11_30__0033.czi");
 		out.showable().show("Image", BdvOptions.options().is2D());
 	}
 
-	public static DatasetInputImage openWithDialog(String filename) {
+	public DatasetInputImage openWithDialog(String filename) {
 		ImageSelectionDialog dialog = ImageSelectionDialog.show(initReader(filename));
 		List<Integer> selectedSectionIndices = dialog.getSelectedSectionIndices();
 		String labelingFilename = dialog.getLabelingFilename();
@@ -81,19 +89,19 @@ public class CziOpener {
 		return result;
 	}
 
-	private static DatasetInputImage openInputImage(String filename, String labelingFilename, int fullres, int series) {
+	private DatasetInputImage openInputImage(String filename, String labelingFilename, int fullres, int series) {
 		DatasetInputImage result = new DatasetInputImage(openImage(filename, fullres, series));
 		result.setDefaultLabelingFilename(labelingFilename);
 		return result;
 	}
 
-	private static ImgPlus<ARGBType> openImage(String filename, int fullres, int series) {
+	private ImgPlus<ARGBType> openImage(String filename, int fullres, int series) {
 		MyReader reader = new MyReader(filename);
 		long[] dimensions = reader.getImgDimensions( series );
 		int[] cellDimensions = reader.getCellDimensions( series );
 		Img<ARGBType> out = new CellImgFactory<ARGBType>(cellDimensions).create( dimensions, new ARGBType() );
 		List<Callable<Void>> chunks = ParallelUtils.chunkOperation(out, cellDimensions, cell -> reader.readToInterval( series, cell ) );
-		ParallelUtils.executeInParallel(Executors.newFixedThreadPool(8), ParallelUtils.addStatusBarProgress(chunks));
+		ParallelUtils.executeInParallel(Executors.newFixedThreadPool(8), ParallelUtils.addProgress(chunks, progressConsumer));
 		return imgPlus(filename, out, reader.getCalibratedAxes(fullres, series));
 	}
 

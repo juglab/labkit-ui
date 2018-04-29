@@ -99,13 +99,13 @@ public class LabkitUtils {
 		return new ValuePair<>(min, max);
 	}
 
-	public static <T> Img<T> populateCachedImg(Img<T> img) {
+	public static <T> Img<T> populateCachedImg(Img<T> img, ProgressConsumer progressConsumer) {
 		if(img instanceof CachedCellImg)
-			internPopulateCachedImg(LabkitUtils.uncheckedCast(img));
+			internPopulateCachedImg(LabkitUtils.uncheckedCast(img), progressConsumer);
 		return img;
 	}
 
-	private static <T extends NativeType<T>> void internPopulateCachedImg(CachedCellImg<T, ?> img) {
+	private static <T extends NativeType<T>> void internPopulateCachedImg(CachedCellImg<T, ?> img, ProgressConsumer progressConsumer) {
 		int[] cellDimensions = new int[img.getCellGrid().numDimensions()];
 		img.getCellGrid().cellDimensions(cellDimensions);
 		Consumer<RandomAccessibleInterval<T>> accessPixel = target -> {
@@ -117,7 +117,7 @@ public class LabkitUtils {
 		List<Callable<Void>> tasks = ParallelUtils.chunkOperation(img, cellDimensions, accessPixel);
 		ParallelUtils.executeInParallel(
 				Executors.newFixedThreadPool(10),
-				ParallelUtils.addShowProgress(tasks)
+				ParallelUtils.addProgress(tasks, progressConsumer)
 		);
 	}
 

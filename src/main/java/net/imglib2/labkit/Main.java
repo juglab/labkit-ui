@@ -1,6 +1,8 @@
 package net.imglib2.labkit;
 
+import net.imagej.ImageJ;
 import net.imglib2.labkit.actions.AbstractFileIoAcion;
+import org.scijava.Context;
 
 import javax.swing.*;
 import javax.swing.filechooser.FileFilter;
@@ -28,6 +30,8 @@ public class Main {
 	}
 
 	public static void start(String filename) {
-		MainFrame.open(null, filename, false);
+		ImageJ imageJ = new ImageJ();
+		imageJ.ui().showUI();
+		MainFrame.open(imageJ.context(), filename, false);
 	}
 }
