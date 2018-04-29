@@ -11,19 +11,26 @@ import mpicbg.spim.data.sequence.VoxelDimensions;
 import net.imagej.axis.Axes;
 import net.imagej.axis.CalibratedAxis;
 import net.imagej.axis.DefaultLinearAxis;
+import net.imglib2.Dimensions;
 import net.imglib2.RandomAccessibleInterval;
 import net.imglib2.labkit.bdv.BdvShowable;
 import net.imglib2.labkit.utils.LabkitUtils;
 import net.imglib2.trainable_segmention.RevampUtils;
 import net.imglib2.trainable_segmention.pixel_feature.settings.ChannelSetting;
 import net.imglib2.type.numeric.NumericType;
+import net.imglib2.util.Intervals;
 import net.imglib2.view.Views;
+import org.scijava.util.ArrayUtils;
 
+import javax.swing.*;
 import java.io.File;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
+import java.util.concurrent.CancellationException;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
+import java.util.stream.Stream;
 
 public class SpimDataInputImage implements InputImage
 {
@@ -35,11 +42,13 @@ public class SpimDataInputImage implements InputImage
 	private final String filename;
 
 	private final boolean timeseries;
+	private AbstractSequenceDescription<?, ?, ?> sequence;
 
 	public SpimDataInputImage( String filename ) {
 		this.spimData = RevampUtils.wrapException( () -> new XmlIoSpimDataMinimal().load( filename ) );
+		this.sequence = spimData.getSequenceDescription();
 		this.filename = filename;
-		this.timeseries = spimData.getSequenceDescription().getTimePoints().size() > 1;
+		this.timeseries = sequence.getTimePoints().size() > 1;
 		this.imageForSegmentation = initImageForSegmentation();
 	}
 
@@ -56,16 +65,32 @@ public class SpimDataInputImage implements InputImage
 	private RandomAccessibleInterval< ? > initImageForSegmentation()
 	{
 		BasicViewSetup setup = getSetup();
-		AbstractSequenceDescription< ?, ?, ? > seq = spimData.getSequenceDescription();
-		ViewerSetupImgLoader< ?, ? > imgLoader = ( ViewerSetupImgLoader ) seq.getImgLoader().getSetupImgLoader( setup.getId() );
-		List< TimePoint > timePoints = seq.getTimePoints().getTimePointsOrdered();
-		return combineFrames( imgLoader, timePoints );
+		ViewerSetupImgLoader< ?, ? > imgLoader = ( ViewerSetupImgLoader ) sequence.getImgLoader().getSetupImgLoader( setup.getId() );
+		List< TimePoint > timePoints = sequence.getTimePoints().getTimePointsOrdered();
+		int level = selectResolution( setup.getSize(), imgLoader.getMipmapResolutions());
+		return combineFrames( imgLoader, timePoints, level );
 	}
 
-	private <T> RandomAccessibleInterval< ? > combineFrames( ViewerSetupImgLoader< T, ? > imgLoader, List< TimePoint > timePoints )
+	private static int selectResolution(Dimensions dimensions, double[][] resolutions) {
+		if(resolutions.length <= 1)
+			return 0;
+		Object[] choices = Stream.of(resolutions).map(resolution -> toString(dimensions, resolution)).toArray();
+		Object choice = JOptionPane.showInputDialog(null, "Select Resolution for Segmentation", "Labkit: open Image", JOptionPane.PLAIN_MESSAGE, null, choices, choices[0]);
+		if(choice == null)
+			throw new CancellationException();
+		return ArrayUtils.indexOf(choices, choice);
+	}
+
+	private static String toString(Dimensions dimensions, double[] resolution) {
+		long[] fullsize = Intervals.dimensionsAsLongArray(dimensions);
+		long[] resolutionSize = IntStream.range(0, fullsize.length).mapToLong(i -> (long) (fullsize[i] / resolution[i])).toArray();
+		return Arrays.toString(resolutionSize);
+	}
+
+	private <T> RandomAccessibleInterval< ? > combineFrames( ViewerSetupImgLoader< T, ? > imgLoader, List< TimePoint > timePoints, int level )
 	{
 		if(timePoints.size() == 1)
-			return imgLoader.getImage( timePoints.get(0).getId(), 2 );
+			return imgLoader.getImage( timePoints.get(0).getId(), level );
 		List< RandomAccessibleInterval< T > > slices = timePoints.stream().map( t -> imgLoader.getImage( t.getId(), 2 ) ).collect( Collectors.toList() );
 		return Views.stack(slices);
 	}
@@ -117,7 +142,7 @@ public class SpimDataInputImage implements InputImage
 
 	private BasicViewSetup getSetup()
 	{
-		return spimData.getSequenceDescription().getViewSetupsOrdered().get(0);
+		return sequence.getViewSetupsOrdered().get(0);
 	}
 
 	@Override public boolean isTimeSeries()
