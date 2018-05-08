@@ -63,7 +63,10 @@ public class LabelingSerializer
 
 	private Labeling openFromJson(String filename) throws IOException {
 		try(FileReader reader = new FileReader(filename)) {
-			return new Gson().fromJson(reader, Labeling.class);
+			Labeling result = new Gson().fromJson(reader, Labeling.class);
+			if(result == null)
+				throw new IOException("Error, labeling file is empty: " + filename);
+			return result;
 		}
 	}
 

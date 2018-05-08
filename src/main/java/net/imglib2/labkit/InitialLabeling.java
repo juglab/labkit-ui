@@ -24,19 +24,22 @@ import java.util.stream.LongStream;
 public class InitialLabeling {
 	static Labeling initLabeling(InputImage inputImage, Context context, List<String> defaultLabels) {
 		String filename = inputImage.getDefaultLabelingFilename();
-		if(new File(filename).exists()) {
+		if(new File(filename).exists())
 			try {
-				Labeling open = new LabelingSerializer(context).open(filename);
-				fixAxes(open, inputImage);
-				return open;
+				return openLabeling(inputImage, context, filename);
 			} catch (IOException e) {
-				e.printStackTrace();
+				System.err.println(e.getMessage());
 			}
-		}
 		Interval interval = inputImage.interval();
 		Labeling labeling = new Labeling(defaultLabels, askShrinkInterval(interval));
 		labeling.setAxes(scaledAxes(getIntegerScale(labeling.interval(), interval).getAsInt(), inputImage.axes()));
 		return labeling;
+	}
+
+	private static Labeling openLabeling(InputImage inputImage, Context context, String filename) throws IOException {
+		Labeling open = new LabelingSerializer(context).open(filename);
+		fixAxes(open, inputImage);
+		return open;
 	}
 
 	private static void fixAxes(Labeling labeling, InputImage image) {
