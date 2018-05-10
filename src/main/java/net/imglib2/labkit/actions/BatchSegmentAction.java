@@ -2,8 +2,9 @@ package net.imglib2.labkit.actions;
 
 import net.imglib2.labkit.BatchSegmenter;
 import net.imglib2.labkit.Extensible;
+import net.imglib2.labkit.models.Holder;
+import net.imglib2.labkit.models.SegmentationItem;
 import net.imglib2.labkit.segmentation.Segmenter;
-import net.imglib2.labkit.utils.ProgressConsumer;
 import net.imglib2.trainable_segmention.RevampUtils;
 import org.scijava.Cancelable;
 import org.scijava.Context;
@@ -29,17 +30,17 @@ import java.util.List;
 public class BatchSegmentAction {
 
 	private final Extensible extensible;
-	private final Segmenter segmenter;
+	private final Holder<SegmentationItem> selectedSegmenter;
 
-	public BatchSegmentAction(Extensible extensible, Segmenter segmenter ) {
+	public BatchSegmentAction(Extensible extensible, Holder< SegmentationItem > selectedSegmenter ) {
 		this.extensible = extensible;
-		this.segmenter = segmenter;
+		this.selectedSegmenter = selectedSegmenter;
 		extensible.addAction("Batch Segment Images ...", "batchSegment", this::segmentImages, "");
 	}
 
 	private void segmentImages() {
 		BatchSegment commandInstance = new BatchSegment();
-		commandInstance.setSegmenter( segmenter );
+		commandInstance.setSegmenter( selectedSegmenter.get().segmenter() );
 		boolean success = harvest(commandInstance, "Batch Segment Images");
 		if(success) commandInstance.run();
 	}

@@ -8,6 +8,8 @@ import net.imglib2.converter.Converter;
 import net.imglib2.converter.Converters;
 import net.imglib2.labkit.bdv.BdvLayer;
 import net.imglib2.labkit.bdv.BdvShowable;
+import net.imglib2.labkit.models.Holder;
+import net.imglib2.labkit.models.SegmentationItem;
 import net.imglib2.labkit.models.SegmentationResultsModel;
 import net.imglib2.labkit.utils.Notifier;
 import net.imglib2.labkit.utils.RandomAccessibleContainer;
@@ -19,29 +21,49 @@ import net.imglib2.type.volatiles.VolatileShortType;
 import net.imglib2.util.ConstantUtils;
 import net.imglib2.view.Views;
 
+import java.util.Collections;
+import java.util.Set;
+import java.util.WeakHashMap;
+
 public class PredictionLayer implements BdvLayer
 {
 
-	private final SegmentationResultsModel model;
-
+	private final Holder<SegmentationItem> model;
 	private final RandomAccessibleContainer< VolatileARGBType > segmentationContainer;
-
 	private final SharedQueue queue = new SharedQueue(Runtime.getRuntime().availableProcessors());
-
 	private Notifier< Runnable > listeners = new Notifier<>();
-
 	private RandomAccessibleInterval< ? extends NumericType< ? > > view;
-
 	private AffineTransform3D transformation;
+	private Set<Segmenter> alreadyRegistered = Collections.newSetFromMap(new WeakHashMap<>());
 
-	public PredictionLayer( SegmentationResultsModel model )
+	public PredictionLayer( Holder< SegmentationItem > model )
 	{
 		this.model = model;
-		final RandomAccessible< VolatileARGBType > emptyPrediction = ConstantUtils.constantRandomAccessible( new VolatileARGBType( 0 ), model.interval().numDimensions() );
-		this.segmentationContainer = new RandomAccessibleContainer<>( emptyPrediction );
-		this.transformation = model.transformation();
-		this.view = Views.interval( segmentationContainer, model.interval() );
-		model.segmentationChangedListeners().add( this::classifierChanged );
+		SegmentationResultsModel selected = model.get().results(); // don't use selected segmentation result for initialization
+		this.segmentationContainer = new RandomAccessibleContainer<>( getEmptyPrediction( selected ) );
+		this.transformation = selected.transformation();
+		this.view = Views.interval( segmentationContainer, selected.interval() );
+		model.notifier().add( ignore -> classifierChanged() );
+		registerListener(model.get().segmenter());
+	}
+
+	private void registerListener( Segmenter segmenter )
+	{
+		if(alreadyRegistered.contains( segmenter ))
+			return;
+		alreadyRegistered.add(segmenter);
+		segmenter.listeners().add( this::onTrainingFinished );
+	}
+
+	private void onTrainingFinished( Segmenter segmenter )
+	{
+		if(model.get().segmenter() == segmenter)
+			classifierChanged();
+	}
+
+	private RandomAccessible< VolatileARGBType > getEmptyPrediction( SegmentationResultsModel selected )
+	{
+		return ConstantUtils.constantRandomAccessible( new VolatileARGBType( 0 ), selected.interval().numDimensions() );
 	}
 
 	private static AffineTransform3D scaleTransformation( double scaling )
@@ -53,14 +75,20 @@ public class PredictionLayer implements BdvLayer
 
 	private void classifierChanged()
 	{
-		final RandomAccessibleInterval<VolatileARGBType> converted = coloredVolatileView();
-		segmentationContainer.setSource(Views.extendValue( converted, new VolatileARGBType(0)  ));
+		SegmentationItem segmentationItem = model.get();
+		registerListener( segmentationItem.segmenter() );
+		SegmentationResultsModel selected = segmentationItem.results();
+		RandomAccessible< VolatileARGBType > source = selected.hasResults() ?
+				Views.extendValue( coloredVolatileView( selected ), new VolatileARGBType( 0 ) ) :
+				getEmptyPrediction( selected );
+		segmentationContainer.setSource( source );
 		listeners.forEach( Runnable::run );
 	}
 
-	private RandomAccessibleInterval<VolatileARGBType > coloredVolatileView() {
-		ARGBType[] colors = model.colors().toArray(new ARGBType[0]);
-		return mapColors(colors, VolatileViews.wrapAsVolatile( model.segmentation(), queue ) );
+	private RandomAccessibleInterval< VolatileARGBType > coloredVolatileView( SegmentationResultsModel selected )
+	{
+		ARGBType[] colors = selected.colors().toArray( new ARGBType[ 0 ] );
+		return mapColors(colors, VolatileViews.wrapAsVolatile( selected.segmentation(), queue ) );
 	}
 
 	private RandomAccessibleInterval<VolatileARGBType> mapColors(ARGBType[] colors, RandomAccessibleInterval<VolatileShortType > source) {

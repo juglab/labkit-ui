@@ -47,9 +47,10 @@ public class SegmentationComponentTest {
 		if(!segmenter.isTrained())
 			System.out.println( "not trained yet" );
 		else {
-			RandomAccessibleInterval<UnsignedByteType> segmentation = segmenter.getSegmentation(new UnsignedByteType());
-			Views.iterable(segmentation).forEach(x -> x.mul(128));
-			ImageJFunctions.show(segmentation);
+			for(RandomAccessibleInterval<UnsignedByteType> segmentation : segmenter.getSegmentations(new UnsignedByteType())) {
+				Views.iterable(segmentation).forEach(x -> x.mul(128));
+				ImageJFunctions.show(segmentation);
+			}
 		}
 	}
 
@@ -57,8 +58,7 @@ public class SegmentationComponentTest {
 		if(!segmenter.isTrained())
 			System.out.println( "not trained yet" );
 		else {
-			RandomAccessibleInterval< FloatType > prediction = segmenter.getPrediction();
-			ImageJFunctions.show( prediction );
+			segmenter.getPredictions().forEach( ImageJFunctions::show );
 		}
 	}
 

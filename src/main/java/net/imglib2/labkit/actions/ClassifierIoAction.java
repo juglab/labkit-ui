@@ -1,7 +1,8 @@
 package net.imglib2.labkit.actions;
 
 import net.imglib2.labkit.Extensible;
-import net.imglib2.labkit.segmentation.Segmenter;
+import net.imglib2.labkit.models.Holder;
+import net.imglib2.labkit.models.SegmentationItem;
 
 import javax.swing.filechooser.FileNameExtensionFilter;
 
@@ -10,20 +11,20 @@ import javax.swing.filechooser.FileNameExtensionFilter;
  */
 public class ClassifierIoAction extends AbstractFileIoAcion {
 
-	private final Segmenter segmenter;
+	private final Holder<SegmentationItem> selectedSegmenter;
 
-	public ClassifierIoAction(Extensible extensible, final Segmenter segmenter ) {
+	public ClassifierIoAction(Extensible extensible, final Holder< SegmentationItem > selectedSegmenter ) {
 		super(extensible, new FileNameExtensionFilter("Classifier", "classifier"));
-		this.segmenter = segmenter;
+		this.selectedSegmenter = selectedSegmenter;
 		initSaveAction("Save Classifier ...", "saveClassifier", this::save, "");
 		initOpenAction("Open Classifier ...", "openClassifier", this::open, "");
 	}
 
 	private void save(String filename) throws Exception {
-		segmenter.saveModel(filename, true);
+		selectedSegmenter.get().segmenter().saveModel(filename, true);
 	}
 
 	private void open(String filename) throws Exception {
-		segmenter.openModel(filename);
+		selectedSegmenter.get().segmenter().openModel(filename);
 	}
 }

@@ -99,7 +99,7 @@ public class LabkitUtils {
 		return new ValuePair<>(min, max);
 	}
 
-	public static <T> Img<T> populateCachedImg(Img<T> img, ProgressConsumer progressConsumer) {
+	public static <T> RandomAccessibleInterval<T> populateCachedImg(RandomAccessibleInterval<T> img, ProgressConsumer progressConsumer) {
 		if(img instanceof CachedCellImg)
 			internPopulateCachedImg(LabkitUtils.uncheckedCast(img), progressConsumer);
 		return img;

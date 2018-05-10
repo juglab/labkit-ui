@@ -2,6 +2,7 @@ package net.imglib2.labkit.models;
 
 import net.imglib2.FinalInterval;
 import net.imglib2.Interval;
+import net.imglib2.RandomAccessibleInterval;
 import net.imglib2.cache.img.CellLoader;
 import net.imglib2.cache.img.DiskCachedCellImgFactory;
 import net.imglib2.cache.img.DiskCachedCellImgOptions;
@@ -15,7 +16,10 @@ import net.imglib2.type.NativeType;
 import net.imglib2.type.numeric.ARGBType;
 import net.imglib2.type.numeric.integer.ShortType;
 import net.imglib2.type.numeric.real.FloatType;
+import net.imglib2.util.ConstantUtils;
+import weka.classifiers.RandomizableMultipleClassifiersCombiner;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -28,18 +32,21 @@ import java.util.stream.Collectors;
 public class SegmentationResultsModel
 {
 	private final SegmentationModel model;
-	private Img<ShortType > segmentation;
-	private Img<FloatType > prediction;
-	private List< String > labels;
-	private List< ARGBType > colors;
+	private boolean hasResults = false;
+	private RandomAccessibleInterval<ShortType > segmentation;
+	private RandomAccessibleInterval<FloatType > prediction;
+	private List< String > labels = Collections.emptyList();
+	private List< ARGBType > colors = Collections.emptyList();
 
 	private Notifier< Runnable > listeners = new Notifier<>();
 
 
-	public SegmentationResultsModel( SegmentationModel model )
+	public SegmentationResultsModel( SegmentationModel model, Segmenter segmenter )
 	{
 		this.model = model;
-		model.segmenter().listeners().add( this::segmenterTrained );
+		segmentation = dummy( new ShortType() );
+		prediction = dummy( new FloatType() );
+		segmenter.listeners().add( this::segmenterTrained );
 	}
 
 	private void segmenterTrained( Segmenter segmenter )
@@ -50,17 +57,22 @@ public class SegmentationResultsModel
 			updatePrediction( segmenter );
 			this.labels = segmenter.classNames();
 			this.colors = this.labels.stream().map(model.colorMap()::getColor).collect( Collectors.toList() );
+			hasResults = true;
 			listeners.forEach( Runnable::run );
 		}
 	}
 
-	public Img<ShortType> segmentation() {
+	public RandomAccessibleInterval<ShortType> segmentation() {
 		return segmentation;
 	}
 
-	public Img<FloatType> prediction() {
-		if(prediction == null)
-			throw new IllegalStateException("No classifier trained yet");
+	private <T> RandomAccessibleInterval<T> dummy( T value )
+	{
+		FinalInterval interval = new FinalInterval( model.grid().getImgDimensions() );
+		return ConstantUtils.constantRandomAccessibleInterval( value, interval.numDimensions(), interval );
+	}
+
+	public RandomAccessibleInterval<FloatType> prediction() {
 		return prediction;
 	}
 
@@ -113,5 +125,10 @@ public class SegmentationResultsModel
 	public AffineTransform3D transformation()
 	{
 		return model.labelTransformation();
+	}
+
+	public boolean hasResults()
+	{
+		return hasResults;
 	}
 }
