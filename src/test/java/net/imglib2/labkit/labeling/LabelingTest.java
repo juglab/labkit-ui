@@ -27,14 +27,14 @@ public class LabelingTest
 
 	private void addPixelLabel( Labeling labeling, String value, long... position )
 	{
-		RandomAccess< ? extends Set< String > > randomAccess = labeling.asImgLabeling().randomAccess();
+		RandomAccess< ? extends Set< String > > randomAccess = labeling.randomAccess();
 		randomAccess.setPosition( position );
 		randomAccess.get().add( value );
 	}
 
 	private Set< String > getPixelLabels( Labeling labeling, long... position )
 	{
-		RandomAccess< ? extends Set< String > > randomAccess = labeling.asImgLabeling().randomAccess();
+		RandomAccess< ? extends Set< String > > randomAccess = labeling.randomAccess();
 		randomAccess.setPosition( position );
 		return randomAccess.get();
 	}
