@@ -27,10 +27,16 @@ import org.scijava.ui.behaviour.Behaviour;
 import org.scijava.ui.behaviour.ClickBehaviour;
 import org.scijava.ui.behaviour.DragBehaviour;
 import org.scijava.ui.behaviour.ScrollBehaviour;
+import org.scijava.ui.behaviour.util.AbstractNamedAction;
 import org.scijava.ui.behaviour.util.RunnableAction;
 
 import javax.swing.*;
 import java.awt.*;
+import java.awt.event.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.stream.IntStream;
 
 /**
@@ -59,6 +65,13 @@ public class LabelBrushController
 
 	boolean sliceTime;
 
+	private final PaintBehavior painter;
+	private final PaintBehavior eraser;
+	private final FloodFillClick floodFill;
+	private final FloodFillClick floodClear;
+
+	private ActionsAndBehaviours behaviours;
+
 	public BrushOverlay getBrushOverlay()
 	{
 		return brushOverlay;
@@ -74,16 +87,121 @@ public class LabelBrushController
 		this.brushOverlay = new BrushOverlay( viewer, model );
 		this.sliceTime = sliceTime;
 		this.model = model;
+		this.behaviours = behaviors;
 
-		behaviors.addBehaviour( new PaintBehavior(true), "paint", "D button1", "SPACE button1" );
+		painter = new PaintBehavior( "paint", true);
+		eraser = new PaintBehavior("erase", false);
+		floodFill = new FloodFillClick( "floodfill", true);
+		floodClear = new FloodFillClick("floodclear", false);
+
+		behaviors.addBehaviour( painter, painter.getName(), "D button1", "SPACE button1" );
 		RunnableAction nop = new RunnableAction("nop", () -> { });
 		nop.putValue(Action.ACCELERATOR_KEY, KeyStroke.getKeyStroke("F"));
 		behaviors.addAction(nop);
-		behaviors.addBehaviour( new PaintBehavior(false), "erase", "E button1", "SPACE button2", "SPACE button3" );
-		behaviors.addBehaviour( new FloodFillClick(true), "floodfill", "F button1" );
-		behaviors.addBehaviour( new FloodFillClick(false), "floodclear", "R button1", "F button2", "F button3" );
+		behaviors.addBehaviour( eraser, eraser.getName(), "E button1", "SPACE button2", "SPACE button3" );
+		behaviors.addBehaviour( floodFill, floodFill.getName(), "F button1" );
+		behaviors.addBehaviour( floodClear, "floodclear", "R button1", "F button2", "F button3" );
 		behaviors.addBehaviour( new ChangeBrushRadius(), "change brush radius", "D scroll", "E scroll", "SPACE scroll" );
 		behaviors.addBehaviour( new MoveBrush(), "move brush", "E", "D", "SPACE" );
+
+		List<NamedDragBehaviour> dragBehaviours = new ArrayList<>();
+		List<NamedClickBehaviour> clickBehaviours = new ArrayList<>();
+		dragBehaviours.add(painter);
+		dragBehaviours.add(eraser);
+		clickBehaviours.add(floodFill);
+		clickBehaviours.add(floodClear);
+
+		clickBehaviours.forEach(behaviour -> {
+			behaviors.addAction(new AbstractNamedAction(behaviour.getName()) {
+				{
+					putValue(Action.SELECTED_KEY, false);
+				}
+				@Override
+				public void actionPerformed(ActionEvent e) {
+					boolean selected = (boolean) getValue(Action.SELECTED_KEY);
+					System.out.println(selected);
+					behaviour.setEnabled(selected);
+				}
+			});
+		});
+
+		dragBehaviours.forEach(behaviour -> {
+			behaviors.addAction(new AbstractNamedAction(behaviour.getName()) {
+				{
+					putValue(Action.SELECTED_KEY, false);
+				}
+				@Override
+				public void actionPerformed(ActionEvent e) {
+					boolean selected = (boolean) getValue(Action.SELECTED_KEY);
+					System.out.println(selected);
+					behaviour.setEnabled(selected);
+				}
+			});
+		});
+
+		viewer.addMouseListener(new MouseAdapter() {
+
+			@Override
+			public void mouseClicked(MouseEvent e) {
+				clickBehaviours.forEach(behaviour -> {
+					if (behaviour.isEnabled()) {
+						behaviour.click(e.getX(), e.getY());
+					}
+				});
+				super.mouseClicked(e);
+			}
+
+			@Override
+			public void mouseReleased(MouseEvent e) {
+				dragBehaviours.forEach(behaviour -> {
+					if (behaviour.isEnabled()) {
+						behaviour.end(e.getX(), e.getY());
+					}
+				});
+				super.mouseReleased(e);
+			}
+
+			@Override
+			public void mouseDragged(MouseEvent e) {
+				dragBehaviours.forEach(behaviour -> {
+					if (behaviour.isEnabled()) {
+						behaviour.drag(e.getX(), e.getY());
+					}
+				});
+				super.mouseDragged(e);
+			}
+
+			@Override
+			public void mouseMoved(MouseEvent e) {
+				//TODO
+				super.mouseMoved(e);
+			}
+		});
+
+		Map<Character, DisabableBehaviour> keymap = new HashMap<>();
+		keymap.put('D', painter);
+		keymap.put('E', eraser);
+		keymap.put('F', floodFill);
+		keymap.put('R', floodClear);
+
+		viewer.addKeyListener(new KeyAdapter() {
+			@Override
+			public void keyPressed(KeyEvent e) {
+				keymap.forEach((key, behaviour) -> {
+					if(e.getKeyChar() == key) {
+						behaviour.setEnabled(true);
+					}
+				});
+			}
+			@Override
+			public void keyReleased(KeyEvent e) {
+				keymap.forEach((key, behaviour) -> {
+					if(e.getKeyChar() == key) {
+						behaviour.setEnabled(false);
+					}
+				});
+			}
+		});
 	}
 
 	private RealPoint displayToImageCoordinates( final int x, final int y )
@@ -97,13 +215,33 @@ public class LabelBrushController
 		return labelLocation;
 	}
 
-	private class PaintBehavior implements DragBehaviour
+	private interface DisabableBehaviour {
+		void setEnabled(boolean enabled);
+		void toggleEnabled();
+		boolean isEnabled();
+	}
+
+	private interface NamedBehaviour {
+		public String getName();
+	}
+
+	private interface NamedClickBehaviour extends ClickBehaviour, DisabableBehaviour, NamedBehaviour {}
+
+	private interface NamedDragBehaviour extends DragBehaviour, DisabableBehaviour, NamedBehaviour {}
+
+	private class PaintBehavior implements NamedDragBehaviour
 	{
+		String name;
+
+		private boolean enabled = false;
+		private boolean initiated = false;
+
 		private boolean value;
 
 		private RealPoint before;
 
-		public PaintBehavior(boolean value) {
+		public PaintBehavior(String name, boolean value) {
+			this.name = name;
 			this.value = value;
 		}
 
@@ -153,8 +291,23 @@ public class LabelBrushController
 		}
 
 		@Override
+		public void setEnabled(boolean enabled) {
+			this.enabled = enabled;
+		}
+
+		@Override
+		public void toggleEnabled() {
+			enabled = !enabled;
+		}
+
+		@Override
+		public boolean isEnabled() { return enabled; }
+
+		@Override
 		public void init( final int x, final int y )
 		{
+			initiated = true;
+			behaviours.getActions().get(getName()).actionPerformed(new ActionEvent(this, 0, ""));
 			RealPoint coords = displayToImageCoordinates(x, y);
 			this.before = coords;
 			paint(coords);
@@ -165,6 +318,7 @@ public class LabelBrushController
 		@Override
 		public void drag( final int x, final int y )
 		{
+			if(!initiated) init(x,y);
 			RealPoint coords = displayToImageCoordinates(x, y);
 			paint(before, coords );
 			this.before = coords;
@@ -175,6 +329,12 @@ public class LabelBrushController
 		@Override
 		public void end( final int x, final int y )
 		{
+			initiated = false;
+		}
+
+		@Override
+		public String getName() {
+			return name;
 		}
 	}
 
@@ -226,11 +386,17 @@ public class LabelBrushController
 		}
 	}
 
-	private class FloodFillClick implements ClickBehaviour
+	private class FloodFillClick implements NamedClickBehaviour
 	{
+
+		private String name;
+
 		private final boolean value;
 
-		FloodFillClick(boolean value) {
+		private boolean enabled = false;
+
+		FloodFillClick(String name, boolean value) {
+			this.name = name;
 			this.value = value;
 		}
 
@@ -253,8 +419,29 @@ public class LabelBrushController
 
 		@Override
 		public void click(int x, int y) {
+			if(!enabled) {
+				behaviours.getActions().get(getName()).actionPerformed(new ActionEvent(this, 0, ""));
+			}
 			floodFill( displayToImageCoordinates(x, y) );
 			fireBitmapChanged();
+		}
+
+		@Override
+		public void setEnabled(boolean enabled) {
+			this.enabled = enabled;
+		}
+
+		@Override
+		public void toggleEnabled() {
+			enabled = !enabled;
+		}
+
+		@Override
+		public boolean isEnabled() { return enabled; }
+
+		@Override
+		public String getName() {
+			return name;
 		}
 	}
 

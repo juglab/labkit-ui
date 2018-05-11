@@ -125,4 +125,10 @@ public class ColoredLabelsModel
 		}
 		return new FinalInterval( min, max );
 	}
+
+    public void clearLabel(String selected) {
+		Holder< Labeling > holder = model.labeling();
+		Labeling labeling = holder.get();
+		labeling.clearLabel(selected);
+    }
 }

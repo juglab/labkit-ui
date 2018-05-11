@@ -1,17 +1,11 @@
 package net.imglib2.labkit;
 
-import java.awt.Component;
+import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.util.Arrays;
 
-import javax.swing.Action;
-import javax.swing.ActionMap;
-import javax.swing.JButton;
-import javax.swing.JCheckBox;
-import javax.swing.JComponent;
-import javax.swing.JFrame;
-import javax.swing.JPanel;
-import javax.swing.JSplitPane;
-import javax.swing.KeyStroke;
+import javax.swing.*;
 
 import net.imagej.ops.OpService;
 import net.imglib2.RandomAccessibleInterval;
@@ -37,6 +31,7 @@ import net.imglib2.labkit.models.ColoredLabelsModel;
 import net.imglib2.labkit.models.ImageLabelingModel;
 import net.imglib2.labkit.models.SegmentationModel;
 import net.imglib2.labkit.models.SegmentationResultsModel;
+import net.imglib2.labkit.panel.ComponentTitledBorder;
 import net.imglib2.labkit.panel.LabelPanel;
 import net.imglib2.labkit.panel.SegmentationPanel;
 import net.imglib2.labkit.plugin.MeasureConnectedComponents;
@@ -49,6 +44,7 @@ import net.imglib2.type.NativeType;
 import net.imglib2.type.numeric.IntegerType;
 import net.imglib2.type.numeric.NumericType;
 import net.imglib2.type.numeric.real.FloatType;
+import net.imglib2.util.Intervals;
 import net.miginfocom.swing.MigLayout;
 
 import org.scijava.Context;
@@ -101,9 +97,7 @@ public class SegmentationComponent implements AutoCloseable {
 		labelingComponent = new LabelingComponent(dialogBoxOwner, model);
 		labelingComponent.addBdvLayer( new PredictionLayer( segmentationResultsModel ) );
 		initActions();
-		JPanel leftPanel = initLeftPanel();
-		JPanel bottomPanel = initBottomPanel();
-		this.panel = initPanel( leftPanel, labelingComponent.getComponent(), bottomPanel );
+		this.panel = initPanel();
 	}
 
 	private void initModels()
@@ -142,63 +136,69 @@ public class SegmentationComponent implements AutoCloseable {
 	private JPanel initLeftPanel()
 	{
 		JPanel panel = new JPanel();
-		panel.setLayout(new MigLayout("","[grow]","[][][grow][][]"));
+		panel.setLayout(new MigLayout("","[grow]","[][grow][grow]"));
 		ActionMap actions = getActions();
-		addCheckbox(panel, actions.get("Image"));
-		addCheckbox(panel, actions.get("Labeling"));
-		panel.add(new LabelPanel(dialogBoxOwner, new ColoredLabelsModel( model ), fixedLabels).getComponent(), "grow, wrap");
-		addCheckbox(panel, actions.get("Segmentation"));
-		panel.add(new SegmentationPanel(dialogBoxOwner, segmentationResultsModel, fixedLabels).getComponent(), "");
+		panel.add(createActionPanel(actions.get("Image"), createImageInfo()), "grow, wrap");
+		panel.add(createActionPanel(actions.get("Labeling"), new LabelPanel(dialogBoxOwner, new ColoredLabelsModel( model ), fixedLabels).getComponent( )), "grow, wrap");
+		panel.add(createActionPanel(actions.get("Segmentation"), new SegmentationPanel(dialogBoxOwner, segmentationResultsModel, fixedLabels, this).getComponent( )), "grow");
+		panel.invalidate();
+		panel.repaint();
 		return panel;
 	}
 
-	private void addCheckbox(JPanel panel2, Action image) {
+	private JComponent createActionPanel(Action action, JComponent panel) {
+		JCheckBox checkbox = createCheckbox(action);
+		checkbox.setBackground(new Color(200,200,200));
+		ComponentTitledBorder componentBorder =
+				new ComponentTitledBorder(checkbox, panel
+						, BorderFactory.createLineBorder(new Color(200,200,200)));
+		panel.setBackground(new Color(200, 200, 200));
+		panel.setBorder(componentBorder);
+		return panel;
+	}
+
+	private JCheckBox createCheckbox(Action image) {
 		JCheckBox checkbox = new JCheckBox(image);
+		// Set default icon for checkbox
+		checkbox.setIcon(new ImageIcon(getClass().getResource("/images/invisible.png")));
+		// Set selected icon when checkbox state is selected
+		checkbox.setSelectedIcon(new ImageIcon(getClass().getResource("/images/visible.png")));
+//		// Set disabled icon for checkbox
+//		checkbox.setDisabledIcon(new ImageIcon(getClass().getResource("images/invisible.png")));
+//		// Set disabled-selected icon for checkbox
+//		checkbox.setDisabledSelectedIcon(new ImageIcon("disabledSelectedIcon.png"));
+		// Set checkbox icon when checkbox is pressed
+		checkbox.setPressedIcon(new ImageIcon(getClass().getResource("/images/visible-hover.png")));
+		// Set icon when a mouse is over the checkbox
+		checkbox.setRolloverIcon(new ImageIcon(getClass().getResource("/images/invisible-hover.png")));
+		// Set icon when a mouse is over a selected checkbox
+		checkbox.setRolloverSelectedIcon(new ImageIcon(getClass().getResource("/images/visible-hover.png")));
 		checkbox.setFocusable(false);
-		panel2.add(checkbox, "wrap");
+		return checkbox;
 	}
 
-	private JPanel initBottomPanel() {
+	private JComponent createImageInfo() {
 		JPanel panel = new JPanel();
-		ActionMap actions = getActions();
-		panel.add( trainClassifierButton( actions ), "grow, wrap");
-		panel.add( selectClassifierButton( actions ), "grow, wrap");
-		panel.add( changeFeatureSettingsButton( actions ), "grow, wrap");
+		panel.setLayout(new MigLayout( "insets 0, gap 0", "[grow]", "" ));
+		JLabel label = new JLabel("Dimensions: " + Arrays.toString(Intervals.dimensionsAsLongArray(inputImage.displayImage())));
+		label.setBackground(UIManager.getColor("List.background"));
+		label.setBorder(BorderFactory.createEmptyBorder(3,6,3,3));
+		label.setOpaque(true);
+		panel.add(label, "grow, span");
 		return panel;
 	}
 
-	private JButton trainClassifierButton( ActionMap actions )
-	{
-		JButton button = new JButton( actions.get( "Train Classifier" ) );
-		button.setFocusable( false );
-		return button;
-	}
-
-	private JButton selectClassifierButton( ActionMap actions )
-	{
-		JButton button = new JButton( actions.get( "Select Classification Algorithm ..." ) );
-		button.setFocusable( false );
-		return button;
-	}
-
-	private JButton changeFeatureSettingsButton( ActionMap actions )
-	{
-		JButton button = new JButton( actions.get( "Change Feature Settings ..." ) );
-		button.setFocusable( false );
-		return button;
-	}
-
-	private JPanel initPanel( JComponent left, JComponent right, JComponent bottom )
+	private JPanel initPanel()
 	{
 		JPanel panel = new JPanel();
 		panel.setLayout(new MigLayout("fill","[grow]","[grow][]"));
 		JSplitPane center = new JSplitPane();
-		center.setSize(100, 100);
 		center.setOneTouchExpandable(true);
-		center.setLeftComponent( left );
-		center.setRightComponent( right );
+		center.setLeftComponent( initLeftPanel() );
+		center.setRightComponent( labelingComponent.getComponent() );
+		center.setBorder(BorderFactory.createEmptyBorder());
 		panel.add( center, "wrap, grow" );
-		panel.add( bottom );
+//		panel.add( bottom );
 		return panel;
 	}
 

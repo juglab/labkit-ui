@@ -1,37 +1,33 @@
 package net.imglib2.labkit.panel;
 
-import java.awt.Color;
-import java.awt.Dimension;
-import java.awt.Graphics;
-import java.awt.image.BufferedImage;
-import java.util.List;
-
-import javax.swing.ImageIcon;
-import javax.swing.JButton;
-import javax.swing.JColorChooser;
-import javax.swing.JComponent;
-import javax.swing.JFrame;
-import javax.swing.JLabel;
-import javax.swing.JPanel;
-import javax.swing.border.EmptyBorder;
-
+import net.imglib2.labkit.SegmentationComponent;
 import net.imglib2.labkit.models.SegmentationResultsModel;
 import net.imglib2.type.numeric.ARGBType;
 import net.miginfocom.swing.MigLayout;
+import org.scijava.ui.behaviour.util.RunnableAction;
 
-public class SegmentationPanel {
+import javax.swing.*;
+import javax.swing.border.EmptyBorder;
+import java.awt.*;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
+import java.util.List;
+
+public class SegmentationPanel extends GroupPanel {
 
 	private final SegmentationResultsModel model;
 	private final ComponentList< String, JPanel > list = new ComponentList<>();
 	private final JPanel panel;
 	private final JFrame dialogParent;
+	private final ActionMap actions;
 
 	public SegmentationPanel(
 			final JFrame dialogParent,
 			final SegmentationResultsModel model,
-			final boolean fixedLabels ) {
+			final boolean fixedLabels, SegmentationComponent segmentationComponent) {
 		this.model = model;
 		this.dialogParent = dialogParent;
+		this.actions = segmentationComponent.getActions();
 		this.panel = initPanel( fixedLabels );
 		model.segmentationChangedListeners().add( this::update );
 		update();
@@ -48,19 +44,28 @@ public class SegmentationPanel {
 		final List< String > labels = model.labels();
 		final List< ARGBType > colors = model.colors();
 		if ( labels == null ) return;
+		//fake, replacit
+		list.add("RandomForest", new SegmentationEntryPanel("RandomForest", this));
 		for ( int i = 0; i < labels.size(); i++ ) {
-			list.add( labels.get( i ), new EntryPanel( labels.get( i ), colors.get( i ) ) );
+			list.add( labels.get( i ), new EntryPanel( labels.get( i ), colors.get( i ), this ) );
 		}
 		list.setSelected( model.selected() );
 	}
 
-	private JPanel initPanel( final boolean fixedLabels ) {
+	private JPanel initPanel(final boolean fixedLabels) {
 		final JPanel panel = new JPanel();
-		panel.setPreferredSize( new Dimension( 200, 100 ) );
-		panel.setLayout( new MigLayout( "insets 0, gap 4pt", "[grow]", "[][grow][][][]" ) );
-		panel.add( new JLabel( "Result:" ), "wrap" );
+		panel.setLayout( new MigLayout( "insets 0, gap 0", "[grow]", "[grow][]" ) );
 		list.listeners().add( this::changeSelectedLabel );
-		panel.add( list.getCompnent(), "grow, wrap" );
+		list.getComponent().setBorder(BorderFactory.createEmptyBorder());
+		panel.add( list.getComponent(), "wrap, grow, span" );
+		if ( !fixedLabels ) {
+			JPanel buttonsPanel = new JPanel();
+			buttonsPanel.setBackground(UIManager.getColor("List.background"));
+			buttonsPanel.setLayout(new MigLayout("insets 4pt, gap 4pt","[grow]", ""));
+			buttonsPanel.add( createActionIconButton("Settings", actions.get("Select Classification Algorithm ..."), "/images/gear.png"), "" );
+			buttonsPanel.add( createActionIconButton("Run segmentation", actions.get( "Train Classifier" ), "/images/run.png"), "gapbefore push" );
+			panel.add(buttonsPanel, "grow, span");
+		}
 		return panel;
 	}
 
@@ -81,29 +86,71 @@ public class SegmentationPanel {
 		model.setColor( label, new ARGBType( newColor.getRGB() ) );
 	}
 
+	private void openSegmentationSettings() {
+
+	}
+
 	// -- Helper methods --
+
+	private class SegmentationEntryPanel extends JPanel {
+
+		SegmentationEntryPanel( final String value, SegmentationPanel parent ) {
+			setOpaque(true);
+			setLayout(new MigLayout("insets 4pt, gap 4pt"));
+			add(new JLabel(value));
+			addMouseListener(new EntryClickListener(parent));
+		}
+	}
 
 	private class EntryPanel extends JPanel {
 
-		EntryPanel( final String value, final ARGBType color ) {
-			setOpaque( true );
-			setLayout( new MigLayout( "insets 4pt, gap 4pt" ) );
+		EntryPanel( final String value, final ARGBType color, SegmentationPanel parent ) {
+			setOpaque(true);
+			setLayout(new MigLayout("insets 4pt 8pt 4pt 4pt, gap 4pt"));
+			add(new JLabel(new ImageIcon(this.getClass().getResource("/images/leaf.png"))));
 			final JButton comp = new JButton();
-			comp.setBorder( new EmptyBorder( 1, 1, 1, 1 ) );
-			comp.setIcon( createIcon( new Color( color.get() ) ) );
-			comp.addActionListener( l -> changeColor( value ) );
-			add( comp );
-			add( new JLabel( value ) );
+			comp.setBorder(new EmptyBorder(1, 1, 1, 1));
+			comp.setIcon(createIcon(new Color(color.get())));
+			comp.addActionListener(l -> changeColor(value));
+			add(comp);
+			add(new JLabel(value));
+			addMouseListener(new EntryClickListener(parent));
+		}
+	}
+
+	private class EntryClickListener extends MouseAdapter {
+
+		private SegmentationPanel parent;
+
+		public EntryClickListener(SegmentationPanel parent) {
+			this.parent = parent;
 		}
 
-		private ImageIcon createIcon( final Color color ) {
-			final BufferedImage image =
-					new BufferedImage( 20, 10, BufferedImage.TYPE_INT_RGB );
-			final Graphics g = image.getGraphics();
-			g.setColor( color );
-			g.fillRect( 0, 0, image.getWidth(), image.getHeight() );
-			g.dispose();
-			return new ImageIcon( image );
+		public void mouseClicked(MouseEvent event) {
+			if (event.getClickCount() == 2) {
+//				parent.renameLabel();
+			}
+		}
+
+		public void mousePressed(MouseEvent e){
+			if (e.isPopupTrigger())
+				doPop(e);
+		}
+
+		public void mouseReleased(MouseEvent e){
+			if (e.isPopupTrigger())
+				doPop(e);
+		}
+
+		private void doPop(MouseEvent e){
+			EntryOptionsMenu menu = new EntryOptionsMenu(parent);
+			menu.show(e.getComponent(), e.getX(), e.getY());
+		}
+	}
+
+	private class EntryOptionsMenu extends JPopupMenu {
+		public EntryOptionsMenu(SegmentationPanel parent) {
+			add( new JMenuItem( "test" ));
 		}
 	}
 }

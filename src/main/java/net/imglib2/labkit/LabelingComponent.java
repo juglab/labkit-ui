@@ -1,12 +1,8 @@
 package net.imglib2.labkit;
 
-import java.awt.BorderLayout;
-
-import javax.swing.ActionMap;
-import javax.swing.JComponent;
-import javax.swing.JFrame;
-import javax.swing.JPanel;
-
+import bdv.util.*;
+import bdv.viewer.DisplayMode;
+import bdv.viewer.ViewerPanel;
 import net.imglib2.labkit.actions.ToggleVisibility;
 import net.imglib2.labkit.control.brush.ChangeLabel;
 import net.imglib2.labkit.control.brush.LabelBrushController;
@@ -14,22 +10,15 @@ import net.imglib2.labkit.labeling.BdvLayer;
 import net.imglib2.labkit.labeling.LabelsLayer;
 import net.imglib2.labkit.models.BitmapModel;
 import net.imglib2.labkit.models.ImageLabelingModel;
-import net.imglib2.labkit.panel.HelpPanel;
-import net.imglib2.labkit.panel.LabelActionsPanel;
+import net.imglib2.labkit.panel.LabelToolsPanel;
 import net.imglib2.labkit.utils.LabkitUtils;
 import net.imglib2.realtransform.AffineTransform3D;
 import net.imglib2.trainable_segmention.RevampUtils;
 import net.imglib2.util.Pair;
-
 import org.scijava.ui.behaviour.util.AbstractNamedAction;
 
-import bdv.util.BdvFunctions;
-import bdv.util.BdvHandle;
-import bdv.util.BdvHandlePanel;
-import bdv.util.BdvOptions;
-import bdv.util.BdvSource;
-import bdv.viewer.DisplayMode;
-import bdv.viewer.ViewerPanel;
+import javax.swing.*;
+import java.awt.*;
 
 public class LabelingComponent implements AutoCloseable {
 
@@ -75,7 +64,7 @@ public class LabelingComponent implements AutoCloseable {
 
 	private void initPanel() {
 		panel.setLayout(new BorderLayout());
-		panel.add(new HelpPanel(), BorderLayout.PAGE_START);
+		panel.add(new LabelToolsPanel(getActions()), BorderLayout.PAGE_START);
 		//TODO finish LabelActionsPanel
 //		panel.add(new LabelActionsPanel(actionsAndBehaviours), BorderLayout.PAGE_START);
 		panel.add(bdvHandle.getViewerPanel());
