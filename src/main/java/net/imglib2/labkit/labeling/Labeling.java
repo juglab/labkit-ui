@@ -8,12 +8,14 @@ import net.imglib2.RandomAccess;
 import net.imglib2.labkit.utils.LabkitUtils;
 import net.imglib2.converter.Converter;
 import net.imglib2.converter.Converters;
+import net.imglib2.loops.LoopBuilder;
 import net.imglib2.roi.IterableRegion;
 import net.imglib2.roi.labeling.ImgLabeling;
 import net.imglib2.roi.labeling.LabelingMapping;
 import net.imglib2.roi.labeling.LabelingType;
 import net.imglib2.sparse.SparseIterableRegion;
 import net.imglib2.sparse.SparseRandomAccessIntType;
+import net.imglib2.type.BooleanType;
 import net.imglib2.type.logic.BitType;
 import net.imglib2.type.numeric.IntegerType;
 import net.imglib2.util.ConstantUtils;
@@ -149,6 +151,14 @@ public class Labeling extends AbstractWrappedInterval implements RandomAccessibl
 		if(labels.contains(label))
 			return;
 		labels.add(label);
+	}
+
+	public void addLabel( String newName, RandomAccessibleInterval<? extends BooleanType<?>> bitmap )
+	{
+		addLabel(newName);
+		LoopBuilder.setImages( bitmap, this).forEachPixel( (i,o) -> {
+			if(i.get()) o.add(newName);
+		} );
 	}
 
 	public void removeLabel(String label) {

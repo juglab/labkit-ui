@@ -5,6 +5,7 @@ import net.imglib2.Interval;
 import net.imglib2.RandomAccessibleInterval;
 import net.imglib2.labkit.actions.AddLabelingIoAction;
 import net.imglib2.labkit.actions.BatchSegmentAction;
+import net.imglib2.labkit.actions.BitmapImportExportAction;
 import net.imglib2.labkit.actions.ClassifierIoAction;
 import net.imglib2.labkit.actions.LabelingIoAction;
 import net.imglib2.labkit.actions.OpenImageAction;
@@ -126,6 +127,7 @@ public class SegmentationComponent implements AutoCloseable {
 		new SelectClassifier(extensible, segmenter );
 		new BatchSegmentAction(extensible, segmenter );
 		new SegmentationAsLabelAction(extensible, segmentationResultsModel, model.labeling());
+		new BitmapImportExportAction(extensible, model);
 		MeasureConnectedComponents.addAction(extensible, model);
 	}
 
