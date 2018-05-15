@@ -13,7 +13,7 @@ public class GroupPanel {
 
     protected JButton createActionIconButton(String name, final Action action, String icon) {
         JButton button = new JButton( action );
-        button.setName(name);
+        button.setText(name);
         if(icon != ""){
             button.setIcon(new ImageIcon(getClass().getResource( icon )));
             button.setIconTextGap(5);

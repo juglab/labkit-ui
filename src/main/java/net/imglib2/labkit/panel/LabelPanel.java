@@ -91,6 +91,18 @@ public class LabelPanel extends GroupPanel {
 		model.renameLabel( label, newLabel );
 	}
 
+	private void moveUpLabel() {
+		String label = model.selected();
+		model.moveLabel( label, -1 );
+		update();
+	}
+
+	private void moveDownLabel() {
+		String label = model.selected();
+		model.moveLabel( label, 1 );
+		update();
+	}
+
 	private void changeColor(String label) {
 		ARGBType color = model.getColor( label );
 		Color newColor = JColorChooser.showDialog(dialogParent, "Choose Color for Label \"" + label + "\"", new Color(color.get()));
@@ -168,6 +180,8 @@ public class LabelPanel extends GroupPanel {
 		private class EntryOptionsMenu extends JPopupMenu {
 			public EntryOptionsMenu(LabelPanel parent) {
 				add( new JMenuItem( new RunnableAction( "Rename", parent::renameLabel )));
+				add( new JMenuItem( new RunnableAction( "Move up", parent::moveUpLabel )));
+				add( new JMenuItem( new RunnableAction( "Move down", parent::moveDownLabel )));
 				add( new JMenuItem( new RunnableAction( "Clear", parent::clearLabel )));
 				add( new JMenuItem(new RunnableAction( "Remove", parent::removeLabel )));
 			}

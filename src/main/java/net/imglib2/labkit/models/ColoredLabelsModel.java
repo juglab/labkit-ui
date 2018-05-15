@@ -78,6 +78,13 @@ public class ColoredLabelsModel
 		holder.notifier().forEach( l -> l.accept( labeling ) );
 	}
 
+	public void moveLabel(String label, int movement) {
+		Holder< Labeling > holder = model.labeling();
+		Labeling labeling = holder.get();
+		labeling.moveLabel(label, movement);
+		holder.notifier().forEach( l -> l.accept( labeling ) );
+	}
+
 	public void setColor(String label, ARGBType newColor) {
 		Holder< Labeling > holder = model.labeling();
 		Labeling labeling = holder.get();
@@ -130,5 +137,6 @@ public class ColoredLabelsModel
 		Holder< Labeling > holder = model.labeling();
 		Labeling labeling = holder.get();
 		labeling.clearLabel(selected);
+		holder.notifier().forEach( l -> l.accept( labeling ) );
     }
 }

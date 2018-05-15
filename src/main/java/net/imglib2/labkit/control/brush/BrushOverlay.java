@@ -50,6 +50,8 @@ public class BrushOverlay implements OverlayRenderer
 		this.radius = radius;
 	}
 
+	public int getRadius() { return radius; }
+
 	public void setVisible( final boolean visible )
 	{
 		this.visible = visible;

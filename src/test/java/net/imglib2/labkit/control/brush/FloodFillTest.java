@@ -44,7 +44,7 @@ public class FloodFillTest {
 	public void test() {
 		Point seed = new Point(2,2);
 		RandomAccessibleInterval<BitType> result = copy(image);
-		LabelBrushController.floodFill(result, seed, new BitType(true));
+		FloodFillClick.floodFill(result, seed, new BitType(true));
 		Views.interval(Views.pair(expectedComponent, result), expectedComponent).forEach(p ->
 				assertEquals(p.getA().get(), p.getB().get()));
 	}

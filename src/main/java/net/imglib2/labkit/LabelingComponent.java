@@ -32,6 +32,8 @@ public class LabelingComponent implements AutoCloseable {
 
 	private ImageLabelingModel model;
 
+	final LabelBrushController brushController;
+
 	public JComponent getComponent() {
 		return panel;
 	}
@@ -47,10 +49,15 @@ public class LabelingComponent implements AutoCloseable {
 		this.dialogBoxOwner = dialogBoxOwner;
 		initBdv( model.spatialDimensions().numDimensions() < 3);
 		actionsAndBehaviours = new ActionsAndBehaviours(bdvHandle);
-		initPanel();
+		brushController = new LabelBrushController(
+				bdvHandle.getViewerPanel(),
+				new BitmapModel( model ),
+				actionsAndBehaviours,
+				model.isTimeSeries());
 		initLabelsLayer();
 		initImageLayer();
 		initBrushLayer();
+		initPanel();
 		this.model.transformationModel().initialize( bdvHandle.getViewerPanel() );
 	}
 
@@ -64,7 +71,7 @@ public class LabelingComponent implements AutoCloseable {
 
 	private void initPanel() {
 		panel.setLayout(new BorderLayout());
-		panel.add(new LabelToolsPanel(getActions()), BorderLayout.PAGE_START);
+		panel.add(new LabelToolsPanel(bdvHandle, getActions(), brushController), BorderLayout.PAGE_START);
 		//TODO finish LabelActionsPanel
 //		panel.add(new LabelActionsPanel(actionsAndBehaviours), BorderLayout.PAGE_START);
 		panel.add(bdvHandle.getViewerPanel());
@@ -97,11 +104,6 @@ public class LabelingComponent implements AutoCloseable {
 
 	private void initBrushLayer()
 	{
-		final LabelBrushController brushController = new LabelBrushController(
-				bdvHandle.getViewerPanel(),
-				new BitmapModel( model ),
-				actionsAndBehaviours,
-				model.isTimeSeries());
 		actionsAndBehaviours.addAction( new ChangeLabel( model ) );
 		bdvHandle.getViewerPanel().getDisplay().addOverlayRenderer( brushController.getBrushOverlay() );
 	}
