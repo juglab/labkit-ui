@@ -59,7 +59,7 @@ public class LabelBrushController
 		behaviors.addBehaviour( new FloodFillClick(true, viewer, model), "floodfill", "F button1" );
 		behaviors.addBehaviour( new FloodFillClick(false, viewer, model), "floodclear", "R button1", "F button2", "F button3" );
 		behaviors.addBehaviour( new ChangeBrushRadius(), "change brush radius", "D scroll", "E scroll", "SPACE scroll" );
-		behaviors.addBehaviour( new MoveBrush(), "move brush", "E", "D", "SPACE" );
+		behaviors.addBehaviour( new MoveBrush(brushOverlay, viewer), "move brush", "E", "D", "SPACE" );
 
 	}
 
@@ -80,33 +80,6 @@ public class LabelBrushController
 				brushOverlay.setRadius( brushRadius );
 				brushOverlay.requestRepaint();
 			}
-		}
-	}
-
-	private class MoveBrush implements DragBehaviour
-	{
-
-		@Override
-		public void init( final int x, final int y )
-		{
-			brushOverlay.setPosition( x, y );
-			brushOverlay.setVisible( true );
-			viewer.setCursor( Cursor.getPredefinedCursor( Cursor.CROSSHAIR_CURSOR ) );
-			brushOverlay.requestRepaint();
-		}
-
-		@Override
-		public void drag( final int x, final int y )
-		{
-			brushOverlay.setPosition( x, y );
-		}
-
-		@Override
-		public void end( final int x, final int y )
-		{
-			brushOverlay.setVisible( false );
-			viewer.setCursor( Cursor.getPredefinedCursor( Cursor.DEFAULT_CURSOR ) );
-			brushOverlay.requestRepaint();
 		}
 	}
 

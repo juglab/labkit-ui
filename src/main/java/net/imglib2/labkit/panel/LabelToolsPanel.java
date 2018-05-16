@@ -1,7 +1,9 @@
 package net.imglib2.labkit.panel;
 
 import bdv.util.BdvHandle;
+import bdv.viewer.ViewerPanel;
 import net.imglib2.labkit.control.brush.LabelBrushController;
+import net.imglib2.labkit.control.brush.MoveBrush;
 import net.miginfocom.swing.MigLayout;
 import org.scijava.ui.behaviour.Behaviour;
 import org.scijava.ui.behaviour.BehaviourMap;
@@ -11,10 +13,7 @@ import org.scijava.ui.behaviour.util.TriggerBehaviourBindings;
 
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.awt.event.ItemEvent;
-import java.awt.event.ItemListener;
+import java.awt.event.*;
 
 public class LabelToolsPanel extends JPanel {
 
@@ -26,80 +25,89 @@ public class LabelToolsPanel extends JPanel {
 	private JPanel eraseOptions;
 	private JPanel brushSizeOptions;
 	private JPanel optionPane;
+	private JRadioButton btn1;
+	private ViewerPanel viewerPanel;
+	private MoveBrush moveBehaviour;
+	private MouseAdapter mouseOverlay;
+
+	ButtonGroup mainGroup = new ButtonGroup();
 
 	public LabelToolsPanel(BdvHandle bdvHandle, ActionMap actions, LabelBrushController brushController) {
 		this.brushController = brushController;
 		this.actions = actions;
+		this.viewerPanel = bdvHandle.getViewerPanel();
 		triggerBindings = bdvHandle.getTriggerbindings();
-		ButtonGroup group = new ButtonGroup();
+		moveBehaviour = (MoveBrush) brushController.getBehaviour("move brush");
+		mouseOverlay = new MouseAdapter() {
+			@Override
+			public void mouseEntered(MouseEvent e) {
+				moveBehaviour.init(e.getX(), e.getY());
+			}
+			@Override
+			public void mouseMoved(MouseEvent e) {
+				moveBehaviour.drag(e.getX(), e.getY());
+			}
+			@Override
+			public void mouseExited(MouseEvent e) {
+				moveBehaviour.end(e.getX(), e.getY());
+			}
+		};
+
 		setLayout(new MigLayout("flowy, insets 4pt, gap 4pt", "[][][][][]", "[][]push"));
 		setBorder(BorderFactory.createEmptyBorder(0,0,4,0));
-		JToggleButton moveBtn = createActionButton("Move", null, "/images/move.png");
-		JToggleButton paintBtn = createActionButton("Draw (D)", actions.get("paint"), "/images/draw.png");
-		JToggleButton eraseBtn = createActionButton("Erase", actions.get(drawEraseMode ? "erase" : "floodclear"), "/images/erase.png");
-		JToggleButton fillBtn = createActionButton("Flood Fill (F)\nThis only works properly on 2D images", actions.get("floodfill"), "/images/fill.png");
-		moveBtn.addItemListener(new MoveBtnListener());
-		paintBtn.addItemListener(new PaintBtnListener());
-		eraseBtn.addItemListener(new EraseBtnListener());
-		fillBtn.addItemListener(new FillBtnListener());
-		group.add(moveBtn);
-		group.add(paintBtn);
-		group.add(eraseBtn);
-		group.add(fillBtn);
-		add(moveBtn, "wrap, spany");
-		add(paintBtn, "wrap, spany");
-		add(fillBtn, "wrap, spany");
-		add(eraseBtn, "wrap, spany");
+		JToggleButton moveBtn = createActionButton("Move", null, "/images/move.png", new MoveBtnListener());
+		createActionButton("Draw (D)", actions.get("paint"), "/images/draw.png", new PaintBtnListener());
+		createActionButton("Erase", actions.get(drawEraseMode ? "erase" : "floodclear"), "/images/erase.png", new EraseBtnListener());
+		createActionButton("Flood Fill (F)", actions.get("floodfill"), "/images/fill.png", new FillBtnListener());
 		optionPane = new JPanel();
-		optionPane.setLayout(new MigLayout("flowy, insets 0, gap 4pt"));
-		addBrushSizeOption(optionPane);
+		GridLayout gridLayout = new GridLayout(0, 2);
+		optionPane.setLayout(gridLayout);
 		addEraseOptions(optionPane);
+		addBrushSizeOption(optionPane);
 		add(optionPane, "wrap, pushy");
 		JButton help = new JButton();
 		help.setIcon(new ImageIcon(this.getClass().getResource("/images/help.png")));
 		help.setMargin(new Insets(0,0,0,0));
 		help.addActionListener(new HelpWindow());
 		add(help, "spany, push, al right");
+
+		btn1.doClick();
 		moveBtn.doClick();
 	}
 
-	private Component createSwitchLabelHint() {
-		JLabel label = new JLabel("<html><div style='text-align:right;'>To switch between labels:<br />Press N on the keyboard or<br />select the label on the left panel.</div>");
-		return label;
-	}
-
-	private JToggleButton createActionButton(String buttonTitle, Action action, String iconPath) {
+	private JToggleButton createActionButton(String buttonTitle, Action action, String iconPath, ItemListener listener) {
 		JToggleButton button = new JToggleButton(action);
 		button.setIcon(new ImageIcon(this.getClass().getResource(iconPath)));
 		button.setToolTipText(buttonTitle);
 		button.setMargin(new Insets(0,0,0,0));
+		button.addItemListener(listener);
+		mainGroup.add(button);
+		add(button, "wrap, spany");
 		return button;
 	}
 
 	private void addEraseOptions(JPanel panel) {
-		JRadioButton btn1 = createRadioButton("Erase area on mouse click", "Floodremove (R) to remove one connected component of a label");
+		btn1 = createRadioButton("Erase area on mouse click", "Floodremove (R) to remove one connected component of a label");
 		JRadioButton btn2 = createRadioButton("Erase stroke on mouse drag", "Erase (E) where you drag the mouse");
 		ButtonGroup group = new ButtonGroup();
 		group.add(btn1);
 		group.add(btn2);
 		btn1.addItemListener(new DrawEraseModeBtnListener());
-		btn1.doClick();
 		eraseOptions = new JPanel();
-		eraseOptions.setLayout(new MigLayout("gap 4pt", "", "[][]push"));
-		eraseOptions.add(btn1, "wrap");
-		eraseOptions.add(btn2, "");
+		eraseOptions.setLayout(new GridLayout(2,0));
+		eraseOptions.add(btn1);
+		eraseOptions.add(btn2);
 		eraseOptions.setVisible(false);
-		panel.add(eraseOptions, "wrap, dock east");
+		panel.add(eraseOptions);
 	}
 
 	private void addBrushSizeOption(JPanel panel) {
 		JSlider brushSize = new JSlider();
 		brushSizeOptions = new JPanel();
-		brushSizeOptions.setLayout(new MigLayout("gap 4pt", "", "[][]push"));
-		brushSizeOptions.add(new Label("Brush size:"), "wrap");
-		brushSizeOptions.add(brushSize, "wrap");
-		brushSizeOptions.setVisible(false);
-		panel.add(brushSizeOptions, "wrap, dock east");
+		brushSizeOptions.setLayout(new GridLayout(2,0));
+		brushSizeOptions.add(new Label("Brush size:"));
+		brushSizeOptions.add(brushSize);
+		panel.add(brushSizeOptions);
 	}
 
 	private JRadioButton createRadioButton(String name, String toolTip) {
@@ -115,6 +123,16 @@ public class LabelToolsPanel extends JPanel {
 
 	private void setEraseOptionsVisible(boolean visible) {
 		eraseOptions.setVisible(visible);
+	}
+
+	private void registerMouseMotion() {
+		viewerPanel.getDisplay().addMouseListener(mouseOverlay);
+		viewerPanel.getDisplay().addMouseMotionListener(mouseOverlay);
+	}
+
+	private void unregisterMouseMotion() {
+		viewerPanel.getDisplay().removeMouseListener(mouseOverlay);
+		viewerPanel.getDisplay().removeMouseMotionListener(mouseOverlay);
 	}
 
 	private abstract class LabkitBtnListener implements ItemListener {
@@ -152,10 +170,12 @@ public class LabelToolsPanel extends JPanel {
 	private class MoveBtnListener extends LabkitBtnListener {
 		@Override
 		protected void enableAction() {
+			unregisterMouseMotion();
 			triggerBindings.removeBehaviourMap("blockTranslation");
 		}
 		@Override
 		protected void disableAction() {
+			registerMouseMotion();
 			final BehaviourMap blockTranslation = new BehaviourMap();
 			blockTranslation.put("drag rotate", new Behaviour() {});
 			blockTranslation.put("2d drag rotate", new Behaviour() {});
