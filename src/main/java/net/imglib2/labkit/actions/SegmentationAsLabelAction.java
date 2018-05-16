@@ -20,13 +20,12 @@ import java.util.Set;
 /**
  * @author Matthias Arzt
  */
-public class SegmentationAsLabelAction extends AbstractFileIoAcion {
+public class SegmentationAsLabelAction {
 
 	private final Holder<Labeling> labelingHolder;
 	private final SegmentationResultsModel model;
 
 	public SegmentationAsLabelAction(Extensible extensible, SegmentationResultsModel model, Holder<Labeling> labelingHolder) {
-		super(extensible, AbstractFileIoAcion.TIFF_FILTER);
 		this.labelingHolder = labelingHolder;
 		this.model = model;
 		extensible.addAction("Create Label from Segmentation...", "addSegmentationAsLabel",
