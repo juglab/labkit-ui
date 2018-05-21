@@ -7,7 +7,6 @@ import net.imglib2.img.Img;
 import net.imglib2.img.display.imagej.ImageJFunctions;
 import net.imglib2.type.numeric.NumericType;
 import net.imglib2.type.numeric.integer.UnsignedByteType;
-import net.imglib2.type.numeric.real.FloatType;
 import net.imglib2.view.Views;
 import net.miginfocom.swing.MigLayout;
 import org.scijava.Context;
@@ -16,15 +15,15 @@ import org.scijava.ui.behaviour.util.RunnableAction;
 import javax.swing.*;
 import java.awt.*;
 
-public class SegmentationComponentTest {
+public class SegmentationComponentDemo {
 
 	private final SegmentationComponent segmenter;
 
 	public static void main(String... args) {
-		new SegmentationComponentTest();
+		new SegmentationComponentDemo();
 	}
 
-	private SegmentationComponentTest() {
+	private SegmentationComponentDemo() {
 		JFrame frame = setupFrame();
 		Img<? extends NumericType<?>> image = ImageJFunctions.wrap(new ImagePlus(
 			"/home/arzt/Documents/Datasets/beans.tif"));
