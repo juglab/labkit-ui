@@ -9,6 +9,7 @@ import bdv.viewer.ViewerPanel;
 import net.imglib2.labkit.actions.ToggleVisibility;
 import net.imglib2.labkit.bdv.BdvLayer;
 import net.imglib2.labkit.control.brush.ChangeLabel;
+import net.imglib2.labkit.control.brush.FloodFillController;
 import net.imglib2.labkit.control.brush.LabelBrushController;
 import net.imglib2.labkit.labeling.LabelsLayer;
 import net.imglib2.labkit.models.BitmapModel;
@@ -93,6 +94,7 @@ public class LabelingComponent implements AutoCloseable {
 				new BitmapModel( model ),
 				actionsAndBehaviours,
 				model.isTimeSeries());
+		new FloodFillController( bdvHandle.getViewerPanel(), model, actionsAndBehaviours, model.isTimeSeries() );
 		actionsAndBehaviours.addAction( new ChangeLabel( model ) );
 		bdvHandle.getViewerPanel().getDisplay().addOverlayRenderer( brushController.getBrushOverlay() );
 	}

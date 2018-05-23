@@ -45,8 +45,6 @@ import java.util.stream.IntStream;
 public class LabelBrushController
 {
 
-	private static final double[] PIXEL_CENTER_OFFSET = { 0.5, 0.5, 0.5 };
-
 	final private ViewerPanel viewer;
 
 	private final BitmapModel model;
@@ -79,22 +77,8 @@ public class LabelBrushController
 		nop.putValue(Action.ACCELERATOR_KEY, KeyStroke.getKeyStroke("F"));
 		behaviors.addAction(nop);
 		behaviors.addBehaviour( new PaintBehavior(false), "erase", "E button1", "SPACE button2", "SPACE button3" );
-		behaviors.addBehaviour( new FloodFillClick(true), "floodfill", "F button1" );
-		behaviors.addBehaviour( new FloodFillClick(false), "floodclear", "R button1", "F button2", "F button3" );
 		behaviors.addBehaviour( new ChangeBrushRadius(), "change brush radius", "D scroll", "E scroll", "SPACE scroll" );
 		behaviors.addBehaviour( new MoveBrush(), "move brush", "E", "D", "SPACE" );
-	}
-
-	private RealPoint displayToImageCoordinates( final int x, final int y )
-	{
-		final RealPoint labelLocation = new RealPoint(3);
-		labelLocation.setPosition( x, 0 );
-		labelLocation.setPosition( y, 1 );
-		labelLocation.setPosition( 0, 2 );
-		viewer.displayToGlobalCoordinates( labelLocation );
-		model.transformation().applyInverse( labelLocation, labelLocation );
-		labelLocation.move( PIXEL_CENTER_OFFSET );
-		return labelLocation;
 	}
 
 	private class PaintBehavior implements DragBehaviour
@@ -265,43 +249,5 @@ public class LabelBrushController
 			viewer.setCursor( Cursor.getPredefinedCursor( Cursor.DEFAULT_CURSOR ) );
 			brushOverlay.requestRepaint();
 		}
-	}
-
-	private class FloodFillClick implements ClickBehaviour
-	{
-		private final boolean value;
-
-		FloodFillClick(boolean value) {
-			this.value = value;
-		}
-
-		protected void floodFill( final RealLocalizable coords)
-		{
-			synchronized ( viewer )
-			{
-				RandomAccessibleInterval<BitType> bitmap = bitmap();
-				Point seed = roundAndReduceDimension(coords, bitmap.numDimensions());
-				LabelBrushController.floodFill( bitmap, seed, new BitType(value));
-			}
-		}
-
-		private Point roundAndReduceDimension(final RealLocalizable realLocalizable, int numDimesions) {
-			Point point = new Point(numDimesions);
-			for (int i = 0; i < point.numDimensions(); i++)
-				point.setPosition((long) realLocalizable.getDoublePosition(i), i);
-			return point;
-		}
-
-		@Override
-		public void click(int x, int y) {
-			floodFill( displayToImageCoordinates(x, y) );
-			fireBitmapChanged();
-		}
-	}
-
-	public static <T extends Type<T> & ValueEquals<T>> void floodFill(RandomAccessibleInterval<T> image, Localizable seed, T value) {
-		Filter<Pair<T, T>, Pair<T, T>> filter = (f, s) -> ! value.valueEquals(f.getB());
-		ExtendedRandomAccessibleInterval<T, RandomAccessibleInterval<T>> target = Views.extendValue(image, value);
-		net.imglib2.algorithm.fill.FloodFill.fill(target, target, seed, value, new DiamondShape(1), filter);
 	}
 }
