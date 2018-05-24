@@ -15,6 +15,7 @@ import net.imglib2.labkit.utils.LabkitUtils;
 import net.imglib2.realtransform.AffineTransform3D;
 import net.imglib2.trainable_segmention.RevampUtils;
 import net.imglib2.util.Pair;
+import net.miginfocom.swing.MigLayout;
 import org.scijava.ui.behaviour.util.AbstractNamedAction;
 
 import javax.swing.*;
@@ -70,11 +71,11 @@ public class LabelingComponent implements AutoCloseable {
 	}
 
 	private void initPanel() {
-		panel.setLayout(new BorderLayout());
-		panel.add(new LabelToolsPanel(bdvHandle, getActions(), brushController), BorderLayout.PAGE_START);
+		panel.setLayout(new MigLayout("", "[grow]", "[][grow]"));
+		panel.add(new LabelToolsPanel(bdvHandle, getActions(), brushController), "wrap, growx");
 		//TODO finish LabelActionsPanel
 //		panel.add(new LabelActionsPanel(actionsAndBehaviours), BorderLayout.PAGE_START);
-		panel.add(bdvHandle.getViewerPanel());
+		panel.add(bdvHandle.getViewerPanel(), "grow");
 	}
 
 	private void initImageLayer() {
