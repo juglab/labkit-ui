@@ -6,14 +6,14 @@ import net.imglib2.labkit.panel.LabelPanel;
 
 import javax.swing.*;
 
-public class EnhancedLabelingComponent implements AutoCloseable
+public class LabelingComponent implements AutoCloseable
 {
 
 	private final JSplitPane panel;
 
 	private final WrappedBdv wrappedBdv;
 
-	public EnhancedLabelingComponent( JFrame dialogBoxOwner, ImageLabelingModel model ) {
+	public LabelingComponent( JFrame dialogBoxOwner, ImageLabelingModel model ) {
 		this.wrappedBdv = new WrappedBdv(dialogBoxOwner, model);
 		JComponent leftPanel = new LabelPanel( dialogBoxOwner, new ColoredLabelsModel( model ), true ).getComponent();
 		this.panel = initSplitPane( leftPanel, wrappedBdv.getComponent() );

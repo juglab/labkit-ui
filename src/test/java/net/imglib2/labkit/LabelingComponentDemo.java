@@ -36,7 +36,7 @@ public class LabelingComponentDemo
 
 	private static JComponent initLabelingComponent( JFrame frame, ImageLabelingModel model )
 	{
-		EnhancedLabelingComponent labelingComponent = new EnhancedLabelingComponent( frame, model );
+		LabelingComponent labelingComponent = new LabelingComponent( frame, model );
 		frame.addWindowListener( new WindowAdapter()
 		{
 			@Override public void windowClosing( WindowEvent e )
