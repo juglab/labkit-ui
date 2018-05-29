@@ -28,7 +28,7 @@ import java.util.WeakHashMap;
 
 public class PredictionLayer implements BdvLayer {
 
-	private final Holder<SegmentationItem> model;
+	private final Holder<? extends SegmentationItem> model;
 	private final RandomAccessibleContainer<VolatileARGBType> segmentationContainer;
 	private final SharedQueue queue = new SharedQueue(Runtime.getRuntime()
 		.availableProcessors());
@@ -38,7 +38,7 @@ public class PredictionLayer implements BdvLayer {
 	private Set<Segmenter> alreadyRegistered = Collections.newSetFromMap(
 		new WeakHashMap<>());
 
-	public PredictionLayer(Holder<SegmentationItem> model) {
+	public PredictionLayer(Holder<? extends SegmentationItem> model) {
 		this.model = model;
 		SegmentationResultsModel selected = model.get().results(); // don't use
 																																// selected
