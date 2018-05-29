@@ -36,7 +36,7 @@ public class LabelingComponentHdf5Demo
 	private static JComponent initLabelingComponent( JFrame frame, SpimDataMinimal spimData )
 	{
 		ImageLabelingModel model = initModel( spimData );
-		LabelingComponent labelingComponent = new LabelingComponent( frame, model );
+		EnhancedLabelingComponent labelingComponent = new EnhancedLabelingComponent( frame, model );
 		frame.addWindowListener( new WindowAdapter()
 		{
 			@Override public void windowClosing( WindowEvent e )

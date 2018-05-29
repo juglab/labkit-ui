@@ -52,7 +52,7 @@ public class SegmentationComponent implements AutoCloseable {
 
 	private final JFrame dialogBoxOwner;
 
-	private LabelingComponent labelingComponent;
+	private WrappedBdv wrappedBdv;
 
 	private ImageLabelingModel model;
 
@@ -93,11 +93,11 @@ public class SegmentationComponent implements AutoCloseable {
 		this.context = context;
 		this.fixedLabels = fixedLabels;
 		initModels(image, labeling);
-		labelingComponent = new LabelingComponent(dialogBoxOwner, model);
-		labelingComponent.addBdvLayer( new PredictionLayer( segmentationResultsModel ) );
+		wrappedBdv = new WrappedBdv(dialogBoxOwner, model);
+		wrappedBdv.addBdvLayer( new PredictionLayer( segmentationResultsModel ) );
 		initActions();
 		JPanel leftPanel = initLeftPanel();
-		this.panel = initPanel( leftPanel, labelingComponent.getComponent() );
+		this.panel = initPanel( leftPanel, wrappedBdv.getComponent() );
 	}
 
 	private void initModels( InputImage image, Labeling labeling )
@@ -164,7 +164,7 @@ public class SegmentationComponent implements AutoCloseable {
 	}
 
 	public ActionMap getActions() {
-		return labelingComponent.getActions();
+		return wrappedBdv.getActions();
 	}
 
 	public <T extends IntegerType<T> & NativeType<T>> RandomAccessibleInterval<T> getSegmentation(T type) {
@@ -191,7 +191,7 @@ public class SegmentationComponent implements AutoCloseable {
 	@Override
 	public void close()
 	{
-		labelingComponent.close();
+		wrappedBdv.close();
 	}
 
 	private class MyExtensible implements Extensible {
@@ -206,7 +206,7 @@ public class SegmentationComponent implements AutoCloseable {
 			RunnableAction a = new RunnableAction(title, action);
 			a.putValue(Action.ACTION_COMMAND_KEY, command);
 			a.putValue(Action.ACCELERATOR_KEY, KeyStroke.getKeyStroke(keyStroke));
-			labelingComponent.addAction( a );
+			wrappedBdv.addAction( a );
 		}
 
 		@Override

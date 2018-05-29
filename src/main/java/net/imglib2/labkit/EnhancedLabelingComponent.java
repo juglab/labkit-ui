@@ -11,12 +11,12 @@ public class EnhancedLabelingComponent implements AutoCloseable
 
 	private final JSplitPane panel;
 
-	private final LabelingComponent labelingComponent;
+	private final WrappedBdv wrappedBdv;
 
 	public EnhancedLabelingComponent( JFrame dialogBoxOwner, ImageLabelingModel model ) {
-		this.labelingComponent = new LabelingComponent(dialogBoxOwner, model);
+		this.wrappedBdv = new WrappedBdv(dialogBoxOwner, model);
 		JComponent leftPanel = new LabelPanel( dialogBoxOwner, new ColoredLabelsModel( model ), true ).getComponent();
-		this.panel = initSplitPane( leftPanel, labelingComponent.getComponent() );
+		this.panel = initSplitPane( leftPanel, wrappedBdv.getComponent() );
 	}
 
 	private JSplitPane initSplitPane( JComponent left, JComponent right )
@@ -36,6 +36,6 @@ public class EnhancedLabelingComponent implements AutoCloseable
 	@Override
 	public void close()
 	{
-		labelingComponent.close();
+		wrappedBdv.close();
 	}
 }
