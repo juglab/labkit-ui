@@ -9,7 +9,7 @@ import net.imglib2.labkit.inputimage.InputImage;
 import net.imglib2.labkit.labeling.Labeling;
 import net.imglib2.labkit.models.ColoredLabelsModel;
 import net.imglib2.labkit.models.ImageLabelingModel;
-import net.imglib2.labkit.models.SegmentationModel;
+import net.imglib2.labkit.models.DefaultSegmentationModel;
 import net.imglib2.labkit.panel.GuiUtils;
 import net.imglib2.labkit.panel.LabelPanel;
 import net.imglib2.labkit.panel.SegmenterPanel;
@@ -50,7 +50,7 @@ public class SegmentationComponent implements AutoCloseable {
 
 	private final InputImage inputImage;
 
-	private SegmentationModel segmentationModel;
+	private DefaultSegmentationModel segmentationModel;
 
 	public SegmentationComponent(Context context, JFrame dialogBoxOwner,
 		RandomAccessibleInterval<? extends NumericType<?>> image,
@@ -98,7 +98,7 @@ public class SegmentationComponent implements AutoCloseable {
 	private void initModels(InputImage image, Labeling labeling) {
 		model = new ImageLabelingModel(image.showable(), labeling, inputImage
 			.isTimeSeries());
-		segmentationModel = new SegmentationModel(image.imageForSegmentation(),
+		segmentationModel = new DefaultSegmentationModel(image.imageForSegmentation(),
 			model, () -> initClassifier(context));
 	}
 

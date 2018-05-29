@@ -18,7 +18,6 @@ import net.imglib2.type.numeric.ARGBType;
 import net.imglib2.type.numeric.integer.ShortType;
 import net.imglib2.type.numeric.real.FloatType;
 import net.imglib2.util.ConstantUtils;
-import weka.classifiers.RandomizableMultipleClassifiersCombiner;
 
 import java.util.Collections;
 import java.util.List;

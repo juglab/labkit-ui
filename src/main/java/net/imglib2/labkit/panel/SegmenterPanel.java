@@ -2,7 +2,7 @@
 package net.imglib2.labkit.panel;
 
 import net.imglib2.labkit.models.SegmentationItem;
-import net.imglib2.labkit.models.SegmentationModel;
+import net.imglib2.labkit.models.DefaultSegmentationModel;
 import net.miginfocom.swing.MigLayout;
 
 import javax.swing.*;
@@ -10,13 +10,13 @@ import javax.swing.event.ListSelectionEvent;
 
 public class SegmenterPanel {
 
-	private final SegmentationModel segmentationModel;
+	private final DefaultSegmentationModel segmentationModel;
 
 	private final JPanel panel = new JPanel();
 
 	private final JList<SegmentationItem> list = new JList<>();
 
-	public SegmenterPanel(SegmentationModel segmentationModel,
+	public SegmenterPanel(DefaultSegmentationModel segmentationModel,
 		ActionMap actions)
 	{
 		this.segmentationModel = segmentationModel;
