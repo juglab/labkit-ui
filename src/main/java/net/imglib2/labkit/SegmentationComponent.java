@@ -3,7 +3,16 @@ package net.imglib2.labkit;
 
 import net.imglib2.Interval;
 import net.imglib2.RandomAccessibleInterval;
-import net.imglib2.labkit.actions.*;
+import net.imglib2.labkit.actions.AddLabelingIoAction;
+import net.imglib2.labkit.actions.BatchSegmentAction;
+import net.imglib2.labkit.actions.BitmapImportExportAction;
+import net.imglib2.labkit.actions.ClassifierIoAction;
+import net.imglib2.labkit.actions.LabelingIoAction;
+import net.imglib2.labkit.actions.OpenImageAction;
+import net.imglib2.labkit.actions.OrthogonalView;
+import net.imglib2.labkit.actions.SegmentationAsLabelAction;
+import net.imglib2.labkit.actions.SegmentationSave;
+import net.imglib2.labkit.actions.SelectClassifier;
 import net.imglib2.labkit.inputimage.DefaultInputImage;
 import net.imglib2.labkit.inputimage.InputImage;
 import net.imglib2.labkit.labeling.Labeling;
@@ -19,7 +28,6 @@ import net.imglib2.labkit.segmentation.Segmenter;
 import net.imglib2.labkit.segmentation.TrainClassifier;
 import net.imglib2.labkit.segmentation.weka.TimeSeriesSegmenter;
 import net.imglib2.labkit.segmentation.weka.TrainableSegmentationSegmenter;
-import net.imglib2.labkit.utils.ProgressConsumer;
 import net.imglib2.type.NativeType;
 import net.imglib2.type.numeric.IntegerType;
 import net.imglib2.type.numeric.NumericType;
@@ -27,8 +35,6 @@ import net.imglib2.type.numeric.real.FloatType;
 import net.imglib2.util.Intervals;
 import net.miginfocom.swing.MigLayout;
 import org.scijava.Context;
-import org.scijava.app.StatusService;
-import org.scijava.ui.behaviour.util.RunnableAction;
 
 import javax.swing.*;
 import java.util.Arrays;
@@ -111,7 +117,8 @@ public class SegmentationComponent implements AutoCloseable {
 	}
 
 	private void initActions() {
-		MyExtensible extensible = new MyExtensible();
+		DefaultExtensible extensible = new DefaultExtensible(context,
+			dialogBoxOwner, labelingComponent);
 		new TrainClassifier(extensible, segmentationModel);
 		new ClassifierIoAction(extensible, segmentationModel.selectedSegmenter());
 		new LabelingIoAction(extensible, model.labeling(), inputImage);
@@ -192,31 +199,4 @@ public class SegmentationComponent implements AutoCloseable {
 		labelingComponent.close();
 	}
 
-	private class MyExtensible implements Extensible {
-
-		@Override
-		public Context context() {
-			return context;
-		}
-
-		@Override
-		public void addAction(String title, String command, Runnable action,
-			String keyStroke)
-		{
-			RunnableAction a = new RunnableAction(title, action);
-			a.putValue(Action.ACTION_COMMAND_KEY, command);
-			a.putValue(Action.ACCELERATOR_KEY, KeyStroke.getKeyStroke(keyStroke));
-			labelingComponent.addAction(a);
-		}
-
-		@Override
-		public JFrame dialogParent() {
-			return dialogBoxOwner;
-		}
-
-		@Override
-		public ProgressConsumer progressConsumer() {
-			return context.getService(StatusService.class)::showProgress;
-		}
-	}
 }
