@@ -2,12 +2,10 @@ package net.imglib2.labkit.panel;
 
 import net.imglib2.labkit.models.SegmentationItem;
 import net.imglib2.labkit.models.SegmentationModel;
-import net.imglib2.labkit.segmentation.Segmenter;
 import net.miginfocom.swing.MigLayout;
 
 import javax.swing.*;
 import javax.swing.event.ListSelectionEvent;
-import java.util.function.Supplier;
 
 public class SegmenterPanel
 {
@@ -19,7 +17,7 @@ public class SegmenterPanel
 
 	public SegmenterPanel( SegmentationModel segmentationModel, ActionMap actions ) {
 		this.segmentationModel = segmentationModel;
-		panel.setLayout( new MigLayout( "insets 0", "[grow][]" ) );
+		panel.setLayout( new MigLayout( "insets 0, gap 0", "[grow]", "[grow][]" ) );
 		panel.add( initList(), "grow, wrap");
 		panel.add( initAddButton(), "split 2, grow");
 		panel.add( initTrainButton( actions ), "grow");

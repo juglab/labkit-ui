@@ -190,7 +190,25 @@ public class Labeling extends AbstractWrappedInterval implements RandomAccessibl
 		}
 	}
 
-	public static class SetEntryAsBitType<T> extends BitType {
+    public void clearLabel(String selected) {
+		Cursor<?> cursor = sparsityCursor();
+		RandomAccess<Set<String>> ra = randomAccess();
+		while(cursor.hasNext())	{
+			cursor.fwd();
+			ra.setPosition(cursor);
+			Set<String> set = ra.get();
+			set.remove(selected);
+		}
+    }
+
+	public void moveLabel(String selected, int movement) {
+		int oldindex = labels.indexOf(selected);
+		int newindex = Math.max(0, Math.min(oldindex + movement, labels.size()-1));
+		labels.set(oldindex, labels.get(newindex));
+		labels.set(newindex, selected);
+	}
+
+    public static class SetEntryAsBitType<T> extends BitType {
 		private Set<T> set = null;
 		private final T entry;
 

@@ -1,5 +1,6 @@
 package net.imglib2.labkit;
 
+
 import bdv.util.BdvHandle;
 import bdv.util.BdvHandlePanel;
 import bdv.util.BdvOptions;
@@ -13,12 +14,11 @@ import net.imglib2.labkit.control.brush.LabelBrushController;
 import net.imglib2.labkit.labeling.LabelsLayer;
 import net.imglib2.labkit.models.BitmapModel;
 import net.imglib2.labkit.models.ImageLabelingModel;
-import net.imglib2.labkit.panel.HelpPanel;
-import net.imglib2.realtransform.AffineTransform3D;
+import net.imglib2.labkit.panel.LabelToolsPanel;
+import net.miginfocom.swing.MigLayout;
 import org.scijava.ui.behaviour.util.AbstractNamedAction;
 
 import javax.swing.*;
-import java.awt.*;
 
 public class LabelingComponent implements AutoCloseable {
 
@@ -31,6 +31,8 @@ public class LabelingComponent implements AutoCloseable {
 	private ActionsAndBehaviours actionsAndBehaviours;
 
 	private ImageLabelingModel model;
+
+	final LabelBrushController brushController;
 
 	public JComponent getComponent() {
 		return panel;
@@ -47,11 +49,16 @@ public class LabelingComponent implements AutoCloseable {
 		this.dialogBoxOwner = dialogBoxOwner;
 
 		initBdv( model.spatialDimensions().numDimensions() < 3);
-		initPanel();
 		actionsAndBehaviours = new ActionsAndBehaviours(bdvHandle);
+		brushController = new LabelBrushController(
+				bdvHandle.getViewerPanel(),
+				new BitmapModel( model ),
+				actionsAndBehaviours,
+				model.isTimeSeries());
 		initLabelsLayer();
 		initImageLayer();
 		initBrushLayer();
+		initPanel();
 		this.model.transformationModel().initialize( bdvHandle.getViewerPanel() );
 	}
 
@@ -64,9 +71,9 @@ public class LabelingComponent implements AutoCloseable {
 	}
 
 	private void initPanel() {
-		panel.setLayout(new BorderLayout());
-		panel.add(new HelpPanel(), BorderLayout.PAGE_START);
-		panel.add(bdvHandle.getViewerPanel());
+		panel.setLayout(new MigLayout("", "[grow]", "[][grow]"));
+		panel.add(new LabelToolsPanel(bdvHandle, brushController), "wrap, growx");
+		panel.add(bdvHandle.getViewerPanel(), "grow");
 	}
 
 	private void initImageLayer() {
@@ -77,7 +84,7 @@ public class LabelingComponent implements AutoCloseable {
 		addBdvLayer( new LabelsLayer( model ) );
 	}
 
-	public BdvSource addBdvLayer( BdvLayer layer )
+	public BdvSource addBdvLayer(BdvLayer layer )
 	{
 		BdvOptions options = BdvOptions.options().addTo( bdvHandle );
 		BdvSource source = layer.image().show(layer.title(), options);
@@ -88,11 +95,6 @@ public class LabelingComponent implements AutoCloseable {
 
 	private void initBrushLayer()
 	{
-		final LabelBrushController brushController = new LabelBrushController(
-				bdvHandle.getViewerPanel(),
-				new BitmapModel( model ),
-				actionsAndBehaviours,
-				model.isTimeSeries());
 		actionsAndBehaviours.addAction( new ChangeLabel( model ) );
 		bdvHandle.getViewerPanel().getDisplay().addOverlayRenderer( brushController.getBrushOverlay() );
 	}
