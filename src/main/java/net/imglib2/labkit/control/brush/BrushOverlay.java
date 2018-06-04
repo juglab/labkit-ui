@@ -3,20 +3,14 @@
  */
 package net.imglib2.labkit.control.brush;
 
-import java.awt.AlphaComposite;
-import java.awt.BasicStroke;
-import java.awt.Color;
-import java.awt.FontMetrics;
-import java.awt.Graphics;
-import java.awt.Graphics2D;
-import java.awt.RenderingHints;
-import java.awt.geom.Rectangle2D;
-
 import bdv.util.Affine3DHelpers;
 import bdv.viewer.ViewerPanel;
 import net.imglib2.labkit.models.BitmapModel;
 import net.imglib2.realtransform.AffineTransform3D;
 import net.imglib2.ui.OverlayRenderer;
+
+import java.awt.*;
+import java.awt.geom.Rectangle2D;
 
 /**
  * @author Stephan Saalfeld &lt;saalfelds@janelia.hhmi.org&gt;

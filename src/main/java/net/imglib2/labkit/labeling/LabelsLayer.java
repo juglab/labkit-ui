@@ -3,18 +3,17 @@ package net.imglib2.labkit.labeling;
 import gnu.trove.map.TIntObjectMap;
 import gnu.trove.map.hash.TIntObjectHashMap;
 import net.imglib2.RandomAccessibleInterval;
+import net.imglib2.converter.Converters;
 import net.imglib2.labkit.bdv.BdvLayer;
 import net.imglib2.labkit.bdv.BdvShowable;
+import net.imglib2.labkit.color.ColorMap;
 import net.imglib2.labkit.models.LabelingModel;
 import net.imglib2.labkit.utils.Notifier;
 import net.imglib2.labkit.utils.RandomAccessibleContainer;
-import net.imglib2.labkit.color.ColorMap;
-import net.imglib2.converter.Converters;
-import net.imglib2.realtransform.AffineTransform3D;
 import net.imglib2.type.numeric.ARGBType;
 import net.imglib2.view.Views;
 
-import java.util.Set;
+import java.util.*;
 
 /**
  * @author Matthias Arzt
@@ -54,7 +53,9 @@ public class LabelsLayer implements BdvLayer
 			ARGBType c = colors.get(i);
 			if(c == null) {
 				Set<String> set = labeling.getLabelSets().get(i);
-				c = set.isEmpty() ? new ARGBType(0) : colorMap.getColor(set.iterator().next());
+				List<String> sortedSet = new ArrayList(set);
+				Collections.sort( sortedSet, Comparator.comparing(labeling.getLabels()::indexOf));
+				c = set.isEmpty() ? new ARGBType(0) : colorMap.getColor(sortedSet.iterator().next());
 				colors.put(i, c);
 			}
 			out.set(c);

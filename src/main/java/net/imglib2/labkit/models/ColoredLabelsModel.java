@@ -59,6 +59,7 @@ public class ColoredLabelsModel
 		if(label == null)
 			return;
 		labeling.addLabel(label);
+		model.selectedLabel().set(label);
 		holder.notifier().forEach(l -> l.accept(labeling));
 	}
 
@@ -76,6 +77,13 @@ public class ColoredLabelsModel
 		ARGBType color = model.colorMapProvider().colorMap().getColor( label );
 		model.colorMapProvider().colorMap().setColor( newLabel, color );
 		model.selectedLabel().set( newLabel );
+		holder.notifier().forEach( l -> l.accept( labeling ) );
+	}
+
+	public void moveLabel(String label, int movement) {
+		Holder< Labeling > holder = model.labeling();
+		Labeling labeling = holder.get();
+		labeling.moveLabel(label, movement);
 		holder.notifier().forEach( l -> l.accept( labeling ) );
 	}
 
@@ -126,4 +134,11 @@ public class ColoredLabelsModel
 		}
 		return new FinalInterval( min, max );
 	}
+
+    public void clearLabel(String selected) {
+		Holder< Labeling > holder = model.labeling();
+		Labeling labeling = holder.get();
+		labeling.clearLabel(selected);
+		holder.notifier().forEach( l -> l.accept( labeling ) );
+    }
 }
