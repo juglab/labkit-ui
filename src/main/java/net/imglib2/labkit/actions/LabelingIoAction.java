@@ -1,3 +1,4 @@
+
 package net.imglib2.labkit.actions;
 
 import net.imglib2.RandomAccessibleInterval;
@@ -21,11 +22,15 @@ public class LabelingIoAction extends AbstractFileIoAcion {
 	private final Holder<Labeling> labeling;
 	private final LabelingSerializer serializer;
 
-	public LabelingIoAction(Extensible extensible, Holder<Labeling> labeling, InputImage inputImage) {
-		super(extensible, new FileNameExtensionFilter("Labeling (*.labeling)", "labeling"));
+	public LabelingIoAction(Extensible extensible, Holder<Labeling> labeling,
+		InputImage inputImage)
+	{
+		super(extensible, new FileNameExtensionFilter("Labeling (*.labeling)",
+			"labeling"));
 		this.labeling = labeling;
 		serializer = new LabelingSerializer(extensible.context());
 		initSaveAction("Save Labeling ...", "saveLabeling", new Action() {
+
 			@Override
 			public String suggestedFile() {
 				return inputImage.getDefaultLabelingFilename();
@@ -38,7 +43,8 @@ public class LabelingIoAction extends AbstractFileIoAcion {
 		}, "ctrl S");
 		initOpenAction("Open Labeling ...", "openLabeling", this::open, "ctrl O");
 		extensible.addAction("Show Labeling in ImageJ", "showLabeling", () -> {
-			RandomAccessibleInterval<? extends IntegerType<?>> img = labeling.get().getIndexImg();
+			RandomAccessibleInterval<? extends IntegerType<?>> img = labeling.get()
+				.getIndexImg();
 			ImageJFunctions.show(LabkitUtils.uncheckedCast(img), "Labeling");
 		}, "");
 	}

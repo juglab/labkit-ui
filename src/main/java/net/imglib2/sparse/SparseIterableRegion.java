@@ -1,3 +1,4 @@
+
 package net.imglib2.sparse;
 
 import gnu.trove.set.TLongSet;
@@ -21,7 +22,7 @@ import java.util.Iterator;
  * @author Matthias Arzt
  */
 public class SparseIterableRegion extends AbstractWrappedInterval<Interval>
-		implements IterableRegion<BitType>
+	implements IterableRegion<BitType>
 {
 
 	final private TLongSet codes;
@@ -90,7 +91,9 @@ public class SparseIterableRegion extends AbstractWrappedInterval<Interval>
 		return randomAccess();
 	}
 
-	private class SparseRoiCursor extends AbstractCursor<Void> implements Cursor<Void> {
+	private class SparseRoiCursor extends AbstractCursor<Void> implements
+		Cursor<Void>
+	{
 
 		private final long[] sortedCodes;
 		private final int lastIndex;
@@ -148,15 +151,16 @@ public class SparseIterableRegion extends AbstractWrappedInterval<Interval>
 		}
 	}
 
-	private class SparseRoiRandomAccess extends Point implements RandomAccess<BitType> {
+	private class SparseRoiRandomAccess extends Point implements
+		RandomAccess<BitType>
+	{
 
-		private BitType value = new BitType( new LongArray( 1 ) ) {
+		private BitType value = new BitType(new LongArray(1)) {
+
 			@Override
 			public void set(boolean value) {
-				if(value)
-					SparseIterableRegion.this.add(SparseRoiRandomAccess.this);
-				else
-					remove(SparseRoiRandomAccess.this);
+				if (value) SparseIterableRegion.this.add(SparseRoiRandomAccess.this);
+				else remove(SparseRoiRandomAccess.this);
 			}
 
 			@Override

@@ -1,3 +1,4 @@
+
 package net.imglib2.labkit.bdv;
 
 import bdv.util.BdvOptions;
@@ -13,22 +14,25 @@ import java.util.Objects;
 
 public interface BdvShowable {
 
-	static BdvShowable wrap(RandomAccessibleInterval<? extends NumericType<?>> image) {
+	static BdvShowable wrap(
+		RandomAccessibleInterval<? extends NumericType<?>> image)
+	{
 		return wrap(image, new AffineTransform3D());
 	}
 
-	static BdvShowable wrap(RandomAccessibleInterval<? extends NumericType<?>> image, AffineTransform3D transformation)
+	static BdvShowable wrap(
+		RandomAccessibleInterval<? extends NumericType<?>> image,
+		AffineTransform3D transformation)
 	{
-		return new SimpleBdvShowable( Objects.requireNonNull( image ), transformation );
+		return new SimpleBdvShowable(Objects.requireNonNull(image), transformation);
 	}
 
-	static BdvShowable wrap(AbstractSpimData<?> spimData)
-	{
-		return new SpimBdvShowable( Objects.requireNonNull( spimData ) );
+	static BdvShowable wrap(AbstractSpimData<?> spimData) {
+		return new SpimBdvShowable(Objects.requireNonNull(spimData));
 	}
 
 	static BdvShowable wrap(Source<? extends NumericType<?>> source) {
-		return new SourceBdvShowable( source );
+		return new SourceBdvShowable(source);
 	}
 
 	Interval interval();

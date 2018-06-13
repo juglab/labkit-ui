@@ -1,3 +1,4 @@
+
 package net.imglib2.labkit.plugin;
 
 import net.imglib2.Cursor;
@@ -17,34 +18,28 @@ import static org.junit.Assert.assertEquals;
 
 public class MeasureConnectedComponentsTest {
 
-	int[] data = {
-			0,0,0,0,0,0,0,0,0,0,
-			0,1,1,1,0,0,0,0,0,0,
-			0,1,0,1,0,0,0,0,0,0,
-			0,1,1,1,0,0,1,0,0,0,
-			0,0,0,0,1,0,0,0,0,0,
-			0,1,1,1,0,0,0,0,0,0,
-			0,1,1,1,0,1,1,0,0,0,
-			0,1,1,1,0,0,0,0,0,0,
-			0,1,1,1,0,0,0,0,0,0,
-			0,0,0,0,0,0,0,0,0,0
-	};
+	int[] data = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0,
+		1, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0,
+		0, 0, 0, 0, 0, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 0, 1, 1, 0, 0, 0, 0,
+		1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+		0, 0, 0, 0 };
 
 	IterableRegion<BitType> input = init();
 
 	private IterableRegion<BitType> init() {
 		Img<IntType> ints = ArrayImgs.ints(data, 10, 10);
-		SparseIterableRegion sparse = new SparseIterableRegion(Intervals.createMinSize(0, 0, 10, 10));
+		SparseIterableRegion sparse = new SparseIterableRegion(Intervals
+			.createMinSize(0, 0, 10, 10));
 		Cursor<IntType> cursor = ints.cursor();
-		while(cursor.hasNext())
-			if(cursor.next().get() != 0)
-				sparse.add(cursor);
+		while (cursor.hasNext())
+			if (cursor.next().get() != 0) sparse.add(cursor);
 		return sparse;
 	}
 
 	@Test
 	public void test() {
-		List<Long> result = MeasureConnectedComponents.connectedComponetsSizes(input);
+		List<Long> result = MeasureConnectedComponents.connectedComponetsSizes(
+			input);
 		result.sort(Long::compare);
 		assertEquals(Arrays.asList(1L, 1L, 2L, 8L, 12L), result);
 	}

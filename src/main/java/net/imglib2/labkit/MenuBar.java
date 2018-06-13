@@ -1,3 +1,4 @@
+
 package net.imglib2.labkit;
 
 import org.scijava.ui.behaviour.util.RunnableAction;
@@ -17,8 +18,7 @@ public class MenuBar extends JMenuBar {
 		for (Object key : actions.keys()) {
 			Action action = actions.get(key);
 			String command = (String) action.getValue(Action.ACTION_COMMAND_KEY);
-			if(command != null)
-				this.actions.put(command, action);
+			if (command != null) this.actions.put(command, action);
 		}
 
 		setupSortedMenu();
@@ -26,26 +26,14 @@ public class MenuBar extends JMenuBar {
 	}
 
 	private void setupSortedMenu() {
-		addMenu("Labels")
-				.addItem("openLabeling")
-				.addItem("saveLabeling")
-				.addItem("showLabeling")
-				.addItem("importLabel")
-				.addItem("exportLabel");
-		addMenu("Classifier")
-				.addItem("trainClassifier")
-				.addItem("saveClassifier")
-				.addItem("openClassifier")
-				.addItem("showSegmentation")
-				.addItem("saveSegmentation")
-				.addItem("showPrediction")
-				.addItem("savePrediction")
-				.addItem("addSegmentationAsLabel")
-				.addItem("segmenterSettings");
-		addMenu("View")
-				.addCheckBox("toggleImage")
-				.addCheckBox("toggleLabeling")
-				.addCheckBox("toggleSegmentation");
+		addMenu("Labels").addItem("openLabeling").addItem("saveLabeling").addItem(
+			"showLabeling").addItem("importLabel").addItem("exportLabel");
+		addMenu("Classifier").addItem("trainClassifier").addItem("saveClassifier")
+			.addItem("openClassifier").addItem("showSegmentation").addItem(
+				"saveSegmentation").addItem("showPrediction").addItem("savePrediction")
+			.addItem("addSegmentationAsLabel").addItem("segmenterSettings");
+		addMenu("View").addCheckBox("toggleImage").addCheckBox("toggleLabeling")
+			.addCheckBox("toggleSegmentation");
 	}
 
 	private MenuBuilder addMenu(String title) {
@@ -56,8 +44,8 @@ public class MenuBar extends JMenuBar {
 
 	private Action getAction(String command) {
 		Action action = actions.get(command);
-		if(action == null)
-			return new RunnableAction("Action not found: " + command, () -> {});
+		if (action == null) return new RunnableAction("Action not found: " +
+			command, () -> {});
 		actions.remove(command);
 		return action;
 	}
@@ -75,7 +63,7 @@ public class MenuBar extends JMenuBar {
 			this.menu = menu;
 		}
 
-		public MenuBuilder addItem(String command)	{
+		public MenuBuilder addItem(String command) {
 			return addItem(getAction(command));
 		}
 

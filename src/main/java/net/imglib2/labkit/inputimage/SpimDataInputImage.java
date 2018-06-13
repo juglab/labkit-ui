@@ -1,3 +1,4 @@
+
 package net.imglib2.labkit.inputimage;
 
 import bdv.ViewerSetupImgLoader;
@@ -32,76 +33,86 @@ import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
-public class SpimDataInputImage implements InputImage
-{
+public class SpimDataInputImage implements InputImage {
 
-	private final AbstractSpimData< ? > spimData;
+	private final AbstractSpimData<?> spimData;
 
-	private final RandomAccessibleInterval< ? > imageForSegmentation;
+	private final RandomAccessibleInterval<?> imageForSegmentation;
 
 	private final String filename;
 
 	private final boolean timeseries;
 	private AbstractSequenceDescription<?, ?, ?> sequence;
 
-	public SpimDataInputImage( String filename ) {
-		this.spimData = RevampUtils.wrapException( () -> new XmlIoSpimDataMinimal().load( filename ) );
+	public SpimDataInputImage(String filename) {
+		this.spimData = RevampUtils.wrapException(() -> new XmlIoSpimDataMinimal()
+			.load(filename));
 		this.sequence = spimData.getSequenceDescription();
 		this.filename = filename;
 		this.timeseries = sequence.getTimePoints().size() > 1;
 		this.imageForSegmentation = initImageForSegmentation();
 	}
 
-	@Override public BdvShowable showable()
-	{
-		return BdvShowable.wrap( spimData );
+	@Override
+	public BdvShowable showable() {
+		return BdvShowable.wrap(spimData);
 	}
 
-	@Override public RandomAccessibleInterval< ? extends NumericType< ? > > imageForSegmentation()
+	@Override
+	public RandomAccessibleInterval<? extends NumericType<?>>
+		imageForSegmentation()
 	{
-		return LabkitUtils.uncheckedCast( imageForSegmentation );
+		return LabkitUtils.uncheckedCast(imageForSegmentation);
 	}
 
-	private RandomAccessibleInterval< ? > initImageForSegmentation()
-	{
+	private RandomAccessibleInterval<?> initImageForSegmentation() {
 		BasicViewSetup setup = getSetup();
-		ViewerSetupImgLoader< ?, ? > imgLoader = ( ViewerSetupImgLoader ) sequence.getImgLoader().getSetupImgLoader( setup.getId() );
-		List< TimePoint > timePoints = sequence.getTimePoints().getTimePointsOrdered();
-		int level = selectResolution( setup.getSize(), imgLoader.getMipmapResolutions());
-		return combineFrames( imgLoader, timePoints, level );
+		ViewerSetupImgLoader<?, ?> imgLoader = (ViewerSetupImgLoader) sequence
+			.getImgLoader().getSetupImgLoader(setup.getId());
+		List<TimePoint> timePoints = sequence.getTimePoints()
+			.getTimePointsOrdered();
+		int level = selectResolution(setup.getSize(), imgLoader
+			.getMipmapResolutions());
+		return combineFrames(imgLoader, timePoints, level);
 	}
 
-	private static int selectResolution(Dimensions dimensions, double[][] resolutions) {
-		if(resolutions.length <= 1)
-			return 0;
-		Object[] choices = Stream.of(resolutions).map(resolution -> toString(dimensions, resolution)).toArray();
-		Object choice = JOptionPane.showInputDialog(null, "Select Resolution for Segmentation", "Labkit: open Image", JOptionPane.PLAIN_MESSAGE, null, choices, choices[0]);
-		if(choice == null)
-			throw new CancellationException();
+	private static int selectResolution(Dimensions dimensions,
+		double[][] resolutions)
+	{
+		if (resolutions.length <= 1) return 0;
+		Object[] choices = Stream.of(resolutions).map(resolution -> toString(
+			dimensions, resolution)).toArray();
+		Object choice = JOptionPane.showInputDialog(null,
+			"Select Resolution for Segmentation", "Labkit: open Image",
+			JOptionPane.PLAIN_MESSAGE, null, choices, choices[0]);
+		if (choice == null) throw new CancellationException();
 		return ArrayUtils.indexOf(choices, choice);
 	}
 
 	private static String toString(Dimensions dimensions, double[] resolution) {
 		long[] fullsize = Intervals.dimensionsAsLongArray(dimensions);
-		long[] resolutionSize = IntStream.range(0, fullsize.length).mapToLong(i -> (long) (fullsize[i] / resolution[i])).toArray();
+		long[] resolutionSize = IntStream.range(0, fullsize.length).mapToLong(
+			i -> (long) (fullsize[i] / resolution[i])).toArray();
 		return Arrays.toString(resolutionSize);
 	}
 
-	private <T> RandomAccessibleInterval< ? > combineFrames( ViewerSetupImgLoader< T, ? > imgLoader, List< TimePoint > timePoints, int level )
+	private <T> RandomAccessibleInterval<?> combineFrames(
+		ViewerSetupImgLoader<T, ?> imgLoader, List<TimePoint> timePoints, int level)
 	{
-		if(timePoints.size() == 1)
-			return imgLoader.getImage( timePoints.get(0).getId(), level );
-		List< RandomAccessibleInterval< T > > slices = timePoints.stream().map( t -> imgLoader.getImage( t.getId(), 2 ) ).collect( Collectors.toList() );
+		if (timePoints.size() == 1) return imgLoader.getImage(timePoints.get(0)
+			.getId(), level);
+		List<RandomAccessibleInterval<T>> slices = timePoints.stream().map(
+			t -> imgLoader.getImage(t.getId(), 2)).collect(Collectors.toList());
 		return Views.stack(slices);
 	}
 
-	@Override public ChannelSetting getChannelSetting()
-	{
+	@Override
+	public ChannelSetting getChannelSetting() {
 		return ChannelSetting.SINGLE;
 	}
 
-	@Override public int getSpatialDimensions()
-	{
+	@Override
+	public int getSpatialDimensions() {
 		return interval().numDimensions() - (isTimeSeries() ? 1 : 0);
 	}
 
@@ -110,43 +121,38 @@ public class SpimDataInputImage implements InputImage
 		return filename + ".labeling";
 	}
 
-	@Override public String getName()
-	{
+	@Override
+	public String getName() {
 		return new File(filename).getName();
 	}
 
-	@Override public List< CalibratedAxis > axes()
-	{
+	@Override
+	public List<CalibratedAxis> axes() {
 		VoxelDimensions voxelSize = getVoxelDimensions();
-		List< CalibratedAxis > list = new ArrayList<>();
-		for ( int i = 0; i < voxelSize.numDimensions(); i++ )
-			list.add(new DefaultLinearAxis( voxelSize.dimension( i ) ));
-		if ( timeseries )
-			list.add(new DefaultLinearAxis( Axes.TIME ));
+		List<CalibratedAxis> list = new ArrayList<>();
+		for (int i = 0; i < voxelSize.numDimensions(); i++)
+			list.add(new DefaultLinearAxis(voxelSize.dimension(i)));
+		if (timeseries) list.add(new DefaultLinearAxis(Axes.TIME));
 		return list;
 	}
 
-	private VoxelDimensions getVoxelDimensions()
-	{
+	private VoxelDimensions getVoxelDimensions() {
 		BasicViewSetup setup = getSetup();
-		if(setup.hasVoxelSize())
-			return setup.getVoxelSize();
+		if (setup.hasVoxelSize()) return setup.getVoxelSize();
 		return defaultVoxelSize();
 	}
 
-	private FinalVoxelDimensions defaultVoxelSize()
-	{
-		return new FinalVoxelDimensions( null, IntStream.range( 0, getSpatialDimensions() ).mapToDouble( x -> 1.0 ).toArray() );
+	private FinalVoxelDimensions defaultVoxelSize() {
+		return new FinalVoxelDimensions(null, IntStream.range(0,
+			getSpatialDimensions()).mapToDouble(x -> 1.0).toArray());
 	}
 
-
-	private BasicViewSetup getSetup()
-	{
+	private BasicViewSetup getSetup() {
 		return sequence.getViewSetupsOrdered().get(0);
 	}
 
-	@Override public boolean isTimeSeries()
-	{
+	@Override
+	public boolean isTimeSeries() {
 		return timeseries;
 	}
 }

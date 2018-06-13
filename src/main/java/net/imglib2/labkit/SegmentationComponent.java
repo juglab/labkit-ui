@@ -1,3 +1,4 @@
+
 package net.imglib2.labkit;
 
 import net.imagej.ops.OpService;
@@ -66,90 +67,100 @@ public class SegmentationComponent implements AutoCloseable {
 
 	private SegmentationModel segmentationModel;
 
-	public SegmentationComponent(Context context,
-			JFrame dialogBoxOwner,
-			RandomAccessibleInterval<? extends NumericType<?>> image,
-			boolean isTimeSeries ) {
-		this(context, dialogBoxOwner, initInputImage(image, isTimeSeries), defaultLabeling( image ), true);
-	}
-
-	private static Labeling defaultLabeling( Interval image )
+	public SegmentationComponent(Context context, JFrame dialogBoxOwner,
+		RandomAccessibleInterval<? extends NumericType<?>> image,
+		boolean isTimeSeries)
 	{
-		return new Labeling( Arrays.asList("background", "foreground"), image);
+		this(context, dialogBoxOwner, initInputImage(image, isTimeSeries),
+			defaultLabeling(image), true);
 	}
 
-	public SegmentationComponent( Context context, JFrame dialogBoxOwner, InputImage image )
+	private static Labeling defaultLabeling(Interval image) {
+		return new Labeling(Arrays.asList("background", "foreground"), image);
+	}
+
+	public SegmentationComponent(Context context, JFrame dialogBoxOwner,
+		InputImage image)
 	{
-		this(context, dialogBoxOwner, image, defaultLabeling( image.interval() ), false);
+		this(context, dialogBoxOwner, image, defaultLabeling(image.interval()),
+			false);
 	}
 
-	private static DefaultInputImage initInputImage(RandomAccessibleInterval<? extends NumericType<?>> image, boolean isTimeSeries) {
+	private static DefaultInputImage initInputImage(
+		RandomAccessibleInterval<? extends NumericType<?>> image,
+		boolean isTimeSeries)
+	{
 		DefaultInputImage defaultInputImage = new DefaultInputImage(image);
 		defaultInputImage.setTimeSeries(isTimeSeries);
 		return defaultInputImage;
 	}
 
-	public SegmentationComponent(Context context, JFrame dialogBoxOwner, InputImage image, Labeling labeling, boolean fixedLabels) {
+	public SegmentationComponent(Context context, JFrame dialogBoxOwner,
+		InputImage image, Labeling labeling, boolean fixedLabels)
+	{
 		this.dialogBoxOwner = dialogBoxOwner;
 		this.inputImage = image;
 		this.context = context;
 		this.fixedLabels = fixedLabels;
 		initModels(image, labeling);
 		labelingComponent = new LabelingComponent(dialogBoxOwner, model);
-		labelingComponent.addBdvLayer( new PredictionLayer( segmentationModel.selectedSegmenter() ) );
+		labelingComponent.addBdvLayer(new PredictionLayer(segmentationModel
+			.selectedSegmenter()));
 		initActions();
 		JPanel leftPanel = initLeftPanel();
-		this.panel = initPanel( leftPanel, labelingComponent.getComponent() );
+		this.panel = initPanel(leftPanel, labelingComponent.getComponent());
 	}
 
-	private void initModels( InputImage image, Labeling labeling )
-	{
-		model = new ImageLabelingModel( image.showable(), labeling, inputImage.isTimeSeries());
-		segmentationModel = new SegmentationModel( image.imageForSegmentation(), model, () -> initClassifier( context ) );
+	private void initModels(InputImage image, Labeling labeling) {
+		model = new ImageLabelingModel(image.showable(), labeling, inputImage
+			.isTimeSeries());
+		segmentationModel = new SegmentationModel(image.imageForSegmentation(),
+			model, () -> initClassifier(context));
 	}
 
-	private Segmenter initClassifier( Context context )
-	{
+	private Segmenter initClassifier(Context context) {
 		// FIXME: should this be placed in SegmentationModel
-		TrainableSegmentationSegmenter classifier1 = new TrainableSegmentationSegmenter(context, inputImage);
-		return inputImage.isTimeSeries() ? new TimeSeriesSegmenter(classifier1) : classifier1;
+		TrainableSegmentationSegmenter classifier1 =
+			new TrainableSegmentationSegmenter(context, inputImage);
+		return inputImage.isTimeSeries() ? new TimeSeriesSegmenter(classifier1)
+			: classifier1;
 	}
 
-	private void initActions()
-	{
+	private void initActions() {
 		MyExtensible extensible = new MyExtensible();
-		new TrainClassifier(extensible, segmentationModel );
-		new ClassifierIoAction(extensible, segmentationModel.selectedSegmenter() );
+		new TrainClassifier(extensible, segmentationModel);
+		new ClassifierIoAction(extensible, segmentationModel.selectedSegmenter());
 		new LabelingIoAction(extensible, model.labeling(), inputImage);
 		new AddLabelingIoAction(extensible, model.labeling());
-		new SegmentationSave(extensible, segmentationModel.selectedSegmenter() );
+		new SegmentationSave(extensible, segmentationModel.selectedSegmenter());
 		new OpenImageAction(extensible);
 		new OrthogonalView(extensible, model);
-		new SelectClassifier(extensible, segmentationModel.selectedSegmenter() );
-		new BatchSegmentAction(extensible, segmentationModel.selectedSegmenter() );
-		new SegmentationAsLabelAction(extensible, segmentationModel.selectedSegmenter(), model.labeling());
+		new SelectClassifier(extensible, segmentationModel.selectedSegmenter());
+		new BatchSegmentAction(extensible, segmentationModel.selectedSegmenter());
+		new SegmentationAsLabelAction(extensible, segmentationModel
+			.selectedSegmenter(), model.labeling());
 		new BitmapImportExportAction(extensible, model);
 		MeasureConnectedComponents.addAction(extensible, model);
 	}
 
-	private JPanel initLeftPanel()
-	{
+	private JPanel initLeftPanel() {
 		JPanel leftPanel = new JPanel();
-		leftPanel.setLayout(new MigLayout("","[grow]","[][grow][]"));
+		leftPanel.setLayout(new MigLayout("", "[grow]", "[][grow][]"));
 		ActionMap actions = getActions();
-		leftPanel.add(new VisibilityPanel( actions ), "wrap");
-		leftPanel.add(new LabelPanel(dialogBoxOwner, new ColoredLabelsModel( model ), fixedLabels).getComponent(), "grow, wrap");
-		leftPanel.add(new SegmenterPanel( segmentationModel, actions ).getComponent(), "grow");
+		leftPanel.add(new VisibilityPanel(actions), "wrap");
+		leftPanel.add(new LabelPanel(dialogBoxOwner, new ColoredLabelsModel(model),
+			fixedLabels).getComponent(), "grow, wrap");
+		leftPanel.add(new SegmenterPanel(segmentationModel, actions).getComponent(),
+			"grow");
 		return leftPanel;
 	}
 
-	private JSplitPane initPanel( JComponent left, JComponent right )
-	{
+	private JSplitPane initPanel(JComponent left, JComponent right) {
 		JSplitPane panel = new JSplitPane();
 		panel.setSize(100, 100);
 		panel.setOneTouchExpandable(true);
-		panel.setLeftComponent( left );
-		panel.setRightComponent( right );
+		panel.setLeftComponent(left);
+		panel.setRightComponent(right);
 		return panel;
 	}
 
@@ -161,7 +172,9 @@ public class SegmentationComponent implements AutoCloseable {
 		return labelingComponent.getActions();
 	}
 
-	public <T extends IntegerType<T> & NativeType<T>> List<RandomAccessibleInterval<T>> getSegmentations(T type) {
+	public <T extends IntegerType<T> & NativeType<T>>
+		List<RandomAccessibleInterval<T>> getSegmentations(T type)
+	{
 		return segmentationModel.getSegmentations(type);
 	}
 
@@ -174,8 +187,7 @@ public class SegmentationComponent implements AutoCloseable {
 	}
 
 	@Override
-	public void close()
-	{
+	public void close() {
 		labelingComponent.close();
 	}
 
@@ -187,11 +199,13 @@ public class SegmentationComponent implements AutoCloseable {
 		}
 
 		@Override
-		public void addAction(String title, String command, Runnable action, String keyStroke) {
+		public void addAction(String title, String command, Runnable action,
+			String keyStroke)
+		{
 			RunnableAction a = new RunnableAction(title, action);
 			a.putValue(Action.ACTION_COMMAND_KEY, command);
 			a.putValue(Action.ACCELERATOR_KEY, KeyStroke.getKeyStroke(keyStroke));
-			labelingComponent.addAction( a );
+			labelingComponent.addAction(a);
 		}
 
 		@Override

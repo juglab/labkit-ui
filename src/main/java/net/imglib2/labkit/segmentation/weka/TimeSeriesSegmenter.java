@@ -1,3 +1,4 @@
+
 package net.imglib2.labkit.segmentation.weka;
 
 import net.imglib2.RandomAccessibleInterval;
@@ -16,18 +17,17 @@ import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
-public class TimeSeriesSegmenter implements Segmenter
-{
+public class TimeSeriesSegmenter implements Segmenter {
 
 	private final Segmenter segmenter;
-	private final Notifier< Consumer< Segmenter > > listeners = new Notifier<>();
+	private final Notifier<Consumer<Segmenter>> listeners = new Notifier<>();
 
-	public TimeSeriesSegmenter(Segmenter segmenter ) {
+	public TimeSeriesSegmenter(Segmenter segmenter) {
 		this.segmenter = segmenter;
 		segmenter.listeners().add(this::update);
 	}
 
-	private void update(Segmenter segmenter ) {
+	private void update(Segmenter segmenter) {
 		listeners.forEach(l -> l.accept(this));
 	}
 
@@ -37,30 +37,39 @@ public class TimeSeriesSegmenter implements Segmenter
 	}
 
 	@Override
-	public void segment(RandomAccessibleInterval<?> image, RandomAccessibleInterval<? extends IntegerType<?>> labels) {
-		applyOnSlices( segmenter::segment, image, labels);
+	public void segment(RandomAccessibleInterval<?> image,
+		RandomAccessibleInterval<? extends IntegerType<?>> labels)
+	{
+		applyOnSlices(segmenter::segment, image, labels);
 	}
 
 	@Override
-	public void predict(RandomAccessibleInterval<?> image, RandomAccessibleInterval<? extends RealType<?>> prediction) {
-		applyOnSlices( segmenter::predict, image, prediction);
+	public void predict(RandomAccessibleInterval<?> image,
+		RandomAccessibleInterval<? extends RealType<?>> prediction)
+	{
+		applyOnSlices(segmenter::predict, image, prediction);
 	}
 
-	private <T> void applyOnSlices(BiConsumer<RandomAccessibleInterval<?>, RandomAccessibleInterval<T>> action,
-			RandomAccessibleInterval<?> image,
-			RandomAccessibleInterval<T> target) {
+	private <T> void applyOnSlices(
+		BiConsumer<RandomAccessibleInterval<?>, RandomAccessibleInterval<T>> action,
+		RandomAccessibleInterval<?> image, RandomAccessibleInterval<T> target)
+	{
 		int d = image.numDimensions() - 1;
 		long min = target.min(d);
 		long max = target.max(d);
 		for (long pos = min; pos <= max; pos++)
-			action.accept(Views.hyperSlice(image, d, pos), Views.hyperSlice(target, d, pos));
+			action.accept(Views.hyperSlice(image, d, pos), Views.hyperSlice(target, d,
+				pos));
 	}
 
-
 	@Override
-	public void train(List<? extends RandomAccessibleInterval<?>> image, List<? extends Labeling> groundTruth) {
-		List<RandomAccessibleInterval<?>> images = image.stream().flatMap(i -> RevampUtils.slices(i).stream()).collect(Collectors.toList());
-		List<Labeling> labels = groundTruth.stream().flatMap(g -> Labelings.slices(g).stream()).collect(Collectors.toList());
+	public void train(List<? extends RandomAccessibleInterval<?>> image,
+		List<? extends Labeling> groundTruth)
+	{
+		List<RandomAccessibleInterval<?>> images = image.stream().flatMap(
+			i -> RevampUtils.slices(i).stream()).collect(Collectors.toList());
+		List<Labeling> labels = groundTruth.stream().flatMap(g -> Labelings.slices(
+			g).stream()).collect(Collectors.toList());
 		segmenter.train(images, labels);
 	}
 
@@ -80,7 +89,7 @@ public class TimeSeriesSegmenter implements Segmenter
 	}
 
 	@Override
-	public Notifier< Consumer< Segmenter > > listeners() {
+	public Notifier<Consumer<Segmenter>> listeners() {
 		return listeners;
 	}
 

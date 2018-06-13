@@ -1,3 +1,4 @@
+
 package net.imglib2.labkit.inputimage;
 
 import net.imagej.Dataset;
@@ -23,7 +24,9 @@ public class DatasetInputImage extends AbstractInputImage {
 	private boolean isTimeSeries;
 	private String labelingName;
 
-	public DatasetInputImage(ImgPlus<? extends NumericType<?>> image, BdvShowable showable) {
+	public DatasetInputImage(ImgPlus<? extends NumericType<?>> image,
+		BdvShowable showable)
+	{
 		this.showable = showable;
 		this.image = tryFuseColor(image);
 		this.isTimeSeries = image.dimensionIndex(Axes.TIME) >= 0;
@@ -38,13 +41,14 @@ public class DatasetInputImage extends AbstractInputImage {
 		this(image.getImgPlus());
 	}
 
-	private static ImgPlus<? extends NumericType<?>> tryFuseColor(ImgPlus<? extends NumericType<?>> image) {
-		if(! (image.randomAccess().get() instanceof RealType))
-			return image;
+	private static ImgPlus<? extends NumericType<?>> tryFuseColor(
+		ImgPlus<? extends NumericType<?>> image)
+	{
+		if (!(image.randomAccess().get() instanceof RealType)) return image;
 		@SuppressWarnings("unchecked")
 		ImgPlus<RealType<?>> image1 = (ImgPlus<RealType<?>>) image;
-		if(ImgPlusViews.canFuseColor(image1))
-			return ImgPlusViews.fuseColor(image1);
+		if (ImgPlusViews.canFuseColor(image1)) return ImgPlusViews.fuseColor(
+			image1);
 		return image1;
 	}
 
@@ -54,13 +58,16 @@ public class DatasetInputImage extends AbstractInputImage {
 	}
 
 	@Override
-	public RandomAccessibleInterval<? extends NumericType<?>> imageForSegmentation() {
+	public RandomAccessibleInterval<? extends NumericType<?>>
+		imageForSegmentation()
+	{
 		return image;
 	}
 
 	@Override
 	public ChannelSetting getChannelSetting() {
-		return image.randomAccess().get() instanceof ARGBType ? ChannelSetting.RGB : ChannelSetting.SINGLE;
+		return image.randomAccess().get() instanceof ARGBType ? ChannelSetting.RGB
+			: ChannelSetting.SINGLE;
 	}
 
 	@Override
@@ -84,7 +91,8 @@ public class DatasetInputImage extends AbstractInputImage {
 
 	@Override
 	public List<CalibratedAxis> axes() {
-		return IntStream.range(0, image.numDimensions()).mapToObj(image::axis).collect(Collectors.toList());
+		return IntStream.range(0, image.numDimensions()).mapToObj(image::axis)
+			.collect(Collectors.toList());
 	}
 
 	@Override

@@ -1,3 +1,4 @@
+
 package net.imglib2.labkit;
 
 import bdv.util.BdvHandle;
@@ -40,27 +41,26 @@ public class LabelingComponent implements AutoCloseable {
 		return actionsAndBehaviours.getActions();
 	}
 
-	public LabelingComponent( final JFrame dialogBoxOwner,
-			final ImageLabelingModel model )
+	public LabelingComponent(final JFrame dialogBoxOwner,
+		final ImageLabelingModel model)
 	{
 		this.model = model;
 		this.dialogBoxOwner = dialogBoxOwner;
 
-		initBdv( model.spatialDimensions().numDimensions() < 3);
+		initBdv(model.spatialDimensions().numDimensions() < 3);
 		initPanel();
 		actionsAndBehaviours = new ActionsAndBehaviours(bdvHandle);
 		initLabelsLayer();
 		initImageLayer();
 		initBrushLayer();
-		this.model.transformationModel().initialize( bdvHandle.getViewerPanel() );
+		this.model.transformationModel().initialize(bdvHandle.getViewerPanel());
 	}
 
 	private void initBdv(boolean is2D) {
 		final BdvOptions options = BdvOptions.options();
-		if (is2D)
-			options.is2D();
+		if (is2D) options.is2D();
 		bdvHandle = new BdvHandlePanel(dialogBoxOwner, options);
-		bdvHandle.getViewerPanel().setDisplayMode( DisplayMode.FUSED );
+		bdvHandle.getViewerPanel().setDisplayMode(DisplayMode.FUSED);
 	}
 
 	private void initPanel() {
@@ -70,31 +70,28 @@ public class LabelingComponent implements AutoCloseable {
 	}
 
 	private void initImageLayer() {
-		addBdvLayer( new BdvLayer.FinalLayer( model.showable(), "Image" ) );
+		addBdvLayer(new BdvLayer.FinalLayer(model.showable(), "Image"));
 	}
 
 	private void initLabelsLayer() {
-		addBdvLayer( new LabelsLayer( model ) );
+		addBdvLayer(new LabelsLayer(model));
 	}
 
-	public BdvSource addBdvLayer( BdvLayer layer )
-	{
-		BdvOptions options = BdvOptions.options().addTo( bdvHandle );
+	public BdvSource addBdvLayer(BdvLayer layer) {
+		BdvOptions options = BdvOptions.options().addTo(bdvHandle);
 		BdvSource source = layer.image().show(layer.title(), options);
-		layer.listeners().add( this::requestRepaint );
-		addAction(new ToggleVisibility( layer.title(), source ));
+		layer.listeners().add(this::requestRepaint);
+		addAction(new ToggleVisibility(layer.title(), source));
 		return source;
 	}
 
-	private void initBrushLayer()
-	{
+	private void initBrushLayer() {
 		final LabelBrushController brushController = new LabelBrushController(
-				bdvHandle.getViewerPanel(),
-				new BitmapModel( model ),
-				actionsAndBehaviours,
-				model.isTimeSeries());
-		actionsAndBehaviours.addAction( new ChangeLabel( model ) );
-		bdvHandle.getViewerPanel().getDisplay().addOverlayRenderer( brushController.getBrushOverlay() );
+			bdvHandle.getViewerPanel(), new BitmapModel(model), actionsAndBehaviours,
+			model.isTimeSeries());
+		actionsAndBehaviours.addAction(new ChangeLabel(model));
+		bdvHandle.getViewerPanel().getDisplay().addOverlayRenderer(brushController
+			.getBrushOverlay());
 	}
 
 	public void addAction(AbstractNamedAction action) {
@@ -110,8 +107,7 @@ public class LabelingComponent implements AutoCloseable {
 	}
 
 	@Override
-	public void close()
-	{
+	public void close() {
 		bdvHandle.close();
 	}
 }

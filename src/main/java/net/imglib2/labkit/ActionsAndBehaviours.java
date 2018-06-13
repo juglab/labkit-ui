@@ -1,3 +1,4 @@
+
 package net.imglib2.labkit;
 
 import bdv.util.BdvHandle;
@@ -36,7 +37,9 @@ public class ActionsAndBehaviours {
 		actions.install(bdvHandle.getKeybindings(), "classifier training");
 	}
 
-	public void addBehaviour(Behaviour behaviour, String name, String... defaultTriggers) {
+	public void addBehaviour(Behaviour behaviour, String name,
+		String... defaultTriggers)
+	{
 		behaviors.behaviour(behaviour, name, defaultTriggers);
 		behaviors.install(bdvHandle.getTriggerbindings(), "classifier training");
 	}

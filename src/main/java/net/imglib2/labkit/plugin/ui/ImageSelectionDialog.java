@@ -1,3 +1,4 @@
+
 package net.imglib2.labkit.plugin.ui;
 
 import loci.formats.FormatException;
@@ -18,9 +19,9 @@ public class ImageSelectionDialog {
 
 	public static ImageSelectionDialog show(ImageReader reader) {
 		ImageSelectionDialog dialog = new ImageSelectionDialog(reader);
-		int result = JOptionPane.showConfirmDialog(null, dialog.component(), "Select a section", JOptionPane.OK_CANCEL_OPTION);
-		if(result != JOptionPane.OK_OPTION)
-			throw new CancellationException();
+		int result = JOptionPane.showConfirmDialog(null, dialog.component(),
+			"Select a section", JOptionPane.OK_CANCEL_OPTION);
+		if (result != JOptionPane.OK_OPTION) throw new CancellationException();
 		dialog.updateSelectedSection();
 		return dialog;
 	}
@@ -54,8 +55,7 @@ public class ImageSelectionDialog {
 
 	private void updateSelectedSection() {
 		for (int i = 0; i < boxes.size(); i++)
-			if (boxes.get(i).isSelected())
-				selectedSection = i;
+			if (boxes.get(i).isSelected()) selectedSection = i;
 	}
 
 	private List<List<Integer>> computeSectionIndices() {
@@ -65,11 +65,12 @@ public class ImageSelectionDialog {
 		int lastHeight = -1;
 		for (int i = 0; i < thumbReader.getSeriesCount(); i++) {
 			thumbReader.setSeries(i);
-			if (thumbReader.isThumbnailSeries())
-				continue;
+			if (thumbReader.isThumbnailSeries()) continue;
 			int width = thumbReader.getSizeX();
 			int height = thumbReader.getSizeY();
-			if (indices == null || Math.abs(width - lastWidth / 2) > 2 || Math.abs(height - lastHeight / 2) > 2) {
+			if (indices == null || Math.abs(width - lastWidth / 2) > 2 || Math.abs(
+				height - lastHeight / 2) > 2)
+			{
 				indices = new ArrayList<>();
 				sections.add(indices);
 			}
@@ -94,7 +95,9 @@ public class ImageSelectionDialog {
 	private Panel createSections() {
 		Panel panel = new Panel();
 		panel.setLayout(new MigLayout("", "[]20[][]", ""));
-		panel.add(new JLabel("Please select a section. You can choose the resolution in the next step."), "grow, span,wrap");
+		panel.add(new JLabel(
+			"Please select a section. You can choose the resolution in the next step."),
+			"grow, span,wrap");
 		for (int i = 0; i < sectionIndices.size(); i++) {
 			panel.add(line(), "grow, span, wrap");
 			panel.add(boxes.get(i));
@@ -106,7 +109,8 @@ public class ImageSelectionDialog {
 
 	private Component line() {
 		JPanel line = new JPanel();
-		line.setBorder(BorderFactory.createMatteBorder(1, 0, 0, 0, Color.lightGray));
+		line.setBorder(BorderFactory.createMatteBorder(1, 0, 0, 0,
+			Color.lightGray));
 		return line;
 	}
 
@@ -121,7 +125,8 @@ public class ImageSelectionDialog {
 		labelText += "<font face=\"verdana\">";
 		for (int j : sectionIndices.get(i)) {
 			thumbReader.setSeries(j);
-			labelText += thumbReader.getSizeX() + " x " + thumbReader.getSizeY() + "<br/>";
+			labelText += thumbReader.getSizeX() + " x " + thumbReader.getSizeY() +
+				"<br/>";
 		}
 		label.setText(labelText);
 		return label;
@@ -129,13 +134,16 @@ public class ImageSelectionDialog {
 
 	private Component thumbPanel(int index) {
 		try {
-			int series = sectionIndices.get(index).stream().max(Integer::compareTo).orElse(0);
+			int series = sectionIndices.get(index).stream().max(Integer::compareTo)
+				.orElse(0);
 			thumbReader.setSeries(series);
-			BufferedImage image = thumbReader.openThumbImage(thumbReader.getIndex(thumbReader.getSizeZ() / 2, 0, thumbReader.getSizeT() / 2));
+			BufferedImage image = thumbReader.openThumbImage(thumbReader.getIndex(
+				thumbReader.getSizeZ() / 2, 0, thumbReader.getSizeT() / 2));
 			Panel thumbPanel = new Panel();
 			thumbPanel.add(new JLabel(new ImageIcon(image)));
 			return thumbPanel;
-		} catch (FormatException | IOException e) {
+		}
+		catch (FormatException | IOException e) {
 			return new JPanel();
 		}
 	}
@@ -145,9 +153,9 @@ public class ImageSelectionDialog {
 	}
 
 	private String labelingFilename(Integer index) {
-		if(filename.endsWith(".czi") && index != null) {
-			return filename.substring(0, filename.length() - ".czi".length())
-					+ "-" + (index + 1) + ".czi.labeling";
+		if (filename.endsWith(".czi") && index != null) {
+			return filename.substring(0, filename.length() - ".czi".length()) + "-" +
+				(index + 1) + ".czi.labeling";
 		}
 		return filename + ".labeling";
 	}

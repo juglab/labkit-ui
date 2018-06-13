@@ -1,3 +1,4 @@
+
 package net.imglib2.labkit;
 
 import io.scif.services.DatasetIOService;
@@ -23,54 +24,61 @@ public class MainFrame {
 
 	private JFrame frame = initFrame();
 
-	public static MainFrame open(Context context, String filename, boolean isTimeSeries) {
+	public static MainFrame open(Context context, String filename,
+		boolean isTimeSeries)
+	{
 		final Context context2 = (context == null) ? new Context() : context;
-		Dataset dataset = RevampUtils.wrapException( () -> context2.service(DatasetIOService.class).open(filename) );
+		Dataset dataset = RevampUtils.wrapException(() -> context2.service(
+			DatasetIOService.class).open(filename));
 		DatasetInputImage inputImage = new DatasetInputImage(dataset);
 		inputImage.setTimeSeries(isTimeSeries);
 		return new MainFrame(context2, inputImage);
 	}
 
-	public MainFrame(final Context context, final InputImage inputImage)
-	{
-		Preferences preferences = new Preferences( context );
-		Labeling initialLabeling = getInitialLabeling(inputImage, context, preferences );
-		SegmentationComponent segmentationComponent = initSegmentationComponent( context, inputImage, initialLabeling );
-		new SetLabelsAction( segmentationComponent, preferences );
-		setTitle( inputImage.getName() );
-		frame.setJMenuBar( new MenuBar( segmentationComponent.getActions()) );
+	public MainFrame(final Context context, final InputImage inputImage) {
+		Preferences preferences = new Preferences(context);
+		Labeling initialLabeling = getInitialLabeling(inputImage, context,
+			preferences);
+		SegmentationComponent segmentationComponent = initSegmentationComponent(
+			context, inputImage, initialLabeling);
+		new SetLabelsAction(segmentationComponent, preferences);
+		setTitle(inputImage.getName());
+		frame.setJMenuBar(new MenuBar(segmentationComponent.getActions()));
 		frame.setVisible(true);
 	}
 
-	private SegmentationComponent initSegmentationComponent( Context context, InputImage inputImage, Labeling initialLabeling )
+	private SegmentationComponent initSegmentationComponent(Context context,
+		InputImage inputImage, Labeling initialLabeling)
 	{
-		SegmentationComponent segmentationComponent = new SegmentationComponent(context, frame, inputImage, initialLabeling, false);
+		SegmentationComponent segmentationComponent = new SegmentationComponent(
+			context, frame, inputImage, initialLabeling, false);
 		frame.add(segmentationComponent.getComponent());
-		frame.addWindowListener( new WindowAdapter()
-		{
-			@Override public void windowClosed( WindowEvent e )
-			{
+		frame.addWindowListener(new WindowAdapter() {
+
+			@Override
+			public void windowClosed(WindowEvent e) {
 				segmentationComponent.close();
 			}
-		} );
+		});
 		return segmentationComponent;
 	}
 
-	private Labeling getInitialLabeling(InputImage inputImage, Context context, Preferences preferences) {
+	private Labeling getInitialLabeling(InputImage inputImage, Context context,
+		Preferences preferences)
+	{
 		List<String> defaultLabels = preferences.getDefaultLabels();
 		return InitialLabeling.initLabeling(inputImage, context, defaultLabels);
 	}
 
 	private JFrame initFrame() {
 		JFrame frame = new JFrame();
-		frame.setBounds( 50, 50, 1200, 900 );
+		frame.setBounds(50, 50, 1200, 900);
 		frame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
 		return frame;
 	}
 
-	private void setTitle( String name ) {
-		if(name == null || name.isEmpty())
-			frame.setTitle("Labkit");
+	private void setTitle(String name) {
+		if (name == null || name.isEmpty()) frame.setTitle("Labkit");
 		else frame.setTitle("Labkit - " + name);
 	}
 

@@ -1,3 +1,4 @@
+
 package net.imglib2.labkit.panel;
 
 import net.miginfocom.swing.MigLayout;

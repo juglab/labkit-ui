@@ -1,3 +1,4 @@
+
 package net.imglib2.labkit.actions;
 
 import net.imglib2.Cursor;
@@ -23,10 +24,12 @@ public class AddLabelingIoAction extends AbstractFileIoAcion {
 	private final LabelingSerializer serializer;
 
 	public AddLabelingIoAction(Extensible extensible, Holder<Labeling> labeling) {
-		super(extensible, new FileNameExtensionFilter("Labeling (*.labeling)", "labeling"));
+		super(extensible, new FileNameExtensionFilter("Labeling (*.labeling)",
+			"labeling"));
 		this.labeling = labeling;
 		serializer = new LabelingSerializer(extensible.context());
-		initOpenAction("Open additional Labeling ...", "openAdditionalLabeling", this::openAdditional, "");
+		initOpenAction("Open additional Labeling ...", "openAdditionalLabeling",
+			this::openAdditional, "");
 	}
 
 	private void openAdditional(String filename) throws IOException {
@@ -37,18 +40,20 @@ public class AddLabelingIoAction extends AbstractFileIoAcion {
 
 	// TODO: move to package Labeling
 	private void extendLabeling(Labeling labeling, Labeling newLabeling) {
-		newLabeling.iterableRegions().forEach((label, region) -> addLabel(labeling, label, region));
+		newLabeling.iterableRegions().forEach((label, region) -> addLabel(labeling,
+			label, region));
 	}
 
 	// TODO: move to package Labeling
-	private void addLabel(Labeling labeling, String label, IterableRegion<BitType> region) {
+	private void addLabel(Labeling labeling, String label,
+		IterableRegion<BitType> region)
+	{
 		String newLabel = suggestName(label, labeling.getLabels());
-		if(newLabel == null)
-			return;
+		if (newLabel == null) return;
 		labeling.addLabel(newLabel);
 		Cursor<Void> cursor = region.cursor();
 		RandomAccess<Set<String>> ra = labeling.randomAccess();
-		while(cursor.hasNext()) {
+		while (cursor.hasNext()) {
 			cursor.fwd();
 			ra.setPosition(cursor);
 			ra.get().add(label);
@@ -56,12 +61,10 @@ public class AddLabelingIoAction extends AbstractFileIoAcion {
 	}
 
 	private String suggestName(String label, List<String> labels) {
-		if(!labels.contains(label))
-			return label;
+		if (!labels.contains(label)) return label;
 		for (int i = 0; i < 10000; i++) {
 			String suggestion = label + i;
-			if(!labels.contains(suggestion))
-				return suggestion;
+			if (!labels.contains(suggestion)) return suggestion;
 		}
 		return null;
 	}

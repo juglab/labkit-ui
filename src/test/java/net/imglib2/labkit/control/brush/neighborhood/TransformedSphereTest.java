@@ -1,3 +1,4 @@
+
 package net.imglib2.labkit.control.brush.neighborhood;
 
 import net.imglib2.Interval;
@@ -20,57 +21,54 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
-public class TransformedSphereTest
-{
-	private final AffineTransform3D transform = transform( 0.1, 3, -2, 0.6, 1, 3, 4, 5, -2, -5, -0.6, 8);
+public class TransformedSphereTest {
+
+	private final AffineTransform3D transform = transform(0.1, 3, -2, 0.6, 1, 3,
+		4, 5, -2, -5, -0.6, 8);
 
 	@Test
 	public void testTransformedSphereOutside() {
-		List< RealLocalizable > notContained = Arrays.asList( new RealPoint(1.0, 1.0, 1.0), new RealPoint(0, 1.1, 0) );
-		TransformedSphere sphere = new TransformedSphere( transform );
-		for( RealLocalizable x : RealPoints.transform( transform, notContained ) )
-			assertFalse( sphere.contains( x ) );
+		List<RealLocalizable> notContained = Arrays.asList(new RealPoint(1.0, 1.0,
+			1.0), new RealPoint(0, 1.1, 0));
+		TransformedSphere sphere = new TransformedSphere(transform);
+		for (RealLocalizable x : RealPoints.transform(transform, notContained))
+			assertFalse(sphere.contains(x));
 	}
 
 	@Test
 	public void testTransformedSphereInside() {
-		List< RealLocalizable > contained = Arrays.asList( new RealPoint(0, 0, 0), new RealPoint(0, 1, 0) );
-		TransformedSphere sphere = new TransformedSphere( transform );
-		for( RealLocalizable x : RealPoints.transform( transform, contained ) )
-			assertTrue( sphere.contains( x ) );
+		List<RealLocalizable> contained = Arrays.asList(new RealPoint(0, 0, 0),
+			new RealPoint(0, 1, 0));
+		TransformedSphere sphere = new TransformedSphere(transform);
+		for (RealLocalizable x : RealPoints.transform(transform, contained))
+			assertTrue(sphere.contains(x));
 	}
 
 	@Test
 	public void testTransformedSphereBoundingBox() {
-		TransformedSphere sphere = new TransformedSphere(
-				transform(
-						1.0, 0.0, 0.0, 4.0,
-						0.0, -2.0, 0.0, 0.0,
-						-1.0, 0.0, 3.0, -7.0) );
+		TransformedSphere sphere = new TransformedSphere(transform(1.0, 0.0, 0.0,
+			4.0, 0.0, -2.0, 0.0, 0.0, -1.0, 0.0, 3.0, -7.0));
 		Interval result = sphere.boundingBox();
-		assertTrue( Intervals.equals( Intervals.createMinMax( 3, -2, -11, 5, 2, -3 ), result ) );
+		assertTrue(Intervals.equals(Intervals.createMinMax(3, -2, -11, 5, 2, -3),
+			result));
 	}
 
 	@Test
 	public void testIterableRegion() {
-		TransformedSphere sphere = new TransformedSphere( transform(
-						2, 0, 0, 0,
-						0, 1, 0, 0,
-						0, 0, 1, 0) );
-		RandomAccessibleInterval< BitType > bitmap = TransformedSphere.iterableRegion( sphere, 2 );
-		Img< IntType > expected = ArrayImgs.ints(
-				new int[] { 0, 0, 1, 0, 0,
-				         1, 1, 1, 1, 1,
-				         0, 0, 1, 0, 0 },
-				5, 3 );
-		LoopBuilder.setImages( expected, bitmap ).forEachPixel( (e, a) -> assertEquals(e.getInteger(), a.getInteger()) );
+		TransformedSphere sphere = new TransformedSphere(transform(2, 0, 0, 0, 0, 1,
+			0, 0, 0, 0, 1, 0));
+		RandomAccessibleInterval<BitType> bitmap = TransformedSphere.iterableRegion(
+			sphere, 2);
+		Img<IntType> expected = ArrayImgs.ints(new int[] { 0, 0, 1, 0, 0, 1, 1, 1,
+			1, 1, 0, 0, 1, 0, 0 }, 5, 3);
+		LoopBuilder.setImages(expected, bitmap).forEachPixel((e, a) -> assertEquals(
+			e.getInteger(), a.getInteger()));
 	}
 
-	private static AffineTransform3D transform( double... values )
-	{
+	private static AffineTransform3D transform(double... values) {
 		assert values.length == 12;
 		AffineTransform3D transform = new AffineTransform3D();
-		transform.set( values );
+		transform.set(values);
 		return transform;
 	}
 

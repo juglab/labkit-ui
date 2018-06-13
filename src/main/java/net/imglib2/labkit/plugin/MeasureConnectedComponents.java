@@ -1,3 +1,4 @@
+
 package net.imglib2.labkit.plugin;
 
 import net.imagej.axis.CalibratedAxis;
@@ -35,7 +36,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.StringJoiner;
 
-@Plugin(type = Command.class, menuPath = "Plugins > Segmentation > Measure Connected Components")
+@Plugin(type = Command.class,
+	menuPath = "Plugins > Segmentation > Measure Connected Components")
 public class MeasureConnectedComponents implements Command {
 
 	@Parameter
@@ -53,41 +55,50 @@ public class MeasureConnectedComponents implements Command {
 	@Override
 	public void run() {
 		try {
-			Labeling labeling = new LabelingSerializer(context).open(labelingFile.getAbsolutePath());
+			Labeling labeling = new LabelingSerializer(context).open(labelingFile
+				.getAbsolutePath());
 			table = createTable(labeling, calibratedSize);
-		} catch (IOException e) {
+		}
+		catch (IOException e) {
 			e.printStackTrace();
 		}
 	}
 
 	public static void addAction(Extensible extensible, LabelingModel model) {
-		extensible.addAction("Measure Connected Components ...", "measureConnectedComponents", () -> {
-			Table<?, ?> table = createTable(model.labeling().get(), true);
-			extensible.context().service(UIService.class).show(table);
-		}, "");
+		extensible.addAction("Measure Connected Components ...",
+			"measureConnectedComponents", () -> {
+				Table<?, ?> table = createTable(model.labeling().get(), true);
+				extensible.context().service(UIService.class).show(table);
+			}, "");
 	}
 
-	private static Table<?, ?> createTable(Labeling labeling, boolean calibratedSize) {
+	private static Table<?, ?> createTable(Labeling labeling,
+		boolean calibratedSize)
+	{
 		TableBuilder builder = new TableBuilder();
 		builder.setPixelSize(labeling.axes());
-		labeling.iterableRegions().forEach((label, mask) -> builder.add(label, connectedComponetsSizes(mask)));
+		labeling.iterableRegions().forEach((label, mask) -> builder.add(label,
+			connectedComponetsSizes(mask)));
 		return builder.getTable(calibratedSize);
 	}
 
 	static List<Long> connectedComponetsSizes(IterableRegion<BitType> region) {
 		List<Long> sizes = new ArrayList<>();
 		Cursor<Void> cursor = region.cursor();
-		SparseRandomAccessIntType visitedImage = new SparseRandomAccessIntType(region);
+		SparseRandomAccessIntType visitedImage = new SparseRandomAccessIntType(
+			region);
 		RandomAccess<IntType> visited = visitedImage.randomAccess();
 		int currentIndex = 0;
-		while(cursor.hasNext()) {
+		while (cursor.hasNext()) {
 			cursor.fwd();
 			visited.setPosition(cursor);
-			if(visited.get().get() == 0) {
+			if (visited.get().get() == 0) {
 				currentIndex++;
 				long countBefore = visitedImage.sparsityPattern().size();
-				Filter<Pair<BitType, IntType>, Pair<BitType, IntType>> filter = (current, seed) -> current.getA().get() && current.getB().get() == 0;
-				FloodFill.fill(region, visitedImage, cursor, new IntType(currentIndex), new DiamondShape(1), filter);
+				Filter<Pair<BitType, IntType>, Pair<BitType, IntType>> filter = (
+					current, seed) -> current.getA().get() && current.getB().get() == 0;
+				FloodFill.fill(region, visitedImage, cursor, new IntType(currentIndex),
+					new DiamondShape(1), filter);
 				long countAfter = visitedImage.sparsityPattern().size();
 				sizes.add(countAfter - countBefore);
 			}
@@ -98,7 +109,8 @@ public class MeasureConnectedComponents implements Command {
 	private static class TableBuilder {
 
 		Column<String> labels = new DefaultColumn<>(String.class, "label");
-		Column<Integer> indices = new DefaultColumn<>(Integer.class, "connect component");
+		Column<Integer> indices = new DefaultColumn<>(Integer.class,
+			"connect component");
 		Column<Long> number = new DefaultColumn<>(Long.class, "size in pixels");
 		Column<Double> sizes = new DoubleColumn("size");
 
@@ -108,21 +120,20 @@ public class MeasureConnectedComponents implements Command {
 		private void setPixelSize(List<CalibratedAxis> axes) {
 			double pixelSize = 1;
 			StringJoiner units = new StringJoiner("*");
-			for(CalibratedAxis axis : axes)
-				if(axis instanceof LinearAxis) {
+			for (CalibratedAxis axis : axes)
+				if (axis instanceof LinearAxis) {
 					LinearAxis linear = (LinearAxis) axis;
 					pixelSize *= linear.scale();
 					units.add(linear.unit() == null ? "unknown" : linear.unit());
 				}
-				else
-					return;
+				else return;
 			this.pixelSize = pixelSize;
 			this.unit = units.toString();
 		}
 
 		private void add(String label, List<Long> sizesInPixels) {
 			int index = 0;
-			for(Long size : sizesInPixels) {
+			for (Long size : sizesInPixels) {
 				index++;
 				labels.add(label);
 				indices.add(index);
@@ -136,7 +147,7 @@ public class MeasureConnectedComponents implements Command {
 			table.add(labels);
 			table.add(indices);
 			table.add(number);
-			if(calibratedSize) {
+			if (calibratedSize) {
 				sizes.setHeader("size in " + unit);
 				table.add(sizes);
 			}

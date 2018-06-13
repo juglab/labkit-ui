@@ -1,3 +1,4 @@
+
 package net.imglib2.labkit.inputimage;
 
 import net.imagej.axis.CalibratedAxis;
@@ -15,11 +16,11 @@ public interface InputImage {
 	RandomAccessibleInterval<? extends NumericType<?>> imageForSegmentation();
 
 	default BdvShowable showable() {
-		return BdvShowable.wrap( imageForSegmentation() );
+		return BdvShowable.wrap(imageForSegmentation());
 	}
 
 	default Interval interval() {
-		return new FinalInterval( imageForSegmentation() );
+		return new FinalInterval(imageForSegmentation());
 	}
 
 	ChannelSetting getChannelSetting();

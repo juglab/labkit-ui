@@ -1,3 +1,4 @@
+
 package net.imglib2.labkit.segmentation;
 
 import bdv.util.volatiles.SharedQueue;
@@ -25,95 +26,100 @@ import java.util.Collections;
 import java.util.Set;
 import java.util.WeakHashMap;
 
-public class PredictionLayer implements BdvLayer
-{
+public class PredictionLayer implements BdvLayer {
 
 	private final Holder<SegmentationItem> model;
-	private final RandomAccessibleContainer< VolatileARGBType > segmentationContainer;
-	private final SharedQueue queue = new SharedQueue(Runtime.getRuntime().availableProcessors());
-	private Notifier< Runnable > listeners = new Notifier<>();
-	private RandomAccessibleInterval< ? extends NumericType< ? > > view;
+	private final RandomAccessibleContainer<VolatileARGBType> segmentationContainer;
+	private final SharedQueue queue = new SharedQueue(Runtime.getRuntime()
+		.availableProcessors());
+	private Notifier<Runnable> listeners = new Notifier<>();
+	private RandomAccessibleInterval<? extends NumericType<?>> view;
 	private AffineTransform3D transformation;
-	private Set<Segmenter> alreadyRegistered = Collections.newSetFromMap(new WeakHashMap<>());
+	private Set<Segmenter> alreadyRegistered = Collections.newSetFromMap(
+		new WeakHashMap<>());
 
-	public PredictionLayer( Holder< SegmentationItem > model )
-	{
+	public PredictionLayer(Holder<SegmentationItem> model) {
 		this.model = model;
-		SegmentationResultsModel selected = model.get().results(); // don't use selected segmentation result for initialization
-		this.segmentationContainer = new RandomAccessibleContainer<>( getEmptyPrediction( selected ) );
+		SegmentationResultsModel selected = model.get().results(); // don't use
+																																// selected
+																																// segmentation
+																																// result for
+																																// initialization
+		this.segmentationContainer = new RandomAccessibleContainer<>(
+			getEmptyPrediction(selected));
 		this.transformation = selected.transformation();
-		this.view = Views.interval( segmentationContainer, selected.interval() );
-		model.notifier().add( ignore -> classifierChanged() );
+		this.view = Views.interval(segmentationContainer, selected.interval());
+		model.notifier().add(ignore -> classifierChanged());
 		registerListener(model.get().segmenter());
 	}
 
-	private void registerListener( Segmenter segmenter )
-	{
-		if(alreadyRegistered.contains( segmenter ))
-			return;
+	private void registerListener(Segmenter segmenter) {
+		if (alreadyRegistered.contains(segmenter)) return;
 		alreadyRegistered.add(segmenter);
-		segmenter.listeners().add( this::onTrainingFinished );
+		segmenter.listeners().add(this::onTrainingFinished);
 	}
 
-	private void onTrainingFinished( Segmenter segmenter )
-	{
-		if(model.get().segmenter() == segmenter)
-			classifierChanged();
+	private void onTrainingFinished(Segmenter segmenter) {
+		if (model.get().segmenter() == segmenter) classifierChanged();
 	}
 
-	private RandomAccessible< VolatileARGBType > getEmptyPrediction( SegmentationResultsModel selected )
+	private RandomAccessible<VolatileARGBType> getEmptyPrediction(
+		SegmentationResultsModel selected)
 	{
-		return ConstantUtils.constantRandomAccessible( new VolatileARGBType( 0 ), selected.interval().numDimensions() );
+		return ConstantUtils.constantRandomAccessible(new VolatileARGBType(0),
+			selected.interval().numDimensions());
 	}
 
-	private static AffineTransform3D scaleTransformation( double scaling )
-	{
+	private static AffineTransform3D scaleTransformation(double scaling) {
 		AffineTransform3D transformation = new AffineTransform3D();
-		transformation.scale( scaling );
+		transformation.scale(scaling);
 		return transformation;
 	}
 
-	private void classifierChanged()
-	{
+	private void classifierChanged() {
 		SegmentationItem segmentationItem = model.get();
-		registerListener( segmentationItem.segmenter() );
+		registerListener(segmentationItem.segmenter());
 		SegmentationResultsModel selected = segmentationItem.results();
-		RandomAccessible< VolatileARGBType > source = selected.hasResults() ?
-				Views.extendValue( coloredVolatileView( selected ), new VolatileARGBType( 0 ) ) :
-				getEmptyPrediction( selected );
-		segmentationContainer.setSource( source );
-		listeners.forEach( Runnable::run );
+		RandomAccessible<VolatileARGBType> source = selected.hasResults() ? Views
+			.extendValue(coloredVolatileView(selected), new VolatileARGBType(0))
+			: getEmptyPrediction(selected);
+		segmentationContainer.setSource(source);
+		listeners.forEach(Runnable::run);
 	}
 
-	private RandomAccessibleInterval< VolatileARGBType > coloredVolatileView( SegmentationResultsModel selected )
+	private RandomAccessibleInterval<VolatileARGBType> coloredVolatileView(
+		SegmentationResultsModel selected)
 	{
-		ARGBType[] colors = selected.colors().toArray( new ARGBType[ 0 ] );
-		return mapColors(colors, VolatileViews.wrapAsVolatile( selected.segmentation(), queue ) );
+		ARGBType[] colors = selected.colors().toArray(new ARGBType[0]);
+		return mapColors(colors, VolatileViews.wrapAsVolatile(selected
+			.segmentation(), queue));
 	}
 
-	private RandomAccessibleInterval<VolatileARGBType> mapColors(ARGBType[] colors, RandomAccessibleInterval<VolatileShortType > source) {
-		final Converter< VolatileShortType, VolatileARGBType > conv = ( input, output ) -> {
+	private RandomAccessibleInterval<VolatileARGBType> mapColors(
+		ARGBType[] colors, RandomAccessibleInterval<VolatileShortType> source)
+	{
+		final Converter<VolatileShortType, VolatileARGBType> conv = (input,
+			output) -> {
 			final boolean isValid = input.isValid();
-			output.setValid( isValid );
-			if ( isValid )
-				output.set(colors[input.get().get()].get());
+			output.setValid(isValid);
+			if (isValid) output.set(colors[input.get().get()].get());
 		};
 
-		return Converters.convert(source, conv, new VolatileARGBType() );
+		return Converters.convert(source, conv, new VolatileARGBType());
 	}
 
-	@Override public BdvShowable image()
-	{
+	@Override
+	public BdvShowable image() {
 		return BdvShowable.wrap(view, transformation);
 	}
 
-	@Override public Notifier< Runnable > listeners()
-	{
+	@Override
+	public Notifier<Runnable> listeners() {
 		return listeners;
 	}
 
-	@Override public String title()
-	{
+	@Override
+	public String title() {
 		return "Segmentation";
 	}
 }

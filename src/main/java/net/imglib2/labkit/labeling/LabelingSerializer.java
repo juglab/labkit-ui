@@ -1,3 +1,4 @@
+
 package net.imglib2.labkit.labeling;
 
 import com.google.gson.*;
@@ -45,8 +46,8 @@ import java.util.stream.Stream;
 /**
  * @author Matthias Arzt
  */
-public class LabelingSerializer
-{
+public class LabelingSerializer {
+
 	private final Context context;
 
 	public LabelingSerializer(Context context) {
@@ -54,33 +55,37 @@ public class LabelingSerializer
 	}
 
 	public Labeling open(String filename) throws IOException {
-		if(FilenameUtils.isExtension(filename, new String[]{"tif", "tiff"}))
+		if (FilenameUtils.isExtension(filename, new String[] { "tif", "tiff" }))
 			return openFromTiff(filename);
-		if(FilenameUtils.isExtension(filename, new String[]{"labeling", "json"}))
-			return openFromJson(filename);
-		throw new IllegalArgumentException("Filename must have supported extension (*.labeling, *.tif, *.tiff)");
+		if (FilenameUtils.isExtension(filename, new String[] { "labeling",
+			"json" })) return openFromJson(filename);
+		throw new IllegalArgumentException(
+			"Filename must have supported extension (*.labeling, *.tif, *.tiff)");
 	}
 
 	private Labeling openFromJson(String filename) throws IOException {
-		try(FileReader reader = new FileReader(filename)) {
+		try (FileReader reader = new FileReader(filename)) {
 			Labeling result = new Gson().fromJson(reader, Labeling.class);
-			if(result == null)
-				throw new IOException("Error, labeling file is empty: " + filename);
+			if (result == null) throw new IOException(
+				"Error, labeling file is empty: " + filename);
 			return result;
 		}
 	}
 
 	private Labeling openFromTiff(String filename) throws IOException {
 		Img<? extends IntegerType<?>> img = openImageFromTiff(filename);
-		LabelsMetaData meta = (new File(filename + ".labels").exists()) ?
-				openMetaData(filename + ".labels") :
-				new LabelsMetaData(img);
+		LabelsMetaData meta = (new File(filename + ".labels").exists())
+			? openMetaData(filename + ".labels") : new LabelsMetaData(img);
 		return new Labeling(fromImageAndLabelSets(img, meta.asLabelSets()));
 	}
 
-	private ImgLabeling<String,?> fromImageAndLabelSets(Img<? extends IntegerType<?>> img, List<Set<String>> labelSets) {
-		ImgLabeling<String, ?> result = new ImgLabeling<>(LabkitUtils.uncheckedCast(img));
-		new LabelingMapping.SerialisationAccess<String>(result.getMapping()){
+	private ImgLabeling<String, ?> fromImageAndLabelSets(
+		Img<? extends IntegerType<?>> img, List<Set<String>> labelSets)
+	{
+		ImgLabeling<String, ?> result = new ImgLabeling<>(LabkitUtils.uncheckedCast(
+			img));
+		new LabelingMapping.SerialisationAccess<String>(result.getMapping()) {
+
 			public void run() {
 				setLabelSets(labelSets);
 			}
@@ -88,55 +93,67 @@ public class LabelingSerializer
 		return result;
 	}
 
-	private Img<? extends IntegerType<?>> openImageFromTiff(String filename) throws IOException {
+	private Img<? extends IntegerType<?>> openImageFromTiff(String filename)
+		throws IOException
+	{
 		DatasetIOService io = context.service(DatasetIOService.class);
 		return LabkitUtils.uncheckedCast(io.open(filename).getImgPlus().getImg());
 	}
 
 	private LabelsMetaData openMetaData(String filename) throws IOException {
-		try(FileReader reader = new FileReader(filename)) {
+		try (FileReader reader = new FileReader(filename)) {
 			return new Gson().fromJson(reader, LabelsMetaData.class);
 		}
 	}
 
 	public void save(Labeling labeling, String filename) throws IOException {
-		if(FilenameUtils.isExtension(filename, new String[]{"tif", "tiff"}))
+		if (FilenameUtils.isExtension(filename, new String[] { "tif", "tiff" }))
 			saveAsTiff(labeling, filename);
-		else if(FilenameUtils.isExtension(filename, new String[]{"labeling", "json"}))
-			saveAsJson(labeling, filename);
-		else throw new IllegalArgumentException("Filename must have supported extension (*.labeling, *.tif, *.tiff)");
+		else if (FilenameUtils.isExtension(filename, new String[] { "labeling",
+			"json" })) saveAsJson(labeling, filename);
+		else throw new IllegalArgumentException(
+			"Filename must have supported extension (*.labeling, *.tif, *.tiff)");
 	}
 
-	private void saveAsJson(Labeling labeling, String filename) throws IOException {
-		try(FileWriter writer = new FileWriter(filename)) {
+	private void saveAsJson(Labeling labeling, String filename)
+		throws IOException
+	{
+		try (FileWriter writer = new FileWriter(filename)) {
 			new Gson().toJson(labeling, Labeling.class, writer);
 		}
 	}
 
-	private <I extends IntegerType<I>> void saveAsTiff(Labeling labeling, String filename) throws IOException {
+	private <I extends IntegerType<I>> void saveAsTiff(Labeling labeling,
+		String filename) throws IOException
+	{
 		LabelsMetaData meta = new LabelsMetaData(labeling.getLabelSets());
-		try(FileWriter writer = new FileWriter(filename + ".labels")) {
+		try (FileWriter writer = new FileWriter(filename + ".labels")) {
 			new Gson().toJson(meta, writer);
 		}
 		DatasetIOService io = context.service(DatasetIOService.class);
 		DatasetService ds = context.service(DatasetService.class);
-		RandomAccessibleInterval<I> imgPlus = LabkitUtils.uncheckedCast(labeling.getIndexImg());
+		RandomAccessibleInterval<I> imgPlus = LabkitUtils.uncheckedCast(labeling
+			.getIndexImg());
 		io.save(ds.create(imgPlus), filename);
 	}
 
 	private static class LabelsMetaData {
+
 		List<Set<String>> labelSets;
 
 		public LabelsMetaData(Img<? extends IntegerType<?>> img) {
 			IntType max = new IntType(0);
-			img.forEach(x -> { if(max.get() < x.getInteger()) max.set(x.getInteger()); });
-			labelSets = IntStream.rangeClosed(0, max.get())
-					.mapToObj(i -> i == 0 ? Collections.<String>emptySet() : Collections.singleton(Integer.toString(i)))
-					.collect(Collectors.toList());
+			img.forEach(x -> {
+				if (max.get() < x.getInteger()) max.set(x.getInteger());
+			});
+			labelSets = IntStream.rangeClosed(0, max.get()).mapToObj(i -> i == 0
+				? Collections.<String> emptySet() : Collections.singleton(Integer
+					.toString(i))).collect(Collectors.toList());
 		}
 
 		public LabelsMetaData(List<Set<String>> mapping) {
-			labelSets = mapping.stream().map(TreeSet::new).collect(Collectors.toList());
+			labelSets = mapping.stream().map(TreeSet::new).collect(Collectors
+				.toList());
 		}
 
 		public List<Set<String>> asLabelSets() {
@@ -146,42 +163,57 @@ public class LabelingSerializer
 
 	public static class Adapter extends TypeAdapter<Labeling> {
 
-		private static final Type regionType = new TypeToken<IterableRegion<BitType>>(){}.getType();
+		private static final Type regionType =
+			new TypeToken<IterableRegion<BitType>>()
+			{}.getType();
 
-		private static final Type mapType = new TypeToken<Map<String, IterableRegion<BitType>>>(){}.getType();
+		private static final Type mapType =
+			new TypeToken<Map<String, IterableRegion<BitType>>>()
+			{}.getType();
 
 		@Override
-		public void write(JsonWriter jsonWriter, Labeling labeling) throws IOException {
+		public void write(JsonWriter jsonWriter, Labeling labeling)
+			throws IOException
+		{
 			Gson gson = new Gson();
 			JsonObject jsonLabeling = new JsonObject();
-			jsonLabeling.add("interval", gson.toJsonTree(new FinalInterval(labeling), FinalInterval.class));
-			jsonLabeling.add("pixelSizes", gson.toJsonTree(getPixelSize(labeling), PixelSize[].class));
-			jsonLabeling.add( "labels", regionsToJson(labeling.iterableRegions(), gson));
+			jsonLabeling.add("interval", gson.toJsonTree(new FinalInterval(labeling),
+				FinalInterval.class));
+			jsonLabeling.add("pixelSizes", gson.toJsonTree(getPixelSize(labeling),
+				PixelSize[].class));
+			jsonLabeling.add("labels", regionsToJson(labeling.iterableRegions(),
+				gson));
 			gson.toJson(jsonLabeling, jsonWriter);
 		}
 
 		private PixelSize[] getPixelSize(Labeling labeling) {
-			return labeling.axes().stream().map(this::toPixelSize).toArray(PixelSize[]::new);
+			return labeling.axes().stream().map(this::toPixelSize).toArray(
+				PixelSize[]::new);
 		}
 
 		private PixelSize toPixelSize(CalibratedAxis calibratedAxis) {
-			if(!(calibratedAxis instanceof LinearAxis))
-				return new PixelSize(1, "unknown");
+			if (!(calibratedAxis instanceof LinearAxis)) return new PixelSize(1,
+				"unknown");
 			LinearAxis linear = (LinearAxis) calibratedAxis;
 			return new PixelSize(linear.scale(), linear.unit());
 		}
 
-		private JsonObject regionsToJson(Map<String, ? extends IterableRegion<BitType>> regions, Gson gson) {
+		private JsonObject regionsToJson(
+			Map<String, ? extends IterableRegion<BitType>> regions, Gson gson)
+		{
 			JsonObject map = new JsonObject();
-			regions.forEach((label, region) -> map.add(label, regionToJson(gson, region)));
+			regions.forEach((label, region) -> map.add(label, regionToJson(gson,
+				region)));
 			return map;
 		}
 
-		private JsonElement regionToJson(Gson gson, IterableRegion<BitType> region) {
+		private JsonElement regionToJson(Gson gson,
+			IterableRegion<BitType> region)
+		{
 			JsonArray result = new JsonArray();
 			Cursor<Void> cursor = region.cursor();
 			long[] coords = new long[cursor.numDimensions()];
-			while(cursor.hasNext()) {
+			while (cursor.hasNext()) {
 				cursor.fwd();
 				cursor.localize(coords);
 				result.add(gson.toJsonTree(coords, long[].class));
@@ -191,37 +223,49 @@ public class LabelingSerializer
 
 		@Override
 		public Labeling read(JsonReader jsonReader) throws IOException {
-			Gson gson = new GsonBuilder().registerTypeAdapter(Labeling.class, new MyDeserializer()).create();
+			Gson gson = new GsonBuilder().registerTypeAdapter(Labeling.class,
+				new MyDeserializer()).create();
 			return gson.fromJson(jsonReader, Labeling.class);
 		}
 
 		private static class MyDeserializer implements JsonDeserializer<Labeling> {
 
 			@Override
-			public Labeling deserialize(JsonElement json, Type typeOfT, JsonDeserializationContext context) throws JsonParseException {
+			public Labeling deserialize(JsonElement json, Type typeOfT,
+				JsonDeserializationContext context) throws JsonParseException
+			{
 				JsonObject object = json.getAsJsonObject();
-				Interval interval = context.deserialize(object.get("interval"), FinalInterval.class);
-				PixelSize[] axes = context.deserialize(object.get("pixelSizes"), PixelSize[].class);
+				Interval interval = context.deserialize(object.get("interval"),
+					FinalInterval.class);
+				PixelSize[] axes = context.deserialize(object.get("pixelSizes"),
+					PixelSize[].class);
 				Map<String, IterableRegion<BitType>> regions = new TreeMap<>();
-				object.getAsJsonObject("labels").entrySet().forEach(entry -> regions.put(entry.getKey(), regionFromJson(context, interval, entry.getValue())));
+				object.getAsJsonObject("labels").entrySet().forEach(entry -> regions
+					.put(entry.getKey(), regionFromJson(context, interval, entry
+						.getValue())));
 				Labeling labeling = new Labeling(regions, interval);
 				labeling.setAxes(pixelSizesToAxes(axes));
 				return labeling;
 			}
 
 			private List<CalibratedAxis> pixelSizesToAxes(PixelSize[] axes) {
-				return Stream.of(axes).map(this::pixelSizeToAxis).collect(Collectors.toList());
+				return Stream.of(axes).map(this::pixelSizeToAxis).collect(Collectors
+					.toList());
 			}
 
 			private LinearAxis pixelSizeToAxis(PixelSize pixelSize) {
-				return new DefaultLinearAxis(Axes.unknown(), pixelSize.unit, pixelSize.size);
+				return new DefaultLinearAxis(Axes.unknown(), pixelSize.unit,
+					pixelSize.size);
 			}
 
-			private SparseIterableRegion regionFromJson(JsonDeserializationContext context, Interval interval, JsonElement jsonCoords) {
+			private SparseIterableRegion regionFromJson(
+				JsonDeserializationContext context, Interval interval,
+				JsonElement jsonCoords)
+			{
 				SparseIterableRegion result = new SparseIterableRegion(interval);
 				JsonArray array = jsonCoords.getAsJsonArray();
 				Point point = new Point(interval.numDimensions());
-				for(JsonElement item : array) {
+				for (JsonElement item : array) {
 					long[] coords = context.deserialize(item, long[].class);
 					point.setPosition(coords);
 					result.add(point);
@@ -231,6 +275,7 @@ public class LabelingSerializer
 		}
 
 		private static class PixelSize {
+
 			public double size;
 			public String unit;
 

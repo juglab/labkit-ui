@@ -1,3 +1,4 @@
+
 package net.imglib2.sparse;
 
 import net.imglib2.FinalInterval;
@@ -9,19 +10,21 @@ import org.junit.Test;
 
 import static org.junit.Assert.assertTrue;
 
-public class SparseIterableRegionTest
-{
+public class SparseIterableRegionTest {
+
 	@Test
 	public void testOriginRemoveBug() {
-		// NB: Test bug were pixel at position (0,0) was set to zero, whenever a random access was created.
+		// NB: Test bug were pixel at position (0,0) was set to zero, whenever a
+		// random access was created.
 		// setup
 		long[] origin = { 0, 0 };
-		SparseIterableRegion region = new SparseIterableRegion( new FinalInterval( origin, origin ) );
-		Views.iterable( region ).forEach( BitType::setOne );
+		SparseIterableRegion region = new SparseIterableRegion(new FinalInterval(
+			origin, origin));
+		Views.iterable(region).forEach(BitType::setOne);
 		// process
 		region.randomAccess();
 		// test
-		Views.iterable( region ).forEach( x -> assertTrue(x.get()) );
+		Views.iterable(region).forEach(x -> assertTrue(x.get()));
 	}
 
 }

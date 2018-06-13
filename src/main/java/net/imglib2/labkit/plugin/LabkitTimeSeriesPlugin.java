@@ -1,3 +1,4 @@
+
 package net.imglib2.labkit.plugin;
 
 import net.imagej.Dataset;
@@ -11,7 +12,8 @@ import org.scijava.plugin.Plugin;
 /**
  * @author Matthias Arzt
  */
-@Plugin(type = Command.class, menuPath = "Plugins > Segmentation > Labkit (Time Series)")
+@Plugin(type = Command.class,
+	menuPath = "Plugins > Segmentation > Labkit (Time Series)")
 public class LabkitTimeSeriesPlugin implements Command {
 
 	@Parameter

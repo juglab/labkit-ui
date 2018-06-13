@@ -1,3 +1,4 @@
+
 package net.imglib2.labkit.labeling;
 
 import net.imglib2.Cursor;
@@ -19,14 +20,16 @@ public class Labelings {
 		int sliceDimension = labeling.numDimensions() - 1;
 		Interval sliceInterval = RevampUtils.removeLastDimension(labeling);
 		List<String> labels = labeling.getLabels();
-		List<Labeling> slices = IntStream.range(0, Math.toIntExact(labeling.dimension(sliceDimension)))
-				.mapToObj(ignore -> new Labeling(labels, sliceInterval))
-				.collect(Collectors.toList());
+		List<Labeling> slices = IntStream.range(0, Math.toIntExact(labeling
+			.dimension(sliceDimension))).mapToObj(ignore -> new Labeling(labels,
+				sliceInterval)).collect(Collectors.toList());
 		sparseCopy(labeling, Views.stack(slices));
 		return slices;
 	}
 
-	private static void sparseCopy(Labeling labeling, RandomAccessibleInterval<Set<String>> target) {
+	private static void sparseCopy(Labeling labeling,
+		RandomAccessibleInterval<Set<String>> target)
+	{
 		Cursor<?> cursor = labeling.sparsityCursor();
 		RandomAccess<Set<String>> out = target.randomAccess();
 		RandomAccess<Set<String>> in = labeling.randomAccess();
@@ -43,8 +46,11 @@ public class Labelings {
 		out.addAll(in);
 	}
 
-	public static Labeling singleton(Interval interval, String label, long... coordinates) {
-		Labeling labeling = new Labeling(Collections.singletonList(label), interval);
+	public static Labeling singleton(Interval interval, String label,
+		long... coordinates)
+	{
+		Labeling labeling = new Labeling(Collections.singletonList(label),
+			interval);
 		RandomAccess<Set<String>> ra = labeling.randomAccess();
 		ra.setPosition(coordinates);
 		ra.get().add(label);

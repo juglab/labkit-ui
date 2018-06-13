@@ -1,3 +1,4 @@
+
 package net.imglib2.sparse;
 
 import net.imglib2.Interval;
@@ -17,7 +18,8 @@ public class SparseRandomAccessIntTypeTest {
 		// setup
 		int noEntryValue = -1;
 		// process
-		SparseRandomAccessIntType image = new SparseRandomAccessIntType(interval, noEntryValue);
+		SparseRandomAccessIntType image = new SparseRandomAccessIntType(interval,
+			noEntryValue);
 		Views.iterable(image).forEach(x -> x.setInteger(noEntryValue));
 		// test
 		assertFalse(image.sparsityPattern().cursor().hasNext());

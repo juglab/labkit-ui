@@ -1,3 +1,4 @@
+
 package net.imglib2.labkit.panel;
 
 import net.imglib2.labkit.utils.Notifier;
@@ -14,7 +15,8 @@ import java.util.Random;
 
 public class ComponentList<K, C extends JComponent> {
 
-	private final Color SELECTED_BACKGROUND = UIManager.getColor("List.selectionBackground");
+	private final Color SELECTED_BACKGROUND = UIManager.getColor(
+		"List.selectionBackground");
 	private final Color BACKGROUND = UIManager.getColor("List.background");
 
 	private JPanel background = new JPanel();
@@ -34,6 +36,7 @@ public class ComponentList<K, C extends JComponent> {
 	public void add(K key, C component) {
 		component.setBackground(BACKGROUND);
 		component.addMouseListener(new MouseListener() {
+
 			@Override
 			public void mouseClicked(MouseEvent e) {
 				setSelected(key);
@@ -59,7 +62,7 @@ public class ComponentList<K, C extends JComponent> {
 
 			}
 		});
-		component.setBackground( key == selected ? SELECTED_BACKGROUND : BACKGROUND);
+		component.setBackground(key == selected ? SELECTED_BACKGROUND : BACKGROUND);
 		panels.put(component, key);
 		background.add(component, "grow, wrap");
 		background.revalidate();
@@ -67,10 +70,10 @@ public class ComponentList<K, C extends JComponent> {
 	}
 
 	public void setSelected(K key) {
-		if(this.selected == key)
-			return;
+		if (this.selected == key) return;
 		this.selected = key;
-		panels.forEach((component, k) -> component.setBackground( k == selected ? SELECTED_BACKGROUND : BACKGROUND));
+		panels.forEach((component, k) -> component.setBackground(k == selected
+			? SELECTED_BACKGROUND : BACKGROUND));
 		listeners.forEach(l -> l.run());
 	}
 
@@ -94,12 +97,14 @@ public class ComponentList<K, C extends JComponent> {
 	public static void main(String... args) {
 		JFrame frame = new JFrame();
 		frame.setSize(300, 600);
-		frame.setLayout(new MigLayout("", "[grow]","[grow][]"));
+		frame.setLayout(new MigLayout("", "[grow]", "[grow][]"));
 		ComponentList<String, JPanel> panelList = new ComponentList<>();
 		frame.add(panelList.getCompnent(), "grow, wrap");
 		Random random = new Random();
-		frame.add(new JButton(new RunnableAction("add", () -> panelList.add(Integer.toString(random.nextInt()), panelList.newExamplePanel()))), "split");
-		frame.add(new JButton(new RunnableAction("clear", () -> panelList.clear())));
+		frame.add(new JButton(new RunnableAction("add", () -> panelList.add(Integer
+			.toString(random.nextInt()), panelList.newExamplePanel()))), "split");
+		frame.add(new JButton(new RunnableAction("clear", () -> panelList
+			.clear())));
 		frame.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
 		frame.setVisible(true);
 	}

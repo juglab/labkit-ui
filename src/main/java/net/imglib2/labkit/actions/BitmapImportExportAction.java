@@ -1,3 +1,4 @@
+
 package net.imglib2.labkit.actions;
 
 import io.scif.services.DatasetIOService;
@@ -19,8 +20,7 @@ import javax.swing.*;
 import java.io.File;
 import java.io.IOException;
 
-public class BitmapImportExportAction extends AbstractFileIoAcion
-{
+public class BitmapImportExportAction extends AbstractFileIoAcion {
 
 	private final ImageLabelingModel model;
 
@@ -32,44 +32,49 @@ public class BitmapImportExportAction extends AbstractFileIoAcion
 	@Parameter
 	DatasetIOService datasetIOService;
 
-	public BitmapImportExportAction( Extensible extensible, ImageLabelingModel model )
+	public BitmapImportExportAction(Extensible extensible,
+		ImageLabelingModel model)
 	{
-		super( extensible, AbstractFileIoAcion.TIFF_FILTER );
+		super(extensible, AbstractFileIoAcion.TIFF_FILTER);
 		this.extensible = extensible;
 		this.model = model;
-		extensible.context().inject( this );
-		initOpenAction( "Import Label", "importLabel", this::importLabel, "" );
-		initSaveAction( "Export Label", "exportLabel", this::exportLabel, "" );
+		extensible.context().inject(this);
+		initOpenAction("Import Label", "importLabel", this::importLabel, "");
+		initSaveAction("Export Label", "exportLabel", this::exportLabel, "");
 	}
 
-	private void importLabel( String filename ) throws IOException
-	{
-		RandomAccessibleInterval< RealType< ? > > image = datasetIOService.open( filename );
+	private void importLabel(String filename) throws IOException {
+		RandomAccessibleInterval<RealType<?>> image = datasetIOService.open(
+			filename);
 		Labeling labeling = model.labeling().get();
-		if( ! Intervals.equals( image, labeling) )
-			JOptionPane.showMessageDialog( extensible.dialogParent(),
-					"The resolution of the image does not fit",
-					"Import Label", JOptionPane.ERROR_MESSAGE );
-		labeling.addLabel( "Label \"" + new File( filename ).getName() + "\"", toBoolType( image ) );
-		model.labeling().notifier().forEach(l -> l.accept( labeling ));
+		if (!Intervals.equals(image, labeling)) JOptionPane.showMessageDialog(
+			extensible.dialogParent(), "The resolution of the image does not fit",
+			"Import Label", JOptionPane.ERROR_MESSAGE);
+		labeling.addLabel("Label \"" + new File(filename).getName() + "\"",
+			toBoolType(image));
+		model.labeling().notifier().forEach(l -> l.accept(labeling));
 	}
 
-	private void exportLabel( String filename ) throws IOException
-	{
+	private void exportLabel(String filename) throws IOException {
 		Labeling labeling = model.labeling().get();
 		String selectedLabel = model.selectedLabel().get();
-		RandomAccessibleInterval< BitType > bitmap = labeling.regions().get( selectedLabel );
-		Dataset dataset = datasetService.create( toUnsignedByteType( bitmap ) );
-		datasetIOService.save( dataset, filename );
+		RandomAccessibleInterval<BitType> bitmap = labeling.regions().get(
+			selectedLabel);
+		Dataset dataset = datasetService.create(toUnsignedByteType(bitmap));
+		datasetIOService.save(dataset, filename);
 	}
 
-	private RandomAccessibleInterval< BoolType > toBoolType( RandomAccessibleInterval< RealType< ? > > image )
+	private RandomAccessibleInterval<BoolType> toBoolType(
+		RandomAccessibleInterval<RealType<?>> image)
 	{
-		return Converters.convert( image, ( in, out ) -> out.set( in.getRealDouble() > 0.5 ), new BoolType() );
+		return Converters.convert(image, (in, out) -> out.set(in
+			.getRealDouble() > 0.5), new BoolType());
 	}
 
-	private RandomAccessibleInterval< UnsignedByteType > toUnsignedByteType( RandomAccessibleInterval< BitType > bitmap )
+	private RandomAccessibleInterval<UnsignedByteType> toUnsignedByteType(
+		RandomAccessibleInterval<BitType> bitmap)
 	{
-		return Converters.convert( bitmap, ( in, out ) -> out.set( in.getInteger() ), new UnsignedByteType() );
+		return Converters.convert(bitmap, (in, out) -> out.set(in.getInteger()),
+			new UnsignedByteType());
 	}
 }

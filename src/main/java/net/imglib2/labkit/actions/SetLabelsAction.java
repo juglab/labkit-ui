@@ -1,3 +1,4 @@
+
 package net.imglib2.labkit.actions;
 
 import net.imglib2.labkit.Preferences;
@@ -16,11 +17,14 @@ public class SetLabelsAction {
 	private final Preferences preference;
 	private final SegmentationComponent segmentationComponent;
 
-	public SetLabelsAction(SegmentationComponent segmentationComponent, Preferences preferences) {
+	public SetLabelsAction(SegmentationComponent segmentationComponent,
+		Preferences preferences)
+	{
 		// TODO: clean this mess up
 		this.segmentationComponent = segmentationComponent;
 		this.preference = preferences;
-		addAction("Default Available Labels ...", "defaultLabels", this::defaultLabels);
+		addAction("Default Available Labels ...", "defaultLabels",
+			this::defaultLabels);
 	}
 
 	private void addAction(String title, String command, Runnable action) {
@@ -40,19 +44,18 @@ public class SetLabelsAction {
 		labels.forEach(joiner::add);
 		textArea.setPreferredSize(new Dimension(200, 200));
 		textArea.setText(joiner.toString());
-		int result = JOptionPane.showConfirmDialog(null,
-				new Object[]{"Please input new labels:", new JScrollPane(textArea)},
-				"Change Available Labels",
-				JOptionPane.OK_CANCEL_OPTION,
-				JOptionPane.PLAIN_MESSAGE);
-		if(result == JOptionPane.OK_OPTION)
-			return Optional.of(Arrays.asList(textArea.getText().split("\n")));
-		else
-			return Optional.empty();
+		int result = JOptionPane.showConfirmDialog(null, new Object[] {
+			"Please input new labels:", new JScrollPane(textArea) },
+			"Change Available Labels", JOptionPane.OK_CANCEL_OPTION,
+			JOptionPane.PLAIN_MESSAGE);
+		if (result == JOptionPane.OK_OPTION) return Optional.of(Arrays.asList(
+			textArea.getText().split("\n")));
+		else return Optional.empty();
 	}
 
 	public static void main(String... args) {
-		Optional<List<String>> result = SetLabelsAction.dialog(Arrays.asList("Hello", "World"));
+		Optional<List<String>> result = SetLabelsAction.dialog(Arrays.asList(
+			"Hello", "World"));
 		System.out.println(result);
 	}
 }

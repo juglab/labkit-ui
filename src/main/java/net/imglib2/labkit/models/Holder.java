@@ -1,3 +1,4 @@
+
 package net.imglib2.labkit.models;
 
 import net.imglib2.labkit.utils.Notifier;

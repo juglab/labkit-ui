@@ -1,3 +1,4 @@
+
 package net.imglib2.sparse;
 
 import net.imglib2.Interval;
@@ -32,19 +33,19 @@ public class IntervalIndexer2 {
 	}
 
 	public long size() {
-		return LongStream.of(dimensions).reduce(1, (a,b) -> a * b);
+		return LongStream.of(dimensions).reduce(1, (a, b) -> a * b);
 	}
 
 	public long positionToIndex(Localizable localizable) {
 		long sum = 0;
-		for (int d = 0; d < dimensions.length; ++d )
-			sum += stepSize[d] * (localizable.getLongPosition( d ) - min[d]);
+		for (int d = 0; d < dimensions.length; ++d)
+			sum += stepSize[d] * (localizable.getLongPosition(d) - min[d]);
 		return sum;
 	}
 
 	public void indexToPosition(long index, Positionable positionable) {
-		for (int d = 0; d < dimensions.length; ++d )
-			positionable.setPosition( indexToPosition(index, d), d );
+		for (int d = 0; d < dimensions.length; ++d)
+			positionable.setPosition(indexToPosition(index, d), d);
 	}
 
 	public long indexToPosition(long index, int d) {

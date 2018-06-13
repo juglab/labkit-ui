@@ -1,21 +1,21 @@
+
 package net.imglib2.labkit.models;
 
 import net.imglib2.labkit.segmentation.Segmenter;
 
 import java.util.concurrent.atomic.AtomicInteger;
 
-public class SegmentationItem
-{
+public class SegmentationItem {
+
 	private static final AtomicInteger counter = new AtomicInteger();
 
 	private final String name = "Classifier-#" + counter.incrementAndGet();
 	private final Segmenter segmenter;
 	private final SegmentationResultsModel results;
 
-	public SegmentationItem( SegmentationModel model, Segmenter segmenter )
-	{
+	public SegmentationItem(SegmentationModel model, Segmenter segmenter) {
 		this.segmenter = segmenter;
-		this.results = new SegmentationResultsModel( model, segmenter );
+		this.results = new SegmentationResultsModel(model, segmenter);
 	}
 
 	public Segmenter segmenter() {
@@ -26,10 +26,12 @@ public class SegmentationItem
 		return name;
 	}
 
-	public SegmentationResultsModel results() { return results; }
+	public SegmentationResultsModel results() {
+		return results;
+	}
 
-	@Override public String toString()
-	{
+	@Override
+	public String toString() {
 		return name();
 	}
 }

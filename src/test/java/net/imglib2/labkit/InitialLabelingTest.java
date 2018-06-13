@@ -1,3 +1,4 @@
+
 package net.imglib2.labkit;
 
 import net.imglib2.img.array.ArrayImgs;
@@ -15,17 +16,22 @@ import java.util.List;
 import static junit.framework.Assert.assertNotNull;
 
 public class InitialLabelingTest {
+
 	@Test
 	public void testInitialLabeling() throws IOException {
-		File empty = File.createTempFile("labkit-InitialLabelingTest-", ".czi.labeling");
+		File empty = File.createTempFile("labkit-InitialLabelingTest-",
+			".czi.labeling");
 		try {
-			DefaultInputImage inputImage = new DefaultInputImage(ArrayImgs.unsignedBytes(2, 3));
+			DefaultInputImage inputImage = new DefaultInputImage(ArrayImgs
+				.unsignedBytes(2, 3));
 			inputImage.setFilename(empty.getAbsolutePath().replace(".labeling", ""));
 			Context context = new Context();
 			List<String> defaultLabels = Collections.emptyList();
-			Labeling result = InitialLabeling.initLabeling(inputImage, context, defaultLabels);
+			Labeling result = InitialLabeling.initLabeling(inputImage, context,
+				defaultLabels);
 			assertNotNull(result);
-		} finally {
+		}
+		finally {
 			empty.delete();
 		}
 	}

@@ -1,3 +1,4 @@
+
 package net.imglib2.labkit.inputimage;
 
 import net.imagej.axis.CalibratedAxis;
@@ -22,19 +23,24 @@ public class DefaultInputImage extends AbstractInputImage {
 
 	private String filename;
 
-	public DefaultInputImage(RandomAccessibleInterval<? extends NumericType<?>> image) {
+	public DefaultInputImage(
+		RandomAccessibleInterval<? extends NumericType<?>> image)
+	{
 		this.image = image;
 		this.type = Util.getTypeFromInterval(image);
 	}
 
 	@Override
-	public RandomAccessibleInterval<? extends NumericType<?>> imageForSegmentation() {
+	public RandomAccessibleInterval<? extends NumericType<?>>
+		imageForSegmentation()
+	{
 		return image;
 	}
 
 	@Override
 	public ChannelSetting getChannelSetting() {
-		return type instanceof ARGBType ? ChannelSetting.RGB : ChannelSetting.SINGLE;
+		return type instanceof ARGBType ? ChannelSetting.RGB
+			: ChannelSetting.SINGLE;
 	}
 
 	@Override
@@ -54,9 +60,8 @@ public class DefaultInputImage extends AbstractInputImage {
 
 	@Override
 	public List<CalibratedAxis> axes() {
-		return IntStream.range(0, image.numDimensions())
-				.mapToObj(ignore -> new DefaultLinearAxis())
-				.collect(Collectors.toList());
+		return IntStream.range(0, image.numDimensions()).mapToObj(
+			ignore -> new DefaultLinearAxis()).collect(Collectors.toList());
 	}
 
 	@Override

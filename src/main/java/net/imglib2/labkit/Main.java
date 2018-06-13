@@ -1,3 +1,4 @@
+
 package net.imglib2.labkit;
 
 import net.imagej.ImageJ;
@@ -25,8 +26,8 @@ public class Main {
 		fileChooser.addChoosableFileFilter(fileFilter);
 		fileChooser.setAcceptAllFileFilterUsed(true);
 		final int returnVal = fileChooser.showOpenDialog(null);
-		if ( returnVal == JFileChooser.APPROVE_OPTION )
-			action.accept(fileChooser.getSelectedFile().getAbsolutePath());
+		if (returnVal == JFileChooser.APPROVE_OPTION) action.accept(fileChooser
+			.getSelectedFile().getAbsolutePath());
 	}
 
 	public static void start(String filename) {

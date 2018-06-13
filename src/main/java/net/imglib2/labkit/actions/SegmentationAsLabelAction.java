@@ -1,3 +1,4 @@
+
 package net.imglib2.labkit.actions;
 
 import net.imglib2.Cursor;
@@ -26,40 +27,49 @@ public class SegmentationAsLabelAction {
 	private final Holder<Labeling> labelingHolder;
 	private final Holder<SegmentationItem> selectedSegmenter;
 
-	public SegmentationAsLabelAction(Extensible extensible, Holder< SegmentationItem > selectedSegmenter, Holder<Labeling> labelingHolder) {
+	public SegmentationAsLabelAction(Extensible extensible,
+		Holder<SegmentationItem> selectedSegmenter, Holder<Labeling> labelingHolder)
+	{
 		this.labelingHolder = labelingHolder;
 		this.selectedSegmenter = selectedSegmenter;
-		extensible.addAction("Create Label from Segmentation...", "addSegmentationAsLabel",
-				this::addSegmentationAsLabels, "");
+		extensible.addAction("Create Label from Segmentation...",
+			"addSegmentationAsLabel", this::addSegmentationAsLabels, "");
 	}
 
 	private void addSegmentationAsLabels() {
-		SegmentationResultsModel selectedResults = selectedSegmenter.get().results();
+		SegmentationResultsModel selectedResults = selectedSegmenter.get()
+			.results();
 		List<String> labels = selectedResults.labels();
-		String selected = (String) JOptionPane.showInputDialog(null, "Select label to be added",
-				"Add Segmentation as Labels ...", JOptionPane.PLAIN_MESSAGE,
-				null, labels.toArray(), labels.get(labels.size() - 1));
+		String selected = (String) JOptionPane.showInputDialog(null,
+			"Select label to be added", "Add Segmentation as Labels ...",
+			JOptionPane.PLAIN_MESSAGE, null, labels.toArray(), labels.get(labels
+				.size() - 1));
 		int index = labels.indexOf(selected);
-		if(index < 0)
-			return;
-		addLabel(selected, index, selectedResults.segmentation() );
+		if (index < 0) return;
+		addLabel(selected, index, selectedResults.segmentation());
 	}
 
-	private void addLabel(String selected, int index, RandomAccessibleInterval<ShortType> segmentation) {
-		Converter<ShortType, BitType> converter = (in, out) -> out.set(in.get() == index);
-		RandomAccessibleInterval<BitType> result = Converters.convert(segmentation, converter, new BitType());
+	private void addLabel(String selected, int index,
+		RandomAccessibleInterval<ShortType> segmentation)
+	{
+		Converter<ShortType, BitType> converter = (in, out) -> out.set(in
+			.get() == index);
+		RandomAccessibleInterval<BitType> result = Converters.convert(segmentation,
+			converter, new BitType());
 		addLabel(labelingHolder.get(), "segmented " + selected, result);
 		labelingHolder.notifier().forEach(l -> l.accept(labelingHolder.get()));
 	}
 
 	// TODO move to better place
-	private static void addLabel(Labeling labeling, String name, RandomAccessibleInterval<BitType> mask) {
+	private static void addLabel(Labeling labeling, String name,
+		RandomAccessibleInterval<BitType> mask)
+	{
 		Cursor<BitType> cursor = Views.iterable(mask).cursor();
 		labeling.addLabel(name);
 		RandomAccess<Set<String>> ra = labeling.randomAccess();
-		while(cursor.hasNext()) {
+		while (cursor.hasNext()) {
 			boolean value = cursor.next().get();
-			if(value) {
+			if (value) {
 				ra.setPosition(cursor);
 				ra.get().add(name);
 			}

@@ -1,3 +1,4 @@
+
 package net.imglib2.sparse;
 
 import gnu.trove.impl.Constants;
@@ -19,7 +20,9 @@ import net.imglib2.type.numeric.integer.IntType;
 /**
  * @author Matthias Arzt
  */
-public class SparseRandomAccessIntType extends AbstractWrappedInterval<Interval> implements RandomAccessibleInterval<IntType> {
+public class SparseRandomAccessIntType extends AbstractWrappedInterval<Interval>
+	implements RandomAccessibleInterval<IntType>
+{
 
 	private final IntervalIndexer2 indexer;
 	private final TLongIntHashMap values;
@@ -32,7 +35,8 @@ public class SparseRandomAccessIntType extends AbstractWrappedInterval<Interval>
 	public SparseRandomAccessIntType(Interval source, int noEntryValue) {
 		super(source);
 		this.indexer = new IntervalIndexer2(source);
-		this.values = new TLongIntHashMap(Constants.DEFAULT_CAPACITY, Constants.DEFAULT_LOAD_FACTOR, -1, noEntryValue);
+		this.values = new TLongIntHashMap(Constants.DEFAULT_CAPACITY,
+			Constants.DEFAULT_LOAD_FACTOR, -1, noEntryValue);
 		this.noEntryValue = noEntryValue;
 	}
 
@@ -62,10 +66,8 @@ public class SparseRandomAccessIntType extends AbstractWrappedInterval<Interval>
 
 	private void set(MyRandomAccess position, int value) {
 		Long index = indexer.positionToIndex(position);
-		if(value == noEntryValue)
-			values.remove(index);
-		else
-			values.put(index, value);
+		if (value == noEntryValue) values.remove(index);
+		else values.put(index, value);
 	}
 
 	// -- Helper classes --
@@ -73,6 +75,7 @@ public class SparseRandomAccessIntType extends AbstractWrappedInterval<Interval>
 	private class MyRandomAccess extends Point implements RandomAccess<IntType> {
 
 		private IntType value = new IntType(new IntAccess() {
+
 			@Override
 			public int getValue(int ignored) {
 				return SparseRandomAccessIntType.this.get(MyRandomAccess.this);

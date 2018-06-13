@@ -1,3 +1,4 @@
+
 package net.imglib2.labkit.labeling;
 
 import gnu.trove.map.TIntObjectMap;
@@ -19,8 +20,7 @@ import java.util.Set;
 /**
  * @author Matthias Arzt
  */
-public class LabelsLayer implements BdvLayer
-{
+public class LabelsLayer implements BdvLayer {
 
 	private final RandomAccessibleContainer<ARGBType> container;
 
@@ -36,12 +36,12 @@ public class LabelsLayer implements BdvLayer
 		container = new RandomAccessibleContainer<>(view);
 		this.view = Views.interval(container, view);
 		model.labeling().notifier().add(this::updateLabeling);
-		model.dataChangedNotifier().add( () -> listeners.forEach( Runnable::run ) );
+		model.dataChangedNotifier().add(() -> listeners.forEach(Runnable::run));
 	}
 
 	private void updateLabeling(Labeling labeling) {
 		container.setSource(colorView());
-		listeners.forEach( Runnable::run );
+		listeners.forEach(Runnable::run);
 	}
 
 	private RandomAccessibleInterval<ARGBType> colorView() {
@@ -52,25 +52,28 @@ public class LabelsLayer implements BdvLayer
 		return Converters.convert(labeling.getIndexImg(), (in, out) -> {
 			int i = in.getInteger();
 			ARGBType c = colors.get(i);
-			if(c == null) {
+			if (c == null) {
 				Set<String> set = labeling.getLabelSets().get(i);
-				c = set.isEmpty() ? new ARGBType(0) : colorMap.getColor(set.iterator().next());
+				c = set.isEmpty() ? new ARGBType(0) : colorMap.getColor(set.iterator()
+					.next());
 				colors.put(i, c);
 			}
 			out.set(c);
 		}, new ARGBType());
 	}
 
-	@Override public BdvShowable image() {
-		return BdvShowable.wrap( view, model.labelTransformation() );
+	@Override
+	public BdvShowable image() {
+		return BdvShowable.wrap(view, model.labelTransformation());
 	}
 
-	@Override public Notifier<Runnable> listeners() {
+	@Override
+	public Notifier<Runnable> listeners() {
 		return listeners;
 	}
 
-	@Override public String title()
-	{
+	@Override
+	public String title() {
 		return "Labeling";
 	}
 }

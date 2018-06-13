@@ -1,3 +1,4 @@
+
 package net.imglib2.labkit.segmentation.weka;
 
 import hr.irb.fastRandomForest.FastRandomForest;
@@ -45,10 +46,8 @@ import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
+public class TrainableSegmentationSegmenter implements Segmenter {
 
-public class TrainableSegmentationSegmenter
-implements Segmenter
-{
 	private final Context context;
 
 	private weka.classifiers.Classifier initialWekaClassifier;
@@ -57,19 +56,22 @@ implements Segmenter
 
 	private net.imglib2.trainable_segmention.classification.Segmenter segmenter;
 
-	private final Notifier< Consumer< Segmenter > > listeners = new Notifier<>();
+	private final Notifier<Consumer<Segmenter>> listeners = new Notifier<>();
 
 	// This method is used to prepare the image for segmentation.
-	// TODO: make this a private method. consider moving image preparation to imglib2-trainable-segmentation.
-	public static RandomAccessibleInterval<?> prepareOriginal(RandomAccessibleInterval<?> original) {
+	// TODO: make this a private method. consider moving image preparation to
+	// imglib2-trainable-segmentation.
+	public static RandomAccessibleInterval<?> prepareOriginal(
+		RandomAccessibleInterval<?> original)
+	{
 		Object voxel = original.randomAccess().get();
-		if(voxel instanceof RealType && !(voxel instanceof FloatType))
+		if (voxel instanceof RealType && !(voxel instanceof FloatType))
 			return LabkitUtils.toFloat(RevampUtils.uncheckedCast(original));
 		return original;
 	}
 
 	@Override
-	public Notifier< Consumer< Segmenter > > listeners() {
+	public Notifier<Consumer<Segmenter>> listeners() {
 		return listeners;
 	}
 
@@ -79,25 +81,31 @@ implements Segmenter
 	}
 
 	@Override
-	public void editSettings( JFrame dialogParent) {
-		TrainableSegmentationSettingsDialog dialog = new TrainableSegmentationSettingsDialog( context, dialogParent, initialWekaClassifier, featureSettings );
+	public void editSettings(JFrame dialogParent) {
+		TrainableSegmentationSettingsDialog dialog =
+			new TrainableSegmentationSettingsDialog(context, dialogParent,
+				initialWekaClassifier, featureSettings);
 		dialog.show();
-		if(dialog.okClicked()) {
+		if (dialog.okClicked()) {
 			featureSettings = dialog.featureSettings();
 			initialWekaClassifier = dialog.wekaClassifier();
 		}
 	}
 
-	public TrainableSegmentationSegmenter(Context context, InputImage inputImage)
+	public TrainableSegmentationSegmenter(Context context,
+		InputImage inputImage)
 	{
-		GlobalSettings globalSettings = new GlobalSettings(inputImage.getChannelSetting(), inputImage.getSpatialDimensions(), 1.0, 16.0, 1.0);
+		GlobalSettings globalSettings = new GlobalSettings(inputImage
+			.getChannelSetting(), inputImage.getSpatialDimensions(), 1.0, 16.0, 1.0);
 		this.context = context;
 		this.initialWekaClassifier = new FastRandomForest();
-		this.featureSettings = new FeatureSettings(globalSettings, SingleFeatures.identity(), GroupedFeatures.gauss());
+		this.featureSettings = new FeatureSettings(globalSettings, SingleFeatures
+			.identity(), GroupedFeatures.gauss());
 		this.segmenter = null;
 	}
 
-	public TrainableSegmentationSegmenter(Context context, net.imglib2.trainable_segmention.classification.Segmenter segmenter )
+	public TrainableSegmentationSegmenter(Context context,
+		net.imglib2.trainable_segmention.classification.Segmenter segmenter)
 	{
 		this.context = context;
 		this.initialWekaClassifier = new FastRandomForest();
@@ -106,89 +114,116 @@ implements Segmenter
 	}
 
 	@Override
-	public void segment(RandomAccessibleInterval<?> image, RandomAccessibleInterval<? extends IntegerType<?>> labels) {
+	public void segment(RandomAccessibleInterval<?> image,
+		RandomAccessibleInterval<? extends IntegerType<?>> labels)
+	{
 		segmenter.segment(labels, Views.extendBorder(image));
 	}
 
 	@Override
-	public void predict(RandomAccessibleInterval<?> image, RandomAccessibleInterval<? extends RealType<?>> prediction) {
+	public void predict(RandomAccessibleInterval<?> image,
+		RandomAccessibleInterval<? extends RealType<?>> prediction)
+	{
 		segmenter.predict(Views.collapse(prediction), Views.extendBorder(image));
 	}
 
 	@Override
-	public void train(List<? extends RandomAccessibleInterval<?>> images, List<? extends Labeling> labelings) {
-		if(labelings.size() != images.size())
-			throw new IllegalArgumentException();
+	public void train(List<? extends RandomAccessibleInterval<?>> images,
+		List<? extends Labeling> labelings)
+	{
+		if (labelings.size() != images.size()) throw new IllegalArgumentException();
 		List<String> classes = collectLabels(labelings);
-		weka.classifiers.Classifier wekaClassifier = RevampUtils.wrapException(() -> AbstractClassifier.makeCopy(this.initialWekaClassifier));
-		OpEnvironment ops = context.service( OpService.class );
-		net.imglib2.trainable_segmention.classification.Segmenter segmenter = new net.imglib2.trainable_segmention.classification.Segmenter( ops, classes, featureSettings, wekaClassifier);
+		weka.classifiers.Classifier wekaClassifier = RevampUtils.wrapException(
+			() -> AbstractClassifier.makeCopy(this.initialWekaClassifier));
+		OpEnvironment ops = context.service(OpService.class);
+		net.imglib2.trainable_segmention.classification.Segmenter segmenter =
+			new net.imglib2.trainable_segmention.classification.Segmenter(ops,
+				classes, featureSettings, wekaClassifier);
 		Training training = segmenter.training();
 		for (int i = 0; i < images.size(); i++)
-			train(training, classes, labelings.get(i), images.get(i), segmenter.features() );
+			train(training, classes, labelings.get(i), images.get(i), segmenter
+				.features());
 		training.train();
 		this.segmenter = segmenter;
 		listeners.forEach(l -> l.accept(this));
 	}
 
-	private static List<String> collectLabels(List<? extends Labeling> labelings) {
-		return new ArrayList<>(labelings.stream().
-				flatMap(labeling -> labeling.getLabels().stream())
-				.collect(Collectors.toSet()));
+	private static List<String> collectLabels(
+		List<? extends Labeling> labelings)
+	{
+		return new ArrayList<>(labelings.stream().flatMap(labeling -> labeling
+			.getLabels().stream()).collect(Collectors.toSet()));
 	}
 
-	private void train( Training training, List< String > classes, Labeling labeling, RandomAccessibleInterval< ? > image, FeatureCalculator featuresCalculator ) {
+	private void train(Training training, List<String> classes, Labeling labeling,
+		RandomAccessibleInterval<?> image, FeatureCalculator featuresCalculator)
+	{
 		SparseRandomAccessIntType classIndices = getClassIndices(labeling, classes);
-		RandomAccessible<? extends Composite<FloatType>> features =
-				Views.collapse( cachedFeatureBlock( featuresCalculator, image));
+		RandomAccessible<? extends Composite<FloatType>> features = Views.collapse(
+			cachedFeatureBlock(featuresCalculator, image));
 		addSamples(training, classIndices, features);
 	}
 
-	// TODO: caching the Feature Stack while training could be part of imglib2-trainable-segmentation
-	private static Img<FloatType> cachedFeatureBlock(FeatureCalculator feature, RandomAccessibleInterval<?> image) {
-		return cachedFeatureBlock(feature, Views.extendBorder(image), LabkitUtils.suggestGrid(image, false));
+	// TODO: caching the Feature Stack while training could be part of
+	// imglib2-trainable-segmentation
+	private static Img<FloatType> cachedFeatureBlock(FeatureCalculator feature,
+		RandomAccessibleInterval<?> image)
+	{
+		return cachedFeatureBlock(feature, Views.extendBorder(image), LabkitUtils
+			.suggestGrid(image, false));
 	}
 
-	private static Img<FloatType> cachedFeatureBlock(FeatureCalculator feature, RandomAccessible<?> extendedOriginal, CellGrid grid) {
+	private static Img<FloatType> cachedFeatureBlock(FeatureCalculator feature,
+		RandomAccessible<?> extendedOriginal, CellGrid grid)
+	{
 		int count = feature.count();
-		if(count <= 0)
-			throw new IllegalArgumentException();
+		if (count <= 0) throw new IllegalArgumentException();
 		long[] dimensions = LabkitUtils.extend(grid.getImgDimensions(), count);
-		int[] cellDimensions = LabkitUtils.extend(new int[grid.numDimensions()], count);
+		int[] cellDimensions = LabkitUtils.extend(new int[grid.numDimensions()],
+			count);
 		grid.cellDimensions(cellDimensions);
-		final DiskCachedCellImgOptions featureOpts = DiskCachedCellImgOptions.options().cellDimensions( cellDimensions ).dirtyAccesses( false );
-		final DiskCachedCellImgFactory< FloatType > featureFactory = new DiskCachedCellImgFactory<>( featureOpts );
-		CellLoader<FloatType> loader = target -> feature.apply(extendedOriginal, RevampUtils.slices(target));
+		final DiskCachedCellImgOptions featureOpts = DiskCachedCellImgOptions
+			.options().cellDimensions(cellDimensions).dirtyAccesses(false);
+		final DiskCachedCellImgFactory<FloatType> featureFactory =
+			new DiskCachedCellImgFactory<>(featureOpts);
+		CellLoader<FloatType> loader = target -> feature.apply(extendedOriginal,
+			RevampUtils.slices(target));
 		return featureFactory.create(dimensions, new FloatType(), loader);
 	}
 
-	private void addSamples(Training training, SparseRandomAccessIntType classIndices, RandomAccessible<? extends Composite<FloatType>> features) {
+	private void addSamples(Training training,
+		SparseRandomAccessIntType classIndices,
+		RandomAccessible<? extends Composite<FloatType>> features)
+	{
 		Cursor<IntType> classIndicesCursor = classIndices.sparseCursor();
-		RandomAccess<? extends Composite<? extends RealType<?>>> ra = features.randomAccess();
-		while(classIndicesCursor.hasNext()) {
+		RandomAccess<? extends Composite<? extends RealType<?>>> ra = features
+			.randomAccess();
+		while (classIndicesCursor.hasNext()) {
 			int classIndex = classIndicesCursor.next().get();
 			ra.setPosition(classIndicesCursor);
 			training.add(ra.get(), classIndex);
 		}
 	}
 
-	private SparseRandomAccessIntType getClassIndices(Labeling labeling, List<String> classes) {
-		SparseRandomAccessIntType result = new SparseRandomAccessIntType(labeling, -1);
+	private SparseRandomAccessIntType getClassIndices(Labeling labeling,
+		List<String> classes)
+	{
+		SparseRandomAccessIntType result = new SparseRandomAccessIntType(labeling,
+			-1);
 		Map<Set<String>, Integer> classIndices = new HashMap<>();
 		Function<Set<String>, Integer> compute = set -> {
 			for (int i = 0; i < classes.size(); i++)
-				if(set.contains(classes.get(i)))
-					return i;
+				if (set.contains(classes.get(i))) return i;
 			return -1;
 		};
 		Cursor<?> cursor = labeling.sparsityCursor();
 		RandomAccess<Set<String>> randomAccess = labeling.randomAccess();
 		RandomAccess<IntType> out = result.randomAccess();
-		while(cursor.hasNext()) {
+		while (cursor.hasNext()) {
 			cursor.fwd();
 			randomAccess.setPosition(cursor);
 			Set<String> labels = randomAccess.get();
-			if(labels.isEmpty()) continue;
+			if (labels.isEmpty()) continue;
 			Integer classIndex = classIndices.computeIfAbsent(labels, compute);
 			out.setPosition(cursor);
 			out.get().set(classIndex);
@@ -202,15 +237,16 @@ implements Segmenter
 	}
 
 	@Override
-	synchronized public void saveModel( final String path, final boolean overwrite ) throws Exception
+	synchronized public void saveModel(final String path, final boolean overwrite)
+		throws Exception
 	{
-		GsonUtils.write( segmenter.toJsonTree(), path);
+		GsonUtils.write(segmenter.toJsonTree(), path);
 	}
 
 	@Override
-	public void openModel( final String path ) throws Exception
-	{
-		segmenter = net.imglib2.trainable_segmention.classification.Segmenter.fromJson( context.service( OpService.class ), GsonUtils.read(path));
+	public void openModel(final String path) throws Exception {
+		segmenter = net.imglib2.trainable_segmention.classification.Segmenter
+			.fromJson(context.service(OpService.class), GsonUtils.read(path));
 		listeners.forEach(l -> l.accept(this));
 	}
 }

@@ -1,3 +1,4 @@
+
 package net.imglib2.labkit.labeling;
 
 import net.imglib2.Cursor;
@@ -17,9 +18,9 @@ public class SparseIterableRegionTest {
 
 	Interval interval = new FinalInterval(1000, 1000, 1000);
 
-	long[] positionA = new long[]{42,42,42};
+	long[] positionA = new long[] { 42, 42, 42 };
 
-	long[] positionB = new long[]{10,10,10};
+	long[] positionB = new long[] { 10, 10, 10 };
 
 	@Test
 	public void testRandomAccess() {

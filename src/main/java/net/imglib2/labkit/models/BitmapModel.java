@@ -1,3 +1,4 @@
+
 package net.imglib2.labkit.models;
 
 import net.imglib2.RandomAccessibleInterval;
@@ -5,8 +6,7 @@ import net.imglib2.realtransform.AffineTransform3D;
 import net.imglib2.type.logic.BitType;
 import net.imglib2.type.numeric.ARGBType;
 
-public class BitmapModel
-{
+public class BitmapModel {
 
 	private final LabelingModel model;
 
@@ -23,15 +23,15 @@ public class BitmapModel
 	}
 
 	public ARGBType color() {
-		return model.colorMapProvider().colorMap().getColor( label() );
+		return model.colorMapProvider().colorMap().getColor(label());
 	}
 
 	public RandomAccessibleInterval<BitType> bitmap() {
-		return model.labeling().get().regions().get( label() );
+		return model.labeling().get().regions().get(label());
 	}
 
 	public void fireBitmapChanged() {
-		model.dataChangedNotifier().forEach( Runnable::run );
+		model.dataChangedNotifier().forEach(Runnable::run);
 	}
 
 	public AffineTransform3D transformation() {

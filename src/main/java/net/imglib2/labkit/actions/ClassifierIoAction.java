@@ -1,3 +1,4 @@
+
 package net.imglib2.labkit.actions;
 
 import net.imglib2.labkit.Extensible;
@@ -13,7 +14,9 @@ public class ClassifierIoAction extends AbstractFileIoAcion {
 
 	private final Holder<SegmentationItem> selectedSegmenter;
 
-	public ClassifierIoAction(Extensible extensible, final Holder< SegmentationItem > selectedSegmenter ) {
+	public ClassifierIoAction(Extensible extensible,
+		final Holder<SegmentationItem> selectedSegmenter)
+	{
 		super(extensible, new FileNameExtensionFilter("Classifier", "classifier"));
 		this.selectedSegmenter = selectedSegmenter;
 		initSaveAction("Save Classifier ...", "saveClassifier", this::save, "");

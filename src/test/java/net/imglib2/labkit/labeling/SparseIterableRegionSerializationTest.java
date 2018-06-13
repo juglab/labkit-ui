@@ -1,3 +1,4 @@
+
 package net.imglib2.labkit.labeling;
 
 import com.google.gson.Gson;
@@ -21,11 +22,12 @@ import static org.junit.Assert.fail;
  * @author Mattias Arzt
  */
 public class SparseIterableRegionSerializationTest {
+
 	@Test
 	public void test() {
-		final Gson gson = new GsonBuilder()
-				.registerTypeHierarchyAdapter(IterableRegion.class, new SparseIterableRegionSerializer.Adapter())
-				.create();
+		final Gson gson = new GsonBuilder().registerTypeHierarchyAdapter(
+			IterableRegion.class, new SparseIterableRegionSerializer.Adapter())
+			.create();
 		final SparseIterableRegion roi = exampleSparseRoi();
 		String json = gson.toJson(roi);
 		SparseIterableRegion roi2 = gson.fromJson(json, SparseIterableRegion.class);
@@ -34,28 +36,30 @@ public class SparseIterableRegionSerializationTest {
 	}
 
 	public static SparseIterableRegion exampleSparseRoi() {
-		final Interval interval = new FinalInterval(100,200,300);
+		final Interval interval = new FinalInterval(100, 200, 300);
 		final SparseIterableRegion roi = new SparseIterableRegion(interval);
 		RandomAccess<BitType> ra = roi.randomAccess();
-		ra.setPosition(new long[]{42, 42, 42});
+		ra.setPosition(new long[] { 42, 42, 42 });
 		ra.get().set(true);
-		ra.setPosition(new long[]{1, 2, 3});
+		ra.setPosition(new long[] { 1, 2, 3 });
 		ra.get().set(true);
 		return roi;
 	}
 
-	public static <A extends Type<A>>
-	void assertImagesEqual(final RandomAccessibleInterval<? extends A> a, final RandomAccessibleInterval<? extends A> b) {
+	public static <A extends Type<A>> void assertImagesEqual(
+		final RandomAccessibleInterval<? extends A> a,
+		final RandomAccessibleInterval<? extends A> b)
+	{
 		assertTrue(Intervals.equals(a, b));
 		System.out.println("check picture content.");
-		IntervalView<? extends Pair<? extends A, ? extends A>> pairs = Views.interval(Views.pair(a, b), b);
+		IntervalView<? extends Pair<? extends A, ? extends A>> pairs = Views
+			.interval(Views.pair(a, b), b);
 		Cursor<? extends Pair<? extends A, ? extends A>> cursor = pairs.cursor();
-		while(cursor.hasNext()) {
-			Pair<? extends A,? extends A> p = cursor.next();
+		while (cursor.hasNext()) {
+			Pair<? extends A, ? extends A> p = cursor.next();
 			boolean equal = p.getA().valueEquals(p.getB());
-			if(!equal)
-				fail("Pixel values not equal on coordinate " + ", expected: "
-						+ p.getA() + " actual: " + p.getB());
+			if (!equal) fail("Pixel values not equal on coordinate " +
+				", expected: " + p.getA() + " actual: " + p.getB());
 		}
 	}
 }

@@ -1,3 +1,4 @@
+
 package net.imglib2.labkit;
 
 import net.imagej.ImageJ;

@@ -1,3 +1,4 @@
+
 package net.imglib2.sparse;
 
 import net.imglib2.Cursor;
@@ -20,7 +21,8 @@ public class MappingCursor<T> implements Cursor<T> {
 
 	@Override
 	public Cursor<T> copyCursor() {
-		return new MappingCursor<>(cursor.copyCursor(), randomAccess.copyRandomAccess());
+		return new MappingCursor<>(cursor.copyCursor(), randomAccess
+			.copyRandomAccess());
 	}
 
 	@Override

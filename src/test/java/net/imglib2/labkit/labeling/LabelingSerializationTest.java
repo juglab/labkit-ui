@@ -1,3 +1,4 @@
+
 package net.imglib2.labkit.labeling;
 
 import com.google.gson.Gson;
@@ -41,10 +42,10 @@ public class LabelingSerializationTest {
 	}
 
 	private boolean labelingsEqual(Labeling expected, Labeling actual) {
-		boolean[] value = {true};
-		Views.interval(Views.pair(expected, actual), expected).forEach(
-				p -> { value[0] &= setsEqual(p.getA(), p.getB()); }
-		);
+		boolean[] value = { true };
+		Views.interval(Views.pair(expected, actual), expected).forEach(p -> {
+			value[0] &= setsEqual(p.getA(), p.getB());
+		});
 		return value[0];
 	}
 
@@ -62,7 +63,8 @@ public class LabelingSerializationTest {
 	}
 
 	private static IterableRegion<BitType> exampleRegion(long... position) {
-		SparseIterableRegion roi = new SparseIterableRegion(new FinalInterval(100, 200));
+		SparseIterableRegion roi = new SparseIterableRegion(new FinalInterval(100,
+			200));
 		RandomAccess<BitType> ra = roi.randomAccess();
 		ra.setPosition(position);
 		ra.get().set(true);

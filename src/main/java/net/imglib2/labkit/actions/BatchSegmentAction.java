@@ -1,3 +1,4 @@
+
 package net.imglib2.labkit.actions;
 
 import net.imglib2.labkit.BatchSegmenter;
@@ -32,17 +33,20 @@ public class BatchSegmentAction {
 	private final Extensible extensible;
 	private final Holder<SegmentationItem> selectedSegmenter;
 
-	public BatchSegmentAction(Extensible extensible, Holder< SegmentationItem > selectedSegmenter ) {
+	public BatchSegmentAction(Extensible extensible,
+		Holder<SegmentationItem> selectedSegmenter)
+	{
 		this.extensible = extensible;
 		this.selectedSegmenter = selectedSegmenter;
-		extensible.addAction("Batch Segment Images ...", "batchSegment", this::segmentImages, "");
+		extensible.addAction("Batch Segment Images ...", "batchSegment",
+			this::segmentImages, "");
 	}
 
 	private void segmentImages() {
 		BatchSegment commandInstance = new BatchSegment();
-		commandInstance.setSegmenter( selectedSegmenter.get().segmenter() );
+		commandInstance.setSegmenter(selectedSegmenter.get().segmenter());
 		boolean success = harvest(commandInstance, "Batch Segment Images");
-		if(success) commandInstance.run();
+		if (success) commandInstance.run();
 	}
 
 	private static boolean harvest(Command commandInstance, String title) {
@@ -51,16 +55,19 @@ public class BatchSegmentAction {
 		ci.setLabel(title);
 		try {
 			getHarvester(new Context()).harvest(module);
-		} catch (ModuleException e) {
+		}
+		catch (ModuleException e) {
 			return false;
 		}
 		return true;
 	}
 
 	private static InputHarvester<JPanel, JPanel> getHarvester(Context context) {
-		List<InputHarvester> harvester1 = RevampUtils.filterForClass(InputHarvester.class,
-				context.service(PluginService.class).createInstancesOfType(PreprocessorPlugin.class));
-		List<SwingInputHarvester> swing = RevampUtils.filterForClass(SwingInputHarvester.class, harvester1);
+		List<InputHarvester> harvester1 = RevampUtils.filterForClass(
+			InputHarvester.class, context.service(PluginService.class)
+				.createInstancesOfType(PreprocessorPlugin.class));
+		List<SwingInputHarvester> swing = RevampUtils.filterForClass(
+			SwingInputHarvester.class, harvester1);
 		return swing.isEmpty() ? harvester1.get(0) : swing.get(0);
 	}
 
@@ -77,24 +84,25 @@ public class BatchSegmentAction {
 
 		private Segmenter segmenter;
 
-		public void setSegmenter(Segmenter segmenter ) {
+		public void setSegmenter(Segmenter segmenter) {
 			this.segmenter = segmenter;
 		}
 
 		@Override
 		public void run() {
-			BatchSegmenter batchSegmenter = new BatchSegmenter( segmenter, statusService::showProgress );
-			for(File file : inputDirectory.listFiles())
-				if(file.isFile())
-					processFile(batchSegmenter, file);
+			BatchSegmenter batchSegmenter = new BatchSegmenter(segmenter,
+				statusService::showProgress);
+			for (File file : inputDirectory.listFiles())
+				if (file.isFile()) processFile(batchSegmenter, file);
 		}
 
 		private void processFile(BatchSegmenter batchSegmenter, File file) {
 			File outputFile = new File(outputDirectory, file.getName());
 			try {
-				batchSegmenter.segment(file.getAbsoluteFile(), outputFile.getAbsoluteFile());
+				batchSegmenter.segment(file.getAbsoluteFile(), outputFile
+					.getAbsoluteFile());
 			}
-			catch(Exception e) {
+			catch (Exception e) {
 				System.err.print(e);
 			}
 		}

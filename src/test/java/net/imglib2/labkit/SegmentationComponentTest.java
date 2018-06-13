@@ -1,3 +1,4 @@
+
 package net.imglib2.labkit;
 
 import ij.ImagePlus;
@@ -25,7 +26,8 @@ public class SegmentationComponentTest {
 
 	private SegmentationComponentTest() {
 		JFrame frame = setupFrame();
-		Img<? extends NumericType<?>> image = ImageJFunctions.wrap(new ImagePlus("/home/arzt/Documents/Datasets/beans.tif"));
+		Img<? extends NumericType<?>> image = ImageJFunctions.wrap(new ImagePlus(
+			"/home/arzt/Documents/Datasets/beans.tif"));
 		Context context = new Context();
 		segmenter = new SegmentationComponent(context, frame, image, false);
 		frame.add(segmenter.getComponent());
@@ -34,8 +36,10 @@ public class SegmentationComponentTest {
 	}
 
 	private JPanel getBottomPanel() {
-		JButton segmentation = new JButton(new RunnableAction("Show Segmentation", this::showSegmentation));
-		JButton prediction = new JButton(new RunnableAction("Show Prediction", this::showPrediction));
+		JButton segmentation = new JButton(new RunnableAction("Show Segmentation",
+			this::showSegmentation));
+		JButton prediction = new JButton(new RunnableAction("Show Prediction",
+			this::showPrediction));
 		JPanel panel = new JPanel();
 		panel.setLayout(new MigLayout());
 		panel.add(segmentation);
@@ -44,10 +48,11 @@ public class SegmentationComponentTest {
 	}
 
 	private void showSegmentation() {
-		if(!segmenter.isTrained())
-			System.out.println( "not trained yet" );
+		if (!segmenter.isTrained()) System.out.println("not trained yet");
 		else {
-			for(RandomAccessibleInterval<UnsignedByteType> segmentation : segmenter.getSegmentations(new UnsignedByteType())) {
+			for (RandomAccessibleInterval<UnsignedByteType> segmentation : segmenter
+				.getSegmentations(new UnsignedByteType()))
+			{
 				Views.iterable(segmentation).forEach(x -> x.mul(128));
 				ImageJFunctions.show(segmentation);
 			}
@@ -55,10 +60,9 @@ public class SegmentationComponentTest {
 	}
 
 	private void showPrediction() {
-		if(!segmenter.isTrained())
-			System.out.println( "not trained yet" );
+		if (!segmenter.isTrained()) System.out.println("not trained yet");
 		else {
-			segmenter.getPredictions().forEach( ImageJFunctions::show );
+			segmenter.getPredictions().forEach(ImageJFunctions::show);
 		}
 	}
 

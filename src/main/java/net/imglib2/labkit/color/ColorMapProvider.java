@@ -1,3 +1,4 @@
+
 package net.imglib2.labkit.color;
 
 import java.awt.*;
@@ -8,13 +9,11 @@ import net.imglib2.labkit.models.Holder;
 import net.imglib2.labkit.labeling.Labeling;
 import net.imglib2.type.numeric.ARGBType;
 
-public class ColorMapProvider
-{
+public class ColorMapProvider {
 
 	private ColorMap colorMap;
 
-	public ColorMapProvider(Holder<Labeling> labelingHolder)
-	{
+	public ColorMapProvider(Holder<Labeling> labelingHolder) {
 		colorMap = initColorMap();
 	}
 
@@ -22,11 +21,11 @@ public class ColorMapProvider
 		return colorMap;
 	}
 
-	private static ColorMap initColorMap()
-	{
+	private static ColorMap initColorMap() {
 		Map<String, ARGBType> map = new TreeMap<>();
 		final ColorSupplier colorSupplier = new ColorSupplier();
 		return new ColorMap() {
+
 			@Override
 			public ARGBType getColor(String key) {
 				return map.computeIfAbsent(key, x -> colorSupplier.get());
@@ -48,7 +47,7 @@ public class ColorMapProvider
 		@Override
 		public ARGBType get() {
 			hue += GOLDEN_ANGLE;
-			if(hue > 1f) hue -= 1f;
+			if (hue > 1f) hue -= 1f;
 			return new ARGBType(Color.HSBtoRGB(hue, 1f, 1f));
 		}
 	}

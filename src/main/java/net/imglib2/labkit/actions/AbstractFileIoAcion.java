@@ -1,3 +1,4 @@
+
 package net.imglib2.labkit.actions;
 
 import net.imglib2.labkit.Extensible;
@@ -12,7 +13,8 @@ import java.io.File;
  */
 public abstract class AbstractFileIoAcion {
 
-	public static final FileFilter TIFF_FILTER = new FileNameExtensionFilter("TIF Image (*.tif, *.tiff)", "tif", "tiff");
+	public static final FileFilter TIFF_FILTER = new FileNameExtensionFilter(
+		"TIF Image (*.tif, *.tiff)", "tif", "tiff");
 
 	private final Extensible extensible;
 
@@ -27,34 +29,41 @@ public abstract class AbstractFileIoAcion {
 		fileChooser.setFileFilter(fileFilter);
 	}
 
-
-	public void initSaveAction(String title, String command, Action action, String keyStroke) {
+	public void initSaveAction(String title, String command, Action action,
+		String keyStroke)
+	{
 		initAction(title, command, action, keyStroke, JFileChooser.SAVE_DIALOG);
 	}
 
-	public void initOpenAction(String title, String command, Action action, String keyStroke) {
+	public void initOpenAction(String title, String command, Action action,
+		String keyStroke)
+	{
 		initAction(title, command, action, keyStroke, JFileChooser.OPEN_DIALOG);
 	}
 
-	private void initAction(String title, String command, Action action, String keyStroke, int dialogType) {
-		extensible.addAction(title, command, () -> OpenDialogAndThen(title, dialogType, action), keyStroke);
+	private void initAction(String title, String command, Action action,
+		String keyStroke, int dialogType)
+	{
+		extensible.addAction(title, command, () -> OpenDialogAndThen(title,
+			dialogType, action), keyStroke);
 	}
 
 	private void OpenDialogAndThen(String title, int dialogType, Action action) {
 		fileChooser.setDialogTitle(title);
 		String filename = action.suggestedFile();
-		if(filename != null)
-			fileChooser.setSelectedFile(new File(filename));
+		if (filename != null) fileChooser.setSelectedFile(new File(filename));
 		fileChooser.setDialogType(dialogType);
-		final int returnVal = fileChooser.showDialog(extensible.dialogParent(), null);
-		if ( returnVal == JFileChooser.APPROVE_OPTION )
-			runAction(action, fileChooser.getSelectedFile().getAbsolutePath());
+		final int returnVal = fileChooser.showDialog(extensible.dialogParent(),
+			null);
+		if (returnVal == JFileChooser.APPROVE_OPTION) runAction(action, fileChooser
+			.getSelectedFile().getAbsolutePath());
 	}
 
 	private void runAction(Action action, String filename) {
 		try {
 			action.run(filename);
-		} catch (Exception e) {
+		}
+		catch (Exception e) {
 			e.printStackTrace();
 		}
 	}

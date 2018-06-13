@@ -1,9 +1,11 @@
+
 package net.imglib2.sparse;
 
 /**
  * @author Matthias Arzt
  */
 public class StopWatch {
+
 	private final long startTime = System.nanoTime();
 
 	public long timeInMilliSeconds() {

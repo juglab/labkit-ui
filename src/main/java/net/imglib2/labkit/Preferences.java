@@ -1,3 +1,4 @@
+
 package net.imglib2.labkit;
 
 import org.scijava.Context;
@@ -19,9 +20,8 @@ public class Preferences {
 
 	public List<String> getDefaultLabels() {
 		String s = prefService.get(KEY);
-		return (s == null || s.isEmpty()) ?
-				Arrays.asList("background", "foreground") :
-				Arrays.asList(s.split(","));
+		return (s == null || s.isEmpty()) ? Arrays.asList("background",
+			"foreground") : Arrays.asList(s.split(","));
 	}
 
 	public void setDefaultLabels(List<String> labels) {

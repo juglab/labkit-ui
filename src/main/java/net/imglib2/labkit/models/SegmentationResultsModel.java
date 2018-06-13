@@ -1,3 +1,4 @@
+
 package net.imglib2.labkit.models;
 
 import net.imglib2.FinalInterval;
@@ -24,41 +25,40 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 /**
- * SegmentationResultsModel is segmentation + probability map.
- * It wraps around a SegmentationModel and update whenever the Segmentation changes.
- * It's possible to listen to the SegmentationResultsModel.
+ * SegmentationResultsModel is segmentation + probability map. It wraps around a
+ * SegmentationModel and update whenever the Segmentation changes. It's possible
+ * to listen to the SegmentationResultsModel.
  */
 
-public class SegmentationResultsModel
-{
+public class SegmentationResultsModel {
+
 	private final SegmentationModel model;
 	private boolean hasResults = false;
-	private RandomAccessibleInterval<ShortType > segmentation;
-	private RandomAccessibleInterval<FloatType > prediction;
-	private List< String > labels = Collections.emptyList();
-	private List< ARGBType > colors = Collections.emptyList();
+	private RandomAccessibleInterval<ShortType> segmentation;
+	private RandomAccessibleInterval<FloatType> prediction;
+	private List<String> labels = Collections.emptyList();
+	private List<ARGBType> colors = Collections.emptyList();
 
-	private Notifier< Runnable > listeners = new Notifier<>();
+	private Notifier<Runnable> listeners = new Notifier<>();
 
-
-	public SegmentationResultsModel( SegmentationModel model, Segmenter segmenter )
+	public SegmentationResultsModel(SegmentationModel model,
+		Segmenter segmenter)
 	{
 		this.model = model;
-		segmentation = dummy( new ShortType() );
-		prediction = dummy( new FloatType() );
-		segmenter.listeners().add( this::segmenterTrained );
+		segmentation = dummy(new ShortType());
+		prediction = dummy(new FloatType());
+		segmenter.listeners().add(this::segmenterTrained);
 	}
 
-	private void segmenterTrained( Segmenter segmenter )
-	{
-		if( segmenter.isTrained())
-		{
-			updateSegmentation( segmenter );
-			updatePrediction( segmenter );
+	private void segmenterTrained(Segmenter segmenter) {
+		if (segmenter.isTrained()) {
+			updateSegmentation(segmenter);
+			updatePrediction(segmenter);
 			this.labels = segmenter.classNames();
-			this.colors = this.labels.stream().map(model.colorMap()::getColor).collect( Collectors.toList() );
+			this.colors = this.labels.stream().map(model.colorMap()::getColor)
+				.collect(Collectors.toList());
 			hasResults = true;
-			listeners.forEach( Runnable::run );
+			listeners.forEach(Runnable::run);
 		}
 	}
 
@@ -66,40 +66,46 @@ public class SegmentationResultsModel
 		return segmentation;
 	}
 
-	private <T> RandomAccessibleInterval<T> dummy( T value )
-	{
-		FinalInterval interval = new FinalInterval( model.grid().getImgDimensions() );
-		return ConstantUtils.constantRandomAccessibleInterval( value, interval.numDimensions(), interval );
+	private <T> RandomAccessibleInterval<T> dummy(T value) {
+		FinalInterval interval = new FinalInterval(model.grid().getImgDimensions());
+		return ConstantUtils.constantRandomAccessibleInterval(value, interval
+			.numDimensions(), interval);
 	}
 
 	public RandomAccessibleInterval<FloatType> prediction() {
 		return prediction;
 	}
 
-	private void updatePrediction(Segmenter segmenter ) {
+	private void updatePrediction(Segmenter segmenter) {
 		int count = segmenter.classNames().size();
 		CellGrid grid = model.grid();
-		CellGrid extended = new CellGrid(RevampUtils.extend(grid.getImgDimensions(), count), RevampUtils.extend(getCellDimensions(grid), count));
-		prediction = setupCachedImage(target -> segmenter.predict( model.image(), target), extended, new FloatType());
+		CellGrid extended = new CellGrid(RevampUtils.extend(grid.getImgDimensions(),
+			count), RevampUtils.extend(getCellDimensions(grid), count));
+		prediction = setupCachedImage(target -> segmenter.predict(model.image(),
+			target), extended, new FloatType());
 	}
 
-	private void updateSegmentation(Segmenter segmenter ) {
-		segmentation = setupCachedImage(target -> segmenter.segment( model.image(), target), model.grid(), new ShortType());
+	private void updateSegmentation(Segmenter segmenter) {
+		segmentation = setupCachedImage(target -> segmenter.segment(model.image(),
+			target), model.grid(), new ShortType());
 	}
 
-	private <T extends NativeType<T> > Img<T> setupCachedImage(CellLoader<T> loader, CellGrid grid, T type) {
+	private <T extends NativeType<T>> Img<T> setupCachedImage(
+		CellLoader<T> loader, CellGrid grid, T type)
+	{
 		final int[] cellDimensions = getCellDimensions(grid);
 		DiskCachedCellImgOptions optional = DiskCachedCellImgOptions.options()
-				//.cacheType( CacheType.BOUNDED )
-				//.maxCacheSize( 1000 )
-				.cellDimensions(cellDimensions);
-		final DiskCachedCellImgFactory< T > factory = new DiskCachedCellImgFactory<>(optional);
-		return factory.create( grid.getImgDimensions(), type, loader );
+			// .cacheType( CacheType.BOUNDED )
+			// .maxCacheSize( 1000 )
+			.cellDimensions(cellDimensions);
+		final DiskCachedCellImgFactory<T> factory = new DiskCachedCellImgFactory<>(
+			optional);
+		return factory.create(grid.getImgDimensions(), type, loader);
 	}
 
 	private int[] getCellDimensions(CellGrid grid) {
-		final int[] cellDimensions = new int[ grid.numDimensions() ];
-		grid.cellDimensions( cellDimensions );
+		final int[] cellDimensions = new int[grid.numDimensions()];
+		grid.cellDimensions(cellDimensions);
 		return cellDimensions;
 	}
 
@@ -107,28 +113,23 @@ public class SegmentationResultsModel
 		return labels;
 	}
 
-	public Interval interval()
-	{
-		return new FinalInterval( model.image() );
+	public Interval interval() {
+		return new FinalInterval(model.image());
 	}
 
-	public List< ARGBType > colors()
-	{
+	public List<ARGBType> colors() {
 		return colors;
 	}
 
-	public Notifier<Runnable> segmentationChangedListeners()
-	{
+	public Notifier<Runnable> segmentationChangedListeners() {
 		return listeners;
 	}
 
-	public AffineTransform3D transformation()
-	{
+	public AffineTransform3D transformation() {
 		return model.labelTransformation();
 	}
 
-	public boolean hasResults()
-	{
+	public boolean hasResults() {
 		return hasResults;
 	}
 }
