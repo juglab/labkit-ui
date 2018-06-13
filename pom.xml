@@ -101,6 +101,19 @@
 		<releaseProfiles>deploy-to-imagej</releaseProfiles>
 	</properties>
 
+	<build>
+		<plugins>
+			<plugin>
+				<groupId>net.revelc.code.formatter</groupId>
+				<artifactId>formatter-maven-plugin</artifactId>
+				<version>2.7.3</version>
+				<configuration>
+					<configFile>${project.basedir}/.formatter/java-imagej-coding-style.xml</configFile>
+				</configuration>
+			</plugin>
+		</plugins>
+	</build>
+
 	<dependencies>
 		<dependency>
 			<groupId>net.imglib2</groupId>
