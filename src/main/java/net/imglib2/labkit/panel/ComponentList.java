@@ -7,8 +7,8 @@ import org.scijava.ui.behaviour.util.RunnableAction;
 
 import javax.swing.*;
 import java.awt.*;
+import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-import java.awt.event.MouseListener;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Random;
@@ -20,6 +20,7 @@ public class ComponentList<K, C extends JComponent> {
 	private final Color BACKGROUND = UIManager.getColor("List.background");
 
 	private JPanel background = new JPanel();
+	private JComponent component = new JScrollPane( background );
 	private K selected;
 	private Map<C, K> panels = new HashMap<>();
 	private Notifier<Runnable> listeners = new Notifier<>();
@@ -29,37 +30,17 @@ public class ComponentList<K, C extends JComponent> {
 		background.setBackground(BACKGROUND);
 	}
 
-	public JComponent getCompnent() {
-		return new JScrollPane(background);
+	public JComponent getComponent() {
+		return component;
 	}
 
 	public void add(K key, C component) {
 		component.setBackground(BACKGROUND);
-		component.addMouseListener(new MouseListener() {
-
-			@Override
-			public void mouseClicked(MouseEvent e) {
-				setSelected(key);
-			}
+		component.addMouseListener(new MouseAdapter() {
 
 			@Override
 			public void mousePressed(MouseEvent e) {
-
-			}
-
-			@Override
-			public void mouseReleased(MouseEvent e) {
-
-			}
-
-			@Override
-			public void mouseEntered(MouseEvent e) {
-
-			}
-
-			@Override
-			public void mouseExited(MouseEvent e) {
-
+				setSelected(key);
 			}
 		});
 		component.setBackground(key == selected ? SELECTED_BACKGROUND : BACKGROUND);
@@ -99,7 +80,7 @@ public class ComponentList<K, C extends JComponent> {
 		frame.setSize(300, 600);
 		frame.setLayout(new MigLayout("", "[grow]", "[grow][]"));
 		ComponentList<String, JPanel> panelList = new ComponentList<>();
-		frame.add(panelList.getCompnent(), "grow, wrap");
+		frame.add(panelList.getComponent(), "grow, wrap");
 		Random random = new Random();
 		frame.add(new JButton(new RunnableAction("add", () -> panelList.add(Integer
 			.toString(random.nextInt()), panelList.newExamplePanel()))), "split");
