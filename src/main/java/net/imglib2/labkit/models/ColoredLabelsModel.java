@@ -2,7 +2,9 @@
 package net.imglib2.labkit.models;
 
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
+import java.util.function.Function;
 
 import net.imglib2.Cursor;
 import net.imglib2.FinalInterval;
@@ -58,6 +60,7 @@ public class ColoredLabelsModel {
 		String label = suggestName(labeling.getLabels());
 		if (label == null) return;
 		labeling.addLabel(label);
+		model.selectedLabel().set(label);
 		holder.notifier().forEach(l -> l.accept(labeling));
 	}
 
@@ -75,6 +78,16 @@ public class ColoredLabelsModel {
 		ARGBType color = model.colorMapProvider().colorMap().getColor(label);
 		model.colorMapProvider().colorMap().setColor(newLabel, color);
 		model.selectedLabel().set(newLabel);
+		holder.notifier().forEach(l -> l.accept(labeling));
+	}
+
+	public void moveLabel(String label, int movement) {
+		Holder<Labeling> holder = model.labeling();
+		Labeling labeling = holder.get();
+		List< String > oldOrder = new ArrayList<>( labeling.getLabels() );
+		Function< String, Double > priority =
+				l -> oldOrder.indexOf( l ) + (l == label ? movement + 0.5 * Math.signum( movement ) : 0.0);
+		labeling.setLabelOrder( Comparator.comparing( priority ) );
 		holder.notifier().forEach(l -> l.accept(labeling));
 	}
 
@@ -122,5 +135,12 @@ public class ColoredLabelsModel {
 			}
 		}
 		return new FinalInterval(min, max);
+	}
+
+	public void clearLabel(String selected) {
+		Holder<Labeling> holder = model.labeling();
+		Labeling labeling = holder.get();
+		labeling.clearLabel(selected);
+		holder.notifier().forEach(l -> l.accept(labeling));
 	}
 }

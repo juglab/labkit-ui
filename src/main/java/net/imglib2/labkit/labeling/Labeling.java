@@ -202,6 +202,21 @@ public class Labeling extends AbstractWrappedInterval implements
 		}
 	}
 
+	public void clearLabel(String label) {
+		Cursor<?> cursor = sparsityCursor();
+		RandomAccess<Set<String>> ra = randomAccess();
+		while (cursor.hasNext()) {
+			cursor.fwd();
+			ra.setPosition(cursor);
+			Set<String> set = ra.get();
+			set.remove( label );
+		}
+	}
+
+	public void setLabelOrder( Comparator< ? super String > comparator ) {
+		labels.sort( comparator );
+	}
+
 	public static class SetEntryAsBitType<T> extends BitType {
 
 		private Set<T> set = null;
