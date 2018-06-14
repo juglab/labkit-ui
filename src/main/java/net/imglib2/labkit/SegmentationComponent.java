@@ -1,31 +1,18 @@
 
 package net.imglib2.labkit;
 
-import net.imagej.ops.OpService;
 import net.imglib2.Interval;
 import net.imglib2.RandomAccessibleInterval;
-import net.imglib2.img.cell.CellImgFactory;
-import net.imglib2.img.planar.PlanarImg;
-import net.imglib2.labkit.actions.AddLabelingIoAction;
-import net.imglib2.labkit.actions.BatchSegmentAction;
-import net.imglib2.labkit.actions.BitmapImportExportAction;
-import net.imglib2.labkit.actions.ClassifierIoAction;
-import net.imglib2.labkit.actions.LabelingIoAction;
-import net.imglib2.labkit.actions.OpenImageAction;
-import net.imglib2.labkit.actions.OrthogonalView;
-import net.imglib2.labkit.actions.SegmentationAsLabelAction;
-import net.imglib2.labkit.actions.SegmentationSave;
-import net.imglib2.labkit.actions.SelectClassifier;
+import net.imglib2.labkit.actions.*;
 import net.imglib2.labkit.inputimage.DefaultInputImage;
 import net.imglib2.labkit.inputimage.InputImage;
 import net.imglib2.labkit.labeling.Labeling;
 import net.imglib2.labkit.models.ColoredLabelsModel;
 import net.imglib2.labkit.models.ImageLabelingModel;
-import net.imglib2.labkit.models.SegmentationItem;
 import net.imglib2.labkit.models.SegmentationModel;
+import net.imglib2.labkit.panel.GuiUtils;
 import net.imglib2.labkit.panel.LabelPanel;
 import net.imglib2.labkit.panel.SegmenterPanel;
-import net.imglib2.labkit.panel.VisibilityPanel;
 import net.imglib2.labkit.plugin.MeasureConnectedComponents;
 import net.imglib2.labkit.segmentation.PredictionLayer;
 import net.imglib2.labkit.segmentation.Segmenter;
@@ -33,11 +20,11 @@ import net.imglib2.labkit.segmentation.TrainClassifier;
 import net.imglib2.labkit.segmentation.weka.TimeSeriesSegmenter;
 import net.imglib2.labkit.segmentation.weka.TrainableSegmentationSegmenter;
 import net.imglib2.labkit.utils.ProgressConsumer;
-import net.imglib2.trainable_segmention.RevampUtils;
 import net.imglib2.type.NativeType;
 import net.imglib2.type.numeric.IntegerType;
 import net.imglib2.type.numeric.NumericType;
 import net.imglib2.type.numeric.real.FloatType;
+import net.imglib2.util.Intervals;
 import net.miginfocom.swing.MigLayout;
 import org.scijava.Context;
 import org.scijava.app.StatusService;
@@ -46,12 +33,10 @@ import org.scijava.ui.behaviour.util.RunnableAction;
 import javax.swing.*;
 import java.util.Arrays;
 import java.util.List;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 public class SegmentationComponent implements AutoCloseable {
 
-	private final JSplitPane panel;
+	private final JComponent panel;
 
 	private final boolean fixedLabels;
 
@@ -107,8 +92,7 @@ public class SegmentationComponent implements AutoCloseable {
 		labelingComponent.addBdvLayer(new PredictionLayer(segmentationModel
 			.selectedSegmenter()));
 		initActions();
-		JPanel leftPanel = initLeftPanel();
-		this.panel = initPanel(leftPanel, labelingComponent.getComponent());
+		this.panel = initPanel();
 	}
 
 	private void initModels(InputImage image, Labeling labeling) {
@@ -144,23 +128,40 @@ public class SegmentationComponent implements AutoCloseable {
 	}
 
 	private JPanel initLeftPanel() {
-		JPanel leftPanel = new JPanel();
-		leftPanel.setLayout(new MigLayout("", "[grow]", "[][grow][]"));
+		JPanel panel = new JPanel();
+		panel.setLayout(new MigLayout("", "[grow]", "[][grow][grow]"));
 		ActionMap actions = getActions();
-		leftPanel.add(new VisibilityPanel(actions), "wrap");
-		leftPanel.add(new LabelPanel(dialogBoxOwner, new ColoredLabelsModel(model),
-			fixedLabels).getComponent(), "grow, wrap");
-		leftPanel.add(new SegmenterPanel(segmentationModel, actions).getComponent(),
-			"grow");
-		return leftPanel;
+		panel.add( GuiUtils.createCheckboxGroupedPanel(actions.get("Image"), createImageInfo()),
+			"grow, wrap");
+		panel.add( GuiUtils.createCheckboxGroupedPanel(actions.get("Labeling"), new LabelPanel(
+			dialogBoxOwner, new ColoredLabelsModel(model), fixedLabels)
+				.getComponent()), "grow, wrap");
+		panel.add( GuiUtils.createCheckboxGroupedPanel(actions.get("Segmentation"), new SegmenterPanel(
+			segmentationModel, actions).getComponent()), "grow");
+		panel.invalidate();
+		panel.repaint();
+		return panel;
 	}
 
-	private JSplitPane initPanel(JComponent left, JComponent right) {
+	private JComponent createImageInfo() {
+		JPanel panel = new JPanel();
+		panel.setLayout(new MigLayout("insets 0, gap 0", "[grow]", ""));
+		JLabel label = new JLabel("Dimensions: " + Arrays.toString(Intervals
+			.dimensionsAsLongArray(inputImage.imageForSegmentation())));
+		label.setBackground(UIManager.getColor("List.background"));
+		label.setBorder(BorderFactory.createEmptyBorder(3, 6, 3, 3));
+		label.setOpaque(true);
+		panel.add(label, "grow, span");
+		return panel;
+	}
+
+	private JComponent initPanel() {
 		JSplitPane panel = new JSplitPane();
-		panel.setSize(100, 100);
 		panel.setOneTouchExpandable(true);
-		panel.setLeftComponent(left);
-		panel.setRightComponent(right);
+		panel.setLeftComponent(initLeftPanel());
+		panel.setRightComponent(labelingComponent.getComponent());
+		panel.setBorder(BorderFactory.createEmptyBorder());
+		// panel.add( bottom );
 		return panel;
 	}
 

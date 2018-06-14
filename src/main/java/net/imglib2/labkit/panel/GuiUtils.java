@@ -35,4 +35,31 @@ public class GuiUtils
 		g.dispose();
 		return new ImageIcon(image);
 	}
+
+	public static JComponent createCheckboxGroupedPanel( Action action, JComponent panel ) {
+		JPanel dark = new JPanel();
+		dark.setLayout( new BorderLayout(  ) );
+		JCheckBox checkbox = createCheckbox(action);
+		checkbox.setBackground(new Color(200, 200, 200));
+		dark.setBackground(new Color(200, 200, 200));
+		dark.add( checkbox, BorderLayout.PAGE_START );
+		dark.add( panel, BorderLayout.CENTER );
+		return dark;
+	}
+
+	private static JCheckBox createCheckbox(Action image) {
+		JCheckBox checkbox = new JCheckBox(image);
+		checkbox.setIcon(new ImageIcon(GuiUtils.class.getResource(
+			"/images/invisible.png")));
+		checkbox.setSelectedIcon(new ImageIcon(GuiUtils.class.getResource(
+			"/images/visible.png")));
+		checkbox.setPressedIcon(new ImageIcon(GuiUtils.class.getResource(
+			"/images/visible-hover.png")));
+		checkbox.setRolloverIcon(new ImageIcon(GuiUtils.class.getResource(
+			"/images/invisible-hover.png")));
+		checkbox.setRolloverSelectedIcon(new ImageIcon(GuiUtils.class.getResource(
+			"/images/visible-hover.png")));
+		checkbox.setFocusable(false);
+		return checkbox;
+	}
 }
