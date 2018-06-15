@@ -23,8 +23,8 @@ public class LabelToolsPanel extends JPanel {
 	private final static String btnBehaviourId = "panel";
 	private JPanel eraseOptions;
 	private JPanel brushSizeOptions;
-	private JPanel optionPane;
-	private JRadioButton btn1;
+	private final JPanel optionPane;
+	private JRadioButton buttonOne;
 	private final Color optionsBorder = new Color(220, 220, 220);
 	private final Color optionsBg = new Color(230, 230, 230);
 	private final MouseAdapter brushMotionDrawer;
@@ -41,20 +41,10 @@ public class LabelToolsPanel extends JPanel {
 		setLayout(new MigLayout("flowy, insets 0, gap 4pt, top", "[][][][][]",
 			"[]push"));
 		setBorder(BorderFactory.createEmptyBorder(0, 0, 4, 0));
-		JToggleButton moveBtn = addActionButton("Move", new MoveBtnListener(),
-			"/images/move.png");
-		addActionButton("Draw (D)", new PaintBtnListener(), "/images/draw.png");
-		addActionButton("Erase", new EraseBtnListener(), "/images/erase.png");
-		addActionButton("Flood Fill (F)\nThis only works properly on 2D images",
-			new FillBtnListener(), "/images/fill.png");
-		optionPane = new JPanel();
-		optionPane.setLayout(new BoxLayout(optionPane, BoxLayout.LINE_AXIS));
-		addEraseOptions(optionPane);
-		optionPane.add(Box.createRigidArea(new Dimension(5, 0)));
-		addBrushSizeOption(optionPane);
+		optionPane = initOptionPane();
+		initActionButtons();
 		add(optionPane, "wrap, growy, hmin 50px");
-		btn1.doClick();
-		moveBtn.doClick();
+		buttonOne.doClick();
 		final DragBehaviour moveBrush = (DragBehaviour) brushController
 			.getBehaviour("move brush");
 		brushMotionDrawer = new MouseAdapter() {
@@ -76,12 +66,33 @@ public class LabelToolsPanel extends JPanel {
 		};
 	}
 
-	private JToggleButton addActionButton(String buttonTitle,
+	private void initActionButtons()
+	{
+		JToggleButton moveBtn = addActionButton("Move", new MoveBtnListener(),
+				"/images/move.png");
+		addActionButton("Draw (D)", new PaintBtnListener(), "/images/draw.png");
+		addActionButton("Flood Fill (F)\nThis only works properly on 2D images",
+			new FillBtnListener(), "/images/fill.png");
+		addActionButton("Erase", new EraseBtnListener(), "/images/erase.png");
+		moveBtn.doClick();
+	}
+
+	private JPanel initOptionPane()
+	{
+		JPanel optionPane = new JPanel();
+		optionPane.setLayout(new BoxLayout(optionPane, BoxLayout.LINE_AXIS));
+		addEraseOptions(optionPane);
+		optionPane.add(Box.createRigidArea(new Dimension(5, 0)));
+		addBrushSizeOption(optionPane);
+		return optionPane;
+	}
+
+	private JToggleButton addActionButton(String toolTipText,
 		LabkitBtnListener btnListener, String iconPath)
 	{
 		JToggleButton button = new JToggleButton();
 		button.setIcon(new ImageIcon(this.getClass().getResource(iconPath)));
-		button.setToolTipText(buttonTitle);
+		button.setToolTipText( toolTipText );
 		button.setMargin(new Insets(0, 0, 0, 0));
 		button.addItemListener(btnListener);
 		group.add(button);
@@ -90,19 +101,19 @@ public class LabelToolsPanel extends JPanel {
 	}
 
 	private void addEraseOptions(JPanel panel) {
-		btn1 = createRadioButton("Erase area on mouse click",
+		buttonOne = createRadioButton("Erase area on mouse click",
 			"Floodremove (R) to remove one connected component of a label");
 		JRadioButton btn2 = createRadioButton("Erase stroke on mouse drag",
 			"Erase (E) where you drag the mouse");
 		ButtonGroup group = new ButtonGroup();
-		group.add(btn1);
+		group.add( buttonOne );
 		group.add(btn2);
-		btn1.setOpaque(false);
+		buttonOne.setOpaque(false);
 		btn2.setOpaque(false);
-		btn1.addItemListener(new DrawEraseModeBtnListener());
+		buttonOne.addItemListener(new DrawEraseModeBtnListener());
 		eraseOptions = new JPanel();
 		eraseOptions.setLayout(new MigLayout("insets 2pt, gap 0, top"));
-		eraseOptions.add(btn1, "wrap");
+		eraseOptions.add( buttonOne, "wrap");
 		eraseOptions.add(btn2);
 		eraseOptions.setBackground(optionsBg);
 		eraseOptions.setBorder(BorderFactory.createLineBorder(optionsBorder));
