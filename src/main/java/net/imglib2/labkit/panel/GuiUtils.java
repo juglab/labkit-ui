@@ -1,8 +1,12 @@
 
 package net.imglib2.labkit.panel;
 
+import org.scijava.ui.behaviour.DragBehaviour;
+
 import javax.swing.*;
 import java.awt.*;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.awt.image.BufferedImage;
 
 // TODO use Tims CardPanel https://raw.githubusercontent.com/knime-ip/knip-bdv/4489ea811ce5155038ec919c708ed8b84a6b0297/org.knime.knip.bdv.panel/src/org/knime/knip/bdv/uicomponents/CardPanel.java
@@ -63,5 +67,25 @@ public class GuiUtils {
 			"/images/visible-hover.png")));
 		checkbox.setFocusable(false);
 		return checkbox;
+	}
+
+	static MouseAdapter toMouseListener(DragBehaviour behavior) {
+		return new MouseAdapter() {
+
+			@Override
+			public void mouseEntered(MouseEvent e) {
+				behavior.init(e.getX(), e.getY());
+			}
+
+			@Override
+			public void mouseExited(MouseEvent e) {
+				behavior.end(e.getX(), e.getY());
+			}
+
+			@Override
+			public void mouseMoved(MouseEvent e) {
+				behavior.drag(e.getX(), e.getY());
+			}
+		};
 	}
 }
