@@ -3,12 +3,8 @@ package net.imglib2.labkit.control.brush;
 
 import bdv.util.Affine3DHelpers;
 import bdv.viewer.ViewerPanel;
-import net.imglib2.Localizable;
+import net.imglib2.*;
 import net.imglib2.Point;
-import net.imglib2.RandomAccessible;
-import net.imglib2.RandomAccessibleInterval;
-import net.imglib2.RealLocalizable;
-import net.imglib2.RealPoint;
 import net.imglib2.algorithm.fill.Filter;
 import net.imglib2.algorithm.neighborhood.DiamondShape;
 import net.imglib2.algorithm.neighborhood.Neighborhood;
@@ -32,7 +28,7 @@ import org.scijava.ui.behaviour.ScrollBehaviour;
 import org.scijava.ui.behaviour.util.RunnableAction;
 
 import javax.swing.*;
-import java.awt.*;
+import java.awt.Cursor;
 import java.util.stream.IntStream;
 
 /**
@@ -53,9 +49,16 @@ public class LabelBrushController {
 
 	final private BrushOverlay brushOverlay;
 
+	private MoveBrush moveBrushBehaviour = new MoveBrush();
+	private final PaintBehavior paintBehavior = new PaintBehavior(true);
+	private final PaintBehavior eraseBehavior = new PaintBehavior(false);
+	private final FloodFillClick floodFillBehaviour = new FloodFillClick(true);
+	private final FloodFillClick floodEraseBehaviour = new FloodFillClick(false);
 	private double brushRadius = 5;
 
 	boolean sliceTime;
+
+	final ActionsAndBehaviours behaviors;
 
 	public BrushOverlay getBrushOverlay() {
 		return brushOverlay;
@@ -68,21 +71,47 @@ public class LabelBrushController {
 		this.brushOverlay = new BrushOverlay(viewer, model);
 		this.sliceTime = sliceTime;
 		this.model = model;
-		brushOverlay.setRadius((int) getBrushRadius());
+		this.behaviors = behaviors;
+		brushOverlay.setRadius((int) getTransformedBrushRadius());
 
-		behaviors.addBehaviour(new PaintBehavior(true), "paint", "D button1",
+		installDefaultBehaviors(behaviors);
+	}
+
+	private void installDefaultBehaviors(ActionsAndBehaviours behaviors) {
+		behaviors.addBehaviour(paintBehaviour(), "paint", "D button1",
 			"SPACE button1");
 		RunnableAction nop = new RunnableAction("nop", () -> {});
 		nop.putValue(Action.ACCELERATOR_KEY, KeyStroke.getKeyStroke("F"));
 		behaviors.addAction(nop);
-		behaviors.addBehaviour(new PaintBehavior(false), "erase", "E button1",
+		behaviors.addBehaviour(eraseBehaviour(), "erase", "E button1",
 			"SPACE button2", "SPACE button3");
-		behaviors.addBehaviour(new FloodFillClick(true), "floodfill", "F button1");
-		behaviors.addBehaviour(new FloodFillClick(false), "floodclear", "R button1",
+		behaviors.addBehaviour(floodFillBehaviour(), "floodfill", "F button1");
+		behaviors.addBehaviour(floodEraseBehaviour(), "floodclear", "R button1",
 			"F button2", "F button3");
 		behaviors.addBehaviour(new ChangeBrushRadius(), "change brush radius",
 			"D scroll", "E scroll", "SPACE scroll");
-		behaviors.addBehaviour(new MoveBrush(), "move brush", "E", "D", "SPACE");
+		behaviors.addBehaviour(drawBrushBehaviour(), "move brush", "E", "D",
+			"SPACE");
+	}
+
+	public DragBehaviour drawBrushBehaviour() {
+		return moveBrushBehaviour;
+	}
+
+	public DragBehaviour paintBehaviour() {
+		return paintBehavior;
+	}
+
+	public DragBehaviour eraseBehaviour() {
+		return eraseBehavior;
+	}
+
+	public ClickBehaviour floodEraseBehaviour() {
+		return floodEraseBehaviour;
+	}
+
+	public ClickBehaviour floodFillBehaviour() {
+		return floodFillBehaviour;
 	}
 
 	private RealPoint displayToImageCoordinates(final int x, final int y) {
@@ -94,6 +123,16 @@ public class LabelBrushController {
 		model.transformation().applyInverse(labelLocation, labelLocation);
 		labelLocation.move(PIXEL_CENTER_OFFSET);
 		return labelLocation;
+	}
+
+	public void setBrushRadius(double brushRadius) {
+		this.brushRadius = brushRadius;
+		brushOverlay.setRadius((int) getTransformedBrushRadius());
+		brushOverlay.requestRepaint();
+	}
+
+	public double getBrushRadius() {
+		return brushRadius;
 	}
 
 	private class PaintBehavior implements DragBehaviour {
@@ -110,7 +149,8 @@ public class LabelBrushController {
 			synchronized (viewer) {
 				final RandomAccessible<BitType> extended = Views.extendValue(bitmap(),
 					new BitType(false));
-				double brushWidth = getBrushRadius() * getScale(viewerTransformation());
+				double brushWidth = getTransformedBrushRadius() * getScale(
+					viewerTransformation());
 				double brushDepth = brushWidth;
 				AffineTransform3D D = brushMatrix(coords, brushWidth, brushDepth);
 				AffineTransform3D m = displayToImageTransformation();
@@ -193,7 +233,7 @@ public class LabelBrushController {
 		public void end(final int x, final int y) {}
 	}
 
-	private double getBrushRadius() {
+	private double getTransformedBrushRadius() {
 		return brushRadius * getScale(model.transformation());
 	}
 
@@ -224,10 +264,9 @@ public class LabelBrushController {
 			if (!isHorizontal) {
 				int sign = (wheelRotation < 0) ? 1 : -1;
 				double distance = Math.max(1, brushRadius * 0.1);
-				brushRadius = Math.min(Math.max(0.5, brushRadius + sign * distance),
-					50);
-				brushOverlay.setRadius((int) getBrushRadius());
-				brushOverlay.requestRepaint();
+				setBrushRadius(Math.min(Math.max(0.5, brushRadius + sign * distance),
+					50));
+
 			}
 		}
 	}

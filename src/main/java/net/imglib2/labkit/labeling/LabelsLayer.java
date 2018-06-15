@@ -11,10 +11,10 @@ import net.imglib2.labkit.utils.Notifier;
 import net.imglib2.labkit.utils.RandomAccessibleContainer;
 import net.imglib2.labkit.color.ColorMap;
 import net.imglib2.converter.Converters;
-import net.imglib2.realtransform.AffineTransform3D;
 import net.imglib2.type.numeric.ARGBType;
 import net.imglib2.view.Views;
 
+import java.util.List;
 import java.util.Set;
 
 /**
@@ -47,19 +47,32 @@ public class LabelsLayer implements BdvLayer {
 	private RandomAccessibleInterval<ARGBType> colorView() {
 		Labeling labeling = model.labeling().get();
 		ColorMap colorMap = model.colorMapProvider().colorMap();
+		List<Set<String>> labelSets = labeling.getLabelSets();
 		TIntObjectMap<ARGBType> colors = new TIntObjectHashMap<>();
 
 		return Converters.convert(labeling.getIndexImg(), (in, out) -> {
 			int i = in.getInteger();
 			ARGBType c = colors.get(i);
 			if (c == null) {
-				Set<String> set = labeling.getLabelSets().get(i);
-				c = set.isEmpty() ? new ARGBType(0) : colorMap.getColor(set.iterator()
-					.next());
+				c = getColor(colorMap, labelSets.get(i));
 				colors.put(i, c);
 			}
 			out.set(c);
 		}, new ARGBType());
+	}
+
+	private ARGBType getColor(ColorMap colorMap, Set<String> set) {
+		ARGBType result = new ARGBType();
+		double factor = 1.0 / set.size();
+		set.forEach(label -> result.add(downScale(factor, colorMap.getColor(
+			label))));
+		return result;
+	}
+
+	private ARGBType downScale(double factor, ARGBType color) {
+		ARGBType result = color.copy();
+		result.mul(factor);
+		return result;
 	}
 
 	@Override

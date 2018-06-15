@@ -43,4 +43,8 @@ public class ActionsAndBehaviours {
 		behaviors.behaviour(behaviour, name, defaultTriggers);
 		behaviors.install(bdvHandle.getTriggerbindings(), "classifier training");
 	}
+
+	public Behaviour getBehaviour(String name) {
+		return behaviors.getBehaviourMap().get(name);
+	}
 }
