@@ -10,12 +10,14 @@ import bdv.viewer.ViewerPanel;
 import net.imglib2.labkit.actions.ToggleVisibility;
 import net.imglib2.labkit.bdv.BdvLayer;
 import net.imglib2.labkit.control.brush.ChangeLabel;
+import net.imglib2.labkit.control.brush.FloodFillController;
 import net.imglib2.labkit.control.brush.LabelBrushController;
 import net.imglib2.labkit.labeling.LabelsLayer;
 import net.imglib2.labkit.models.BitmapModel;
 import net.imglib2.labkit.models.ImageLabelingModel;
 import net.imglib2.labkit.panel.LabelToolsPanel;
 import net.miginfocom.swing.MigLayout;
+import org.scijava.ui.behaviour.ClickBehaviour;
 import org.scijava.ui.behaviour.util.AbstractNamedAction;
 
 import javax.swing.*;
@@ -33,6 +35,8 @@ public class LabelingComponent implements AutoCloseable {
 	private ImageLabelingModel model;
 
 	final LabelBrushController brushController;
+
+	final FloodFillController floodFillController;
 
 	public JComponent getComponent() {
 		return panel;
@@ -52,6 +56,8 @@ public class LabelingComponent implements AutoCloseable {
 		actionsAndBehaviours = new ActionsAndBehaviours(bdvHandle);
 		brushController = new LabelBrushController(bdvHandle.getViewerPanel(),
 			new BitmapModel(model), actionsAndBehaviours, model.isTimeSeries());
+		floodFillController = new FloodFillController(bdvHandle.getViewerPanel(),
+				model, actionsAndBehaviours, model.isTimeSeries());
 		initLabelsLayer();
 		initImageLayer();
 		initBrushLayer();
@@ -68,7 +74,7 @@ public class LabelingComponent implements AutoCloseable {
 
 	private void initPanel() {
 		panel.setLayout(new MigLayout("", "[grow]", "[][grow]"));
-		panel.add(new LabelToolsPanel(bdvHandle, brushController), "wrap, growx");
+		panel.add(new LabelToolsPanel(bdvHandle, brushController, floodFillController), "wrap, growx");
 		panel.add(bdvHandle.getViewerPanel(), "grow");
 	}
 

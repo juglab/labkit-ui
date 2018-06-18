@@ -3,6 +3,7 @@ package net.imglib2.labkit.panel;
 
 import bdv.util.BdvHandle;
 import bdv.viewer.ViewerPanel;
+import net.imglib2.labkit.control.brush.FloodFillController;
 import net.imglib2.labkit.control.brush.LabelBrushController;
 import net.miginfocom.swing.MigLayout;
 import org.scijava.ui.behaviour.*;
@@ -24,7 +25,10 @@ public class LabelToolsPanel extends JPanel {
 		Mode.ERASE);
 
 	private final TriggerBehaviourBindings triggerBindings;
-	LabelBrushController brushController;
+
+	private final FloodFillController floodFillController;
+	private final LabelBrushController brushController;
+
 	private JPanel brushSizeOptions;
 	private final JPanel optionPane;
 	private final MouseAdapter brushMotionDrawer;
@@ -32,9 +36,10 @@ public class LabelToolsPanel extends JPanel {
 	private final ButtonGroup group = new ButtonGroup();
 
 	public LabelToolsPanel(BdvHandle bdvHandle,
-		LabelBrushController brushController)
+		LabelBrushController brushController, FloodFillController floodFillController)
 	{
 		this.brushController = brushController;
+		this.floodFillController = floodFillController;
 		triggerBindings = bdvHandle.getTriggerbindings();
 		bdvPanel = bdvHandle.getViewerPanel();
 
@@ -67,11 +72,11 @@ public class LabelToolsPanel extends JPanel {
 			case PAINT:
 				return brushController.paintBehaviour();
 			case FLOOD_FILL:
-				return brushController.floodFillBehaviour();
+				return floodFillController.floodFillBehaviour();
 			case ERASE:
 				return brushController.eraseBehaviour();
 			case FLOOD_ERASE:
-				return brushController.floodEraseBehaviour();
+				return floodFillController.floodEraseBehaviour();
 		}
 		throw new AssertionError();
 	}
