@@ -32,7 +32,6 @@ import net.imglib2.type.NativeType;
 import net.imglib2.type.numeric.IntegerType;
 import net.imglib2.type.numeric.NumericType;
 import net.imglib2.type.numeric.real.FloatType;
-import net.imglib2.util.Intervals;
 import net.miginfocom.swing.MigLayout;
 import org.scijava.Context;
 
@@ -139,7 +138,7 @@ public class SegmentationComponent implements AutoCloseable {
 		panel.setLayout(new MigLayout("", "[grow]", "[][grow][grow]"));
 		ActionMap actions = getActions();
 		panel.add(GuiUtils.createCheckboxGroupedPanel(actions.get("Image"),
-			createImageInfo()), "grow, wrap");
+				GuiUtils.createDimensionsInfo( inputImage.interval() ) ), "grow, wrap");
 		panel.add(GuiUtils.createCheckboxGroupedPanel(actions.get("Labeling"),
 			new LabelPanel(dialogBoxOwner, new ColoredLabelsModel(model), fixedLabels)
 				.getComponent()), "grow, wrap");
@@ -147,18 +146,6 @@ public class SegmentationComponent implements AutoCloseable {
 			new SegmenterPanel(segmentationModel, actions).getComponent()), "grow");
 		panel.invalidate();
 		panel.repaint();
-		return panel;
-	}
-
-	private JComponent createImageInfo() {
-		JPanel panel = new JPanel();
-		panel.setLayout(new MigLayout("insets 0, gap 0", "[grow]", ""));
-		JLabel label = new JLabel("Dimensions: " + Arrays.toString(Intervals
-			.dimensionsAsLongArray(inputImage.imageForSegmentation())));
-		label.setBackground(UIManager.getColor("List.background"));
-		label.setBorder(BorderFactory.createEmptyBorder(3, 6, 3, 3));
-		label.setOpaque(true);
-		panel.add(label, "grow, span");
 		return panel;
 	}
 

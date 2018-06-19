@@ -1,6 +1,9 @@
 
 package net.imglib2.labkit.panel;
 
+import net.imglib2.Dimensions;
+import net.imglib2.util.Intervals;
+import net.miginfocom.swing.MigLayout;
 import org.scijava.ui.behaviour.DragBehaviour;
 
 import javax.swing.*;
@@ -8,6 +11,7 @@ import java.awt.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.image.BufferedImage;
+import java.util.Arrays;
 
 // TODO use Tims CardPanel https://raw.githubusercontent.com/knime-ip/knip-bdv/4489ea811ce5155038ec919c708ed8b84a6b0297/org.knime.knip.bdv.panel/src/org/knime/knip/bdv/uicomponents/CardPanel.java
 public class GuiUtils {
@@ -87,5 +91,18 @@ public class GuiUtils {
 				behavior.drag(e.getX(), e.getY());
 			}
 		};
+	}
+
+	public static JComponent createDimensionsInfo( Dimensions interval )
+	{
+		JPanel panel = new JPanel();
+		panel.setLayout(new MigLayout("insets 0, gap 0", "[grow]", ""));
+		JLabel label = new JLabel("Dimensions: " + Arrays.toString( Intervals
+			.dimensionsAsLongArray( interval )));
+		label.setBackground(UIManager.getColor("List.background"));
+		label.setBorder(BorderFactory.createEmptyBorder(3, 6, 3, 3));
+		label.setOpaque(true);
+		panel.add(label, "grow, span");
+		return panel;
 	}
 }
