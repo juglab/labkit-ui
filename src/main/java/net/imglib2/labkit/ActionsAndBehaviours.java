@@ -33,7 +33,7 @@ public class ActionsAndBehaviours {
 
 	public void addAction(AbstractNamedAction action) {
 		KeyStroke keyStroke = (KeyStroke) action.getValue(Action.ACCELERATOR_KEY);
-		actions.namedAction(action, keyStroke != null ? keyStroke.toString() : "");
+		actions.namedAction(action, keyStroke != null ? new String[] { keyStroke.toString() } : new String[0]);
 		actions.install(bdvHandle.getKeybindings(), "classifier training");
 	}
 

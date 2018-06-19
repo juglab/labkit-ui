@@ -5,7 +5,7 @@
 	<parent>
 		<groupId>org.scijava</groupId>
 		<artifactId>pom-scijava</artifactId>
-		<version>17.1.1</version>
+		<version>22.3.0</version>
 	</parent>
 
 	<groupId>net.imglib2</groupId>
@@ -93,10 +93,6 @@
 		<package-name>net.imglib2.labkit</package-name>
 		<license.licenseName>bsd_2</license.licenseName>
 		<license.copyrightOwners>Matthias Arzt, Philipp Hanslovsky</license.copyrightOwners>
-		<bigdataviewer-vistools.version>1.0.0-beta-10</bigdataviewer-vistools.version>
-		<bigdataviewer-core.version>4.3.2</bigdataviewer-core.version>
-		<imglib2.version>4.6.1</imglib2.version>
-
 		<!-- NB: Deploy releases to the ImageJ Maven repository. -->
 		<releaseProfiles>deploy-to-imagej</releaseProfiles>
 	</properties>
