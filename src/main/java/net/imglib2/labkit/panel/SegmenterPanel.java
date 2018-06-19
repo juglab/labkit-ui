@@ -1,8 +1,7 @@
 
 package net.imglib2.labkit.panel;
 
-import net.imglib2.labkit.models.SegmentationItem;
-import net.imglib2.labkit.models.DefaultSegmentationModel;
+import net.imglib2.labkit.models.SegmenterListModel;
 import net.miginfocom.swing.MigLayout;
 
 import javax.swing.*;
@@ -10,13 +9,13 @@ import javax.swing.event.ListSelectionEvent;
 
 public class SegmenterPanel {
 
-	private final DefaultSegmentationModel segmentationModel;
+	private final SegmenterListModel<?> segmentationModel;
 
 	private final JPanel panel = new JPanel();
 
-	private final JList<SegmentationItem> list = new JList<>();
+	private final JList<Object> list = new JList<>();
 
-	public SegmenterPanel(DefaultSegmentationModel segmentationModel,
+	public SegmenterPanel(SegmenterListModel<?> segmentationModel,
 		ActionMap actions)
 	{
 		this.segmentationModel = segmentationModel;
@@ -43,7 +42,7 @@ public class SegmenterPanel {
 	}
 
 	private void updateList() {
-		DefaultListModel<SegmentationItem> model = new DefaultListModel<>();
+		DefaultListModel<Object> model = new DefaultListModel<>();
 		segmentationModel.segmenters().forEach(model::addElement);
 		list.setModel(model);
 		list.setSelectedIndex(segmentationModel.segmenters().indexOf(
@@ -57,9 +56,9 @@ public class SegmenterPanel {
 	}
 
 	private void userChangedSelection(ListSelectionEvent listSelectionEvent) {
-		SegmentationItem selectedValue = list.getSelectedValue();
-		if (selectedValue != null) segmentationModel.selectedSegmenter().set(
-			selectedValue);
+		Object selectedValue = list.getSelectedValue();
+		if (selectedValue != null)
+			((SegmenterListModel) segmentationModel).selectedSegmenter().set(selectedValue);
 	}
 
 	public JComponent getComponent() {
