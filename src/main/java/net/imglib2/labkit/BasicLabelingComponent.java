@@ -51,7 +51,7 @@ public class BasicLabelingComponent implements AutoCloseable {
 		initLabelsLayer();
 		initImageLayer();
 		JPanel toolsPanel = initBrushLayer();
-		initPanel( toolsPanel );
+		initPanel(toolsPanel);
 		this.model.transformationModel().initialize(bdvHandle.getViewerPanel());
 	}
 
@@ -62,7 +62,7 @@ public class BasicLabelingComponent implements AutoCloseable {
 		bdvHandle.getViewerPanel().setDisplayMode(DisplayMode.FUSED);
 	}
 
-	private void initPanel( JPanel toolsPanel ) {
+	private void initPanel(JPanel toolsPanel) {
 		panel.setLayout(new MigLayout("", "[grow]", "[][grow]"));
 		panel.add(toolsPanel, "wrap, growx");
 		panel.add(bdvHandle.getViewerPanel(), "grow");
@@ -85,11 +85,14 @@ public class BasicLabelingComponent implements AutoCloseable {
 	}
 
 	private JPanel initBrushLayer() {
-		final LabelBrushController brushController = new LabelBrushController(bdvHandle.getViewerPanel(),
-				new BitmapModel(model), actionsAndBehaviours, model.isTimeSeries());
-		final FloodFillController floodFillController = new FloodFillController(bdvHandle.getViewerPanel(),
-				model, actionsAndBehaviours, model.isTimeSeries());
-		JPanel toolsPanel = new LabelToolsPanel( bdvHandle, brushController, floodFillController );
+		final LabelBrushController brushController = new LabelBrushController(
+			bdvHandle.getViewerPanel(), new BitmapModel(model), actionsAndBehaviours,
+			model.isTimeSeries());
+		final FloodFillController floodFillController = new FloodFillController(
+			bdvHandle.getViewerPanel(), model, actionsAndBehaviours, model
+				.isTimeSeries());
+		JPanel toolsPanel = new LabelToolsPanel(bdvHandle, brushController,
+			floodFillController);
 		actionsAndBehaviours.addAction(new ChangeLabel(model));
 		return toolsPanel;
 	}

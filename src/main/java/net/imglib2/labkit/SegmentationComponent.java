@@ -103,8 +103,8 @@ public class SegmentationComponent implements AutoCloseable {
 	private void initModels(InputImage image, Labeling labeling) {
 		model = new ImageLabelingModel(image.showable(), labeling, inputImage
 			.isTimeSeries());
-		segmentationModel = new DefaultSegmentationModel(image.imageForSegmentation(),
-			model, () -> initClassifier(context));
+		segmentationModel = new DefaultSegmentationModel(image
+			.imageForSegmentation(), model, () -> initClassifier(context));
 	}
 
 	private Segmenter initClassifier(Context context) {
@@ -137,8 +137,8 @@ public class SegmentationComponent implements AutoCloseable {
 		JPanel panel = new JPanel();
 		panel.setLayout(new MigLayout("", "[grow]", "[][grow][grow]"));
 		ActionMap actions = getActions();
-		panel.add(GuiUtils.createCheckboxGroupedPanel(actions.get("Image"),
-				GuiUtils.createDimensionsInfo( inputImage.interval() ) ), "grow, wrap");
+		panel.add(GuiUtils.createCheckboxGroupedPanel(actions.get("Image"), GuiUtils
+			.createDimensionsInfo(inputImage.interval())), "grow, wrap");
 		panel.add(GuiUtils.createCheckboxGroupedPanel(actions.get("Labeling"),
 			new LabelPanel(dialogBoxOwner, new ColoredLabelsModel(model), fixedLabels)
 				.getComponent()), "grow, wrap");

@@ -36,7 +36,8 @@ public class LabelToolsPanel extends JPanel {
 	private final ButtonGroup group = new ButtonGroup();
 
 	public LabelToolsPanel(BdvHandle bdvHandle,
-		LabelBrushController brushController, FloodFillController floodFillController)
+		LabelBrushController brushController,
+		FloodFillController floodFillController)
 	{
 		this.brushController = brushController;
 		this.floodFillController = floodFillController;

@@ -40,8 +40,7 @@ public class LabelingComponentDemo {
 	private static JComponent initLabelingComponent(JFrame frame,
 		ImageLabelingModel model)
 	{
-		LabelingComponent labelingComponent = new LabelingComponent(
-			frame, model);
+		LabelingComponent labelingComponent = new LabelingComponent(frame, model);
 		frame.addWindowListener(new WindowAdapter() {
 
 			@Override

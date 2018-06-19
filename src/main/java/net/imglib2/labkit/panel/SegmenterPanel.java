@@ -57,8 +57,8 @@ public class SegmenterPanel {
 
 	private void userChangedSelection(ListSelectionEvent listSelectionEvent) {
 		Object selectedValue = list.getSelectedValue();
-		if (selectedValue != null)
-			((SegmenterListModel) segmentationModel).selectedSegmenter().set(selectedValue);
+		if (selectedValue != null) ((SegmenterListModel) segmentationModel)
+			.selectedSegmenter().set(selectedValue);
 	}
 
 	public JComponent getComponent() {

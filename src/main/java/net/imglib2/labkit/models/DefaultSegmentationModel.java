@@ -25,7 +25,7 @@ import java.util.stream.Stream;
  * Serves as a model for PredictionLayer and TrainClassifierAction
  */
 public class DefaultSegmentationModel implements SegmentationModel,
-		SegmenterListModel<SegmentationItem>
+	SegmenterListModel<SegmentationItem>
 {
 
 	private final ImageLabelingModel imageLabelingModel;

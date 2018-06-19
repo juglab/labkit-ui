@@ -7,8 +7,7 @@ import net.imglib2.labkit.color.ColorMap;
 import net.imglib2.labkit.labeling.Labeling;
 import net.imglib2.realtransform.AffineTransform3D;
 
-public interface SegmentationModel
-{
+public interface SegmentationModel {
 
 	Labeling labeling();
 

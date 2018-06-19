@@ -13,9 +13,7 @@ public class LabelingComponent implements AutoCloseable {
 
 	private final BasicLabelingComponent labelingComponent;
 
-	public LabelingComponent(JFrame dialogBoxOwner,
-		ImageLabelingModel model)
-	{
+	public LabelingComponent(JFrame dialogBoxOwner, ImageLabelingModel model) {
 		this.labelingComponent = new BasicLabelingComponent(dialogBoxOwner, model);
 		JComponent leftPanel = new LabelPanel(dialogBoxOwner,
 			new ColoredLabelsModel(model), true).getComponent();

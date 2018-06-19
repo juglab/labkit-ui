@@ -35,7 +35,8 @@ public class LabelingComponentHdf5Demo {
 		SpimDataMinimal spimData)
 	{
 		ImageLabelingModel model = initModel(spimData);
-		BasicLabelingComponent labelingComponent = new BasicLabelingComponent(frame, model);
+		BasicLabelingComponent labelingComponent = new BasicLabelingComponent(frame,
+			model);
 		frame.addWindowListener(new WindowAdapter() {
 
 			@Override

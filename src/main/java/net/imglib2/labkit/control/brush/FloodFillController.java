@@ -38,9 +38,11 @@ public class FloodFillController {
 
 	private final boolean sliceTime;
 
-	private final FloodFillClick floodEraseBehaviour = new FloodFillClick( Collections::emptySet );
+	private final FloodFillClick floodEraseBehaviour = new FloodFillClick(
+		Collections::emptySet);
 
-	private final FloodFillClick floodFillBehaviour = new FloodFillClick( this::selectedLabel );
+	private final FloodFillClick floodFillBehaviour = new FloodFillClick(
+		this::selectedLabel);
 
 	public FloodFillController(final ViewerPanel viewer,
 		final LabelingModel model, final ActionsAndBehaviours behaviors,
@@ -54,15 +56,13 @@ public class FloodFillController {
 		nop.putValue(Action.ACCELERATOR_KEY, KeyStroke.getKeyStroke("F"));
 		behaviors.addAction(nop);
 		behaviors.addBehaviour(floodFillBehaviour, "floodfill", "F button1");
-		behaviors.addBehaviour(floodEraseBehaviour,
-			"floodclear", "R button1", "F button2", "F button3");
+		behaviors.addBehaviour(floodEraseBehaviour, "floodclear", "R button1",
+			"F button2", "F button3");
 	}
 
-	private Set<String> selectedLabel()
-	{
-		return Collections.singleton( model.selectedLabel().get() );
+	private Set<String> selectedLabel() {
+		return Collections.singleton(model.selectedLabel().get());
 	}
-
 
 	public ClickBehaviour floodEraseBehaviour() {
 		return floodEraseBehaviour;

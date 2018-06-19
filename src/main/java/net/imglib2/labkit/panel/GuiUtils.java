@@ -93,12 +93,11 @@ public class GuiUtils {
 		};
 	}
 
-	public static JComponent createDimensionsInfo( Dimensions interval )
-	{
+	public static JComponent createDimensionsInfo(Dimensions interval) {
 		JPanel panel = new JPanel();
 		panel.setLayout(new MigLayout("insets 0, gap 0", "[grow]", ""));
-		JLabel label = new JLabel("Dimensions: " + Arrays.toString( Intervals
-			.dimensionsAsLongArray( interval )));
+		JLabel label = new JLabel("Dimensions: " + Arrays.toString(Intervals
+			.dimensionsAsLongArray(interval)));
 		label.setBackground(UIManager.getColor("List.background"));
 		label.setBorder(BorderFactory.createEmptyBorder(3, 6, 3, 3));
 		label.setOpaque(true);
