@@ -1,8 +1,6 @@
 
 package net.imglib2.labkit.segmentation;
 
-import java.util.Collections;
-
 import net.imglib2.labkit.Extensible;
 
 import net.imglib2.labkit.models.SegmentationModel;
@@ -19,9 +17,7 @@ public class TrainClassifier {
 
 	private void trainClassifier() {
 		try {
-			model.selectedSegmenter().get().segmenter().train(Collections
-				.singletonList(model.image()), Collections.singletonList(model
-					.labeling()));
+			model.trainSegmenter();
 		}
 		catch (final Exception e1) {
 			System.out.println("Training was interrupted by exception:");
