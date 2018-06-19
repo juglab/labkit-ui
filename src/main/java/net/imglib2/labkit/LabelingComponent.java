@@ -6,7 +6,6 @@ import bdv.util.BdvHandlePanel;
 import bdv.util.BdvOptions;
 import bdv.util.BdvSource;
 import bdv.viewer.DisplayMode;
-import bdv.viewer.ViewerPanel;
 import net.imglib2.labkit.actions.ToggleVisibility;
 import net.imglib2.labkit.bdv.BdvLayer;
 import net.imglib2.labkit.control.brush.ChangeLabel;
@@ -17,7 +16,6 @@ import net.imglib2.labkit.models.BitmapModel;
 import net.imglib2.labkit.models.ImageLabelingModel;
 import net.imglib2.labkit.panel.LabelToolsPanel;
 import net.miginfocom.swing.MigLayout;
-import org.scijava.ui.behaviour.ClickBehaviour;
 import org.scijava.ui.behaviour.util.AbstractNamedAction;
 
 import javax.swing.*;
@@ -33,10 +31,6 @@ public class LabelingComponent implements AutoCloseable {
 	private ActionsAndBehaviours actionsAndBehaviours;
 
 	private ImageLabelingModel model;
-
-	final LabelBrushController brushController;
-
-	final FloodFillController floodFillController;
 
 	public JComponent getComponent() {
 		return panel;
@@ -54,14 +48,10 @@ public class LabelingComponent implements AutoCloseable {
 
 		initBdv(model.spatialDimensions().numDimensions() < 3);
 		actionsAndBehaviours = new ActionsAndBehaviours(bdvHandle);
-		brushController = new LabelBrushController(bdvHandle.getViewerPanel(),
-			new BitmapModel(model), actionsAndBehaviours, model.isTimeSeries());
-		floodFillController = new FloodFillController(bdvHandle.getViewerPanel(),
-				model, actionsAndBehaviours, model.isTimeSeries());
 		initLabelsLayer();
 		initImageLayer();
-		initBrushLayer();
-		initPanel();
+		JPanel toolsPanel = initBrushLayer();
+		initPanel( toolsPanel );
 		this.model.transformationModel().initialize(bdvHandle.getViewerPanel());
 	}
 
@@ -72,9 +62,9 @@ public class LabelingComponent implements AutoCloseable {
 		bdvHandle.getViewerPanel().setDisplayMode(DisplayMode.FUSED);
 	}
 
-	private void initPanel() {
+	private void initPanel( JPanel toolsPanel ) {
 		panel.setLayout(new MigLayout("", "[grow]", "[][grow]"));
-		panel.add(new LabelToolsPanel(bdvHandle, brushController, floodFillController), "wrap, growx");
+		panel.add(toolsPanel, "wrap, growx");
 		panel.add(bdvHandle.getViewerPanel(), "grow");
 	}
 
@@ -94,10 +84,14 @@ public class LabelingComponent implements AutoCloseable {
 		return source;
 	}
 
-	private void initBrushLayer() {
+	private JPanel initBrushLayer() {
+		final LabelBrushController brushController = new LabelBrushController(bdvHandle.getViewerPanel(),
+				new BitmapModel(model), actionsAndBehaviours, model.isTimeSeries());
+		final FloodFillController floodFillController = new FloodFillController(bdvHandle.getViewerPanel(),
+				model, actionsAndBehaviours, model.isTimeSeries());
+		JPanel toolsPanel = new LabelToolsPanel( bdvHandle, brushController, floodFillController );
 		actionsAndBehaviours.addAction(new ChangeLabel(model));
-		bdvHandle.getViewerPanel().getDisplay().addOverlayRenderer(brushController
-			.getBrushOverlay());
+		return toolsPanel;
 	}
 
 	public void addAction(AbstractNamedAction action) {
@@ -106,10 +100,6 @@ public class LabelingComponent implements AutoCloseable {
 
 	private void requestRepaint() {
 		bdvHandle.getViewerPanel().requestRepaint();
-	}
-
-	public ViewerPanel viewerPanel() {
-		return bdvHandle.getViewerPanel();
 	}
 
 	@Override

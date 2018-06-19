@@ -51,10 +51,6 @@ public class LabelBrushController {
 
 	final ActionsAndBehaviours behaviors;
 
-	public BrushOverlay getBrushOverlay() {
-		return brushOverlay;
-	}
-
 	public LabelBrushController(final ViewerPanel viewer, final BitmapModel model,
 		final ActionsAndBehaviours behaviors, final boolean sliceTime)
 	{
@@ -64,7 +60,7 @@ public class LabelBrushController {
 		this.model = model;
 		this.behaviors = behaviors;
 		brushOverlay.setRadius((int) getTransformedBrushRadius());
-
+		viewer.getDisplay().addOverlayRenderer(brushOverlay);
 		installDefaultBehaviors(behaviors);
 	}
 
