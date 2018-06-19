@@ -5,7 +5,6 @@ import net.imglib2.RandomAccessibleInterval;
 import net.imglib2.img.array.ArrayImgs;
 import net.imglib2.labkit.labeling.Labeling;
 import net.imglib2.labkit.models.ImageLabelingModel;
-import net.imglib2.realtransform.AffineTransform3D;
 import net.imglib2.type.numeric.NumericType;
 
 import javax.swing.*;
@@ -30,7 +29,7 @@ public class LabelingComponentDemo {
 
 	private static JComponent initLabelingComponent(JFrame frame) {
 		ImageLabelingModel model = initModel();
-		LabelingComponent labelingComponent = new LabelingComponent(frame, model);
+		BasicLabelingComponent labelingComponent = new BasicLabelingComponent(frame, model);
 		frame.addWindowListener(new WindowAdapter() {
 
 			@Override

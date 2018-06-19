@@ -20,7 +20,7 @@ import org.scijava.ui.behaviour.util.AbstractNamedAction;
 
 import javax.swing.*;
 
-public class LabelingComponent implements AutoCloseable {
+public class BasicLabelingComponent implements AutoCloseable {
 
 	private BdvHandle bdvHandle;
 
@@ -40,7 +40,7 @@ public class LabelingComponent implements AutoCloseable {
 		return actionsAndBehaviours.getActions();
 	}
 
-	public LabelingComponent(final JFrame dialogBoxOwner,
+	public BasicLabelingComponent(final JFrame dialogBoxOwner,
 		final ImageLabelingModel model)
 	{
 		this.model = model;
