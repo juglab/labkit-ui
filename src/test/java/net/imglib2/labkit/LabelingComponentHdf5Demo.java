@@ -4,11 +4,9 @@ package net.imglib2.labkit;
 import bdv.spimdata.SpimDataMinimal;
 import bdv.spimdata.XmlIoSpimDataMinimal;
 import mpicbg.spim.data.SpimDataException;
-import mpicbg.spim.data.sequence.VoxelDimensions;
 import net.imglib2.labkit.bdv.BdvShowable;
 import net.imglib2.labkit.labeling.Labeling;
 import net.imglib2.labkit.models.ImageLabelingModel;
-import net.imglib2.realtransform.AffineTransform3D;
 
 import javax.swing.*;
 import java.awt.event.WindowAdapter;
@@ -37,7 +35,7 @@ public class LabelingComponentHdf5Demo {
 		SpimDataMinimal spimData)
 	{
 		ImageLabelingModel model = initModel(spimData);
-		LabelingComponent labelingComponent = new LabelingComponent(frame, model);
+		BasicLabelingComponent labelingComponent = new BasicLabelingComponent(frame, model);
 		frame.addWindowListener(new WindowAdapter() {
 
 			@Override

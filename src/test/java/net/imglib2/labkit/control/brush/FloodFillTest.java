@@ -5,6 +5,11 @@ import net.imglib2.Point;
 import net.imglib2.RandomAccessibleInterval;
 import net.imglib2.converter.Converters;
 import net.imglib2.img.array.ArrayImgs;
+import net.imglib2.labkit.labeling.Labeling;
+import net.imglib2.roi.IterableRegion;
+import net.imglib2.roi.labeling.ImgLabeling;
+import net.imglib2.roi.labeling.LabelingType;
+import net.imglib2.roi.util.IterableRandomAccessibleRegion;
 import net.imglib2.sparse.SparseIterableRegion;
 import net.imglib2.type.BooleanType;
 import net.imglib2.type.logic.BitType;
@@ -12,15 +17,24 @@ import net.imglib2.type.numeric.integer.IntType;
 import net.imglib2.view.Views;
 import org.junit.Test;
 
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+
 import static org.junit.Assert.assertEquals;
 
 public class FloodFillTest {
 
-	int[] imageData = { 0, 1, 1, 1, 1, 0, 0, 0, 0, 1, 0, 0, 1, 0, 0, 0, 0, 1, 0,
-		0, 1, 1, 1, 1, 0, 0, 1, 0, 1, 0, 0, 0, 0, 0, 1, 1, 1, 0, 0, 0 };
+	int[] imageDataA = { 0, 1, 1, 1, 0, 0, 0, 0, 0, 1, 1, 1, 0, 0, 0, 0, 0, 1, 1,
+		1, 0, 0, 0, 0, 0, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
 
-	private RandomAccessibleInterval<? extends BooleanType<?>> image = asBits(
-		imageData, 8, 5);
+	int[] imageDataB = { 0, 1, 1, 1, 1, 1, 1, 0, 0, 1, 1, 1, 1, 1, 1, 0, 0, 1, 1,
+		1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
+
+	private RandomAccessibleInterval<BitType> imageA = asBits(imageDataA, 8, 5);
+	private RandomAccessibleInterval<BitType> imageB = asBits(imageDataB, 8, 5);
 
 	private RandomAccessibleInterval<BitType> asBits(int[] imageData,
 		long... dims)
@@ -31,8 +45,8 @@ public class FloodFillTest {
 			new BitType());
 	}
 
-	int[] connectedData = { 0, 1, 1, 1, 1, 0, 0, 0, 0, 1, 1, 1, 1, 0, 0, 0, 0, 1,
-		1, 1, 1, 1, 1, 1, 0, 0, 1, 1, 1, 0, 0, 0, 0, 0, 1, 1, 1, 0, 0, 0 };
+	int[] connectedData = { 0, 1, 1, 1, 0, 0, 0, 0, 0, 1, 1, 1, 0, 0, 0, 0, 0, 1,
+		1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
 
 	RandomAccessibleInterval<BitType> expectedComponent = asBits(connectedData, 8,
 		5);
@@ -40,8 +54,14 @@ public class FloodFillTest {
 	@Test
 	public void test() {
 		Point seed = new Point(2, 2);
-		RandomAccessibleInterval<BitType> result = copy(image);
-		LabelBrushController.floodFill(result, seed, new BitType(true));
+		Map<String, IterableRegion<BitType>> map = new HashMap<>();
+		map.put("a", IterableRandomAccessibleRegion.create(imageA));
+		map.put("b", IterableRandomAccessibleRegion.create(imageB));
+		map.put("c", new SparseIterableRegion(imageA));
+		Labeling labeling = new Labeling(map, imageA);
+		FloodFillController.floodFillSet(labeling, seed, Collections.singleton(
+			"c"));
+		RandomAccessibleInterval<BitType> result = labeling.regions().get("c");
 		Views.interval(Views.pair(expectedComponent, result), expectedComponent)
 			.forEach(p -> assertEquals(p.getA().get(), p.getB().get()));
 	}

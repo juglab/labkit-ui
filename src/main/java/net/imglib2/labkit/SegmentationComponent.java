@@ -42,7 +42,7 @@ public class SegmentationComponent implements AutoCloseable {
 
 	private final JFrame dialogBoxOwner;
 
-	private LabelingComponent labelingComponent;
+	private BasicLabelingComponent labelingComponent;
 
 	private ImageLabelingModel model;
 
@@ -88,7 +88,7 @@ public class SegmentationComponent implements AutoCloseable {
 		this.context = context;
 		this.fixedLabels = fixedLabels;
 		initModels(image, labeling);
-		labelingComponent = new LabelingComponent(dialogBoxOwner, model);
+		labelingComponent = new BasicLabelingComponent(dialogBoxOwner, model);
 		labelingComponent.addBdvLayer(new PredictionLayer(segmentationModel
 			.selectedSegmenter()));
 		initActions();

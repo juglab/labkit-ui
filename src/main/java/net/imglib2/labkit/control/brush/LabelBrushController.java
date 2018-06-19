@@ -3,32 +3,27 @@ package net.imglib2.labkit.control.brush;
 
 import bdv.util.Affine3DHelpers;
 import bdv.viewer.ViewerPanel;
-import net.imglib2.*;
-import net.imglib2.Point;
-import net.imglib2.algorithm.fill.Filter;
-import net.imglib2.algorithm.neighborhood.DiamondShape;
+import net.imglib2.RandomAccessible;
+import net.imglib2.RandomAccessibleInterval;
+import net.imglib2.RealLocalizable;
+import net.imglib2.RealPoint;
 import net.imglib2.algorithm.neighborhood.Neighborhood;
 import net.imglib2.img.array.ArrayImgs;
 import net.imglib2.labkit.ActionsAndBehaviours;
 import net.imglib2.labkit.control.brush.neighborhood.TransformedSphere;
 import net.imglib2.labkit.models.BitmapModel;
 import net.imglib2.realtransform.AffineTransform3D;
-import net.imglib2.type.Type;
 import net.imglib2.type.logic.BitType;
-import net.imglib2.type.operators.ValueEquals;
 import net.imglib2.ui.TransformEventHandler;
 import net.imglib2.util.LinAlgHelpers;
-import net.imglib2.util.Pair;
-import net.imglib2.view.ExtendedRandomAccessibleInterval;
 import net.imglib2.view.Views;
 import org.scijava.ui.behaviour.Behaviour;
-import org.scijava.ui.behaviour.ClickBehaviour;
 import org.scijava.ui.behaviour.DragBehaviour;
 import org.scijava.ui.behaviour.ScrollBehaviour;
 import org.scijava.ui.behaviour.util.RunnableAction;
 
 import javax.swing.*;
-import java.awt.Cursor;
+import java.awt.*;
 import java.util.stream.IntStream;
 
 /**
@@ -41,8 +36,6 @@ import java.util.stream.IntStream;
  */
 public class LabelBrushController {
 
-	private static final double[] PIXEL_CENTER_OFFSET = { 0.5, 0.5, 0.5 };
-
 	final private ViewerPanel viewer;
 
 	private final BitmapModel model;
@@ -52,17 +45,11 @@ public class LabelBrushController {
 	private MoveBrush moveBrushBehaviour = new MoveBrush();
 	private final PaintBehavior paintBehavior = new PaintBehavior(true);
 	private final PaintBehavior eraseBehavior = new PaintBehavior(false);
-	private final FloodFillClick floodFillBehaviour = new FloodFillClick(true);
-	private final FloodFillClick floodEraseBehaviour = new FloodFillClick(false);
 	private double brushRadius = 5;
 
 	boolean sliceTime;
 
 	final ActionsAndBehaviours behaviors;
-
-	public BrushOverlay getBrushOverlay() {
-		return brushOverlay;
-	}
 
 	public LabelBrushController(final ViewerPanel viewer, final BitmapModel model,
 		final ActionsAndBehaviours behaviors, final boolean sliceTime)
@@ -73,7 +60,7 @@ public class LabelBrushController {
 		this.model = model;
 		this.behaviors = behaviors;
 		brushOverlay.setRadius((int) getTransformedBrushRadius());
-
+		viewer.getDisplay().addOverlayRenderer(brushOverlay);
 		installDefaultBehaviors(behaviors);
 	}
 
@@ -85,9 +72,6 @@ public class LabelBrushController {
 		behaviors.addAction(nop);
 		behaviors.addBehaviour(eraseBehaviour(), "erase", "E button1",
 			"SPACE button2", "SPACE button3");
-		behaviors.addBehaviour(floodFillBehaviour(), "floodfill", "F button1");
-		behaviors.addBehaviour(floodEraseBehaviour(), "floodclear", "R button1",
-			"F button2", "F button3");
 		behaviors.addBehaviour(new ChangeBrushRadius(), "change brush radius",
 			"D scroll", "E scroll", "SPACE scroll");
 		behaviors.addBehaviour(drawBrushBehaviour(), "move brush", "E", "D",
@@ -104,25 +88,6 @@ public class LabelBrushController {
 
 	public DragBehaviour eraseBehaviour() {
 		return eraseBehavior;
-	}
-
-	public ClickBehaviour floodEraseBehaviour() {
-		return floodEraseBehaviour;
-	}
-
-	public ClickBehaviour floodFillBehaviour() {
-		return floodFillBehaviour;
-	}
-
-	private RealPoint displayToImageCoordinates(final int x, final int y) {
-		final RealPoint labelLocation = new RealPoint(3);
-		labelLocation.setPosition(x, 0);
-		labelLocation.setPosition(y, 1);
-		labelLocation.setPosition(0, 2);
-		viewer.displayToGlobalCoordinates(labelLocation);
-		model.transformation().applyInverse(labelLocation, labelLocation);
-		labelLocation.move(PIXEL_CENTER_OFFSET);
-		return labelLocation;
 	}
 
 	public void setBrushRadius(double brushRadius) {
@@ -292,48 +257,5 @@ public class LabelBrushController {
 			viewer.setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
 			brushOverlay.requestRepaint();
 		}
-	}
-
-	private class FloodFillClick implements ClickBehaviour {
-
-		private final boolean value;
-
-		FloodFillClick(boolean value) {
-			this.value = value;
-		}
-
-		protected void floodFill(final RealLocalizable coords) {
-			synchronized (viewer) {
-				RandomAccessibleInterval<BitType> bitmap = bitmap();
-				Point seed = roundAndReduceDimension(coords, bitmap.numDimensions());
-				LabelBrushController.floodFill(bitmap, seed, new BitType(value));
-			}
-		}
-
-		private Point roundAndReduceDimension(final RealLocalizable realLocalizable,
-			int numDimesions)
-		{
-			Point point = new Point(numDimesions);
-			for (int i = 0; i < point.numDimensions(); i++)
-				point.setPosition((long) realLocalizable.getDoublePosition(i), i);
-			return point;
-		}
-
-		@Override
-		public void click(int x, int y) {
-			floodFill(displayToImageCoordinates(x, y));
-			fireBitmapChanged();
-		}
-	}
-
-	public static <T extends Type<T> & ValueEquals<T>> void floodFill(
-		RandomAccessibleInterval<T> image, Localizable seed, T value)
-	{
-		Filter<Pair<T, T>, Pair<T, T>> filter = (f, s) -> !value.valueEquals(f
-			.getB());
-		ExtendedRandomAccessibleInterval<T, RandomAccessibleInterval<T>> target =
-			Views.extendValue(image, value);
-		net.imglib2.algorithm.fill.FloodFill.fill(target, target, seed, value,
-			new DiamondShape(1), filter);
 	}
 }
