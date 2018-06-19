@@ -185,10 +185,10 @@ public class TrainableSegmentationSegmenter implements Segmenter {
 		final DiskCachedCellImgOptions featureOpts = DiskCachedCellImgOptions
 			.options().cellDimensions(cellDimensions).dirtyAccesses(false);
 		final DiskCachedCellImgFactory<FloatType> featureFactory =
-			new DiskCachedCellImgFactory<>(featureOpts);
+			new DiskCachedCellImgFactory<>(new FloatType(), featureOpts);
 		CellLoader<FloatType> loader = target -> feature.apply(extendedOriginal,
 			RevampUtils.slices(target));
-		return featureFactory.create(dimensions, new FloatType(), loader);
+		return featureFactory.create(dimensions, loader);
 	}
 
 	private void addSamples(Training training,

@@ -8,7 +8,6 @@ import net.imglib2.RandomAccess;
 import net.imglib2.RandomAccessibleInterval;
 import net.imglib2.RealLocalizable;
 import net.imglib2.RealPoint;
-import net.imglib2.algorithm.fill.Filter;
 import net.imglib2.algorithm.neighborhood.DiamondShape;
 import net.imglib2.labkit.ActionsAndBehaviours;
 import net.imglib2.labkit.labeling.Labeling;
@@ -16,7 +15,6 @@ import net.imglib2.labkit.models.LabelingModel;
 import net.imglib2.roi.labeling.LabelingType;
 import net.imglib2.trainable_segmention.RevampUtils;
 import net.imglib2.type.Type;
-import net.imglib2.util.Pair;
 import net.imglib2.util.Util;
 import net.imglib2.view.ExtendedRandomAccessibleInterval;
 import net.imglib2.view.Views;
@@ -26,6 +24,7 @@ import org.scijava.ui.behaviour.util.RunnableAction;
 import javax.swing.*;
 import java.util.Collections;
 import java.util.Set;
+import java.util.function.BiPredicate;
 import java.util.function.Supplier;
 
 public class FloodFillController {
@@ -134,8 +133,7 @@ public class FloodFillController {
 		ra.setPosition(seed);
 		T seedValue = ra.get().copy();
 		if (seedValue.valueEquals(value)) return;
-		Filter<Pair<T, T>, Pair<T, T>> filter = (f, s) -> f.getB().valueEquals(
-			seedValue);
+		BiPredicate<T, T> filter = (f, s) -> f.valueEquals(seedValue);
 		ExtendedRandomAccessibleInterval<T, RandomAccessibleInterval<T>> target =
 			Views.extendValue(image, value);
 		net.imglib2.algorithm.fill.FloodFill.fill(target, target, seed, value,

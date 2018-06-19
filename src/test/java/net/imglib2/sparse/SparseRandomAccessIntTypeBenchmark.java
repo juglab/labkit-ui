@@ -29,8 +29,8 @@ public class SparseRandomAccessIntTypeBenchmark {
 	// RandomAccessibleInterval<ByteType> image = ArrayImgs.bytes(100,100,100);
 	// RandomAccessibleInterval<IntType> image = ArrayImgs.ints(100,100,100);
 	// RandomAccessibleInterval<BitType> image = ArrayImgs.bits(100,100,100);
-	RandomAccessibleInterval<IntType> ntree = new NtreeImgFactory<IntType>()
-		.create(new long[] { 100, 100, 100 }, new IntType());
+	RandomAccessibleInterval<IntType> ntree = new NtreeImgFactory<>(new IntType())
+		.create(new long[] { 100, 100, 100 });
 	RandomAccessibleInterval<IntType> sparse = new SparseRandomAccessIntType(
 		Intervals.createMinSize(0, 0, 0, 100, 100, 100));
 

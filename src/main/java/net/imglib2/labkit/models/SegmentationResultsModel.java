@@ -98,8 +98,8 @@ public class SegmentationResultsModel {
 			// .maxCacheSize( 1000 )
 			.cellDimensions(cellDimensions);
 		final DiskCachedCellImgFactory<T> factory = new DiskCachedCellImgFactory<>(
-			optional);
-		return factory.create(grid.getImgDimensions(), type, loader);
+			type, optional);
+		return factory.create(grid.getImgDimensions(), loader);
 	}
 
 	private int[] getCellDimensions(CellGrid grid) {

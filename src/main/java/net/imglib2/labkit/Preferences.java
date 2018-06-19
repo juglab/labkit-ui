@@ -16,10 +16,10 @@ public class Preferences {
 		this.prefService = context.service(PrefService.class);
 	}
 
-	private static final String KEY = "labkit.default_labels";
+	private static final String KEY = "default_labels";
 
 	public List<String> getDefaultLabels() {
-		String s = prefService.get(KEY);
+		String s = prefService.get(Preferences.class, KEY);
 		return (s == null || s.isEmpty()) ? Arrays.asList("background",
 			"foreground") : Arrays.asList(s.split(","));
 	}
@@ -27,6 +27,6 @@ public class Preferences {
 	public void setDefaultLabels(List<String> labels) {
 		StringJoiner joiner = new StringJoiner(",");
 		labels.forEach(joiner::add);
-		prefService.put(KEY, joiner.toString());
+		prefService.put(Preferences.class, KEY, joiner.toString());
 	}
 }

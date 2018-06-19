@@ -101,8 +101,8 @@ public class DefaultSegmentationModel implements SegmentationModel,
 		RandomAccessibleInterval<?> image = image();
 		Stream<Segmenter> trainedSegmenters = getTrainedSegmenters();
 		return trainedSegmenters.map(segmenter -> {
-			RandomAccessibleInterval<T> labels = new CellImgFactory<T>().create(image,
-				type);
+			RandomAccessibleInterval<T> labels = new CellImgFactory<>(type).create(
+				image);
 			segmenter.segment(image, labels);
 			return labels;
 		}).collect(Collectors.toList());
@@ -113,10 +113,9 @@ public class DefaultSegmentationModel implements SegmentationModel,
 		Stream<Segmenter> trainedSegmenters = getTrainedSegmenters();
 		return trainedSegmenters.map(segmenter -> {
 			int numberOfClasses = segmenter.classNames().size();
-			RandomAccessibleInterval<FloatType> prediction =
-				new CellImgFactory<FloatType>().create(RevampUtils
-					.appendDimensionToInterval(image, 0, numberOfClasses - 1),
-					new FloatType());
+			RandomAccessibleInterval<FloatType> prediction = new CellImgFactory<>(
+				new FloatType()).create(RevampUtils.appendDimensionToInterval(image, 0,
+					numberOfClasses - 1));
 			segmenter.predict(image, prediction);
 			return prediction;
 		}).collect(Collectors.toList());

@@ -22,7 +22,7 @@ public class Complexity {
 	}
 
 	private static long benchmarkNtree(long[] dim) {
-		return benchmark(new NtreeImgFactory<IntType>().create(dim, new IntType()));
+		return benchmark(new NtreeImgFactory<>(new IntType()).create(dim));
 	}
 
 	private static long benchmarkSparse(long[] dim) {

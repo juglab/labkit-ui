@@ -115,8 +115,8 @@ public class CziOpener {
 		MyReader reader = new MyReader(filename);
 		long[] dimensions = reader.getImgDimensions(series);
 		int[] cellDimensions = reader.getCellDimensions(series);
-		Img<ARGBType> out = new CellImgFactory<ARGBType>(cellDimensions).create(
-			dimensions, new ARGBType());
+		Img<ARGBType> out = new CellImgFactory<>(new ARGBType(), cellDimensions)
+			.create(dimensions);
 		List<Callable<Void>> chunks = ParallelUtils.chunkOperation(out,
 			cellDimensions, cell -> reader.readToInterval(series, cell));
 		ParallelUtils.executeInParallel(Executors.newFixedThreadPool(8),
@@ -142,8 +142,8 @@ public class CziOpener {
 			.cellDimensions(getCellDimensions(grid)).cacheType(
 				DiskCachedCellImgOptions.CacheType.SOFTREF);
 		final DiskCachedCellImgFactory<T> factory = new DiskCachedCellImgFactory<>(
-			optional);
-		return factory.create(grid.getImgDimensions(), type, loader);
+			type, optional);
+		return factory.create(grid.getImgDimensions(), loader);
 	}
 
 	private static int[] getCellDimensions(CellGrid grid) {
