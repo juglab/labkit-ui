@@ -24,7 +24,8 @@ import java.util.stream.Stream;
 /**
  * Serves as a model for PredictionLayer and TrainClassifierAction
  */
-public class DefaultSegmentationModel implements SegmentationModel
+public class DefaultSegmentationModel implements SegmentationModel,
+		SegmenterListModel<SegmentationItem>
 {
 
 	private final ImageLabelingModel imageLabelingModel;
@@ -60,10 +61,12 @@ public class DefaultSegmentationModel implements SegmentationModel
 		return grid;
 	}
 
+	@Override
 	public List<SegmentationItem> segmenters() {
 		return segmenters;
 	}
 
+	@Override
 	public Holder<SegmentationItem> selectedSegmenter() {
 		return selectedSegmenter;
 	}

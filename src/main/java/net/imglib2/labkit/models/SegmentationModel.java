@@ -20,7 +20,5 @@ public interface SegmentationModel
 
 	AffineTransform3D labelTransformation();
 
-	SegmentationItem addSegmenter();
-
 	void trainSegmenter();
 }
