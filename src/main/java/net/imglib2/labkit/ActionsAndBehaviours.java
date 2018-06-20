@@ -3,6 +3,7 @@ package net.imglib2.labkit;
 
 import bdv.util.BdvHandle;
 import org.scijava.ui.behaviour.Behaviour;
+import org.scijava.ui.behaviour.InputTrigger;
 import org.scijava.ui.behaviour.io.InputTriggerConfig;
 import org.scijava.ui.behaviour.util.AbstractNamedAction;
 import org.scijava.ui.behaviour.util.Actions;
@@ -33,7 +34,7 @@ public class ActionsAndBehaviours {
 
 	public void addAction(AbstractNamedAction action) {
 		KeyStroke keyStroke = (KeyStroke) action.getValue(Action.ACCELERATOR_KEY);
-		actions.namedAction(action, keyStroke != null ? new String[] { keyStroke.toString() } : new String[0]);
+		actions.namedAction(action, new String[] { keyStroke != null ? keyStroke.toString() : "not mapped" });
 		actions.install(bdvHandle.getKeybindings(), "classifier training");
 	}
 
