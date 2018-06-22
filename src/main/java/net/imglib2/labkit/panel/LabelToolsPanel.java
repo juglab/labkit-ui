@@ -96,7 +96,7 @@ public class LabelToolsPanel extends JPanel {
 		addActionButton("Flood Fill (F)\nThis only works properly on 2D images",
 			Mode.FLOOD_FILL, "/images/fill.png");
 		addActionButton("Erase (E)", Mode.ERASE, "/images/erase.png");
-		addActionButton("Remove Blob (R)", Mode.FLOOD_ERASE, "/images/erase.png");
+		addActionButton("Remove Blob (R)", Mode.FLOOD_ERASE, "/images/flooderase.png");
 		moveBtn.doClick();
 	}
 
