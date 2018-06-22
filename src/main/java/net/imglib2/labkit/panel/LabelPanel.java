@@ -125,12 +125,12 @@ public class LabelPanel {
 			setOpaque(true);
 			setLayout(new MigLayout("insets 4pt, gap 4pt, fillx"));
 			add(initColorButton(value, color));
-			add(initVisibilityCheckbox(value));
 			add(new JLabel(value), "push");
 			JPopupMenu menu = initPopupMenu(value);
 			add(initPopupMenuButton(menu));
 			setComponentPopupMenu(menu);
 			add(initFinderButton(value));
+			add(initVisibilityCheckbox(value));
 			initRenameOnDoubleClick(value);
 		}
 

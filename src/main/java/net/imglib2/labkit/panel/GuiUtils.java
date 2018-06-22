@@ -50,9 +50,15 @@ public class GuiUtils {
 		JPanel dark = new JPanel();
 		dark.setLayout(new BorderLayout());
 		JCheckBox checkbox = createCheckbox(action);
-		checkbox.setBackground(new Color(200, 200, 200));
+		JPanel title = new JPanel();
+		title.setBackground(new Color(200, 200, 200));
+		title.setLayout(new MigLayout("insets 8pt, gap 8pt, fillx"));
+		title.add(new JLabel(checkbox.getText()), "push");
+		checkbox.setText("");
+		checkbox.setOpaque(false);
+		title.add(checkbox);
 		dark.setBackground(new Color(200, 200, 200));
-		dark.add(checkbox, BorderLayout.PAGE_START);
+		dark.add(title, BorderLayout.PAGE_START);
 		dark.add(panel, BorderLayout.CENTER);
 		return dark;
 	}
