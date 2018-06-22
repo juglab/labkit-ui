@@ -22,6 +22,7 @@ public class LabelPanel {
 	private ComponentList<String, JPanel> list = new ComponentList<>();
 	private final JPanel panel;
 	private final JFrame dialogParent;
+	private final boolean fixedLabels;
 
 	public LabelPanel(JFrame dialogParent, ColoredLabelsModel model,
 		boolean fixedLabels)
@@ -29,6 +30,7 @@ public class LabelPanel {
 		this.model = model;
 		this.dialogParent = dialogParent;
 		this.panel = initPanel(fixedLabels);
+		this.fixedLabels = fixedLabels;
 		model.listeners().add(this::update);
 		update();
 	}
@@ -169,16 +171,16 @@ public class LabelPanel {
 
 		private JPopupMenu initPopupMenu(String value) {
 			JPopupMenu menu = new JPopupMenu();
-			menu.add(new JMenuItem(new RunnableAction("Rename", () -> renameLabel(
-				value))));
-			menu.add(new JMenuItem(new RunnableAction("Move up", () -> moveUpLabel(
-				value))));
-			menu.add(new JMenuItem(new RunnableAction("Move down",
+			if (!fixedLabels) menu.add(new JMenuItem(new RunnableAction("Rename",
+				() -> renameLabel(value))));
+			if (!fixedLabels) menu.add(new JMenuItem(new RunnableAction("Move up",
+				() -> moveUpLabel(value))));
+			if (!fixedLabels) menu.add(new JMenuItem(new RunnableAction("Move down",
 				() -> moveDownLabel(value))));
 			menu.add(new JMenuItem(new RunnableAction("Clear", () -> clearLabel(
 				value))));
-			menu.add(new JMenuItem(new RunnableAction("Remove", () -> removeLabel(
-				value))));
+			if (!fixedLabels) menu.add(new JMenuItem(new RunnableAction("Remove",
+				() -> removeLabel(value))));
 			return menu;
 		}
 
