@@ -79,12 +79,13 @@ public class LabelingSerializer {
 		return new Labeling(fromImageAndLabelSets(img, meta.asLabelSets()));
 	}
 
-	private ImgLabeling<String, ?> fromImageAndLabelSets(
-		Img<? extends IntegerType<?>> img, List<Set<String>> labelSets)
+	// TODO make part of imglib2-roi
+	public static <L> ImgLabeling<L, ?> fromImageAndLabelSets(
+		Img<? extends IntegerType<?>> img, List<Set<L>> labelSets)
 	{
-		ImgLabeling<String, ?> result = new ImgLabeling<>(LabkitUtils.uncheckedCast(
+		ImgLabeling<L, ?> result = new ImgLabeling<>(LabkitUtils.uncheckedCast(
 			img));
-		new LabelingMapping.SerialisationAccess<String>(result.getMapping()) {
+		new LabelingMapping.SerialisationAccess<L>(result.getMapping()) {
 
 			public void run() {
 				setLabelSets(labelSets);
