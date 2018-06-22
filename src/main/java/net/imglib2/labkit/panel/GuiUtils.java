@@ -50,15 +50,24 @@ public class GuiUtils {
 		JPanel dark = new JPanel();
 		dark.setLayout(new BorderLayout());
 		JCheckBox checkbox = createCheckbox(action);
-		checkbox.setBackground(new Color(200, 200, 200));
+		JPanel title = new JPanel();
+		title.setBackground(new Color(200, 200, 200));
+		title.setLayout(new MigLayout("insets 8pt, gap 8pt, fillx"));
+		title.add(new JLabel(checkbox.getText()), "push");
+		checkbox.setText("");
+		checkbox.setOpaque(false);
+		title.add(checkbox);
 		dark.setBackground(new Color(200, 200, 200));
-		dark.add(checkbox, BorderLayout.PAGE_START);
+		dark.add(title, BorderLayout.PAGE_START);
 		dark.add(panel, BorderLayout.CENTER);
 		return dark;
 	}
 
 	private static JCheckBox createCheckbox(Action image) {
-		JCheckBox checkbox = new JCheckBox(image);
+		return styleCheckboxUsingEye(new JCheckBox(image));
+	}
+
+	public static JCheckBox styleCheckboxUsingEye(JCheckBox checkbox) {
 		checkbox.setIcon(new ImageIcon(GuiUtils.class.getResource(
 			"/images/invisible.png")));
 		checkbox.setSelectedIcon(new ImageIcon(GuiUtils.class.getResource(

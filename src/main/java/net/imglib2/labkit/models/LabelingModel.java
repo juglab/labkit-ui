@@ -6,6 +6,8 @@ import net.imglib2.labkit.color.ColorMapProvider;
 import net.imglib2.labkit.labeling.Labeling;
 import net.imglib2.realtransform.AffineTransform3D;
 
+import java.util.Set;
+
 public interface LabelingModel {
 
 	Holder<String> selectedLabel();
@@ -15,6 +17,8 @@ public interface LabelingModel {
 	Holder<Labeling> labeling();
 
 	Notifier<Runnable> dataChangedNotifier();
+
+	Holder<Set<String>> activeLabels();
 
 	boolean isTimeSeries();
 
