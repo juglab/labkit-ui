@@ -34,7 +34,8 @@ public class ActionsAndBehaviours {
 
 	public void addAction(AbstractNamedAction action) {
 		KeyStroke keyStroke = (KeyStroke) action.getValue(Action.ACCELERATOR_KEY);
-		actions.namedAction(action, new String[] { keyStroke != null ? keyStroke.toString() : "not mapped" });
+		actions.namedAction(action, new String[] { keyStroke != null ? keyStroke
+			.toString() : "not mapped" });
 		actions.install(bdvHandle.getKeybindings(), "classifier training");
 	}
 

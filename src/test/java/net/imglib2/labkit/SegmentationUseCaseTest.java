@@ -36,8 +36,8 @@ public class SegmentationUseCaseTest {
 		InputImage inputImage = new DefaultInputImage(image);
 		ImageLabelingModel imageLabelingModel = new ImageLabelingModel(image,
 			new Labeling(Arrays.asList("b", "f"), image), false);
-		DefaultSegmentationModel segmentationModel = new DefaultSegmentationModel(image,
-			imageLabelingModel, () -> new TrainableSegmentationSegmenter(
+		DefaultSegmentationModel segmentationModel = new DefaultSegmentationModel(
+			image, imageLabelingModel, () -> new TrainableSegmentationSegmenter(
 				new Context(), inputImage));
 		addLabels(imageLabelingModel);
 		SegmentationItem segmenter = segmentationModel.segmenters().get(0);
