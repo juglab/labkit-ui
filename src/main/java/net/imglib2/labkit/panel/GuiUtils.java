@@ -58,7 +58,10 @@ public class GuiUtils {
 	}
 
 	private static JCheckBox createCheckbox(Action image) {
-		JCheckBox checkbox = new JCheckBox(image);
+		return styleCheckboxUsingEye(new JCheckBox(image));
+	}
+
+	public static JCheckBox styleCheckboxUsingEye(JCheckBox checkbox) {
 		checkbox.setIcon(new ImageIcon(GuiUtils.class.getResource(
 			"/images/invisible.png")));
 		checkbox.setSelectedIcon(new ImageIcon(GuiUtils.class.getResource(

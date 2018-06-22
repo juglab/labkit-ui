@@ -4,6 +4,7 @@ package net.imglib2.labkit.models;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Set;
 import java.util.function.Function;
 
 import net.imglib2.Cursor;
@@ -60,6 +61,7 @@ public class ColoredLabelsModel {
 		String label = suggestName(labeling.getLabels());
 		if (label == null) return;
 		labeling.addLabel(label);
+		model.activeLabels().get().add(label);
 		model.selectedLabel().set(label);
 		holder.notifier().forEach(l -> l.accept(labeling));
 	}
@@ -89,6 +91,10 @@ public class ColoredLabelsModel {
 			? movement + 0.5 * Math.signum(movement) : 0.0);
 		labeling.setLabelOrder(Comparator.comparing(priority));
 		holder.notifier().forEach(l -> l.accept(labeling));
+	}
+
+	public Holder<Set<String>> activeLabels() {
+		return model.activeLabels();
 	}
 
 	public void setColor(String label, ARGBType newColor) {

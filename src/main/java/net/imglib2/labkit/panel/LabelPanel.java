@@ -1,21 +1,20 @@
 
 package net.imglib2.labkit.panel;
 
-import java.awt.Color;
-import java.util.List;
-
-import javax.swing.*;
-import javax.swing.border.EmptyBorder;
-
 import net.imglib2.labkit.models.ColoredLabel;
 import net.imglib2.labkit.models.ColoredLabelsModel;
 import net.imglib2.type.numeric.ARGBType;
 import net.miginfocom.swing.MigLayout;
-
 import org.scijava.ui.behaviour.util.RunnableAction;
 
+import javax.swing.*;
+import javax.swing.border.EmptyBorder;
+import java.awt.*;
+import java.awt.event.ItemEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.util.List;
+import java.util.Set;
 
 public class LabelPanel {
 
@@ -126,12 +125,26 @@ public class LabelPanel {
 			setOpaque(true);
 			setLayout(new MigLayout("insets 4pt, gap 4pt, fillx"));
 			add(initColorButton(value, color));
+			add(initVisibilityCheckbox(value));
 			add(new JLabel(value), "push");
 			JPopupMenu menu = initPopupMenu(value);
 			add(initPopupMenuButton(menu));
 			setComponentPopupMenu(menu);
 			add(initFinderButton(value));
 			initRenameOnDoubleClick(value);
+		}
+
+		private JCheckBox initVisibilityCheckbox(String value) {
+			JCheckBox checkBox = GuiUtils.styleCheckboxUsingEye(new JCheckBox());
+			checkBox.setSelected(model.activeLabels().get().contains(value));
+			checkBox.addItemListener(event -> {
+				Set<String> strings = model.activeLabels().get();
+				if (event.getStateChange() == ItemEvent.SELECTED) strings.add(value);
+				else strings.remove(value);
+				model.activeLabels().notifier().forEach(x -> x.accept(strings));
+			});
+			checkBox.setOpaque(false);
+			return checkBox;
 		}
 
 		private JButton initPopupMenuButton(JPopupMenu menu) {

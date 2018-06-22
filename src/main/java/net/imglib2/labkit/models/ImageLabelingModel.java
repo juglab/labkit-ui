@@ -13,7 +13,9 @@ import net.imglib2.realtransform.AffineTransform3D;
 import net.imglib2.type.numeric.NumericType;
 import net.imglib2.util.Intervals;
 
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.function.Consumer;
 import java.util.stream.IntStream;
 
@@ -36,6 +38,8 @@ public class ImageLabelingModel implements LabelingModel {
 
 	private BdvShowable showable;
 
+	private final Holder<Set<String>> activeLabels;
+
 	public ImageLabelingModel(
 		RandomAccessibleInterval<? extends NumericType<?>> image, Labeling labeling,
 		boolean isTimeSeries)
@@ -54,6 +58,8 @@ public class ImageLabelingModel implements LabelingModel {
 		this.selectedLabelHolder = new DefaultHolder<>(labeling.getLabels().stream()
 			.findAny().orElse(""));
 		this.isTimeSeries = isTimeSeries;
+		this.activeLabels = new DefaultHolder<>(new HashSet<>(labeling
+			.getLabels()));
 		colorProvider = new ColorMapProvider(labelingHolder);
 	}
 
@@ -141,6 +147,10 @@ public class ImageLabelingModel implements LabelingModel {
 		for (int i = n; i < 3; i++)
 			result[i] = 1;
 		return result;
+	}
+
+	public Holder<Set<String>> activeLabels() {
+		return activeLabels;
 	}
 
 	private static class CheckedHolder implements Holder<Labeling> {

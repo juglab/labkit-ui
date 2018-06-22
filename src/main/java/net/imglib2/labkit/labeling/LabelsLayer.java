@@ -16,6 +16,7 @@ import net.imglib2.view.Views;
 
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 /**
  * @author Matthias Arzt
@@ -35,11 +36,12 @@ public class LabelsLayer implements BdvLayer {
 		RandomAccessibleInterval<ARGBType> view = colorView();
 		container = new RandomAccessibleContainer<>(view);
 		this.view = Views.interval(container, view);
-		model.labeling().notifier().add(this::updateLabeling);
+		model.labeling().notifier().add(ignore -> updateView());
 		model.dataChangedNotifier().add(() -> listeners.forEach(Runnable::run));
+		model.activeLabels().notifier().add(ignore -> updateView());
 	}
 
-	private void updateLabeling(Labeling labeling) {
+	private void updateView() {
 		container.setSource(colorView());
 		listeners.forEach(Runnable::run);
 	}
@@ -62,9 +64,11 @@ public class LabelsLayer implements BdvLayer {
 	}
 
 	private ARGBType getColor(ColorMap colorMap, Set<String> set) {
+		List<String> visible = set.stream().filter(model.activeLabels()
+			.get()::contains).collect(Collectors.toList());
 		ARGBType result = new ARGBType();
-		double factor = 1.0 / set.size();
-		set.forEach(label -> result.add(downScale(factor, colorMap.getColor(
+		double factor = 1.0 / visible.size();
+		visible.forEach(label -> result.add(downScale(factor, colorMap.getColor(
 			label))));
 		return result;
 	}
