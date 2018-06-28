@@ -4,13 +4,13 @@ package net.imglib2.labkit.labeling;
 import gnu.trove.map.TIntObjectMap;
 import gnu.trove.map.hash.TIntObjectHashMap;
 import net.imglib2.RandomAccessibleInterval;
+import net.imglib2.converter.Converters;
 import net.imglib2.labkit.bdv.BdvLayer;
 import net.imglib2.labkit.bdv.BdvShowable;
+import net.imglib2.labkit.color.ColorMap;
 import net.imglib2.labkit.models.LabelingModel;
 import net.imglib2.labkit.utils.Notifier;
 import net.imglib2.labkit.utils.RandomAccessibleContainer;
-import net.imglib2.labkit.color.ColorMap;
-import net.imglib2.converter.Converters;
 import net.imglib2.type.numeric.ARGBType;
 import net.imglib2.view.Views;
 
@@ -64,19 +64,13 @@ public class LabelsLayer implements BdvLayer {
 	}
 
 	private ARGBType getColor(ColorMap colorMap, Set<String> set) {
+		if (set.isEmpty()) return new ARGBType(0);
 		List<String> visible = set.stream().filter(model.activeLabels()
 			.get()::contains).collect(Collectors.toList());
-		ARGBType result = new ARGBType();
-		double factor = 1.0 / visible.size();
-		visible.forEach(label -> result.add(downScale(factor, colorMap.getColor(
-			label))));
-		return result;
-	}
-
-	private ARGBType downScale(double factor, ARGBType color) {
-		ARGBType result = color.copy();
-		result.mul(factor);
-		return result;
+		ARGBVector collector = new ARGBVector();
+		visible.forEach(label -> collector.add(colorMap.getColor(label)));
+		collector.div(visible.size());
+		return collector.get();
 	}
 
 	@Override
