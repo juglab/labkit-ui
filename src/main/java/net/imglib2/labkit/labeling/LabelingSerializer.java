@@ -73,10 +73,17 @@ public class LabelingSerializer {
 	}
 
 	private Labeling openFromTiff(String filename) throws IOException {
+		ImgLabeling<String, ?> imgLabeling = openImgLabelingFromTiff(filename);
+		return new Labeling(imgLabeling);
+	}
+
+	public ImgLabeling<String, ?> openImgLabelingFromTiff(String filename)
+		throws IOException
+	{
 		Img<? extends IntegerType<?>> img = openImageFromTiff(filename);
 		LabelsMetaData meta = (new File(filename + ".labels").exists())
 			? openMetaData(filename + ".labels") : new LabelsMetaData(img);
-		return new Labeling(fromImageAndLabelSets(img, meta.asLabelSets()));
+		return fromImageAndLabelSets(img, meta.asLabelSets());
 	}
 
 	// TODO make part of imglib2-roi
