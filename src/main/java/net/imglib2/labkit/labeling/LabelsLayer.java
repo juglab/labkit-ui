@@ -31,6 +31,8 @@ public class LabelsLayer implements BdvLayer {
 
 	private final Notifier<Runnable> listeners = new Notifier<>();
 
+	private final ARGBType BLACK = new ARGBType(0);
+
 	public LabelsLayer(LabelingModel model) {
 		this.model = model;
 		RandomAccessibleInterval<ARGBType> view = colorView();
@@ -64,9 +66,9 @@ public class LabelsLayer implements BdvLayer {
 	}
 
 	private ARGBType getColor(ColorMap colorMap, Set<String> set) {
-		if (set.isEmpty()) return new ARGBType(0);
 		List<String> visible = set.stream().filter(model.activeLabels()
 			.get()::contains).collect(Collectors.toList());
+		if (visible.isEmpty()) return BLACK;
 		ARGBVector collector = new ARGBVector();
 		visible.forEach(label -> collector.add(colorMap.getColor(label)));
 		collector.div(visible.size());
