@@ -90,6 +90,13 @@ public class DefaultSegmentationModel implements SegmentationModel,
 	}
 
 	@Override
+	public void removeSelectedSegmenter() {
+		if(segmenters.size() <= 1)
+			return;
+		segmenters.remove(selectedSegmenter.get());
+	}
+
+	@Override
 	public void trainSegmenter() {
 		selectedSegmenter().get().segmenter().train(Collections.singletonList(
 			image()), Collections.singletonList(labeling()));

@@ -21,7 +21,8 @@ public class SegmenterPanel {
 		this.segmentationModel = segmentationModel;
 		panel.setLayout(new MigLayout("insets 0, gap 0", "[grow]", "[grow][]"));
 		panel.add(initList(), "grow, wrap");
-		panel.add(initAddButton(), "split 2, grow");
+		panel.add(initAddButton(), "split 3, grow");
+		panel.add(initRemoveButton(), "grow");
 		panel.add(initTrainButton(actions), "grow");
 	}
 
@@ -34,10 +35,20 @@ public class SegmenterPanel {
 		return button;
 	}
 
+	private JButton initRemoveButton() {
+		JButton button = new JButton("Remove");
+		button.addActionListener(a -> {
+			segmentationModel.removeSelectedSegmenter();
+			updateList();
+		});
+		return button;
+	}
+
 	private JButton initTrainButton(ActionMap actions) {
 		Action action = actions.get("Train Classifier");
 		JButton button = new JButton(action);
 		button.setFocusable(false);
+		button.setText("Train");
 		return button;
 	}
 

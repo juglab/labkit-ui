@@ -10,4 +10,6 @@ public interface SegmenterListModel<T> {
 	Holder<T> selectedSegmenter();
 
 	T addSegmenter();
+
+	void removeSelectedSegmenter();
 }
