@@ -2,6 +2,7 @@
 package net.imglib2.labkit.actions;
 
 import java.awt.event.ActionEvent;
+import java.beans.PropertyChangeEvent;
 
 import bdv.util.BdvSource;
 import org.scijava.ui.behaviour.util.AbstractNamedAction;
@@ -32,11 +33,14 @@ public class ToggleVisibility extends AbstractNamedAction {
 
 	@Override
 	public void actionPerformed(final ActionEvent e) {
+		setVisible(!sourceState.isActive());
+	}
+
+	public void setVisible(final boolean value) {
 		synchronized (viewer) {
-			sourceState.setActive(!sourceState.isActive());
+			sourceState.setActive(value);
 			viewer.requestRepaint();
 		}
 		putValue(Action.SELECTED_KEY, sourceState.isActive());
 	}
-
 }

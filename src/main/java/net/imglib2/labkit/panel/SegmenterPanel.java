@@ -67,7 +67,9 @@ public class SegmenterPanel {
 			button.setContentAreaFilled(false);
 			button.setOpaque(false);
 			button.addActionListener(a -> {
+				((SegmenterListModel) segmentationModel).selectedSegmenter().set(item);
 				((SegmenterListModel) segmentationModel).train(item);
+				updateList();
 			});
 			return button;
 		}

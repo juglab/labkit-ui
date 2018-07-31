@@ -80,7 +80,9 @@ public class BasicLabelingComponent implements AutoCloseable {
 		BdvOptions options = BdvOptions.options().addTo(bdvHandle);
 		BdvSource source = layer.image().show(layer.title(), options);
 		layer.listeners().add(this::requestRepaint);
-		addAction(new ToggleVisibility(layer.title(), source));
+		ToggleVisibility action = new ToggleVisibility(layer.title(), source);
+		addAction(action);
+		layer.makeVisible().add(() -> action.setVisible(true));
 		return source;
 	}
 

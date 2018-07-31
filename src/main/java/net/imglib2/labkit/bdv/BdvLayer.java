@@ -10,6 +10,10 @@ public interface BdvLayer {
 
 	Notifier<Runnable> listeners();
 
+	default Notifier<Runnable> makeVisible() {
+		return new Notifier<>();
+	};
+
 	String title();
 
 	class FinalLayer implements BdvLayer {
