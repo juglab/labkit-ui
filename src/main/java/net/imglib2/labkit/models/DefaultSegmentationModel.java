@@ -90,15 +90,22 @@ public class DefaultSegmentationModel implements SegmentationModel,
 	}
 
 	@Override
-	public void removeSelectedSegmenter() {
+	public void train(SegmentationItem item) {
+		item.segmenter().train(Collections.singletonList(image()), Collections
+			.singletonList(labeling()));
+	}
+
+	@Override
+	public void remove(SegmentationItem item) {
 		if (segmenters.size() <= 1) return;
-		segmenters.remove(selectedSegmenter.get());
+		segmenters.remove(item);
+		if (!segmenters.contains(selectedSegmenter.get())) selectedSegmenter.set(
+			segmenters.get(0));
 	}
 
 	@Override
 	public void trainSegmenter() {
-		selectedSegmenter().get().segmenter().train(Collections.singletonList(
-			image()), Collections.singletonList(labeling()));
+		train(selectedSegmenter().get());
 	}
 
 	public <T extends IntegerType<T> & NativeType<T>>

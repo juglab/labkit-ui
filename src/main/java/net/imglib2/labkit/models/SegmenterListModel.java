@@ -11,5 +11,7 @@ public interface SegmenterListModel<T> {
 
 	T addSegmenter();
 
-	void removeSelectedSegmenter();
+	void train(T item);
+
+	void remove(T item);
 }

@@ -143,7 +143,7 @@ public class SegmentationComponent implements AutoCloseable {
 			new LabelPanel(dialogBoxOwner, new ColoredLabelsModel(model), fixedLabels)
 				.getComponent()), "grow, wrap");
 		panel.add(GuiUtils.createCheckboxGroupedPanel(actions.get("Segmentation"),
-			new SegmenterPanel(segmentationModel, actions).getComponent()), "grow");
+			new SegmenterPanel(segmentationModel).getComponent()), "grow");
 		panel.invalidate();
 		panel.repaint();
 		return panel;
