@@ -52,7 +52,7 @@ public class GuiUtils {
 		JCheckBox checkbox = createCheckbox(action);
 		JPanel title = new JPanel();
 		title.setBackground(new Color(200, 200, 200));
-		title.setLayout(new MigLayout("insets 8pt, gap 8pt, fillx"));
+		title.setLayout(new MigLayout("insets 4pt, gap 8pt, fillx", "10[][]10"));
 		title.add(new JLabel(checkbox.getText()), "push");
 		checkbox.setText("");
 		checkbox.setOpaque(false);
@@ -103,12 +103,13 @@ public class GuiUtils {
 	}
 
 	public static JComponent createDimensionsInfo(Dimensions interval) {
+		Color background = UIManager.getColor("List.background");
 		JPanel panel = new JPanel();
-		panel.setLayout(new MigLayout("insets 0, gap 0", "[grow]", ""));
+		panel.setLayout(new MigLayout("insets 8, gap 0", "10[grow]", ""));
+		panel.setBackground(background);
 		JLabel label = new JLabel("Dimensions: " + Arrays.toString(Intervals
 			.dimensionsAsLongArray(interval)));
-		label.setBackground(UIManager.getColor("List.background"));
-		label.setBorder(BorderFactory.createEmptyBorder(3, 6, 3, 3));
+		label.setBackground(background);
 		label.setOpaque(true);
 		panel.add(label, "grow, span");
 		return panel;
