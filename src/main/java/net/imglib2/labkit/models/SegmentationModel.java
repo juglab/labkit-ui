@@ -9,6 +9,8 @@ import net.imglib2.realtransform.AffineTransform3D;
 
 public interface SegmentationModel {
 
+	ImageLabelingModel imageLabelingModel();
+
 	Labeling labeling();
 
 	RandomAccessibleInterval<?> image();

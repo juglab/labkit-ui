@@ -5,13 +5,18 @@ import net.imagej.Dataset;
 import net.imagej.ImgPlus;
 import net.imagej.axis.Axes;
 import net.imagej.axis.CalibratedAxis;
+import net.imglib2.FinalInterval;
+import net.imglib2.Interval;
 import net.imglib2.RandomAccessibleInterval;
 import net.imglib2.labkit.bdv.BdvShowable;
+import net.imglib2.trainable_segmention.RevampUtils;
 import net.imglib2.trainable_segmention.pixel_feature.settings.ChannelSetting;
 import net.imglib2.type.numeric.ARGBType;
 import net.imglib2.type.numeric.NumericType;
 import net.imglib2.type.numeric.RealType;
+import net.imglib2.util.Intervals;
 
+import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
@@ -23,6 +28,7 @@ public class DatasetInputImage extends AbstractInputImage {
 	private final BdvShowable showable;
 	private boolean isTimeSeries;
 	private String labelingName;
+	private boolean isMultiChannel = false;
 
 	public DatasetInputImage(ImgPlus<? extends NumericType<?>> image,
 		BdvShowable showable)
@@ -39,6 +45,11 @@ public class DatasetInputImage extends AbstractInputImage {
 
 	public DatasetInputImage(Dataset image) {
 		this(image.getImgPlus());
+	}
+
+	@Override
+	public Interval interval() {
+		return isMultiChannel ? RevampUtils.intervalRemoveDimension(image) : image;
 	}
 
 	private static ImgPlus<? extends NumericType<?>> tryFuseColor(
@@ -66,13 +77,16 @@ public class DatasetInputImage extends AbstractInputImage {
 
 	@Override
 	public ChannelSetting getChannelSetting() {
+		if (isMultiChannel()) return ChannelSetting.multiple((int) image.dimension(
+			image.numDimensions() - 1));
 		return image.randomAccess().get() instanceof ARGBType ? ChannelSetting.RGB
 			: ChannelSetting.SINGLE;
 	}
 
 	@Override
 	public int getSpatialDimensions() {
-		return image.numDimensions() - (isTimeSeries() ? 1 : 0);
+		return image.numDimensions() - (isTimeSeries() ? 1 : 0) - (isMultiChannel()
+			? 1 : 0);
 	}
 
 	public void setDefaultLabelingFilename(String filename) {
@@ -102,5 +116,14 @@ public class DatasetInputImage extends AbstractInputImage {
 
 	public void setTimeSeries(boolean value) {
 		this.isTimeSeries = value;
+	}
+
+	@Override
+	public boolean isMultiChannel() {
+		return isMultiChannel;
+	}
+
+	public void setMultiChannel(boolean value) {
+		this.isMultiChannel = value;
 	}
 }

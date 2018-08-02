@@ -1,9 +1,11 @@
 
 package net.imglib2.labkit.models;
 
+import net.imglib2.Interval;
 import net.imglib2.RandomAccessibleInterval;
 import net.imglib2.img.cell.CellGrid;
 import net.imglib2.img.cell.CellImgFactory;
+import net.imglib2.labkit.inputimage.InputImage;
 import net.imglib2.labkit.segmentation.Segmenter;
 import net.imglib2.labkit.color.ColorMap;
 import net.imglib2.labkit.labeling.Labeling;
@@ -15,6 +17,7 @@ import net.imglib2.type.numeric.IntegerType;
 import net.imglib2.type.numeric.real.FloatType;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.function.Supplier;
@@ -35,15 +38,23 @@ public class DefaultSegmentationModel implements SegmentationModel,
 	private final RandomAccessibleInterval<?> compatibleImage;
 	private final CellGrid grid;
 
-	public DefaultSegmentationModel(RandomAccessibleInterval<?> compatibleImage,
-		ImageLabelingModel imageLabelingModel, Supplier<Segmenter> segmenterFactory)
+	public DefaultSegmentationModel(InputImage inputImage,
+		Supplier<Segmenter> segmenterFactory)
 	{
-		this.imageLabelingModel = imageLabelingModel;
-		this.compatibleImage = compatibleImage;
-		this.grid = LabkitUtils.suggestGrid(this.compatibleImage, imageLabelingModel
-			.isTimeSeries());
+		Labeling labeling = new Labeling(Arrays.asList("background", "foreground"),
+			inputImage.interval());
+		this.imageLabelingModel = new ImageLabelingModel(inputImage.showable(),
+			labeling, inputImage.isTimeSeries());
+		this.compatibleImage = inputImage.imageForSegmentation();
+		this.grid = LabkitUtils.suggestGrid(inputImage.interval(),
+			imageLabelingModel.isTimeSeries());
 		this.segmenterFactory = segmenterFactory;
 		this.selectedSegmenter = new DefaultHolder<>(addSegmenter());
+	}
+
+	@Override
+	public ImageLabelingModel imageLabelingModel() {
+		return imageLabelingModel;
 	}
 
 	@Override

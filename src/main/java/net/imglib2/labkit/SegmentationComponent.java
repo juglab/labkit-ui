@@ -38,6 +38,7 @@ import org.scijava.Context;
 import javax.swing.*;
 import java.util.Arrays;
 import java.util.List;
+import java.util.function.Supplier;
 
 public class SegmentationComponent implements AutoCloseable {
 
@@ -48,8 +49,6 @@ public class SegmentationComponent implements AutoCloseable {
 	private final JFrame dialogBoxOwner;
 
 	private BasicLabelingComponent labelingComponent;
-
-	private ImageLabelingModel model;
 
 	private final Context context;
 
@@ -93,7 +92,8 @@ public class SegmentationComponent implements AutoCloseable {
 		this.context = context;
 		this.fixedLabels = fixedLabels;
 		initModels(image, labeling);
-		labelingComponent = new BasicLabelingComponent(dialogBoxOwner, model);
+		labelingComponent = new BasicLabelingComponent(dialogBoxOwner,
+			segmentationModel.imageLabelingModel());
 		labelingComponent.addBdvLayer(new PredictionLayer(segmentationModel
 			.selectedSegmenter()));
 		initActions();
@@ -101,10 +101,9 @@ public class SegmentationComponent implements AutoCloseable {
 	}
 
 	private void initModels(InputImage image, Labeling labeling) {
-		model = new ImageLabelingModel(image.showable(), labeling, inputImage
-			.isTimeSeries());
-		segmentationModel = new DefaultSegmentationModel(image
-			.imageForSegmentation(), model, () -> initClassifier(context));
+		segmentationModel = new DefaultSegmentationModel(image,
+			() -> initClassifier(context));
+		segmentationModel.imageLabelingModel().labeling().set(labeling);
 	}
 
 	private Segmenter initClassifier(Context context) {
@@ -120,17 +119,21 @@ public class SegmentationComponent implements AutoCloseable {
 			dialogBoxOwner, labelingComponent);
 		new TrainClassifier(extensible, segmentationModel);
 		new ClassifierIoAction(extensible, segmentationModel.selectedSegmenter());
-		new LabelingIoAction(extensible, model.labeling(), inputImage);
-		new AddLabelingIoAction(extensible, model.labeling());
+		new LabelingIoAction(extensible, segmentationModel.imageLabelingModel()
+			.labeling(), inputImage);
+		new AddLabelingIoAction(extensible, segmentationModel.imageLabelingModel()
+			.labeling());
 		new SegmentationSave(extensible, segmentationModel.selectedSegmenter());
 		new OpenImageAction(extensible);
-		new OrthogonalView(extensible, model);
+		new OrthogonalView(extensible, segmentationModel.imageLabelingModel());
 		new SelectClassifier(extensible, segmentationModel.selectedSegmenter());
 		new BatchSegmentAction(extensible, segmentationModel.selectedSegmenter());
 		new SegmentationAsLabelAction(extensible, segmentationModel
-			.selectedSegmenter(), model.labeling());
-		new BitmapImportExportAction(extensible, model);
-		MeasureConnectedComponents.addAction(extensible, model);
+			.selectedSegmenter(), segmentationModel.imageLabelingModel().labeling());
+		new BitmapImportExportAction(extensible, segmentationModel
+			.imageLabelingModel());
+		MeasureConnectedComponents.addAction(extensible, segmentationModel
+			.imageLabelingModel());
 	}
 
 	private JPanel initLeftPanel() {
@@ -140,8 +143,8 @@ public class SegmentationComponent implements AutoCloseable {
 		panel.add(GuiUtils.createCheckboxGroupedPanel(actions.get("Image"), GuiUtils
 			.createDimensionsInfo(inputImage.interval())), "grow, wrap");
 		panel.add(GuiUtils.createCheckboxGroupedPanel(actions.get("Labeling"),
-			new LabelPanel(dialogBoxOwner, new ColoredLabelsModel(model), fixedLabels)
-				.getComponent()), "grow, wrap");
+			new LabelPanel(dialogBoxOwner, new ColoredLabelsModel(segmentationModel
+				.imageLabelingModel()), fixedLabels).getComponent()), "grow, wrap");
 		panel.add(GuiUtils.createCheckboxGroupedPanel(actions.get("Segmentation"),
 			new SegmenterPanel(segmentationModel).getComponent()), "grow");
 		panel.invalidate();
