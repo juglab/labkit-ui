@@ -4,18 +4,19 @@ package net.imglib2.labkit.inputimage;
 import net.imagej.Dataset;
 import net.imagej.ImgPlus;
 import net.imagej.axis.Axes;
+import net.imagej.axis.AxisType;
 import net.imagej.axis.CalibratedAxis;
-import net.imglib2.FinalInterval;
 import net.imglib2.Interval;
 import net.imglib2.RandomAccessibleInterval;
+import net.imglib2.img.display.imagej.ImgPlusViews;
 import net.imglib2.labkit.bdv.BdvShowable;
 import net.imglib2.trainable_segmention.RevampUtils;
 import net.imglib2.trainable_segmention.pixel_feature.settings.ChannelSetting;
 import net.imglib2.type.numeric.ARGBType;
 import net.imglib2.type.numeric.NumericType;
 import net.imglib2.type.numeric.RealType;
-import net.imglib2.util.Intervals;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -34,13 +35,33 @@ public class DatasetInputImage extends AbstractInputImage {
 		BdvShowable showable)
 	{
 		this.showable = showable;
-		this.image = tryFuseColor(image);
-		this.isTimeSeries = image.dimensionIndex(Axes.TIME) >= 0;
+		this.image = prepareImage(image);
+		this.isMultiChannel = this.image.dimensionIndex(Axes.CHANNEL) >= 0;
+		this.isTimeSeries = this.image.dimensionIndex(Axes.TIME) >= 0;
 		this.labelingName = image.getSource() + ".labeling";
 	}
 
+	private static ImgPlus<? extends NumericType<?>> prepareImage(
+		ImgPlus<? extends NumericType<?>> image)
+	{
+		List<AxisType> order = Arrays.asList(Axes.X, Axes.Y, Axes.Z, Axes.CHANNEL,
+			Axes.TIME);
+		return ImgPlusViewsOld.sortAxes(tryFuseColor(labelAxes(image)), order);
+	}
+
+	private static ImgPlus<? extends NumericType<?>> labelAxes(
+		ImgPlus<? extends NumericType<?>> image)
+	{
+		if (image.firstElement() instanceof ARGBType) return ImgPlusViewsOld
+			.fixAxes(image, Arrays.asList(Axes.X, Axes.Y, Axes.Z, Axes.TIME));
+		if (image.numDimensions() == 4) return ImgPlusViewsOld.fixAxes(image, Arrays
+			.asList(Axes.X, Axes.Y, Axes.Z, Axes.TIME, Axes.CHANNEL));
+		return ImgPlusViewsOld.fixAxes(image, Arrays.asList(Axes.X, Axes.Y, Axes.Z,
+			Axes.CHANNEL, Axes.TIME));
+	}
+
 	public DatasetInputImage(ImgPlus<? extends NumericType<?>> image) {
-		this(image, BdvShowable.wrap(tryFuseColor(image)));
+		this(image, BdvShowable.wrap(prepareImage(image)));
 	}
 
 	public DatasetInputImage(Dataset image) {
@@ -49,7 +70,16 @@ public class DatasetInputImage extends AbstractInputImage {
 
 	@Override
 	public Interval interval() {
-		return isMultiChannel ? RevampUtils.intervalRemoveDimension(image) : image;
+		int colorAxis = image.numDimensions() - 1 - (isTimeSeries() ? 1 : 0); // TODO
+																																					// implement
+																																					// nicer
+																																					// way
+																																					// to
+																																					// handle
+																																					// color
+																																					// channel
+		return isMultiChannel ? RevampUtils.intervalRemoveDimension(image,
+			colorAxis) : image;
 	}
 
 	private static ImgPlus<? extends NumericType<?>> tryFuseColor(
@@ -105,8 +135,19 @@ public class DatasetInputImage extends AbstractInputImage {
 
 	@Override
 	public List<CalibratedAxis> axes() {
-		return IntStream.range(0, image.numDimensions()).mapToObj(image::axis)
-			.collect(Collectors.toList());
+		List<CalibratedAxis> allAxes = IntStream.range(0, image.numDimensions())
+			.mapToObj(image::axis).collect(Collectors.toList());
+		if (isMultiChannel()) {
+			int channelAxis = getSpatialDimensions();
+			return removeElement(allAxes, channelAxis);
+		}
+		return allAxes;
+	}
+
+	private <T> List<T> removeElement(List<T> list, int index) {
+		List<T> result = new ArrayList<>(list);
+		result.remove(index);
+		return result;
 	}
 
 	@Override
@@ -114,16 +155,8 @@ public class DatasetInputImage extends AbstractInputImage {
 		return isTimeSeries;
 	}
 
-	public void setTimeSeries(boolean value) {
-		this.isTimeSeries = value;
-	}
-
 	@Override
 	public boolean isMultiChannel() {
 		return isMultiChannel;
-	}
-
-	public void setMultiChannel(boolean value) {
-		this.isMultiChannel = value;
 	}
 }

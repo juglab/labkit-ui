@@ -24,15 +24,11 @@ public class MainFrame {
 
 	private JFrame frame = initFrame();
 
-	public static MainFrame open(Context context, String filename,
-		boolean isTimeSeries)
-	{
+	public static MainFrame open(Context context, String filename) {
 		final Context context2 = (context == null) ? new Context() : context;
 		Dataset dataset = RevampUtils.wrapException(() -> context2.service(
 			DatasetIOService.class).open(filename));
-		DatasetInputImage inputImage = new DatasetInputImage(dataset);
-		inputImage.setTimeSeries(isTimeSeries);
-		return new MainFrame(context2, inputImage);
+		return new MainFrame(context2, new DatasetInputImage(dataset));
 	}
 
 	public MainFrame(final Context context, final InputImage inputImage) {

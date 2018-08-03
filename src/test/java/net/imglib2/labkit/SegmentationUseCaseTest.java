@@ -77,7 +77,6 @@ public class SegmentationUseCaseTest {
 			new AxisType[] { Axes.X, Axes.Y, Axes.CHANNEL });
 		DatasetInputImage inputImage = new DatasetInputImage(imgPlus, BdvShowable
 			.wrap(Views.hyperSlice(img, 2, 0)));
-		inputImage.setMultiChannel(true);
 
 		Labeling labeling = getLabeling();
 		DefaultSegmentationModel segmentationModel = new DefaultSegmentationModel(

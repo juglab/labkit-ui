@@ -24,7 +24,6 @@ public class LabkitPlugin implements Command {
 	@Override
 	public void run() {
 		DatasetInputImage input = new DatasetInputImage(dataset);
-		input.setTimeSeries(false);
 		new MainFrame(context, input);
 	}
 }
