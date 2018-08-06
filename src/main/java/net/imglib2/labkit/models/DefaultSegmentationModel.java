@@ -1,7 +1,6 @@
 
 package net.imglib2.labkit.models;
 
-import net.imglib2.Interval;
 import net.imglib2.RandomAccessibleInterval;
 import net.imglib2.img.cell.CellGrid;
 import net.imglib2.img.cell.CellImgFactory;
@@ -9,12 +8,15 @@ import net.imglib2.labkit.inputimage.InputImage;
 import net.imglib2.labkit.segmentation.Segmenter;
 import net.imglib2.labkit.color.ColorMap;
 import net.imglib2.labkit.labeling.Labeling;
+import net.imglib2.labkit.segmentation.weka.TimeSeriesSegmenter;
+import net.imglib2.labkit.segmentation.weka.TrainableSegmentationSegmenter;
 import net.imglib2.labkit.utils.LabkitUtils;
 import net.imglib2.realtransform.AffineTransform3D;
 import net.imglib2.trainable_segmention.RevampUtils;
 import net.imglib2.type.NativeType;
 import net.imglib2.type.numeric.IntegerType;
 import net.imglib2.type.numeric.real.FloatType;
+import org.scijava.Context;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -38,9 +40,7 @@ public class DefaultSegmentationModel implements SegmentationModel,
 	private final RandomAccessibleInterval<?> compatibleImage;
 	private final CellGrid grid;
 
-	public DefaultSegmentationModel(InputImage inputImage,
-		Supplier<Segmenter> segmenterFactory)
-	{
+	public DefaultSegmentationModel(InputImage inputImage, Context context) {
 		Labeling labeling = new Labeling(Arrays.asList("background", "foreground"),
 			inputImage.interval());
 		this.imageLabelingModel = new ImageLabelingModel(inputImage.showable(),
@@ -48,8 +48,15 @@ public class DefaultSegmentationModel implements SegmentationModel,
 		this.compatibleImage = inputImage.imageForSegmentation();
 		this.grid = LabkitUtils.suggestGrid(inputImage.interval(),
 			imageLabelingModel.isTimeSeries());
-		this.segmenterFactory = segmenterFactory;
+		this.segmenterFactory = () -> initClassifier(inputImage, context);
 		this.selectedSegmenter = new DefaultHolder<>(addSegmenter());
+	}
+
+	private Segmenter initClassifier(InputImage inputImage, Context context) {
+		TrainableSegmentationSegmenter classifier1 =
+			new TrainableSegmentationSegmenter(context, inputImage);
+		return inputImage.isTimeSeries() ? new TimeSeriesSegmenter(classifier1)
+			: classifier1;
 	}
 
 	@Override

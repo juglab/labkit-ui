@@ -19,8 +19,6 @@ import net.imglib2.labkit.models.DefaultSegmentationModel;
 import net.imglib2.labkit.models.ImageLabelingModel;
 import net.imglib2.labkit.models.SegmentationItem;
 import net.imglib2.labkit.segmentation.PredictionLayer;
-import net.imglib2.labkit.segmentation.Segmenter;
-import net.imglib2.labkit.segmentation.weka.TrainableSegmentationSegmenter;
 import net.imglib2.type.numeric.integer.ShortType;
 import net.imglib2.type.numeric.integer.UnsignedByteType;
 import net.imglib2.util.Intervals;
@@ -34,7 +32,6 @@ import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
-import java.util.function.Supplier;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
@@ -47,8 +44,7 @@ public class SegmentationUseCaseTest {
 			2 }, 2, 2);
 		InputImage inputImage = new DefaultInputImage(image);
 		DefaultSegmentationModel segmentationModel = new DefaultSegmentationModel(
-			inputImage, () -> new TrainableSegmentationSegmenter(new Context(),
-				inputImage));
+			inputImage, new Context());
 		addLabels(segmentationModel.imageLabelingModel());
 		SegmentationItem segmenter = segmentationModel.segmenters().get(0);
 		segmenter.segmenter().train(Collections.singletonList(image), Collections
@@ -80,8 +76,7 @@ public class SegmentationUseCaseTest {
 
 		Labeling labeling = getLabeling();
 		DefaultSegmentationModel segmentationModel = new DefaultSegmentationModel(
-			inputImage, () -> new TrainableSegmentationSegmenter(new Context(),
-				inputImage));
+			inputImage, new Context());
 		segmentationModel.imageLabelingModel().labeling().set(labeling);
 		PredictionLayer layer = new PredictionLayer(segmentationModel
 			.selectedSegmenter());

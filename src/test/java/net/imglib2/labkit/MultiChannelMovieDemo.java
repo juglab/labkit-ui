@@ -88,10 +88,8 @@ public class MultiChannelMovieDemo {
 	@Test
 	public void testInputImageImageForSegmentation() {
 		DatasetInputImage inputImage = inputImage5d();
-		Supplier<Segmenter> segmenterSupplier = () -> new TimeSeriesSegmenter(
-			new TrainableSegmentationSegmenter(new Context(), inputImage));
 		DefaultSegmentationModel segmentationModel = new DefaultSegmentationModel(
-			inputImage, segmenterSupplier);
+			inputImage, new Context());
 		SegmentationItem segmenter = segmentationModel.selectedSegmenter().get();
 		Labeling labeling1 = labeling5d();
 		segmentationModel.imageLabelingModel().labeling().set(labeling1);

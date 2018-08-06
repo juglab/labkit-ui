@@ -17,17 +17,13 @@ import net.imglib2.labkit.inputimage.DefaultInputImage;
 import net.imglib2.labkit.inputimage.InputImage;
 import net.imglib2.labkit.labeling.Labeling;
 import net.imglib2.labkit.models.ColoredLabelsModel;
-import net.imglib2.labkit.models.ImageLabelingModel;
 import net.imglib2.labkit.models.DefaultSegmentationModel;
 import net.imglib2.labkit.panel.GuiUtils;
 import net.imglib2.labkit.panel.LabelPanel;
 import net.imglib2.labkit.panel.SegmenterPanel;
 import net.imglib2.labkit.plugin.MeasureConnectedComponents;
 import net.imglib2.labkit.segmentation.PredictionLayer;
-import net.imglib2.labkit.segmentation.Segmenter;
 import net.imglib2.labkit.segmentation.TrainClassifier;
-import net.imglib2.labkit.segmentation.weka.TimeSeriesSegmenter;
-import net.imglib2.labkit.segmentation.weka.TrainableSegmentationSegmenter;
 import net.imglib2.type.NativeType;
 import net.imglib2.type.numeric.IntegerType;
 import net.imglib2.type.numeric.NumericType;
@@ -38,7 +34,6 @@ import org.scijava.Context;
 import javax.swing.*;
 import java.util.Arrays;
 import java.util.List;
-import java.util.function.Supplier;
 
 public class SegmentationComponent implements AutoCloseable {
 
@@ -91,27 +86,14 @@ public class SegmentationComponent implements AutoCloseable {
 		this.inputImage = image;
 		this.context = context;
 		this.fixedLabels = fixedLabels;
-		initModels(image, labeling);
+		this.segmentationModel = new DefaultSegmentationModel(image, this.context);
+		this.segmentationModel.imageLabelingModel().labeling().set(labeling);
 		labelingComponent = new BasicLabelingComponent(dialogBoxOwner,
 			segmentationModel.imageLabelingModel());
 		labelingComponent.addBdvLayer(new PredictionLayer(segmentationModel
 			.selectedSegmenter()));
 		initActions();
 		this.panel = initPanel();
-	}
-
-	private void initModels(InputImage image, Labeling labeling) {
-		segmentationModel = new DefaultSegmentationModel(image,
-			() -> initClassifier(context));
-		segmentationModel.imageLabelingModel().labeling().set(labeling);
-	}
-
-	private Segmenter initClassifier(Context context) {
-		// FIXME: should this be placed in SegmentationModel
-		TrainableSegmentationSegmenter classifier1 =
-			new TrainableSegmentationSegmenter(context, inputImage);
-		return inputImage.isTimeSeries() ? new TimeSeriesSegmenter(classifier1)
-			: classifier1;
 	}
 
 	private void initActions() {
