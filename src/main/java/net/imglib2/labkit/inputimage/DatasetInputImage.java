@@ -15,6 +15,7 @@ import net.imglib2.trainable_segmention.pixel_feature.settings.ChannelSetting;
 import net.imglib2.type.numeric.ARGBType;
 import net.imglib2.type.numeric.NumericType;
 import net.imglib2.type.numeric.RealType;
+import net.imglib2.type.numeric.integer.UnsignedByteType;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -85,7 +86,7 @@ public class DatasetInputImage extends AbstractInputImage {
 	private static ImgPlus<? extends NumericType<?>> tryFuseColor(
 		ImgPlus<? extends NumericType<?>> image)
 	{
-		if (!(image.randomAccess().get() instanceof RealType)) return image;
+		if (!(image.randomAccess().get() instanceof UnsignedByteType)) return image;
 		@SuppressWarnings("unchecked")
 		ImgPlus<RealType<?>> image1 = (ImgPlus<RealType<?>>) image;
 		if (ImgPlusViews.canFuseColor(image1)) return ImgPlusViews.fuseColor(
