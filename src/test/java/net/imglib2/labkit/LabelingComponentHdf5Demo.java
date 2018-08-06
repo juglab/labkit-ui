@@ -53,7 +53,7 @@ public class LabelingComponentHdf5Demo {
 		Labeling labeling = new Labeling(Arrays.asList("fg", "bg"), wrap
 			.interval());
 		boolean isTimeSeries = false;
-		return new ImageLabelingModel(wrap, labeling, isTimeSeries);
+		return new ImageLabelingModel(wrap, labeling, isTimeSeries, "");
 	}
 
 }

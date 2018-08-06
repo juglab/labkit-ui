@@ -14,7 +14,6 @@ import net.imglib2.labkit.actions.SegmentationAsLabelAction;
 import net.imglib2.labkit.actions.SegmentationSave;
 import net.imglib2.labkit.actions.SelectClassifier;
 import net.imglib2.labkit.inputimage.DefaultInputImage;
-import net.imglib2.labkit.inputimage.InputImage;
 import net.imglib2.labkit.labeling.Labeling;
 import net.imglib2.labkit.models.ColoredLabelsModel;
 import net.imglib2.labkit.models.DefaultSegmentationModel;
@@ -47,47 +46,15 @@ public class SegmentationComponent implements AutoCloseable {
 
 	private final Context context;
 
-	private final InputImage inputImage;
-
 	private DefaultSegmentationModel segmentationModel;
 
 	public SegmentationComponent(Context context, JFrame dialogBoxOwner,
-		RandomAccessibleInterval<? extends NumericType<?>> image,
-		boolean isTimeSeries)
-	{
-		this(context, dialogBoxOwner, initInputImage(image, isTimeSeries),
-			defaultLabeling(image), true);
-	}
-
-	private static Labeling defaultLabeling(Interval image) {
-		return new Labeling(Arrays.asList("background", "foreground"), image);
-	}
-
-	public SegmentationComponent(Context context, JFrame dialogBoxOwner,
-		InputImage image)
-	{
-		this(context, dialogBoxOwner, image, defaultLabeling(image.interval()),
-			false);
-	}
-
-	private static DefaultInputImage initInputImage(
-		RandomAccessibleInterval<? extends NumericType<?>> image,
-		boolean isTimeSeries)
-	{
-		DefaultInputImage defaultInputImage = new DefaultInputImage(image);
-		defaultInputImage.setTimeSeries(isTimeSeries);
-		return defaultInputImage;
-	}
-
-	public SegmentationComponent(Context context, JFrame dialogBoxOwner,
-		InputImage image, Labeling labeling, boolean fixedLabels)
+		DefaultSegmentationModel segmentationModel, boolean fixedLabels)
 	{
 		this.dialogBoxOwner = dialogBoxOwner;
-		this.inputImage = image;
 		this.context = context;
 		this.fixedLabels = fixedLabels;
-		this.segmentationModel = new DefaultSegmentationModel(image, this.context);
-		this.segmentationModel.imageLabelingModel().labeling().set(labeling);
+		this.segmentationModel = segmentationModel;
 		labelingComponent = new BasicLabelingComponent(dialogBoxOwner,
 			segmentationModel.imageLabelingModel());
 		labelingComponent.addBdvLayer(new PredictionLayer(segmentationModel
@@ -101,8 +68,7 @@ public class SegmentationComponent implements AutoCloseable {
 			dialogBoxOwner, labelingComponent);
 		new TrainClassifier(extensible, segmentationModel);
 		new ClassifierIoAction(extensible, segmentationModel.selectedSegmenter());
-		new LabelingIoAction(extensible, segmentationModel.imageLabelingModel()
-			.labeling(), inputImage);
+		new LabelingIoAction(extensible, segmentationModel.imageLabelingModel());
 		new AddLabelingIoAction(extensible, segmentationModel.imageLabelingModel()
 			.labeling());
 		new SegmentationSave(extensible, segmentationModel.selectedSegmenter());
@@ -123,7 +89,7 @@ public class SegmentationComponent implements AutoCloseable {
 		panel.setLayout(new MigLayout("", "[grow]", "[][grow][grow]"));
 		ActionMap actions = getActions();
 		panel.add(GuiUtils.createCheckboxGroupedPanel(actions.get("Image"), GuiUtils
-			.createDimensionsInfo(inputImage.interval())), "grow, wrap");
+			.createDimensionsInfo(segmentationModel.image())), "grow, wrap");
 		panel.add(GuiUtils.createCheckboxGroupedPanel(actions.get("Labeling"),
 			new LabelPanel(dialogBoxOwner, new ColoredLabelsModel(segmentationModel
 				.imageLabelingModel()), fixedLabels).getComponent()), "grow, wrap");

@@ -23,4 +23,6 @@ public interface LabelingModel {
 	boolean isTimeSeries();
 
 	AffineTransform3D labelTransformation();
+
+	String defaultFileName();
 }

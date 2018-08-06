@@ -7,6 +7,7 @@ import net.imglib2.labkit.actions.SetLabelsAction;
 import net.imglib2.labkit.inputimage.DatasetInputImage;
 import net.imglib2.labkit.inputimage.InputImage;
 import net.imglib2.labkit.labeling.Labeling;
+import net.imglib2.labkit.models.DefaultSegmentationModel;
 import net.imglib2.trainable_segmention.RevampUtils;
 import org.scijava.Context;
 
@@ -46,8 +47,11 @@ public class MainFrame {
 	private SegmentationComponent initSegmentationComponent(Context context,
 		InputImage inputImage, Labeling initialLabeling)
 	{
+		DefaultSegmentationModel segmentationModel = new DefaultSegmentationModel(
+			inputImage, context);
+		segmentationModel.imageLabelingModel().labeling().set(initialLabeling);
 		SegmentationComponent segmentationComponent = new SegmentationComponent(
-			context, frame, inputImage, initialLabeling, false);
+			context, frame, segmentationModel, false);
 		frame.add(segmentationComponent.getComponent());
 		frame.addWindowListener(new WindowAdapter() {
 

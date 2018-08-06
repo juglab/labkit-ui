@@ -40,15 +40,17 @@ public class ImageLabelingModel implements LabelingModel {
 
 	private final Holder<Set<String>> activeLabels;
 
+	private String defaultFileName;
+
 	public ImageLabelingModel(
 		RandomAccessibleInterval<? extends NumericType<?>> image, Labeling labeling,
 		boolean isTimeSeries)
 	{
-		this(BdvShowable.wrap(image), labeling, isTimeSeries);
+		this(BdvShowable.wrap(image), labeling, isTimeSeries, "");
 	}
 
 	public ImageLabelingModel(BdvShowable showable, Labeling labeling,
-		boolean isTimeSeries)
+		boolean isTimeSeries, String defaultFileName)
 	{
 		this.showable = showable;
 		this.labelTransformation = multiply(showable.transformation(), getScaling(
@@ -60,6 +62,7 @@ public class ImageLabelingModel implements LabelingModel {
 		this.isTimeSeries = isTimeSeries;
 		this.activeLabels = new DefaultHolder<>(new HashSet<>(labeling
 			.getLabels()));
+		this.defaultFileName = defaultFileName;
 		colorProvider = new ColorMapProvider(labelingHolder);
 	}
 
@@ -88,6 +91,11 @@ public class ImageLabelingModel implements LabelingModel {
 	@Override
 	public AffineTransform3D labelTransformation() {
 		return labelTransformation;
+	}
+
+	@Override
+	public String defaultFileName() {
+		return defaultFileName;
 	}
 
 	@Override
