@@ -91,8 +91,7 @@ public class DefaultSegmentationModel implements SegmentationModel,
 
 	@Override
 	public void removeSelectedSegmenter() {
-		if(segmenters.size() <= 1)
-			return;
+		if (segmenters.size() <= 1) return;
 		segmenters.remove(selectedSegmenter.get());
 	}
 

@@ -1,3 +1,4 @@
+
 package net.imglib2.labkit.labeling;
 
 import net.imglib2.RandomAccess;
@@ -16,9 +17,8 @@ public class LabelingsTest {
 	@Test
 	public void testOf() {
 		ImgLabeling<String, ?> input = LabelingSerializer.fromImageAndLabelSets(
-				ArrayImgs.unsignedBytes(new byte[]{2}, 1),
-				Arrays.asList(Collections.emptySet(), Collections.singleton("a"), Collections.singleton("b"))
-		);
+			ArrayImgs.unsignedBytes(new byte[] { 2 }, 1), Arrays.asList(Collections
+				.emptySet(), Collections.singleton("a"), Collections.singleton("b")));
 		Labeling labeling = Labelings.of(input);
 		assertEquals(Arrays.asList("b"), labeling.getLabels());
 	}
