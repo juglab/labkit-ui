@@ -40,30 +40,30 @@ public class TimeSeriesSegmenter implements Segmenter {
 	public void segment(RandomAccessibleInterval<?> image,
 		RandomAccessibleInterval<? extends IntegerType<?>> labels)
 	{
-		applyOnSlices(segmenter::segment, image, labels);
+		applyOnSlices(segmenter::segment, image, labels, 0);
 	}
 
 	@Override
 	public void predict(RandomAccessibleInterval<?> image,
 		RandomAccessibleInterval<? extends RealType<?>> prediction)
 	{
-		applyOnSlices(segmenter::predict, image, prediction);
+		applyOnSlices(segmenter::predict, image, prediction, 1);
 	}
 
 	private <T> void applyOnSlices(
 		BiConsumer<RandomAccessibleInterval<?>, RandomAccessibleInterval<T>> action,
-		RandomAccessibleInterval<?> image, RandomAccessibleInterval<T> target)
+		RandomAccessibleInterval<?> image, RandomAccessibleInterval<T> target,
+		int offset)
 	{
-		int imageLastDimension = image.numDimensions() - 1;
-		int targetLastDimension = target.numDimensions() - 1;
-		long min = target.min(targetLastDimension);
-		long max = target.max(targetLastDimension);
-		if (min < image.min(imageLastDimension) || max > image.max(
-			imageLastDimension)) throw new IllegalStateException(
+		int imageTimeAxis = image.numDimensions() - 1;
+		int targetTimeAxis = target.numDimensions() - 1 - offset;
+		long min = target.min(targetTimeAxis);
+		long max = target.max(targetTimeAxis);
+		if (min < image.min(imageTimeAxis) || max > image.max(imageTimeAxis)) throw new IllegalStateException(
 				"Last dimensions must fit.");
 		for (long pos = min; pos <= max; pos++)
-			action.accept(Views.hyperSlice(image, imageLastDimension, pos), Views
-				.hyperSlice(target, targetLastDimension, pos));
+			action.accept(Views.hyperSlice(image, imageTimeAxis, pos), Views
+				.hyperSlice(target, targetTimeAxis, pos));
 	}
 
 	@Override
