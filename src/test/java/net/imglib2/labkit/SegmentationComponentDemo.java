@@ -5,6 +5,8 @@ import ij.ImagePlus;
 import net.imglib2.RandomAccessibleInterval;
 import net.imglib2.img.Img;
 import net.imglib2.img.display.imagej.ImageJFunctions;
+import net.imglib2.labkit.inputimage.DefaultInputImage;
+import net.imglib2.labkit.models.DefaultSegmentationModel;
 import net.imglib2.type.numeric.NumericType;
 import net.imglib2.type.numeric.integer.UnsignedByteType;
 import net.imglib2.view.Views;
@@ -28,7 +30,10 @@ public class SegmentationComponentDemo {
 		Img<? extends NumericType<?>> image = ImageJFunctions.wrap(new ImagePlus(
 			"/home/arzt/Documents/Datasets/beans.tif"));
 		Context context = new Context();
-		segmenter = new SegmentationComponent(context, frame, image, false);
+		DefaultSegmentationModel segmentationModel = new DefaultSegmentationModel(
+			new DefaultInputImage(image), context);
+		segmenter = new SegmentationComponent(context, frame, segmentationModel,
+			false);
 		frame.add(segmenter.getComponent());
 		frame.add(getBottomPanel(), BorderLayout.PAGE_END);
 		frame.setVisible(true);

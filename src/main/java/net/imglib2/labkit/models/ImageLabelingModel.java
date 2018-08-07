@@ -11,17 +11,15 @@ import net.imglib2.labkit.color.ColorMapProvider;
 import net.imglib2.labkit.labeling.Labeling;
 import net.imglib2.realtransform.AffineTransform3D;
 import net.imglib2.type.numeric.NumericType;
-import net.imglib2.util.Intervals;
 
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import java.util.function.Consumer;
 import java.util.stream.IntStream;
 
 public class ImageLabelingModel implements LabelingModel {
 
-	private final AffineTransform3D labelTransformation;
+	private final AffineTransform3D labelTransformation = new AffineTransform3D();
 
 	private ColorMapProvider colorProvider;
 
@@ -40,27 +38,34 @@ public class ImageLabelingModel implements LabelingModel {
 
 	private final Holder<Set<String>> activeLabels;
 
+	private String defaultFileName;
+
 	public ImageLabelingModel(
 		RandomAccessibleInterval<? extends NumericType<?>> image, Labeling labeling,
 		boolean isTimeSeries)
 	{
-		this(BdvShowable.wrap(image), labeling, isTimeSeries);
+		this(BdvShowable.wrap(image), labeling, isTimeSeries, "");
 	}
 
 	public ImageLabelingModel(BdvShowable showable, Labeling labeling,
-		boolean isTimeSeries)
+		boolean isTimeSeries, String defaultFileName)
 	{
 		this.showable = showable;
-		this.labelTransformation = multiply(showable.transformation(), getScaling(
-			showable.interval(), labeling.interval()));
-		this.labelingHolder = new CheckedHolder(labeling);
+		this.labelingHolder = new DefaultHolder<>(labeling);
 		this.labelingHolder.notifier().add(this::labelingReplacedEvent);
+		updateLabelTransform();
 		this.selectedLabelHolder = new DefaultHolder<>(labeling.getLabels().stream()
 			.findAny().orElse(""));
 		this.isTimeSeries = isTimeSeries;
 		this.activeLabels = new DefaultHolder<>(new HashSet<>(labeling
 			.getLabels()));
+		this.defaultFileName = defaultFileName;
 		colorProvider = new ColorMapProvider(labelingHolder);
+	}
+
+	private void updateLabelTransform() {
+		labelTransformation.set(multiply(showable.transformation(), getScaling(
+			showable.interval(), labelingHolder.get().interval())));
 	}
 
 	private AffineTransform3D multiply(AffineTransform3D transformation,
@@ -73,6 +78,7 @@ public class ImageLabelingModel implements LabelingModel {
 	}
 
 	private void labelingReplacedEvent(Labeling labeling) {
+		updateLabelTransform();
 		String selectedLabel = selectedLabelHolder.get();
 		List<String> labels = labelingHolder.get().getLabels();
 		if (!labels.contains(selectedLabel)) selectedLabelHolder.set(labels
@@ -88,6 +94,11 @@ public class ImageLabelingModel implements LabelingModel {
 	@Override
 	public AffineTransform3D labelTransformation() {
 		return labelTransformation;
+	}
+
+	@Override
+	public String defaultFileName() {
+		return defaultFileName;
 	}
 
 	@Override
@@ -151,34 +162,5 @@ public class ImageLabelingModel implements LabelingModel {
 
 	public Holder<Set<String>> activeLabels() {
 		return activeLabels;
-	}
-
-	private static class CheckedHolder implements Holder<Labeling> {
-
-		Notifier<Consumer<Labeling>> notifier = new Notifier<>();
-
-		Labeling value;
-
-		CheckedHolder(Labeling value) {
-			this.value = value;
-		}
-
-		@Override
-		public void set(Labeling value) {
-			if (!Intervals.equals(value, this.value))
-				throw new IllegalArgumentException();
-			this.value = value;
-			notifier.forEach(listener -> listener.accept(value));
-		}
-
-		@Override
-		public Labeling get() {
-			return value;
-		}
-
-		@Override
-		public Notifier<Consumer<Labeling>> notifier() {
-			return notifier;
-		}
 	}
 }

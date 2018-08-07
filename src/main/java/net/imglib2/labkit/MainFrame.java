@@ -7,6 +7,7 @@ import net.imglib2.labkit.actions.SetLabelsAction;
 import net.imglib2.labkit.inputimage.DatasetInputImage;
 import net.imglib2.labkit.inputimage.InputImage;
 import net.imglib2.labkit.labeling.Labeling;
+import net.imglib2.labkit.models.DefaultSegmentationModel;
 import net.imglib2.trainable_segmention.RevampUtils;
 import org.scijava.Context;
 
@@ -24,15 +25,11 @@ public class MainFrame {
 
 	private JFrame frame = initFrame();
 
-	public static MainFrame open(Context context, String filename,
-		boolean isTimeSeries)
-	{
+	public static MainFrame open(Context context, String filename) {
 		final Context context2 = (context == null) ? new Context() : context;
 		Dataset dataset = RevampUtils.wrapException(() -> context2.service(
 			DatasetIOService.class).open(filename));
-		DatasetInputImage inputImage = new DatasetInputImage(dataset);
-		inputImage.setTimeSeries(isTimeSeries);
-		return new MainFrame(context2, inputImage);
+		return new MainFrame(context2, new DatasetInputImage(dataset));
 	}
 
 	public MainFrame(final Context context, final InputImage inputImage) {
@@ -50,8 +47,11 @@ public class MainFrame {
 	private SegmentationComponent initSegmentationComponent(Context context,
 		InputImage inputImage, Labeling initialLabeling)
 	{
+		DefaultSegmentationModel segmentationModel = new DefaultSegmentationModel(
+			inputImage, context);
+		segmentationModel.imageLabelingModel().labeling().set(initialLabeling);
 		SegmentationComponent segmentationComponent = new SegmentationComponent(
-			context, frame, inputImage, initialLabeling, false);
+			context, frame, segmentationModel, false);
 		frame.add(segmentationComponent.getComponent());
 		frame.addWindowListener(new WindowAdapter() {
 

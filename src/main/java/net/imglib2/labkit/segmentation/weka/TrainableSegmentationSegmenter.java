@@ -170,7 +170,7 @@ public class TrainableSegmentationSegmenter implements Segmenter {
 		RandomAccessibleInterval<?> image)
 	{
 		return cachedFeatureBlock(feature, Views.extendBorder(image), LabkitUtils
-			.suggestGrid(image, false));
+			.suggestGrid(feature.outputIntervalFromInput(image), false));
 	}
 
 	private static Img<FloatType> cachedFeatureBlock(FeatureCalculator feature,

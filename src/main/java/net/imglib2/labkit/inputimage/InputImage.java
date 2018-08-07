@@ -35,4 +35,7 @@ public interface InputImage {
 
 	boolean isTimeSeries();
 
+	default boolean isMultiChannel() {
+		return false;
+	}
 }

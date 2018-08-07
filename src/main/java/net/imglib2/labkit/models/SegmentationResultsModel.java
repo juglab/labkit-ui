@@ -114,7 +114,7 @@ public class SegmentationResultsModel {
 	}
 
 	public Interval interval() {
-		return new FinalInterval(model.image());
+		return new FinalInterval(model.grid().getImgDimensions());
 	}
 
 	public List<ARGBType> colors() {

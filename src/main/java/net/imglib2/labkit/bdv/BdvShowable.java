@@ -5,6 +5,7 @@ import bdv.util.BdvOptions;
 import bdv.util.BdvSource;
 import bdv.viewer.Source;
 import mpicbg.spim.data.generic.AbstractSpimData;
+import net.imagej.ImgPlus;
 import net.imglib2.Interval;
 import net.imglib2.RandomAccessibleInterval;
 import net.imglib2.realtransform.AffineTransform3D;
@@ -25,6 +26,10 @@ public interface BdvShowable {
 		AffineTransform3D transformation)
 	{
 		return new SimpleBdvShowable(Objects.requireNonNull(image), transformation);
+	}
+
+	static BdvShowable wrap(ImgPlus<? extends NumericType<?>> image) {
+		return new ImgPlusBdvShowable(image);
 	}
 
 	static BdvShowable wrap(AbstractSpimData<?> spimData) {
