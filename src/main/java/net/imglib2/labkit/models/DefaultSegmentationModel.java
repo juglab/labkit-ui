@@ -1,6 +1,7 @@
 
 package net.imglib2.labkit.models;
 
+import jdk.nashorn.internal.scripts.JO;
 import net.imglib2.RandomAccessibleInterval;
 import net.imglib2.img.cell.CellGrid;
 import net.imglib2.img.cell.CellImgFactory;
@@ -18,10 +19,12 @@ import net.imglib2.type.numeric.IntegerType;
 import net.imglib2.type.numeric.real.FloatType;
 import org.scijava.Context;
 
+import javax.swing.*;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.concurrent.CancellationException;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -110,8 +113,16 @@ public class DefaultSegmentationModel implements SegmentationModel,
 
 	@Override
 	public void train(SegmentationItem item) {
-		item.segmenter().train(Collections.singletonList(image()), Collections
-			.singletonList(labeling()));
+		try {
+			item.segmenter().train(Collections.singletonList(image()),
+					Collections.singletonList(labeling()));
+		} catch (CancellationException e) {
+			JOptionPane.showMessageDialog(null, e.getMessage(), "Training Cancelled",
+					JOptionPane.PLAIN_MESSAGE);
+		} catch (Exception e) {
+			JOptionPane.showMessageDialog(null, e.toString(), "Training Failed",
+					JOptionPane.WARNING_MESSAGE);
+		}
 	}
 
 	@Override
