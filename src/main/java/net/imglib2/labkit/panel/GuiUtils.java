@@ -5,6 +5,7 @@ import net.imglib2.Dimensions;
 import net.imglib2.util.Intervals;
 import net.miginfocom.swing.MigLayout;
 import org.scijava.ui.behaviour.DragBehaviour;
+import org.scijava.ui.behaviour.util.RunnableAction;
 
 import javax.swing.*;
 import java.awt.*;
@@ -26,7 +27,7 @@ public class GuiUtils {
 		JButton button = new JButton(action);
 		button.setText(name);
 		if (icon != "") {
-			button.setIcon(new ImageIcon(GuiUtils.class.getResource(icon)));
+			button.setIcon(loadIcon(icon));
 			button.setIconTextGap(5);
 			button.setMargin(new Insets(button.getMargin().top, 3, button
 				.getMargin().bottom, button.getMargin().right));
@@ -68,16 +69,11 @@ public class GuiUtils {
 	}
 
 	public static JCheckBox styleCheckboxUsingEye(JCheckBox checkbox) {
-		checkbox.setIcon(new ImageIcon(GuiUtils.class.getResource(
-			"/images/invisible.png")));
-		checkbox.setSelectedIcon(new ImageIcon(GuiUtils.class.getResource(
-			"/images/visible.png")));
-		checkbox.setPressedIcon(new ImageIcon(GuiUtils.class.getResource(
-			"/images/visible-hover.png")));
-		checkbox.setRolloverIcon(new ImageIcon(GuiUtils.class.getResource(
-			"/images/invisible-hover.png")));
-		checkbox.setRolloverSelectedIcon(new ImageIcon(GuiUtils.class.getResource(
-			"/images/visible-hover.png")));
+		checkbox.setIcon(loadIcon("invisible.png"));
+		checkbox.setSelectedIcon(loadIcon("visible.png"));
+		checkbox.setPressedIcon(loadIcon("visible-hover.png"));
+		checkbox.setRolloverIcon(loadIcon("invisible-hover.png"));
+		checkbox.setRolloverSelectedIcon(loadIcon("visible-hover.png"));
 		checkbox.setFocusable(false);
 		return checkbox;
 	}
@@ -113,5 +109,28 @@ public class GuiUtils {
 		label.setOpaque(true);
 		panel.add(label, "grow, span");
 		return panel;
+	}
+
+	public static JButton createIconButton(Action action) {
+		JButton result = new JButton(action);
+		result.setText("");
+		result.setBorder(BorderFactory.createEmptyBorder());
+		result.setContentAreaFilled(false);
+		result.setOpaque(false);
+		return result;
+	}
+
+	public static RunnableAction createAction(String title, Runnable action,
+			String iconPath)
+	{
+		RunnableAction result = new RunnableAction(title, action);
+		final ImageIcon icon = loadIcon(iconPath);
+		result.putValue( Action.SMALL_ICON, icon );
+		result.putValue( Action.LARGE_ICON_KEY, icon );
+		return result;
+	}
+
+	public static ImageIcon loadIcon(String iconPath) {
+		return new ImageIcon(GuiUtils.class.getResource("/images/" + iconPath));
 	}
 }

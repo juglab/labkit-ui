@@ -7,7 +7,6 @@ import net.miginfocom.swing.MigLayout;
 import org.scijava.ui.behaviour.util.RunnableAction;
 
 import javax.swing.*;
-import java.awt.*;
 
 public class SegmenterPanel {
 
@@ -39,7 +38,7 @@ public class SegmenterPanel {
 			"Add classifier", () -> {
 				segmentationModel.addSegmenter();
 				updateList();
-			}), "/images/add.png");
+			}), "add.png");
 	}
 
 	private void updateList() {
@@ -52,26 +51,18 @@ public class SegmenterPanel {
 	private class EntryPanel extends JPanel {
 
 		private final SegmentationItem item;
+		private final RunnableAction settingsAction = GuiUtils.createAction(
+				"Settings ...", this::showSettings, "gear.png");
+		private final RunnableAction trainAction = GuiUtils.createAction(
+				"Train", this::runTraining, "run.png");
 
 		private EntryPanel(SegmentationItem item) {
 			this.item = item;
 			setLayout(new MigLayout("inset 4, gap 4, fillx"));
 			add(new JLabel(item.toString()), "push");
 			add(initPopupMenuButton());
-			add(initTrainButton());
-		}
-
-		private JButton initTrainButton() {
-			JButton button = new JButton("train");
-			button.setBorder(BorderFactory.createLineBorder(Color.gray));
-			button.setContentAreaFilled(false);
-			button.setOpaque(false);
-			button.addActionListener(a -> {
-				((SegmenterListModel) segmentationModel).selectedSegmenter().set(item);
-				((SegmenterListModel) segmentationModel).train(item);
-				updateList();
-			});
-			return button;
+			add(GuiUtils.createIconButton(settingsAction));
+			add(GuiUtils.createIconButton(trainAction));
 		}
 
 		private JButton initPopupMenuButton() {
@@ -88,24 +79,28 @@ public class SegmenterPanel {
 
 		private JPopupMenu initPopupMenu() {
 			JPopupMenu menu = new JPopupMenu();
-			menu.add(settingsMenuItem());
+			menu.add(new JMenuItem(settingsAction));
+			menu.add(new JMenuItem(trainAction));
 			menu.add(removeMenuItem());
 			return menu;
 		}
 
-		private JMenuItem settingsMenuItem() {
-			JMenuItem result = new JMenuItem("Settings ...");
-			result.addActionListener(a -> item.segmenter().editSettings(null));
-			return result;
-		}
-
 		private JMenuItem removeMenuItem() {
-			JMenuItem result = new JMenuItem("remove");
-			result.addActionListener(a -> {
+			final Runnable runnable = () -> {
 				((SegmenterListModel) segmentationModel).remove(item);
 				updateList();
-			});
-			return result;
+			};
+			return new JMenuItem( GuiUtils.createAction("Remove", runnable,"remove.png"));
+		}
+
+		private void showSettings() {
+			item.segmenter().editSettings(null);
+		}
+
+		private void runTraining() {
+			((SegmenterListModel) segmentationModel).selectedSegmenter().set(item);
+			((SegmenterListModel) segmentationModel).train(item);
+			updateList();
 		}
 
 	}
