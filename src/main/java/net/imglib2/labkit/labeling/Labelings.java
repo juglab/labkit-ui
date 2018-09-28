@@ -5,15 +5,10 @@ import net.imglib2.Cursor;
 import net.imglib2.Interval;
 import net.imglib2.RandomAccess;
 import net.imglib2.RandomAccessibleInterval;
-import net.imglib2.roi.labeling.ImgLabeling;
-import net.imglib2.roi.labeling.LabelingMapping;
 import net.imglib2.trainable_segmention.RevampUtils;
-import net.imglib2.type.numeric.IntegerType;
 import net.imglib2.view.Views;
 
-import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -26,8 +21,8 @@ public class Labelings {
 		Interval sliceInterval = RevampUtils.removeLastDimension(labeling);
 		List<String> labels = labeling.getLabels();
 		List<Labeling> slices = IntStream.range(0, Math.toIntExact(labeling
-			.dimension(sliceDimension))).mapToObj(ignore -> new Labeling(labels,
-				sliceInterval)).collect(Collectors.toList());
+			.dimension(sliceDimension))).mapToObj(ignore -> Labeling.createEmpty(
+				labels, sliceInterval)).collect(Collectors.toList());
 		sparseCopy(labeling, Views.stack(slices));
 		return slices;
 	}
@@ -54,7 +49,7 @@ public class Labelings {
 	public static Labeling singleton(Interval interval, String label,
 		long... coordinates)
 	{
-		Labeling labeling = new Labeling(Collections.singletonList(label),
+		Labeling labeling = Labeling.createEmpty(Collections.singletonList(label),
 			interval);
 		RandomAccess<Set<String>> ra = labeling.randomAccess();
 		ra.setPosition(coordinates);

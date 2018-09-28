@@ -21,7 +21,7 @@ public class LabelingTest {
 
 	@Test
 	public void testAddLabel() {
-		Labeling labeling = new Labeling(Collections.emptyList(), interval);
+		Labeling labeling = Labeling.createEmpty(Collections.emptyList(), interval);
 		String label = "foobar";
 		labeling.addLabel(label);
 		assertTrue(labeling.getLabels().contains(label));
@@ -29,7 +29,7 @@ public class LabelingTest {
 
 	@Test
 	public void testRemoveLabel() {
-		Labeling labeling = new Labeling(Arrays.asList("f", "b"), interval);
+		Labeling labeling = Labeling.createEmpty(Arrays.asList("f", "b"), interval);
 		long[] position = { 0, 0 };
 		addPixelLabel(labeling, "f", position);
 		addPixelLabel(labeling, "b", position);
@@ -43,8 +43,8 @@ public class LabelingTest {
 	@Test
 	public void testRenameLabel() {
 		// setup
-		Labeling labeling = new Labeling(Arrays.asList("foreground", "background"),
-			interval);
+		Labeling labeling = Labeling.createEmpty(Arrays.asList("foreground",
+			"background"), interval);
 		addPixelLabel(labeling, "foreground", 0, 0);
 		addPixelLabel(labeling, "background", 1, 1);
 		// process
@@ -72,8 +72,8 @@ public class LabelingTest {
 	@Test
 	public void testRenameLabel2() {
 		// setup
-		Labeling labeling = new Labeling(Arrays.asList("foreground", "background"),
-			interval);
+		Labeling labeling = Labeling.createEmpty(Arrays.asList("foreground",
+			"background"), interval);
 		// process
 		labeling.renameLabel("foreground", "fg");
 		// test

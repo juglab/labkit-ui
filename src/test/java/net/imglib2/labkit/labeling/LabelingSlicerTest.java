@@ -63,7 +63,7 @@ public class LabelingSlicerTest {
 
 	private Labeling wrapLabeling(RandomAccessibleInterval<Set<String>> stack) {
 		List<String> labels = getLabels(stack);
-		Labeling joined = new Labeling(labels, (Interval) stack);
+		Labeling joined = Labeling.createEmpty(labels, (Interval) stack);
 		copy(stack, joined);
 		return joined;
 	}

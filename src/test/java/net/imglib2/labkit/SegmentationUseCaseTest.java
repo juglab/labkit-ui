@@ -97,7 +97,7 @@ public class SegmentationUseCaseTest {
 	private Labeling getLabeling() {
 		List<String> labels = Arrays.asList("f", "b");
 		Interval interval = new FinalInterval(2, 2);
-		Labeling labeling = new Labeling(labels, interval);
+		Labeling labeling = Labeling.createEmpty(labels, interval);
 		RandomAccess<Set<String>> ra = labeling.randomAccess();
 		ra.setPosition(new long[] { 0, 0 });
 		ra.get().add("f");

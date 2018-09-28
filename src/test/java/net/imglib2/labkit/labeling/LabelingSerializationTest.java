@@ -59,7 +59,7 @@ public class LabelingSerializationTest {
 		Map<String, IterableRegion<BitType>> regions = new TreeMap<>();
 		regions.put("A", region1);
 		regions.put("B", region2);
-		return new Labeling(regions, region1);
+		return Labeling.fromMap(regions);
 	}
 
 	private static IterableRegion<BitType> exampleRegion(long... position) {

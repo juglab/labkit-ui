@@ -1,7 +1,6 @@
 
 package net.imglib2.labkit.models;
 
-import jdk.nashorn.internal.scripts.JO;
 import net.imglib2.RandomAccessibleInterval;
 import net.imglib2.img.cell.CellGrid;
 import net.imglib2.img.cell.CellImgFactory;
@@ -44,8 +43,8 @@ public class DefaultSegmentationModel implements SegmentationModel,
 	private final CellGrid grid;
 
 	public DefaultSegmentationModel(InputImage inputImage, Context context) {
-		Labeling labeling = new Labeling(Arrays.asList("background", "foreground"),
-			inputImage.interval());
+		Labeling labeling = Labeling.createEmpty(Arrays.asList("background",
+			"foreground"), inputImage.interval());
 		this.imageLabelingModel = new ImageLabelingModel(inputImage.showable(),
 			labeling, inputImage.isTimeSeries(), inputImage
 				.getDefaultLabelingFilename());

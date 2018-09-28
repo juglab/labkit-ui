@@ -74,7 +74,7 @@ public class LabelingSerializer {
 
 	private Labeling openFromTiff(String filename) throws IOException {
 		ImgLabeling<String, ?> imgLabeling = openImgLabelingFromTiff(filename);
-		return new Labeling(imgLabeling);
+		return Labeling.fromImgLabeling(imgLabeling);
 	}
 
 	public ImgLabeling<String, ?> openImgLabelingFromTiff(String filename)
@@ -251,7 +251,7 @@ public class LabelingSerializer {
 				object.getAsJsonObject("labels").entrySet().forEach(entry -> regions
 					.put(entry.getKey(), regionFromJson(context, interval, entry
 						.getValue())));
-				Labeling labeling = new Labeling(regions, interval);
+				Labeling labeling = Labeling.fromMap(regions);
 				labeling.setAxes(pixelSizesToAxes(axes));
 				return labeling;
 			}

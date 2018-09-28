@@ -35,7 +35,7 @@ public class InitialLabeling {
 			System.err.println(e.getMessage());
 		}
 		Interval interval = inputImage.interval();
-		Labeling labeling = new Labeling(defaultLabels, askShrinkInterval(
+		Labeling labeling = Labeling.createEmpty(defaultLabels, askShrinkInterval(
 			interval));
 		labeling.setAxes(scaledAxes(getIntegerScale(labeling.interval(), interval)
 			.getAsInt(), inputImage.axes()));

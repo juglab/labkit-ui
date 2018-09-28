@@ -20,6 +20,7 @@ import net.imglib2.type.BooleanType;
 import net.imglib2.type.logic.BitType;
 import net.imglib2.type.numeric.IntegerType;
 import net.imglib2.util.ConstantUtils;
+import net.imglib2.util.Intervals;
 import net.imglib2.view.Views;
 
 import java.util.*;
@@ -38,19 +39,25 @@ public class Labeling extends AbstractWrappedInterval implements
 	private List<String> labels;
 	private List<CalibratedAxis> axes;
 
-	public Labeling(Map<String, IterableRegion<BitType>> regions,
-		Interval interval)
-	{
-		this(new ArrayList<>(regions.keySet()), initImgLabling(regions, interval));
+	public static Labeling createEmpty(List<String> labels, Interval interval) {
+		return new Labeling(labels, new ImgLabeling<>(new SparseRandomAccessIntType(
+			interval)));
 	}
 
-	public Labeling(ImgLabeling<String, ?> imgLabeling) {
-		this(new ArrayList<>(imgLabeling.getMapping().getLabels()), imgLabeling);
+	public static Labeling fromImgLabeling(ImgLabeling<String, ?> imgLabeling) {
+		return new Labeling(new ArrayList<>(imgLabeling.getMapping().getLabels()),
+			imgLabeling);
+	}
+
+	public static Labeling fromMap(Map<String, IterableRegion<BitType>> regions) {
+		return new Labeling(new ArrayList<>(regions.keySet()), initImgLabling(
+			regions));
 	}
 
 	private static ImgLabeling<String, ?> initImgLabling(
-		Map<String, IterableRegion<BitType>> regions, Interval interval)
+		Map<String, IterableRegion<BitType>> regions)
 	{
+		Interval interval = getInterval(regions);
 		ImgLabeling<String, ?> imgLabeling = new ImgLabeling<>(
 			new SparseRandomAccessIntType(interval));
 		RandomAccess<LabelingType<String>> ra = imgLabeling.randomAccess();
@@ -65,7 +72,17 @@ public class Labeling extends AbstractWrappedInterval implements
 		return imgLabeling;
 	}
 
-	public Labeling(List<String> labels, ImgLabeling<String, ?> labeling) {
+	private static Interval getInterval(
+		Map<String, IterableRegion<BitType>> regions)
+	{
+		Interval result = new FinalInterval(regions.values().iterator().next());
+		for (Interval interval : regions.values())
+			if (!Intervals.equals(result, interval))
+				throw new IllegalArgumentException("Intervals must match");
+		return result;
+	}
+
+	private Labeling(List<String> labels, ImgLabeling<String, ?> labeling) {
 		super(labeling);
 		this.imgLabeling = labeling;
 		this.labels = new ArrayList<>(labels);
@@ -75,10 +92,6 @@ public class Labeling extends AbstractWrappedInterval implements
 	private List<CalibratedAxis> initAxes(int i) {
 		return IntStream.range(0, i).mapToObj(ignore -> new DefaultLinearAxis())
 			.collect(Collectors.toList());
-	}
-
-	public Labeling(List<String> labels, Interval interval) {
-		this(labels, new ImgLabeling<>(new SparseRandomAccessIntType(interval)));
 	}
 
 	public Interval interval() {
