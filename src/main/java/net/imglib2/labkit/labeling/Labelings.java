@@ -61,33 +61,4 @@ public class Labelings {
 		ra.get().add(label);
 		return labeling;
 	}
-
-	public static Labeling of(ImgLabeling<String, ?> input) {
-		return new Labeling(toSortedList(getExistingLabels(input)), input);
-	}
-
-	private static List<String> toSortedList(Set<String> labels) {
-		List<String> labelsList = new ArrayList<>(labels);
-		labelsList.sort(String::compareTo);
-		return labelsList;
-	}
-
-	private static Set<String> getExistingLabels(ImgLabeling<String, ?> input) {
-		HashSet<IntegerType<?>> values = existingValues(
-			(RandomAccessibleInterval) input.getIndexImg());
-		LabelingMapping<String> mapping = input.getMapping();
-		Set<String> labels = new HashSet<>();
-		for (IntegerType<?> index : values)
-			labels.addAll(mapping.labelsAtIndex(index.getInteger()));
-		return labels;
-	}
-
-	private static <T extends IntegerType<T>> HashSet<T> existingValues(
-		RandomAccessibleInterval<T> indexImg)
-	{
-		HashSet<T> values = new HashSet<>();
-		for (T value : Views.iterable(indexImg))
-			if (!values.contains(value)) values.add(value.copy());
-		return values;
-	}
 }
