@@ -24,7 +24,7 @@ public class BitmapModel {
 	}
 
 	public ARGBType color() {
-		return model.colorMapProvider().colorMap().getColor(label().name());
+		return label().color();
 	}
 
 	public RandomAccessibleInterval<BitType> bitmap() {

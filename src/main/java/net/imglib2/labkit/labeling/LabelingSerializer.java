@@ -73,11 +73,11 @@ public class LabelingSerializer {
 	}
 
 	private Labeling openFromTiff(String filename) throws IOException {
-		ImgLabeling<Label, ?> imgLabeling = openImgLabelingFromTiff(filename);
+		ImgLabeling<String, ?> imgLabeling = openImgLabelingFromTiff(filename);
 		return Labeling.fromImgLabeling(imgLabeling);
 	}
 
-	public ImgLabeling<Label, ?> openImgLabelingFromTiff(String filename)
+	public ImgLabeling<String, ?> openImgLabelingFromTiff(String filename)
 		throws IOException
 	{
 		Img<? extends IntegerType<?>> img = openImageFromTiff(filename);
@@ -165,9 +165,8 @@ public class LabelingSerializer {
 				.collect(Collectors.toSet())).collect(Collectors.toList());
 		}
 
-		public List<Set<Label>> asLabelSets() {
-			return labelSets.stream().map(set -> set.stream().map(Label::new).collect(
-				Collectors.toSet())).collect(Collectors.toList());
+		public List<Set<String>> asLabelSets() {
+			return labelSets;
 		}
 	}
 

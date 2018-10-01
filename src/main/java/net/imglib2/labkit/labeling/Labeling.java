@@ -6,6 +6,7 @@ import net.imagej.axis.CalibratedAxis;
 import net.imagej.axis.DefaultLinearAxis;
 import net.imglib2.*;
 import net.imglib2.RandomAccess;
+import net.imglib2.labkit.color.ColorSupplier;
 import net.imglib2.labkit.utils.LabkitUtils;
 import net.imglib2.converter.Converter;
 import net.imglib2.converter.Converters;
@@ -39,11 +40,12 @@ public class Labeling extends AbstractWrappedInterval<Interval> implements
 	private final ImgLabeling<Label, ?> imgLabeling;
 	private List<Label> labels;
 	private List<CalibratedAxis> axes;
+	private ColorSupplier colorSupplier;
 
 	public static Labeling createEmpty(List<String> labels, Interval interval) {
-		List<Label> labelObjects = labels.stream().map(Label::new).collect(
-			Collectors.toList());
-		return createEmptyLabels(labelObjects, interval);
+		Labeling result = createEmptyLabels(Collections.emptyList(), interval);
+		labels.forEach(result::addLabel);
+		return result;
 	}
 
 	public static Labeling createEmptyLabels(List<Label> labels,
@@ -51,21 +53,25 @@ public class Labeling extends AbstractWrappedInterval<Interval> implements
 	{
 		final ImgLabeling<Label, IntType> imgLabeling = new ImgLabeling<>(
 			new SparseRandomAccessIntType(interval));
-		return new Labeling(labels, imgLabeling);
+		return new Labeling(labels, imgLabeling, new ColorSupplier());
 	}
 
-	public static Labeling fromImgLabeling(ImgLabeling<Label, ?> imgLabeling) {
-		return new Labeling(new ArrayList<>(imgLabeling.getMapping().getLabels()),
-			imgLabeling);
+	public static Labeling fromImgLabeling(ImgLabeling<String, ?> imgLabeling) {
+		ColorSupplier colors = new ColorSupplier();
+		ImgLabeling<Label, ?> labelsImgLabeling = Labelings.mapLabels(imgLabeling,
+			name -> new Label(name, colors.get()));
+		return new Labeling(new ArrayList<>(labelsImgLabeling.getMapping()
+			.getLabels()), labelsImgLabeling, colors);
 	}
 
 	public static Labeling fromMap(Map<String, IterableRegion<BitType>> regions) {
+		ColorSupplier colors = new ColorSupplier();
 		Map<Label, IterableRegion<BitType>> regions2 = regions.entrySet().stream()
-			.collect(Collectors.toMap(entry -> new Label(entry.getKey()),
-				Map.Entry::getValue));
+			.collect(Collectors.toMap(entry -> new Label(entry.getKey(), colors
+				.get()), Map.Entry::getValue));
 		final ArrayList<Label> labels = new ArrayList<>(regions2.keySet());
 		final ImgLabeling<Label, ?> imgLabling = initImgLabling(regions2);
-		return new Labeling(labels, imgLabling);
+		return new Labeling(labels, imgLabling, colors);
 	}
 
 	private static ImgLabeling<Label, ?> initImgLabling(
@@ -96,10 +102,13 @@ public class Labeling extends AbstractWrappedInterval<Interval> implements
 		return result;
 	}
 
-	private Labeling(List<Label> labels, ImgLabeling<Label, ?> labeling) {
+	private Labeling(List<Label> labels, ImgLabeling<Label, ?> labeling,
+		ColorSupplier colorSupplier)
+	{
 		super(labeling);
 		this.imgLabeling = labeling;
 		this.labels = new ArrayList<>(labels);
+		this.colorSupplier = colorSupplier;
 		this.axes = initAxes(labeling.numDimensions());
 	}
 
@@ -195,7 +204,7 @@ public class Labeling extends AbstractWrappedInterval<Interval> implements
 
 	public Label addLabel(String label) {
 		Objects.requireNonNull(label);
-		final Label e = new Label(label);
+		final Label e = new Label(label, colorSupplier.get());
 		labels.add(e);
 		return e;
 	}

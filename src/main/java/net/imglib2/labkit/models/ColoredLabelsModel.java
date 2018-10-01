@@ -1,17 +1,9 @@
 
 package net.imglib2.labkit.models;
 
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.List;
-import java.util.Set;
-import java.util.function.Function;
-import java.util.stream.Collectors;
-
 import net.imglib2.Cursor;
 import net.imglib2.FinalInterval;
 import net.imglib2.Interval;
-import net.imglib2.labkit.color.ColorMap;
 import net.imglib2.labkit.labeling.Label;
 import net.imglib2.labkit.labeling.Labeling;
 import net.imglib2.labkit.utils.Notifier;
@@ -19,6 +11,13 @@ import net.imglib2.roi.IterableRegion;
 import net.imglib2.trainable_segmention.RevampUtils;
 import net.imglib2.type.logic.BitType;
 import net.imglib2.type.numeric.ARGBType;
+
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.List;
+import java.util.Set;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 public class ColoredLabelsModel {
 
@@ -36,13 +35,8 @@ public class ColoredLabelsModel {
 		listeners.forEach(Runnable::run);
 	}
 
-	public List<ColoredLabel> items() {
-		List<ColoredLabel> result = new ArrayList<>();
-		ColorMap colors = model.colorMapProvider().colorMap();
-		List<Label> labels = model.labeling().get().getLabels();
-		labels.forEach(label -> result.add(new ColoredLabel(label, colors.getColor(
-			label.name()))));
-		return result;
+	public List<Label> items() {
+		return model.labeling().get().getLabels();
 	}
 
 	public Label selected() {
@@ -80,8 +74,6 @@ public class ColoredLabelsModel {
 		Holder<Labeling> holder = model.labeling();
 		Labeling labeling = holder.get();
 		holder.get().renameLabel(label, newLabel);
-		ARGBType color = model.colorMapProvider().colorMap().getColor(label.name());
-		model.colorMapProvider().colorMap().setColor(newLabel, color);
 		holder.notifier().forEach(l -> l.accept(labeling));
 	}
 
@@ -99,15 +91,11 @@ public class ColoredLabelsModel {
 		return model.activeLabels();
 	}
 
-	public void setColor(String label, ARGBType newColor) {
+	public void setColor(Label label, ARGBType newColor) {
 		Holder<Labeling> holder = model.labeling();
 		Labeling labeling = holder.get();
-		model.colorMapProvider().colorMap().setColor(label, newColor);
+		label.setColor(newColor);
 		holder.notifier().forEach(l -> l.accept(labeling));
-	}
-
-	public ARGBType getColor(String label) {
-		return model.colorMapProvider().colorMap().getColor(label);
 	}
 
 	private String suggestName(List<String> labels) {

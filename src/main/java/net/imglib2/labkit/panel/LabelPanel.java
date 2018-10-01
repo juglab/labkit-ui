@@ -2,7 +2,6 @@
 package net.imglib2.labkit.panel;
 
 import net.imglib2.labkit.labeling.Label;
-import net.imglib2.labkit.models.ColoredLabel;
 import net.imglib2.labkit.models.ColoredLabelsModel;
 import net.imglib2.type.numeric.ARGBType;
 import net.miginfocom.swing.MigLayout;
@@ -14,6 +13,7 @@ import java.awt.*;
 import java.awt.event.ItemEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
@@ -44,9 +44,8 @@ public class LabelPanel {
 
 	private void update() {
 		list.clear();
-		List<ColoredLabel> items = model.items();
-		items.forEach((label) -> list.add(label.label, new EntryPanel(label.label,
-			label.color)));
+		List<Label> items = model.items();
+		items.forEach((label) -> list.add(label, new EntryPanel(label)));
 		list.setSelected(model.selected());
 	}
 
@@ -85,8 +84,8 @@ public class LabelPanel {
 	}
 
 	private void removeAllLabels() {
-		List<ColoredLabel> items = model.items();
-		items.forEach((label) -> model.removeLabel(label.label));
+		List<Label> items = new ArrayList<>(model.items());
+		items.forEach(model::removeLabel);
 	}
 
 	private void clearLabel(Label label) {
@@ -110,12 +109,12 @@ public class LabelPanel {
 	}
 
 	private void changeColor(Label label) {
-		ARGBType color = model.getColor(label.name());
+		ARGBType color = label.color();
 		Color newColor = JColorChooser.showDialog(dialogParent,
 			"Choose Color for Label \"" + label.name() + "\"", new Color(color
 				.get()));
 		if (newColor == null) return;
-		model.setColor(label.name(), new ARGBType(newColor.getRGB()));
+		model.setColor(label, new ARGBType(newColor.getRGB()));
 	}
 
 	private void localize(Label label) {
@@ -125,10 +124,10 @@ public class LabelPanel {
 	// -- Helper methods --
 	private class EntryPanel extends JPanel {
 
-		EntryPanel(Label value, ARGBType color) {
+		EntryPanel(Label value) {
 			setOpaque(true);
 			setLayout(new MigLayout("insets 4pt, gap 4pt, fillx"));
-			add(initColorButton(value, color));
+			add(initColorButton(value));
 			add(new JLabel(value.name()), "push");
 			JPopupMenu menu = initPopupMenu(value);
 			add(initPopupMenuButton(menu));
@@ -186,10 +185,10 @@ public class LabelPanel {
 			return menu;
 		}
 
-		private JButton initColorButton(Label value, ARGBType color) {
+		private JButton initColorButton(Label value) {
 			JButton colorButton = new JButton();
 			colorButton.setBorder(new EmptyBorder(1, 1, 1, 1));
-			colorButton.setIcon(GuiUtils.createIcon(new Color(color.get())));
+			colorButton.setIcon(GuiUtils.createIcon(new Color(value.color().get())));
 			colorButton.addActionListener(l -> changeColor(value));
 			return colorButton;
 		}

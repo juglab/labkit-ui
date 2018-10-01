@@ -8,7 +8,6 @@ import net.imglib2.RandomAccessibleInterval;
 import net.imglib2.labkit.bdv.BdvShowable;
 import net.imglib2.labkit.labeling.Label;
 import net.imglib2.labkit.utils.Notifier;
-import net.imglib2.labkit.color.ColorMapProvider;
 import net.imglib2.labkit.labeling.Labeling;
 import net.imglib2.realtransform.AffineTransform3D;
 import net.imglib2.type.numeric.NumericType;
@@ -21,8 +20,6 @@ import java.util.stream.IntStream;
 public class ImageLabelingModel implements LabelingModel {
 
 	private final AffineTransform3D labelTransformation = new AffineTransform3D();
-
-	private ColorMapProvider colorProvider;
 
 	private Holder<Labeling> labelingHolder;
 
@@ -61,7 +58,6 @@ public class ImageLabelingModel implements LabelingModel {
 		this.activeLabels = new DefaultHolder<>(new HashSet<>(labeling
 			.getLabels()));
 		this.defaultFileName = defaultFileName;
-		colorProvider = new ColorMapProvider(labelingHolder);
 	}
 
 	private void updateLabelTransform() {
@@ -100,11 +96,6 @@ public class ImageLabelingModel implements LabelingModel {
 	@Override
 	public String defaultFileName() {
 		return defaultFileName;
-	}
-
-	@Override
-	public ColorMapProvider colorMapProvider() {
-		return colorProvider;
 	}
 
 	@Override
