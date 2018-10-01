@@ -2,6 +2,7 @@
 package net.imglib2.labkit.models;
 
 import net.imglib2.RandomAccessibleInterval;
+import net.imglib2.labkit.labeling.Label;
 import net.imglib2.realtransform.AffineTransform3D;
 import net.imglib2.type.logic.BitType;
 import net.imglib2.type.numeric.ARGBType;
@@ -18,16 +19,16 @@ public class BitmapModel {
 		return label() != null;
 	}
 
-	public String label() {
+	public Label label() {
 		return model.selectedLabel().get();
 	}
 
 	public ARGBType color() {
-		return model.colorMapProvider().colorMap().getColor(label());
+		return model.colorMapProvider().colorMap().getColor(label().name());
 	}
 
 	public RandomAccessibleInterval<BitType> bitmap() {
-		return model.labeling().get().regions().get(label());
+		return model.labeling().get().getRegion(label());
 	}
 
 	public void fireBitmapChanged() {

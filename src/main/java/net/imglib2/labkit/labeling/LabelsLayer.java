@@ -51,7 +51,7 @@ public class LabelsLayer implements BdvLayer {
 	private RandomAccessibleInterval<ARGBType> colorView() {
 		Labeling labeling = model.labeling().get();
 		ColorMap colorMap = model.colorMapProvider().colorMap();
-		List<Set<String>> labelSets = labeling.getLabelSets();
+		List<Set<Label>> labelSets = labeling.getLabelSets();
 		TIntObjectMap<ARGBType> colors = new TIntObjectHashMap<>();
 
 		return Converters.convert(labeling.getIndexImg(), (in, out) -> {
@@ -65,12 +65,12 @@ public class LabelsLayer implements BdvLayer {
 		}, new ARGBType());
 	}
 
-	private ARGBType getColor(ColorMap colorMap, Set<String> set) {
-		List<String> visible = set.stream().filter(model.activeLabels()
+	private ARGBType getColor(ColorMap colorMap, Set<Label> set) {
+		List<Label> visible = set.stream().filter(model.activeLabels()
 			.get()::contains).collect(Collectors.toList());
 		if (visible.isEmpty()) return BLACK;
 		ARGBVector collector = new ARGBVector();
-		visible.forEach(label -> collector.add(colorMap.getColor(label)));
+		visible.forEach(label -> collector.add(colorMap.getColor(label.name())));
 		collector.div(visible.size());
 		return collector.get();
 	}

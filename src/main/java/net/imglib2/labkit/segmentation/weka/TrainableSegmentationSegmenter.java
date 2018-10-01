@@ -13,6 +13,7 @@ import net.imglib2.cache.img.DiskCachedCellImgFactory;
 import net.imglib2.cache.img.DiskCachedCellImgOptions;
 import net.imglib2.img.Img;
 import net.imglib2.img.cell.CellGrid;
+import net.imglib2.labkit.labeling.Label;
 import net.imglib2.labkit.segmentation.Segmenter;
 import net.imglib2.labkit.inputimage.InputImage;
 import net.imglib2.labkit.labeling.Labeling;
@@ -164,7 +165,7 @@ public class TrainableSegmentationSegmenter implements Segmenter {
 		List<? extends Labeling> labelings)
 	{
 		return new ArrayList<>(labelings.stream().flatMap(labeling -> labeling
-			.getLabels().stream()).collect(Collectors.toSet()));
+			.getLabels().stream()).map(Label::name).collect(Collectors.toSet()));
 	}
 
 	private void train(Training training, List<String> classes, Labeling labeling,
@@ -222,19 +223,17 @@ public class TrainableSegmentationSegmenter implements Segmenter {
 	{
 		SparseRandomAccessIntType result = new SparseRandomAccessIntType(labeling,
 			-1);
-		Map<Set<String>, Integer> classIndices = new HashMap<>();
-		Function<Set<String>, Integer> compute = set -> {
-			for (int i = 0; i < classes.size(); i++)
-				if (set.contains(classes.get(i))) return i;
-			return -1;
-		};
+		Map<Set<Label>, Integer> classIndices = new HashMap<>();
+		Function<Set<Label>, Integer> compute = set -> set.stream().mapToInt(
+			label -> classes.indexOf(label.name())).filter(i -> i >= 0).min().orElse(
+				-1);
 		Cursor<?> cursor = labeling.sparsityCursor();
-		RandomAccess<Set<String>> randomAccess = labeling.randomAccess();
+		RandomAccess<Set<Label>> randomAccess = labeling.randomAccess();
 		RandomAccess<IntType> out = result.randomAccess();
 		while (cursor.hasNext()) {
 			cursor.fwd();
 			randomAccess.setPosition(cursor);
-			Set<String> labels = randomAccess.get();
+			Set<Label> labels = randomAccess.get();
 			if (labels.isEmpty()) continue;
 			Integer classIndex = classIndices.computeIfAbsent(labels, compute);
 			out.setPosition(cursor);

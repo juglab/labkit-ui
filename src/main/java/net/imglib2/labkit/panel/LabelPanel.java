@@ -1,6 +1,7 @@
 
 package net.imglib2.labkit.panel;
 
+import net.imglib2.labkit.labeling.Label;
 import net.imglib2.labkit.models.ColoredLabel;
 import net.imglib2.labkit.models.ColoredLabelsModel;
 import net.imglib2.type.numeric.ARGBType;
@@ -19,7 +20,7 @@ import java.util.Set;
 public class LabelPanel {
 
 	private final ColoredLabelsModel model;
-	private ComponentList<String, JPanel> list = new ComponentList<>();
+	private ComponentList<Label, JPanel> list = new ComponentList<>();
 	private final JPanel panel;
 	private final JFrame dialogParent;
 	private final boolean fixedLabels;
@@ -44,7 +45,7 @@ public class LabelPanel {
 	private void update() {
 		list.clear();
 		List<ColoredLabel> items = model.items();
-		items.forEach((label) -> list.add(label.name, new EntryPanel(label.name,
+		items.forEach((label) -> list.add(label.label, new EntryPanel(label.label,
 			label.color)));
 		list.setSelected(model.selected());
 	}
@@ -71,7 +72,7 @@ public class LabelPanel {
 	}
 
 	private void changeSelectedLabel() {
-		String label = list.getSelected();
+		Label label = list.getSelected();
 		if (label != null) model.setSelected(label);
 	}
 
@@ -79,54 +80,56 @@ public class LabelPanel {
 		model.addLabel();
 	}
 
-	private void removeLabel(String label) {
+	private void removeLabel(Label label) {
 		model.removeLabel(label);
 	}
 
 	private void removeAllLabels() {
 		List<ColoredLabel> items = model.items();
-		items.forEach((label) -> model.removeLabel(label.name));
+		items.forEach((label) -> model.removeLabel(label.label));
 	}
 
-	private void clearLabel(String label) {
+	private void clearLabel(Label label) {
 		model.clearLabel(label);
 	}
 
-	private void renameLabel(String label) {
-		String newLabel = JOptionPane.showInputDialog(dialogParent,
-			"Rename label \"" + label + "\" to:", label);
-		if (newLabel == null) return;
-		model.renameLabel(label, newLabel);
+	private void renameLabel(Label label) {
+		final String oldName = label.name();
+		String newName = JOptionPane.showInputDialog(dialogParent,
+			"Rename label \"" + oldName + "\" to:", oldName);
+		if (newName == null) return;
+		model.renameLabel(label, newName);
 	}
 
-	private void moveUpLabel(String label) {
+	private void moveUpLabel(Label label) {
 		model.moveLabel(label, -1);
 	}
 
-	private void moveDownLabel(String label) {
+	private void moveDownLabel(Label label) {
 		model.moveLabel(label, 1);
 	}
 
-	private void changeColor(String label) {
-		ARGBType color = model.getColor(label);
+	private void changeColor(Label label) {
+		ARGBType color = model.getColor(label.name());
 		Color newColor = JColorChooser.showDialog(dialogParent,
-			"Choose Color for Label \"" + label + "\"", new Color(color.get()));
+			"Choose Color for Label \"" + label.name() + "\"", new Color(color
+				.get()));
 		if (newColor == null) return;
-		model.setColor(label, new ARGBType(newColor.getRGB()));
+		model.setColor(label.name(), new ARGBType(newColor.getRGB()));
 	}
 
-	private void localize(String label) {
+	private void localize(Label label) {
 		model.localizeLabel(label);
 	}
 
 	// -- Helper methods --
 	private class EntryPanel extends JPanel {
 
-		EntryPanel(String value, ARGBType color) {
+		EntryPanel(Label value, ARGBType color) {
 			setOpaque(true);
 			setLayout(new MigLayout("insets 4pt, gap 4pt, fillx"));
 			add(initColorButton(value, color));
-			add(new JLabel(value), "push");
+			add(new JLabel(value.name()), "push");
 			JPopupMenu menu = initPopupMenu(value);
 			add(initPopupMenuButton(menu));
 			setComponentPopupMenu(menu);
@@ -135,13 +138,13 @@ public class LabelPanel {
 			initRenameOnDoubleClick(value);
 		}
 
-		private JCheckBox initVisibilityCheckbox(String value) {
+		private JCheckBox initVisibilityCheckbox(Label label) {
 			JCheckBox checkBox = GuiUtils.styleCheckboxUsingEye(new JCheckBox());
-			checkBox.setSelected(model.activeLabels().get().contains(value));
+			checkBox.setSelected(model.activeLabels().get().contains(label));
 			checkBox.addItemListener(event -> {
-				Set<String> strings = model.activeLabels().get();
-				if (event.getStateChange() == ItemEvent.SELECTED) strings.add(value);
-				else strings.remove(value);
+				Set<Label> strings = model.activeLabels().get();
+				if (event.getStateChange() == ItemEvent.SELECTED) strings.add(label);
+				else strings.remove(label);
 				model.activeLabels().notifier().forEach(x -> x.accept(strings));
 			});
 			checkBox.setOpaque(false);
@@ -159,7 +162,7 @@ public class LabelPanel {
 			return button;
 		}
 
-		private void initRenameOnDoubleClick(String value) {
+		private void initRenameOnDoubleClick(Label value) {
 			addMouseListener(new MouseAdapter() {
 
 				public void mouseClicked(MouseEvent event) {
@@ -168,22 +171,22 @@ public class LabelPanel {
 			});
 		}
 
-		private JPopupMenu initPopupMenu(String value) {
+		private JPopupMenu initPopupMenu(Label label) {
 			JPopupMenu menu = new JPopupMenu();
 			if (!fixedLabels) menu.add(new JMenuItem(new RunnableAction("Rename",
-				() -> renameLabel(value))));
+				() -> renameLabel(label))));
 			if (!fixedLabels) menu.add(new JMenuItem(new RunnableAction("Move up",
-				() -> moveUpLabel(value))));
+				() -> moveUpLabel(label))));
 			if (!fixedLabels) menu.add(new JMenuItem(new RunnableAction("Move down",
-				() -> moveDownLabel(value))));
+				() -> moveDownLabel(label))));
 			menu.add(new JMenuItem(new RunnableAction("Clear", () -> clearLabel(
-				value))));
+				label))));
 			if (!fixedLabels) menu.add(new JMenuItem(new RunnableAction("Remove",
-				() -> removeLabel(value))));
+				() -> removeLabel(label))));
 			return menu;
 		}
 
-		private JButton initColorButton(String value, ARGBType color) {
+		private JButton initColorButton(Label value, ARGBType color) {
 			JButton colorButton = new JButton();
 			colorButton.setBorder(new EmptyBorder(1, 1, 1, 1));
 			colorButton.setIcon(GuiUtils.createIcon(new Color(color.get())));
@@ -191,9 +194,9 @@ public class LabelPanel {
 			return colorButton;
 		}
 
-		private JButton initFinderButton(String value) {
+		private JButton initFinderButton(Label label) {
 			return GuiUtils.createIconButton(GuiUtils.createAction("locate",
-				() -> localize(value), "crosshair.png"));
+				() -> localize(label), "crosshair.png"));
 		}
 
 	}

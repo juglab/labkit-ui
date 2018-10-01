@@ -6,11 +6,13 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.Set;
 import java.util.function.Function;
+import java.util.stream.Collectors;
 
 import net.imglib2.Cursor;
 import net.imglib2.FinalInterval;
 import net.imglib2.Interval;
 import net.imglib2.labkit.color.ColorMap;
+import net.imglib2.labkit.labeling.Label;
 import net.imglib2.labkit.labeling.Labeling;
 import net.imglib2.labkit.utils.Notifier;
 import net.imglib2.roi.IterableRegion;
@@ -34,21 +36,20 @@ public class ColoredLabelsModel {
 		listeners.forEach(Runnable::run);
 	}
 
-	// TODO: use a List instead of a Map to keep the Order
 	public List<ColoredLabel> items() {
 		List<ColoredLabel> result = new ArrayList<>();
 		ColorMap colors = model.colorMapProvider().colorMap();
-		List<String> labels = model.labeling().get().getLabels();
+		List<Label> labels = model.labeling().get().getLabels();
 		labels.forEach(label -> result.add(new ColoredLabel(label, colors.getColor(
-			label))));
+			label.name()))));
 		return result;
 	}
 
-	public String selected() {
+	public Label selected() {
 		return model.selectedLabel().get();
 	}
 
-	public void setSelected(String value) {
+	public void setSelected(Label value) {
 		model.selectedLabel().set(value);
 	}
 
@@ -59,42 +60,42 @@ public class ColoredLabelsModel {
 	public void addLabel() {
 		Holder<Labeling> holder = model.labeling();
 		Labeling labeling = holder.get();
-		String label = suggestName(labeling.getLabels());
-		if (label == null) return;
-		labeling.addLabel(label);
-		model.activeLabels().get().add(label);
-		model.selectedLabel().set(label);
+		String newName = suggestName(labeling.getLabels().stream().map(Label::name)
+			.collect(Collectors.toList()));
+		if (newName == null) return;
+		Label newLabel = labeling.addLabel(newName);
+		model.activeLabels().get().add(newLabel);
+		model.selectedLabel().set(newLabel);
 		holder.notifier().forEach(l -> l.accept(labeling));
 	}
 
-	public void removeLabel(String label) {
+	public void removeLabel(Label label) {
 		Holder<Labeling> holder = model.labeling();
 		Labeling labeling = holder.get();
 		holder.get().removeLabel(label);
 		holder.notifier().forEach(l -> l.accept(labeling));
 	}
 
-	public void renameLabel(String label, String newLabel) {
+	public void renameLabel(Label label, String newLabel) {
 		Holder<Labeling> holder = model.labeling();
 		Labeling labeling = holder.get();
 		holder.get().renameLabel(label, newLabel);
-		ARGBType color = model.colorMapProvider().colorMap().getColor(label);
+		ARGBType color = model.colorMapProvider().colorMap().getColor(label.name());
 		model.colorMapProvider().colorMap().setColor(newLabel, color);
-		model.selectedLabel().set(newLabel);
 		holder.notifier().forEach(l -> l.accept(labeling));
 	}
 
-	public void moveLabel(String label, int movement) {
+	public void moveLabel(Label label, int movement) {
 		Holder<Labeling> holder = model.labeling();
 		Labeling labeling = holder.get();
-		List<String> oldOrder = new ArrayList<>(labeling.getLabels());
-		Function<String, Double> priority = l -> oldOrder.indexOf(l) + (l == label
+		List<Label> oldOrder = new ArrayList<>(labeling.getLabels());
+		Function<Label, Double> priority = l -> oldOrder.indexOf(l) + (l == label
 			? movement + 0.5 * Math.signum(movement) : 0.0);
 		labeling.setLabelOrder(Comparator.comparing(priority));
 		holder.notifier().forEach(l -> l.accept(labeling));
 	}
 
-	public Holder<Set<String>> activeLabels() {
+	public Holder<Set<Label>> activeLabels() {
 		return model.activeLabels();
 	}
 
@@ -117,7 +118,7 @@ public class ColoredLabelsModel {
 		return null;
 	}
 
-	public void localizeLabel(final String label) {
+	public void localizeLabel(final Label label) {
 		Interval labelBox = getBoundingBox(model.labeling().get().iterableRegions()
 			.get(label));
 		if (model.isTimeSeries()) labelBox = RevampUtils.removeLastDimension(
@@ -146,7 +147,7 @@ public class ColoredLabelsModel {
 		return new FinalInterval(min, max);
 	}
 
-	public void clearLabel(String selected) {
+	public void clearLabel(Label selected) {
 		Holder<Labeling> holder = model.labeling();
 		Labeling labeling = holder.get();
 		labeling.clearLabel(selected);

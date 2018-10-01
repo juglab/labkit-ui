@@ -73,11 +73,11 @@ public class LabelingSerializer {
 	}
 
 	private Labeling openFromTiff(String filename) throws IOException {
-		ImgLabeling<String, ?> imgLabeling = openImgLabelingFromTiff(filename);
+		ImgLabeling<Label, ?> imgLabeling = openImgLabelingFromTiff(filename);
 		return Labeling.fromImgLabeling(imgLabeling);
 	}
 
-	public ImgLabeling<String, ?> openImgLabelingFromTiff(String filename)
+	public ImgLabeling<Label, ?> openImgLabelingFromTiff(String filename)
 		throws IOException
 	{
 		Img<? extends IntegerType<?>> img = openImageFromTiff(filename);
@@ -88,7 +88,8 @@ public class LabelingSerializer {
 
 	// TODO make part of imglib2-roi
 	public static <L> ImgLabeling<L, ?> fromImageAndLabelSets(
-		Img<? extends IntegerType<?>> img, List<Set<L>> labelSets)
+		RandomAccessibleInterval<? extends IntegerType<?>> img,
+		List<Set<L>> labelSets)
 	{
 		ImgLabeling<L, ?> result = new ImgLabeling<>(LabkitUtils.uncheckedCast(
 			img));
@@ -159,13 +160,14 @@ public class LabelingSerializer {
 					.toString(i))).collect(Collectors.toList());
 		}
 
-		public LabelsMetaData(List<Set<String>> mapping) {
-			labelSets = mapping.stream().map(TreeSet::new).collect(Collectors
-				.toList());
+		public LabelsMetaData(List<Set<Label>> mapping) {
+			labelSets = mapping.stream().map(set -> set.stream().map(Label::name)
+				.collect(Collectors.toSet())).collect(Collectors.toList());
 		}
 
-		public List<Set<String>> asLabelSets() {
-			return labelSets;
+		public List<Set<Label>> asLabelSets() {
+			return labelSets.stream().map(set -> set.stream().map(Label::new).collect(
+				Collectors.toSet())).collect(Collectors.toList());
 		}
 	}
 
@@ -207,11 +209,11 @@ public class LabelingSerializer {
 		}
 
 		private JsonObject regionsToJson(
-			Map<String, ? extends IterableRegion<BitType>> regions, Gson gson)
+			Map<Label, ? extends IterableRegion<BitType>> regions, Gson gson)
 		{
 			JsonObject map = new JsonObject();
-			regions.forEach((label, region) -> map.add(label, regionToJson(gson,
-				region)));
+			regions.forEach((label, region) -> map.add(label.name(), regionToJson(
+				gson, region)));
 			return map;
 		}
 

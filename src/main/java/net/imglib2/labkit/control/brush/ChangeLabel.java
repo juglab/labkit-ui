@@ -1,6 +1,7 @@
 
 package net.imglib2.labkit.control.brush;
 
+import net.imglib2.labkit.labeling.Label;
 import net.imglib2.labkit.models.LabelingModel;
 import org.scijava.ui.behaviour.util.AbstractNamedAction;
 
@@ -20,12 +21,12 @@ public class ChangeLabel extends AbstractNamedAction {
 
 	@Override
 	public void actionPerformed(ActionEvent actionEvent) {
-		List<String> labels = model.labeling().get().getLabels();
-		String nextLabel = next(labels, model.selectedLabel().get());
+		List<Label> labels = model.labeling().get().getLabels();
+		Label nextLabel = next(labels, model.selectedLabel().get());
 		if (nextLabel != null) model.selectedLabel().set(nextLabel);
 	}
 
-	private String next(List<String> labels, String currentLabel) {
+	private Label next(List<Label> labels, Label currentLabel) {
 		if (labels.isEmpty()) return null;
 		int index = labels.indexOf(currentLabel) + 1;
 		if (index >= labels.size()) index = 0;

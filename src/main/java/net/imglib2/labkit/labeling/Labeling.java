@@ -19,6 +19,7 @@ import net.imglib2.sparse.SparseRandomAccessIntType;
 import net.imglib2.type.BooleanType;
 import net.imglib2.type.logic.BitType;
 import net.imglib2.type.numeric.IntegerType;
+import net.imglib2.type.numeric.integer.IntType;
 import net.imglib2.util.ConstantUtils;
 import net.imglib2.util.Intervals;
 import net.imglib2.view.Views;
@@ -31,36 +32,49 @@ import java.util.stream.IntStream;
  * @author Matthias Arzt
  */
 @JsonAdapter(LabelingSerializer.Adapter.class)
-public class Labeling extends AbstractWrappedInterval implements
-	RandomAccessibleInterval<Set<String>>
+public class Labeling extends AbstractWrappedInterval<Interval> implements
+	RandomAccessibleInterval<Set<Label>>
 {
 
-	private final ImgLabeling<String, ?> imgLabeling;
-	private List<String> labels;
+	private final ImgLabeling<Label, ?> imgLabeling;
+	private List<Label> labels;
 	private List<CalibratedAxis> axes;
 
 	public static Labeling createEmpty(List<String> labels, Interval interval) {
-		return new Labeling(labels, new ImgLabeling<>(new SparseRandomAccessIntType(
-			interval)));
+		List<Label> labelObjects = labels.stream().map(Label::new).collect(
+			Collectors.toList());
+		return createEmptyLabels(labelObjects, interval);
 	}
 
-	public static Labeling fromImgLabeling(ImgLabeling<String, ?> imgLabeling) {
+	public static Labeling createEmptyLabels(List<Label> labels,
+		Interval interval)
+	{
+		final ImgLabeling<Label, IntType> imgLabeling = new ImgLabeling<>(
+			new SparseRandomAccessIntType(interval));
+		return new Labeling(labels, imgLabeling);
+	}
+
+	public static Labeling fromImgLabeling(ImgLabeling<Label, ?> imgLabeling) {
 		return new Labeling(new ArrayList<>(imgLabeling.getMapping().getLabels()),
 			imgLabeling);
 	}
 
 	public static Labeling fromMap(Map<String, IterableRegion<BitType>> regions) {
-		return new Labeling(new ArrayList<>(regions.keySet()), initImgLabling(
-			regions));
+		Map<Label, IterableRegion<BitType>> regions2 = regions.entrySet().stream()
+			.collect(Collectors.toMap(entry -> new Label(entry.getKey()),
+				Map.Entry::getValue));
+		final ArrayList<Label> labels = new ArrayList<>(regions2.keySet());
+		final ImgLabeling<Label, ?> imgLabling = initImgLabling(regions2);
+		return new Labeling(labels, imgLabling);
 	}
 
-	private static ImgLabeling<String, ?> initImgLabling(
-		Map<String, IterableRegion<BitType>> regions)
+	private static ImgLabeling<Label, ?> initImgLabling(
+		Map<Label, IterableRegion<BitType>> regions)
 	{
-		Interval interval = getInterval(regions);
-		ImgLabeling<String, ?> imgLabeling = new ImgLabeling<>(
+		Interval interval = getInterval(regions.values());
+		ImgLabeling<Label, ?> imgLabeling = new ImgLabeling<>(
 			new SparseRandomAccessIntType(interval));
-		RandomAccess<LabelingType<String>> ra = imgLabeling.randomAccess();
+		RandomAccess<LabelingType<Label>> ra = imgLabeling.randomAccess();
 		regions.forEach((label, region) -> {
 			Cursor<Void> cursor = region.cursor();
 			while (cursor.hasNext()) {
@@ -73,16 +87,16 @@ public class Labeling extends AbstractWrappedInterval implements
 	}
 
 	private static Interval getInterval(
-		Map<String, IterableRegion<BitType>> regions)
+		Collection<? extends Interval> intervals)
 	{
-		Interval result = new FinalInterval(regions.values().iterator().next());
-		for (Interval interval : regions.values())
+		Interval result = new FinalInterval(intervals.iterator().next());
+		for (Interval interval : intervals)
 			if (!Intervals.equals(result, interval))
 				throw new IllegalArgumentException("Intervals must match");
 		return result;
 	}
 
-	private Labeling(List<String> labels, ImgLabeling<String, ?> labeling) {
+	private Labeling(List<Label> labels, ImgLabeling<Label, ?> labeling) {
 		super(labeling);
 		this.imgLabeling = labeling;
 		this.labels = new ArrayList<>(labels);
@@ -98,7 +112,7 @@ public class Labeling extends AbstractWrappedInterval implements
 		return new FinalInterval(imgLabeling);
 	}
 
-	public List<String> getLabels() {
+	public List<Label> getLabels() {
 		return labels;
 	}
 
@@ -107,16 +121,21 @@ public class Labeling extends AbstractWrappedInterval implements
 			.toList());
 	}
 
-	public Map<String, RandomAccessibleInterval<BitType>> regions() {
-		TreeMap<String, RandomAccessibleInterval<BitType>> map = new TreeMap<>();
-		labels.forEach(label -> map.put(label, slice(imgLabeling, label)));
-		return map;
+	public Label getLabel(String name) {
+		for (Label label : labels) {
+			if (label.name().equals(name)) return label;
+		}
+		throw new NoSuchElementException();
 	}
 
-	public Map<String, IterableRegion<BitType>> iterableRegions() {
+	public RandomAccessibleInterval<BitType> getRegion(Label label) {
+		return slice(imgLabeling, label);
+	}
+
+	public Map<Label, IterableRegion<BitType>> iterableRegions() {
 		Cursor<?> cursor = sparsityCursor();
-		RandomAccess<LabelingType<String>> ra = imgLabeling.randomAccess();
-		Map<String, SparseIterableRegion> regions = new TreeMap<>();
+		RandomAccess<LabelingType<Label>> ra = imgLabeling.randomAccess();
+		Map<Label, SparseIterableRegion> regions = new HashMap<>();
 		labels.forEach(label -> regions.put(label, new SparseIterableRegion(
 			imgLabeling)));
 		while (cursor.hasNext()) {
@@ -154,12 +173,12 @@ public class Labeling extends AbstractWrappedInterval implements
 		return imgLabeling.getIndexImg();
 	}
 
-	public List<Set<String>> getLabelSets() {
-		LabelingMapping<String> mapping = imgLabeling.getMapping();
-		return new AbstractList<Set<String>>() {
+	public List<Set<Label>> getLabelSets() {
+		LabelingMapping<Label> mapping = imgLabeling.getMapping();
+		return new AbstractList<Set<Label>>() {
 
 			@Override
-			public Set<String> get(int index) {
+			public Set<Label> get(int index) {
 				return mapping.labelsAtIndex(index);
 			}
 
@@ -174,59 +193,44 @@ public class Labeling extends AbstractWrappedInterval implements
 		return axes;
 	}
 
-	public void addLabel(String label) {
+	public Label addLabel(String label) {
 		Objects.requireNonNull(label);
-		if (labels.contains(label)) return;
-		labels.add(label);
+		final Label e = new Label(label);
+		labels.add(e);
+		return e;
 	}
 
 	public void addLabel(String newName,
 		RandomAccessibleInterval<? extends BooleanType<?>> bitmap)
 	{
-		addLabel(newName);
+		Label label = addLabel(newName);
 		LoopBuilder.setImages(bitmap, this).forEachPixel((i, o) -> {
-			if (i.get()) o.add(newName);
+			if (i.get()) o.add(label);
 		});
 	}
 
-	public void removeLabel(String label) {
+	public void removeLabel(Label label) {
 		if (!labels.contains(label)) return;
 		labels.remove(label);
-		Cursor<?> cursor = sparsityCursor();
-		RandomAccess<Set<String>> ra = randomAccess();
-		while (cursor.hasNext()) {
-			cursor.fwd();
-			ra.setPosition(cursor);
-			ra.get().remove(label);
-		}
+		clearLabel(label);
 	}
 
-	public void renameLabel(String oldLabel, String newLabel) {
-		int index = labels.indexOf(oldLabel);
-		if (index < 0) return;
-		labels.set(index, newLabel);
-		Cursor<?> cursor = sparsityCursor();
-		RandomAccess<Set<String>> ra = randomAccess();
-		while (cursor.hasNext()) {
-			cursor.fwd();
-			ra.setPosition(cursor);
-			Set<String> set = ra.get();
-			if (set.remove(oldLabel)) set.add(newLabel);
-		}
+	public void renameLabel(Label oldLabel, String newLabel) {
+		oldLabel.setName(newLabel);
 	}
 
-	public void clearLabel(String label) {
+	public void clearLabel(Label label) {
 		Cursor<?> cursor = sparsityCursor();
-		RandomAccess<Set<String>> ra = randomAccess();
+		RandomAccess<Set<Label>> ra = randomAccess();
 		while (cursor.hasNext()) {
 			cursor.fwd();
 			ra.setPosition(cursor);
-			Set<String> set = ra.get();
+			Set<Label> set = ra.get();
 			set.remove(label);
 		}
 	}
 
-	public void setLabelOrder(Comparator<? super String> comparator) {
+	public void setLabelOrder(Comparator<? super Label> comparator) {
 		labels.sort(comparator);
 	}
 
@@ -268,12 +272,12 @@ public class Labeling extends AbstractWrappedInterval implements
 	}
 
 	@Override
-	public RandomAccess<Set<String>> randomAccess() {
+	public RandomAccess<Set<Label>> randomAccess() {
 		return LabkitUtils.uncheckedCast(imgLabeling.randomAccess());
 	}
 
 	@Override
-	public RandomAccess<Set<String>> randomAccess(Interval interval) {
+	public RandomAccess<Set<Label>> randomAccess(Interval interval) {
 		return LabkitUtils.uncheckedCast(imgLabeling.randomAccess(interval));
 	}
 }

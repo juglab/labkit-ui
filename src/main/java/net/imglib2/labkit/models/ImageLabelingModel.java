@@ -6,6 +6,7 @@ import net.imglib2.FinalDimensions;
 import net.imglib2.Interval;
 import net.imglib2.RandomAccessibleInterval;
 import net.imglib2.labkit.bdv.BdvShowable;
+import net.imglib2.labkit.labeling.Label;
 import net.imglib2.labkit.utils.Notifier;
 import net.imglib2.labkit.color.ColorMapProvider;
 import net.imglib2.labkit.labeling.Labeling;
@@ -27,7 +28,7 @@ public class ImageLabelingModel implements LabelingModel {
 
 	private Notifier<Runnable> dataChangedNotifier = new Notifier<>();
 
-	private Holder<String> selectedLabelHolder;
+	private Holder<Label> selectedLabelHolder;
 
 	private final boolean isTimeSeries;
 
@@ -36,7 +37,7 @@ public class ImageLabelingModel implements LabelingModel {
 
 	private BdvShowable showable;
 
-	private final Holder<Set<String>> activeLabels;
+	private final Holder<Set<Label>> activeLabels;
 
 	private String defaultFileName;
 
@@ -55,7 +56,7 @@ public class ImageLabelingModel implements LabelingModel {
 		this.labelingHolder.notifier().add(this::labelingReplacedEvent);
 		updateLabelTransform();
 		this.selectedLabelHolder = new DefaultHolder<>(labeling.getLabels().stream()
-			.findAny().orElse(""));
+			.findAny().orElse(null));
 		this.isTimeSeries = isTimeSeries;
 		this.activeLabels = new DefaultHolder<>(new HashSet<>(labeling
 			.getLabels()));
@@ -79,8 +80,8 @@ public class ImageLabelingModel implements LabelingModel {
 
 	private void labelingReplacedEvent(Labeling labeling) {
 		updateLabelTransform();
-		String selectedLabel = selectedLabelHolder.get();
-		List<String> labels = labelingHolder.get().getLabels();
+		Label selectedLabel = selectedLabelHolder.get();
+		List<Label> labels = labelingHolder.get().getLabels();
 		if (!labels.contains(selectedLabel)) selectedLabelHolder.set(labels
 			.isEmpty() ? null : labels.get(0));
 	}
@@ -112,7 +113,7 @@ public class ImageLabelingModel implements LabelingModel {
 	}
 
 	@Override
-	public Holder<String> selectedLabel() {
+	public Holder<Label> selectedLabel() {
 		return selectedLabelHolder;
 	}
 
@@ -160,7 +161,7 @@ public class ImageLabelingModel implements LabelingModel {
 		return result;
 	}
 
-	public Holder<Set<String>> activeLabels() {
+	public Holder<Set<Label>> activeLabels() {
 		return activeLabels;
 	}
 }

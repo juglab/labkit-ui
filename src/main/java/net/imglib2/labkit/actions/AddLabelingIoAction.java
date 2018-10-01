@@ -4,6 +4,7 @@ package net.imglib2.labkit.actions;
 import net.imglib2.Cursor;
 import net.imglib2.RandomAccess;
 import net.imglib2.labkit.Extensible;
+import net.imglib2.labkit.labeling.Label;
 import net.imglib2.labkit.models.Holder;
 import net.imglib2.labkit.labeling.Labeling;
 import net.imglib2.labkit.labeling.LabelingSerializer;
@@ -14,6 +15,7 @@ import javax.swing.filechooser.FileNameExtensionFilter;
 import java.io.IOException;
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 /**
  * @author Matthias Arzt
@@ -45,18 +47,19 @@ public class AddLabelingIoAction extends AbstractFileIoAcion {
 	}
 
 	// TODO: move to package Labeling
-	private void addLabel(Labeling labeling, String label,
+	private void addLabel(Labeling labeling, Label label,
 		IterableRegion<BitType> region)
 	{
-		String newLabel = suggestName(label, labeling.getLabels());
-		if (newLabel == null) return;
-		labeling.addLabel(newLabel);
+		String newLabelName = suggestName(label.name(), labeling.getLabels()
+			.stream().map(Label::name).collect(Collectors.toList()));
+		if (newLabelName == null) return;
+		Label newLabel = labeling.addLabel(newLabelName);
 		Cursor<Void> cursor = region.cursor();
-		RandomAccess<Set<String>> ra = labeling.randomAccess();
+		RandomAccess<Set<Label>> ra = labeling.randomAccess();
 		while (cursor.hasNext()) {
 			cursor.fwd();
 			ra.setPosition(cursor);
-			ra.get().add(label);
+			ra.get().add(newLabel);
 		}
 	}
 

@@ -17,6 +17,7 @@ import net.imglib2.img.array.ArrayImgs;
 import net.imglib2.img.basictypeaccess.array.ByteArray;
 import net.imglib2.labkit.bdv.BdvShowable;
 import net.imglib2.labkit.inputimage.DatasetInputImage;
+import net.imglib2.labkit.labeling.Label;
 import net.imglib2.labkit.labeling.Labeling;
 import net.imglib2.labkit.models.DefaultSegmentationModel;
 import net.imglib2.labkit.models.SegmentationItem;
@@ -103,15 +104,15 @@ public class MultiChannelMovieDemo {
 	private Labeling labeling5d() {
 		Labeling labeling = Labeling.createEmpty(Arrays.asList("background",
 			"foreground"), new FinalInterval(20, 10, 10, 20));
-		RandomAccess<Set<String>> ra = labeling.randomAccess();
+		RandomAccess<Set<Label>> ra = labeling.randomAccess();
 		ra.setPosition(new long[] { 1, 0, 0, 1 });
-		ra.get().add("foreground");
+		ra.get().add(labeling.getLabel("foreground"));
 		ra.setPosition(new long[] { 4, 0, 0, 1 });
-		ra.get().add("foreground");
+		ra.get().add(labeling.getLabel("foreground"));
 		ra.setPosition(new long[] { 5, 0, 0, 1 });
-		ra.get().add("background");
+		ra.get().add(labeling.getLabel("background"));
 		ra.setPosition(new long[] { 0, 0, 0, 1 });
-		ra.get().add("background");
+		ra.get().add(labeling.getLabel("background"));
 		return labeling;
 	}
 }

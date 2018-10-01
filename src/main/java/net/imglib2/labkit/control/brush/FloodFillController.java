@@ -10,6 +10,7 @@ import net.imglib2.RealLocalizable;
 import net.imglib2.RealPoint;
 import net.imglib2.algorithm.neighborhood.DiamondShape;
 import net.imglib2.labkit.ActionsAndBehaviours;
+import net.imglib2.labkit.labeling.Label;
 import net.imglib2.labkit.labeling.Labeling;
 import net.imglib2.labkit.models.LabelingModel;
 import net.imglib2.roi.labeling.LabelingType;
@@ -59,7 +60,7 @@ public class FloodFillController {
 			"F button2", "F button3");
 	}
 
-	private Set<String> selectedLabel() {
+	private Set<Label> selectedLabel() {
 		return Collections.singleton(model.selectedLabel().get());
 	}
 
@@ -84,15 +85,15 @@ public class FloodFillController {
 
 	private class FloodFillClick implements ClickBehaviour {
 
-		private final Supplier<Set<String>> value;
+		private final Supplier<Set<Label>> value;
 
-		FloodFillClick(Supplier<Set<String>> value) {
+		FloodFillClick(Supplier<Set<Label>> value) {
 			this.value = value;
 		}
 
 		protected void floodFill(final RealLocalizable coords) {
 			synchronized (viewer) {
-				RandomAccessibleInterval<Set<String>> labeling1 = labeling();
+				RandomAccessibleInterval<Set<Label>> labeling1 = labeling();
 				Point seed = roundAndReduceDimension(coords, labeling1.numDimensions());
 				floodFillSet(labeling1, seed, value.get());
 			}
@@ -114,12 +115,12 @@ public class FloodFillController {
 		}
 	}
 
-	public static void floodFillSet(RandomAccessibleInterval<Set<String>> image,
-		Point seed, Set<String> label)
+	public static <T> void floodFillSet(RandomAccessibleInterval<Set<T>> image,
+		Point seed, Set<T> label)
 	{
-		RandomAccessibleInterval<LabelingType<String>> labeling = RevampUtils
+		RandomAccessibleInterval<LabelingType<T>> labeling = RevampUtils
 			.uncheckedCast(image);
-		LabelingType<String> newValue = Util.getTypeFromInterval(labeling)
+		LabelingType<T> newValue = Util.getTypeFromInterval(labeling)
 			.createVariable();
 		newValue.clear();
 		newValue.addAll(label);
@@ -140,7 +141,7 @@ public class FloodFillController {
 			new DiamondShape(1), filter);
 	}
 
-	private RandomAccessibleInterval<Set<String>> labeling() {
+	private RandomAccessibleInterval<Set<Label>> labeling() {
 		Labeling label = model.labeling().get();
 		if (sliceTime) return Views.hyperSlice(label, label.numDimensions() - 1,
 			viewer.getState().getCurrentTimepoint());

@@ -14,6 +14,7 @@ import net.imglib2.labkit.bdv.BdvShowable;
 import net.imglib2.labkit.inputimage.DatasetInputImage;
 import net.imglib2.labkit.inputimage.DefaultInputImage;
 import net.imglib2.labkit.inputimage.InputImage;
+import net.imglib2.labkit.labeling.Label;
 import net.imglib2.labkit.labeling.Labeling;
 import net.imglib2.labkit.models.DefaultSegmentationModel;
 import net.imglib2.labkit.models.ImageLabelingModel;
@@ -58,11 +59,11 @@ public class SegmentationUseCaseTest {
 
 	private void addLabels(ImageLabelingModel imageLabelingModel) {
 		Labeling labeling = imageLabelingModel.labeling().get();
-		RandomAccess<Set<String>> ra = labeling.randomAccess();
+		RandomAccess<Set<Label>> ra = labeling.randomAccess();
 		ra.setPosition(new long[] { 0, 0 });
-		ra.get().add("foreground");
+		ra.get().add(labeling.getLabel("foreground"));
 		ra.setPosition(new long[] { 0, 1 });
-		ra.get().add("background");
+		ra.get().add(labeling.getLabel("background"));
 	}
 
 	@Test
@@ -98,15 +99,15 @@ public class SegmentationUseCaseTest {
 		List<String> labels = Arrays.asList("f", "b");
 		Interval interval = new FinalInterval(2, 2);
 		Labeling labeling = Labeling.createEmpty(labels, interval);
-		RandomAccess<Set<String>> ra = labeling.randomAccess();
+		RandomAccess<Set<Label>> ra = labeling.randomAccess();
 		ra.setPosition(new long[] { 0, 0 });
-		ra.get().add("f");
+		ra.get().add(labeling.getLabel("f"));
 		ra.setPosition(new long[] { 1, 0 });
-		ra.get().add("b");
+		ra.get().add(labeling.getLabel("b"));
 		ra.setPosition(new long[] { 0, 1 });
-		ra.get().add("b");
+		ra.get().add(labeling.getLabel("b"));
 		ra.setPosition(new long[] { 1, 1 });
-		ra.get().add("b");
+		ra.get().add(labeling.getLabel("b"));
 		return labeling;
 	}
 
