@@ -139,12 +139,9 @@ public class LabelPanel {
 
 		private JCheckBox initVisibilityCheckbox(Label label) {
 			JCheckBox checkBox = GuiUtils.styleCheckboxUsingEye(new JCheckBox());
-			checkBox.setSelected(model.activeLabels().get().contains(label));
+			checkBox.setSelected(label.isActive());
 			checkBox.addItemListener(event -> {
-				Set<Label> strings = model.activeLabels().get();
-				if (event.getStateChange() == ItemEvent.SELECTED) strings.add(label);
-				else strings.remove(label);
-				model.activeLabels().notifier().forEach(x -> x.accept(strings));
+				model.setActive(label, event.getStateChange() == ItemEvent.SELECTED);
 			});
 			checkBox.setOpaque(false);
 			return checkBox;

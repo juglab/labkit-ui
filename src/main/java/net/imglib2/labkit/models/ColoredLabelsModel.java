@@ -15,7 +15,6 @@ import net.imglib2.type.numeric.ARGBType;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
-import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -58,7 +57,6 @@ public class ColoredLabelsModel {
 			.collect(Collectors.toList()));
 		if (newName == null) return;
 		Label newLabel = labeling.addLabel(newName);
-		model.activeLabels().get().add(newLabel);
 		model.selectedLabel().set(newLabel);
 		holder.notifier().forEach(l -> l.accept(labeling));
 	}
@@ -85,10 +83,6 @@ public class ColoredLabelsModel {
 			? movement + 0.5 * Math.signum(movement) : 0.0);
 		labeling.setLabelOrder(Comparator.comparing(priority));
 		holder.notifier().forEach(l -> l.accept(labeling));
-	}
-
-	public Holder<Set<Label>> activeLabels() {
-		return model.activeLabels();
 	}
 
 	public void setColor(Label label, ARGBType newColor) {
@@ -140,5 +134,12 @@ public class ColoredLabelsModel {
 		Labeling labeling = holder.get();
 		labeling.clearLabel(selected);
 		holder.notifier().forEach(l -> l.accept(labeling));
+	}
+
+	public void setActive(Label label, boolean b) {
+		label.setActive(b);
+		Holder<Labeling> holder = model.labeling();
+		Labeling labeling = holder.get();
+		model.labeling().notifier().forEach(l -> l.accept(labeling));
 	}
 }

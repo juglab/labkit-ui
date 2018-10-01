@@ -16,8 +16,6 @@ public interface LabelingModel {
 
 	Notifier<Runnable> dataChangedNotifier();
 
-	Holder<Set<Label>> activeLabels();
-
 	boolean isTimeSeries();
 
 	AffineTransform3D labelTransformation();

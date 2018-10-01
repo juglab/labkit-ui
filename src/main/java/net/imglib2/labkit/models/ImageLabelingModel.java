@@ -34,8 +34,6 @@ public class ImageLabelingModel implements LabelingModel {
 
 	private BdvShowable showable;
 
-	private final Holder<Set<Label>> activeLabels;
-
 	private String defaultFileName;
 
 	public ImageLabelingModel(
@@ -55,8 +53,6 @@ public class ImageLabelingModel implements LabelingModel {
 		this.selectedLabelHolder = new DefaultHolder<>(labeling.getLabels().stream()
 			.findAny().orElse(null));
 		this.isTimeSeries = isTimeSeries;
-		this.activeLabels = new DefaultHolder<>(new HashSet<>(labeling
-			.getLabels()));
 		this.defaultFileName = defaultFileName;
 	}
 
@@ -150,9 +146,5 @@ public class ImageLabelingModel implements LabelingModel {
 		for (int i = n; i < 3; i++)
 			result[i] = 1;
 		return result;
-	}
-
-	public Holder<Set<Label>> activeLabels() {
-		return activeLabels;
 	}
 }

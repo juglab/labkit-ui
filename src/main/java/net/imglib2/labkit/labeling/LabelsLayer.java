@@ -39,7 +39,6 @@ public class LabelsLayer implements BdvLayer {
 		this.view = Views.interval(container, view);
 		model.labeling().notifier().add(ignore -> updateView());
 		model.dataChangedNotifier().add(() -> listeners.forEach(Runnable::run));
-		model.activeLabels().notifier().add(ignore -> updateView());
 	}
 
 	private void updateView() {
@@ -64,8 +63,8 @@ public class LabelsLayer implements BdvLayer {
 	}
 
 	private ARGBType getColor(Set<Label> set) {
-		List<Label> visible = set.stream().filter(model.activeLabels()
-			.get()::contains).collect(Collectors.toList());
+		List<Label> visible = set.stream().filter(Label::isActive).collect(
+			Collectors.toList());
 		if (visible.isEmpty()) return BLACK;
 		ARGBVector collector = new ARGBVector();
 		visible.forEach(label -> collector.add(label.color()));
