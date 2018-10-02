@@ -45,8 +45,8 @@ public class BitmapImportExportAction extends AbstractFileIoAcion {
 		this.extensible = extensible;
 		this.model = model;
 		extensible.context().inject(this);
-		initOpenAction("Import Label", "importLabel", this::importLabel, "");
-		initSaveAction("Export Label", "exportLabel", this::exportLabel, "");
+		initOpenAction("Import Single Label", "importLabel", this::importLabel, "");
+		initSaveAction("Export Single Label", "exportLabel", this::exportLabel, "");
 	}
 
 	private void importLabel(String filename) throws IOException {
