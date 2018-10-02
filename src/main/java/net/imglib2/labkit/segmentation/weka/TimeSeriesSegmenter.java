@@ -59,8 +59,8 @@ public class TimeSeriesSegmenter implements Segmenter {
 		int targetTimeAxis = target.numDimensions() - 1 - offset;
 		long min = target.min(targetTimeAxis);
 		long max = target.max(targetTimeAxis);
-		if (min < image.min(imageTimeAxis) || max > image.max(imageTimeAxis)) throw new IllegalStateException(
-				"Last dimensions must fit.");
+		if (min < image.min(imageTimeAxis) || max > image.max(imageTimeAxis))
+			throw new IllegalStateException("Last dimensions must fit.");
 		for (long pos = min; pos <= max; pos++)
 			action.accept(Views.hyperSlice(image, imageTimeAxis, pos), Views
 				.hyperSlice(target, targetTimeAxis, pos));

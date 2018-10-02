@@ -134,27 +134,28 @@ public class TrainableSegmentationSegmenter implements Segmenter {
 		List<? extends Labeling> labelings)
 	{
 		try {
-			if (labelings.size() != images.size()) throw new IllegalArgumentException();
+			if (labelings.size() != images.size())
+				throw new IllegalArgumentException();
 			List<String> classes = collectLabels(labelings);
 			weka.classifiers.Classifier wekaClassifier = RevampUtils.wrapException(
-					() -> AbstractClassifier.makeCopy(this.initialWekaClassifier));
+				() -> AbstractClassifier.makeCopy(this.initialWekaClassifier));
 			OpEnvironment ops = context.service(OpService.class);
 			net.imglib2.trainable_segmention.classification.Segmenter segmenter =
-					new net.imglib2.trainable_segmention.classification.Segmenter(ops,
-							classes, featureSettings, wekaClassifier);
+				new net.imglib2.trainable_segmention.classification.Segmenter(ops,
+					classes, featureSettings, wekaClassifier);
 			Training training = segmenter.training();
 			for (int i = 0; i < images.size(); i++)
 				train(training, classes, labelings.get(i), images.get(i), segmenter
-						.features());
+					.features());
 			training.train();
 			this.segmenter = segmenter;
 			listeners.forEach(l -> l.accept(this));
 		}
 		catch (RuntimeException e) {
 			Throwable cause = e.getCause();
-			if(cause instanceof WekaException && cause.getMessage().contains("Not enough training instances"))
-					throw new CancellationException(
-							"The training requires some labeled regions.");
+			if (cause instanceof WekaException && cause.getMessage().contains(
+				"Not enough training instances")) throw new CancellationException(
+					"The training requires some labeled regions.");
 			throw e;
 		}
 	}

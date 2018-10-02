@@ -114,14 +114,16 @@ public class DefaultSegmentationModel implements SegmentationModel,
 	@Override
 	public void train(SegmentationItem item) {
 		try {
-			item.segmenter().train(Collections.singletonList(image()),
-					Collections.singletonList(labeling()));
-		} catch (CancellationException e) {
+			item.segmenter().train(Collections.singletonList(image()), Collections
+				.singletonList(labeling()));
+		}
+		catch (CancellationException e) {
 			JOptionPane.showMessageDialog(null, e.getMessage(), "Training Cancelled",
-					JOptionPane.PLAIN_MESSAGE);
-		} catch (Exception e) {
+				JOptionPane.PLAIN_MESSAGE);
+		}
+		catch (Exception e) {
 			JOptionPane.showMessageDialog(null, e.toString(), "Training Failed",
-					JOptionPane.WARNING_MESSAGE);
+				JOptionPane.WARNING_MESSAGE);
 		}
 	}
 

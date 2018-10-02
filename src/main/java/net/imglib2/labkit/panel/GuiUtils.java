@@ -121,12 +121,12 @@ public class GuiUtils {
 	}
 
 	public static RunnableAction createAction(String title, Runnable action,
-			String iconPath)
+		String iconPath)
 	{
 		RunnableAction result = new RunnableAction(title, action);
 		final ImageIcon icon = loadIcon(iconPath);
-		result.putValue( Action.SMALL_ICON, icon );
-		result.putValue( Action.LARGE_ICON_KEY, icon );
+		result.putValue(Action.SMALL_ICON, icon);
+		result.putValue(Action.LARGE_ICON_KEY, icon);
 		return result;
 	}
 

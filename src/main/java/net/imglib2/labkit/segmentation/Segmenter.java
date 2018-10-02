@@ -22,10 +22,10 @@ public interface Segmenter {
 		RandomAccessibleInterval<? extends RealType<?>> prediction);
 
 	/**
-	 * If the requirements for training are not met, and you want to
-	 * give an advice to the user, simple throw a
-	 * {@link java.util.concurrent.CancellationException}
-	 * that describes what has to be fixed.
+	 * If the requirements for training are not met, and you want to give an
+	 * advice to the user, simple throw a
+	 * {@link java.util.concurrent.CancellationException} that describes what has
+	 * to be fixed.
 	 */
 	void train(List<? extends RandomAccessibleInterval<?>> image,
 		List<? extends Labeling> groundTruth);

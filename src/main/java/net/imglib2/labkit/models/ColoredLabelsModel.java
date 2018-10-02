@@ -118,10 +118,10 @@ public class ColoredLabelsModel {
 	}
 
 	public void localizeLabel(final String label) {
-		Interval labelBox = getBoundingBox(model.labeling().get()
-			.iterableRegions().get(label));
-		if (model.isTimeSeries())
-			labelBox = RevampUtils.removeLastDimension(labelBox);
+		Interval labelBox = getBoundingBox(model.labeling().get().iterableRegions()
+			.get(label));
+		if (model.isTimeSeries()) labelBox = RevampUtils.removeLastDimension(
+			labelBox);
 		if (labelBox != null) model.transformationModel().transformToShowInterval(
 			labelBox, model.labelTransformation());
 	}

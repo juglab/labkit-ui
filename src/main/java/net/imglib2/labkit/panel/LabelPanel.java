@@ -61,11 +61,10 @@ public class LabelPanel {
 			buttonsPanel.setLayout(new MigLayout("insets 4pt, gap 4pt", "[grow]",
 				""));
 			buttonsPanel.add(GuiUtils.createActionIconButton("Add label",
-				new RunnableAction("Add label", this::addLabel), "add.png"),
-				"");
+				new RunnableAction("Add label", this::addLabel), "add.png"), "");
 			buttonsPanel.add(GuiUtils.createActionIconButton("Remove all",
-				new RunnableAction("Remove all", this::removeAllLabels),
-				"remove.png"), "gapbefore push");
+				new RunnableAction("Remove all", this::removeAllLabels), "remove.png"),
+				"gapbefore push");
 			panel.add(buttonsPanel, "grow, span");
 		}
 		return panel;
@@ -194,7 +193,7 @@ public class LabelPanel {
 
 		private JButton initFinderButton(String value) {
 			return GuiUtils.createIconButton(GuiUtils.createAction("locate",
-					() -> localize(value), "crosshair.png"));
+				() -> localize(value), "crosshair.png"));
 		}
 
 	}

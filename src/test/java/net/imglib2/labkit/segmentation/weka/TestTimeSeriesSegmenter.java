@@ -1,3 +1,4 @@
+
 package net.imglib2.labkit.segmentation.weka;
 
 import net.imglib2.RandomAccessibleInterval;
@@ -24,13 +25,14 @@ public class TestTimeSeriesSegmenter {
 
 	@Test
 	public void testPredict() {
-		TimeSeriesSegmenter segmenter =
-				new TimeSeriesSegmenter(new SimpleSegmenter());
-		Img< ? > source = ArrayImgs.floats( new float[]{ 0.2f, 0.3f, 0.9f }, 3 );
+		TimeSeriesSegmenter segmenter = new TimeSeriesSegmenter(
+			new SimpleSegmenter());
+		Img<?> source = ArrayImgs.floats(new float[] { 0.2f, 0.3f, 0.9f }, 3);
 		float[] array = new float[6];
-		Img< FloatType > target = ArrayImgs.floats(array, 3, 2 );
+		Img<FloatType> target = ArrayImgs.floats(array, 3, 2);
 		segmenter.predict(source, target);
-		assertArrayEquals(new float[]{0.2f, 0.3f, 0.9f, 0.8f, 0.7f, 0.1f}, array, 0.001f);
+		assertArrayEquals(new float[] { 0.2f, 0.3f, 0.9f, 0.8f, 0.7f, 0.1f }, array,
+			0.001f);
 	}
 
 	private static class SimpleSegmenter implements Segmenter {
@@ -41,31 +43,29 @@ public class TestTimeSeriesSegmenter {
 		}
 
 		@Override
-		public void segment(RandomAccessibleInterval< ? > image,
-				RandomAccessibleInterval< ? extends IntegerType< ? > > labels)
+		public void segment(RandomAccessibleInterval<?> image,
+			RandomAccessibleInterval<? extends IntegerType<?>> labels)
 		{
 
 		}
 
 		@Override
-		public void predict(RandomAccessibleInterval< ? > image,
-				RandomAccessibleInterval< ? extends RealType< ? > > prediction)
+		public void predict(RandomAccessibleInterval<?> image,
+			RandomAccessibleInterval<? extends RealType<?>> prediction)
 		{
-			RandomAccessibleInterval< ? extends GenericComposite< ? extends RealType< ? > > >
-					output = Views.collapse(prediction);
-			RandomAccessibleInterval< RealType< ? > > input =
-					(RandomAccessibleInterval< RealType< ? > >) Views.interval(image, output);
-			LoopBuilder.setImages(input, output).forEachPixel(
-					(i,o) -> {
-						o.get(0).setReal(i.getRealDouble());
-						o.get(1).setReal(1 - i.getRealDouble());
-					}
-			);
+			RandomAccessibleInterval<? extends GenericComposite<? extends RealType<?>>> output =
+				Views.collapse(prediction);
+			RandomAccessibleInterval<RealType<?>> input =
+				(RandomAccessibleInterval<RealType<?>>) Views.interval(image, output);
+			LoopBuilder.setImages(input, output).forEachPixel((i, o) -> {
+				o.get(0).setReal(i.getRealDouble());
+				o.get(1).setReal(1 - i.getRealDouble());
+			});
 		}
 
 		@Override
-		public void train(List< ? extends RandomAccessibleInterval< ? > > image,
-				List< ? extends Labeling > groundTruth)
+		public void train(List<? extends RandomAccessibleInterval<?>> image,
+			List<? extends Labeling> groundTruth)
 		{
 
 		}
@@ -76,9 +76,7 @@ public class TestTimeSeriesSegmenter {
 		}
 
 		@Override
-		public void saveModel(String path, boolean overwrite)
-				throws Exception
-		{
+		public void saveModel(String path, boolean overwrite) throws Exception {
 
 		}
 
@@ -88,12 +86,12 @@ public class TestTimeSeriesSegmenter {
 		}
 
 		@Override
-		public Notifier< Consumer< Segmenter > > listeners() {
+		public Notifier<Consumer<Segmenter>> listeners() {
 			return new Notifier<>();
 		}
 
 		@Override
-		public List< String > classNames() {
+		public List<String> classNames() {
 			return null;
 		}
 	}

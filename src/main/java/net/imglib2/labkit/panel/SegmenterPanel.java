@@ -52,9 +52,9 @@ public class SegmenterPanel {
 
 		private final SegmentationItem item;
 		private final RunnableAction settingsAction = GuiUtils.createAction(
-				"Settings ...", this::showSettings, "gear.png");
-		private final RunnableAction trainAction = GuiUtils.createAction(
-				"Train", this::runTraining, "run.png");
+			"Settings ...", this::showSettings, "gear.png");
+		private final RunnableAction trainAction = GuiUtils.createAction("Train",
+			this::runTraining, "run.png");
 
 		private EntryPanel(SegmentationItem item) {
 			this.item = item;
@@ -90,7 +90,8 @@ public class SegmenterPanel {
 				((SegmenterListModel) segmentationModel).remove(item);
 				updateList();
 			};
-			return new JMenuItem( GuiUtils.createAction("Remove", runnable,"remove.png"));
+			return new JMenuItem(GuiUtils.createAction("Remove", runnable,
+				"remove.png"));
 		}
 
 		private void showSettings() {
