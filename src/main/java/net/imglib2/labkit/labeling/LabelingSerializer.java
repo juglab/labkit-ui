@@ -74,7 +74,7 @@ public class LabelingSerializer {
 
 	private Labeling openFromTiff(String filename) throws IOException {
 		ImgLabeling<String, ?> imgLabeling = openImgLabelingFromTiff(filename);
-		return new Labeling(imgLabeling);
+		return Labeling.fromImgLabeling(imgLabeling);
 	}
 
 	public ImgLabeling<String, ?> openImgLabelingFromTiff(String filename)
@@ -88,7 +88,8 @@ public class LabelingSerializer {
 
 	// TODO make part of imglib2-roi
 	public static <L> ImgLabeling<L, ?> fromImageAndLabelSets(
-		Img<? extends IntegerType<?>> img, List<Set<L>> labelSets)
+		RandomAccessibleInterval<? extends IntegerType<?>> img,
+		List<Set<L>> labelSets)
 	{
 		ImgLabeling<L, ?> result = new ImgLabeling<>(LabkitUtils.uncheckedCast(
 			img));
@@ -159,9 +160,9 @@ public class LabelingSerializer {
 					.toString(i))).collect(Collectors.toList());
 		}
 
-		public LabelsMetaData(List<Set<String>> mapping) {
-			labelSets = mapping.stream().map(TreeSet::new).collect(Collectors
-				.toList());
+		public LabelsMetaData(List<Set<Label>> mapping) {
+			labelSets = mapping.stream().map(set -> set.stream().map(Label::name)
+				.collect(Collectors.toSet())).collect(Collectors.toList());
 		}
 
 		public List<Set<String>> asLabelSets() {
@@ -207,11 +208,11 @@ public class LabelingSerializer {
 		}
 
 		private JsonObject regionsToJson(
-			Map<String, ? extends IterableRegion<BitType>> regions, Gson gson)
+			Map<Label, ? extends IterableRegion<BitType>> regions, Gson gson)
 		{
 			JsonObject map = new JsonObject();
-			regions.forEach((label, region) -> map.add(label, regionToJson(gson,
-				region)));
+			regions.forEach((label, region) -> map.add(label.name(), regionToJson(
+				gson, region)));
 			return map;
 		}
 
@@ -251,7 +252,7 @@ public class LabelingSerializer {
 				object.getAsJsonObject("labels").entrySet().forEach(entry -> regions
 					.put(entry.getKey(), regionFromJson(context, interval, entry
 						.getValue())));
-				Labeling labeling = new Labeling(regions, interval);
+				Labeling labeling = Labeling.fromMap(regions);
 				labeling.setAxes(pixelSizesToAxes(axes));
 				return labeling;
 			}

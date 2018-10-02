@@ -1,14 +1,12 @@
 
 package net.imglib2.labkit.models;
 
-import jdk.nashorn.internal.scripts.JO;
 import net.imglib2.RandomAccessibleInterval;
 import net.imglib2.img.cell.CellGrid;
 import net.imglib2.img.cell.CellImgFactory;
 import net.imglib2.labkit.inputimage.InputImage;
-import net.imglib2.labkit.segmentation.Segmenter;
-import net.imglib2.labkit.color.ColorMap;
 import net.imglib2.labkit.labeling.Labeling;
+import net.imglib2.labkit.segmentation.Segmenter;
 import net.imglib2.labkit.segmentation.weka.TimeSeriesSegmenter;
 import net.imglib2.labkit.segmentation.weka.TrainableSegmentationSegmenter;
 import net.imglib2.labkit.utils.LabkitUtils;
@@ -44,8 +42,8 @@ public class DefaultSegmentationModel implements SegmentationModel,
 	private final CellGrid grid;
 
 	public DefaultSegmentationModel(InputImage inputImage, Context context) {
-		Labeling labeling = new Labeling(Arrays.asList("background", "foreground"),
-			inputImage.interval());
+		Labeling labeling = Labeling.createEmpty(Arrays.asList("background",
+			"foreground"), inputImage.interval());
 		this.imageLabelingModel = new ImageLabelingModel(inputImage.showable(),
 			labeling, inputImage.isTimeSeries(), inputImage
 				.getDefaultLabelingFilename());
@@ -91,11 +89,6 @@ public class DefaultSegmentationModel implements SegmentationModel,
 	@Override
 	public Holder<SegmentationItem> selectedSegmenter() {
 		return selectedSegmenter;
-	}
-
-	@Override
-	public ColorMap colorMap() {
-		return imageLabelingModel.colorMapProvider().colorMap();
 	}
 
 	@Override

@@ -30,7 +30,8 @@ public class ImageLabelingModelTest {
 	}
 
 	private Labeling initLabeling(long... dimensions) {
-		return new Labeling(Arrays.asList("b", "f"), new FinalInterval(dimensions));
+		return Labeling.createEmpty(Arrays.asList("b", "f"), new FinalInterval(
+			dimensions));
 	}
 
 	private double[] expectedTransform(double scale) {

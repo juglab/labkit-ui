@@ -55,8 +55,8 @@ public class SegmentationResultsModel {
 			updateSegmentation(segmenter);
 			updatePrediction(segmenter);
 			this.labels = segmenter.classNames();
-			this.colors = this.labels.stream().map(model.colorMap()::getColor)
-				.collect(Collectors.toList());
+			this.colors = this.labels.stream().map(name -> model.labeling().getLabel(
+				name).color()).collect(Collectors.toList());
 			hasResults = true;
 			listeners.forEach(Runnable::run);
 		}

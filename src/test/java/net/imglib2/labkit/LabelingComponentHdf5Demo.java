@@ -50,7 +50,7 @@ public class LabelingComponentHdf5Demo {
 	private static ImageLabelingModel initModel(SpimDataMinimal spimData) {
 		// TODO simplify the creation of an ImageLabelingModel
 		BdvShowable wrap = BdvShowable.wrap(spimData);
-		Labeling labeling = new Labeling(Arrays.asList("fg", "bg"), wrap
+		Labeling labeling = Labeling.createEmpty(Arrays.asList("fg", "bg"), wrap
 			.interval());
 		boolean isTimeSeries = false;
 		return new ImageLabelingModel(wrap, labeling, isTimeSeries, "");

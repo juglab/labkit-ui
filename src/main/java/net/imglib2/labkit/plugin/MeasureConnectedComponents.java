@@ -77,8 +77,8 @@ public class MeasureConnectedComponents implements Command {
 	{
 		TableBuilder builder = new TableBuilder();
 		builder.setPixelSize(labeling.axes());
-		labeling.iterableRegions().forEach((label, mask) -> builder.add(label,
-			connectedComponetsSizes(mask)));
+		labeling.iterableRegions().forEach((label, mask) -> builder.add(label
+			.name(), connectedComponetsSizes(mask)));
 		return builder.getTable(calibratedSize);
 	}
 

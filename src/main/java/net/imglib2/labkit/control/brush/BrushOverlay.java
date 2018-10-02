@@ -86,7 +86,7 @@ public class BrushOverlay implements OverlayRenderer {
 	private void drawTitle(Graphics2D g2d, int roundScaledRadius) {
 		if (!model.isValid()) return;
 		Color color = getColor();
-		final String title = model.label();
+		final String title = model.label().name();
 		final FontMetrics fm = g2d.getFontMetrics();
 		final Rectangle2D rect = fm.getStringBounds(title, g2d);
 		g2d.setColor(Color.WHITE);

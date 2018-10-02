@@ -7,6 +7,7 @@ import net.imglib2.RandomAccessibleInterval;
 import net.imglib2.converter.Converter;
 import net.imglib2.converter.Converters;
 import net.imglib2.labkit.Extensible;
+import net.imglib2.labkit.labeling.Label;
 import net.imglib2.labkit.labeling.Labeling;
 import net.imglib2.labkit.models.Holder;
 import net.imglib2.labkit.models.SegmentationItem;
@@ -65,13 +66,13 @@ public class SegmentationAsLabelAction {
 		RandomAccessibleInterval<BitType> mask)
 	{
 		Cursor<BitType> cursor = Views.iterable(mask).cursor();
-		labeling.addLabel(name);
-		RandomAccess<Set<String>> ra = labeling.randomAccess();
+		Label label = labeling.addLabel(name);
+		RandomAccess<Set<Label>> ra = labeling.randomAccess();
 		while (cursor.hasNext()) {
 			boolean value = cursor.next().get();
 			if (value) {
 				ra.setPosition(cursor);
-				ra.get().add(name);
+				ra.get().add(label);
 			}
 		}
 	}

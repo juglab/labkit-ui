@@ -3,7 +3,6 @@ package net.imglib2.labkit.models;
 
 import net.imglib2.RandomAccessibleInterval;
 import net.imglib2.img.cell.CellGrid;
-import net.imglib2.labkit.color.ColorMap;
 import net.imglib2.labkit.labeling.Labeling;
 import net.imglib2.realtransform.AffineTransform3D;
 
@@ -16,8 +15,6 @@ public interface SegmentationModel {
 	RandomAccessibleInterval<?> image();
 
 	CellGrid grid();
-
-	ColorMap colorMap();
 
 	AffineTransform3D labelTransformation();
 

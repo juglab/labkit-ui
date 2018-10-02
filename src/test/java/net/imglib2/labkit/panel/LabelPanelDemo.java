@@ -17,7 +17,7 @@ public class LabelPanelDemo {
 	public static void main(String... args) {
 		RandomAccessibleInterval<? extends NumericType<?>> image = ArrayImgs
 			.unsignedBytes(10, 10);
-		Labeling labeling = new Labeling(Arrays.asList("bg", "fg"), image);
+		Labeling labeling = Labeling.createEmpty(Arrays.asList("bg", "fg"), image);
 		ImageLabelingModel imageLabeling = new ImageLabelingModel(image, labeling,
 			false);
 		ColoredLabelsModel model = new ColoredLabelsModel(imageLabeling);

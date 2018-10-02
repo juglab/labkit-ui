@@ -30,7 +30,7 @@ public class LabelingComponentDemo {
 	private static ImageLabelingModel initModel() {
 		RandomAccessibleInterval<? extends NumericType<?>> labelingIndexImage =
 			ArrayImgs.bytes(100, 100, 100);
-		Labeling labeling = new Labeling(Arrays.asList("fg", "bg"),
+		Labeling labeling = Labeling.createEmpty(Arrays.asList("fg", "bg"),
 			labelingIndexImage);
 		boolean isTimeSeries = false;
 		return new ImageLabelingModel(greenNoiseImage(100, 100, 100), labeling,

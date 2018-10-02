@@ -15,6 +15,7 @@ import java.io.IOException;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
+import java.util.stream.Collectors;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
@@ -44,12 +45,16 @@ public class LabelingSerializationTest {
 	private boolean labelingsEqual(Labeling expected, Labeling actual) {
 		boolean[] value = { true };
 		Views.interval(Views.pair(expected, actual), expected).forEach(p -> {
-			value[0] &= setsEqual(p.getA(), p.getB());
+			value[0] &= setsEqual(toStrings(p.getA()), toStrings(p.getB()));
 		});
 		return value[0];
 	}
 
-	private boolean setsEqual(Set<String> a, Set<String> b) {
+	private Set<String> toStrings(Set<Label> input) {
+		return input.stream().map(Label::name).collect(Collectors.toSet());
+	}
+
+	private <T> boolean setsEqual(Set<T> a, Set<T> b) {
 		return a.size() == b.size() && a.containsAll(b);
 	}
 
@@ -59,7 +64,7 @@ public class LabelingSerializationTest {
 		Map<String, IterableRegion<BitType>> regions = new TreeMap<>();
 		regions.put("A", region1);
 		regions.put("B", region2);
-		return new Labeling(regions, region1);
+		return Labeling.fromMap(regions);
 	}
 
 	private static IterableRegion<BitType> exampleRegion(long... position) {

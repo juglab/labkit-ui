@@ -21,63 +21,35 @@ public class LabelingTest {
 
 	@Test
 	public void testAddLabel() {
-		Labeling labeling = new Labeling(Collections.emptyList(), interval);
-		String label = "foobar";
-		labeling.addLabel(label);
+		Labeling labeling = Labeling.createEmpty(Collections.emptyList(), interval);
+		Label label = labeling.addLabel("foobar");
 		assertTrue(labeling.getLabels().contains(label));
 	}
 
 	@Test
 	public void testRemoveLabel() {
-		Labeling labeling = new Labeling(Arrays.asList("f", "b"), interval);
+		Labeling labeling = Labeling.createEmpty(Arrays.asList("f", "b"), interval);
+		Label f = labeling.getLabel("f");
+		Label b = labeling.getLabel("b");
 		long[] position = { 0, 0 };
-		addPixelLabel(labeling, "f", position);
-		addPixelLabel(labeling, "b", position);
-		labeling.removeLabel("b");
+		addPixelLabel(labeling, f, position);
+		addPixelLabel(labeling, b, position);
+		labeling.removeLabel(b);
 		// test
-		assertFalse(labeling.getLabels().contains("b"));
-		assertEquals(Collections.singletonList("f"), new ArrayList<>(getPixelLabels(
+		assertFalse(labeling.getLabels().contains(b));
+		assertEquals(Collections.singletonList(f), new ArrayList<>(getPixelLabels(
 			labeling, position)));
 	}
 
-	@Test
-	public void testRenameLabel() {
-		// setup
-		Labeling labeling = new Labeling(Arrays.asList("foreground", "background"),
-			interval);
-		addPixelLabel(labeling, "foreground", 0, 0);
-		addPixelLabel(labeling, "background", 1, 1);
-		// process
-		labeling.renameLabel("foreground", "fg");
-		// test
-		assertEquals(Collections.singleton("fg"), getPixelLabels(labeling, 0, 0));
-		assertEquals(Collections.singleton("background"), getPixelLabels(labeling,
-			1, 1));
-	}
-
-	private void addPixelLabel(Labeling labeling, String value,
-		long... position)
-	{
-		RandomAccess<? extends Set<String>> randomAccess = labeling.randomAccess();
+	private void addPixelLabel(Labeling labeling, Label value, long... position) {
+		RandomAccess<? extends Set<Label>> randomAccess = labeling.randomAccess();
 		randomAccess.setPosition(position);
 		randomAccess.get().add(value);
 	}
 
-	private Set<String> getPixelLabels(Labeling labeling, long... position) {
-		RandomAccess<? extends Set<String>> randomAccess = labeling.randomAccess();
+	private Set<Label> getPixelLabels(Labeling labeling, long... position) {
+		RandomAccess<? extends Set<Label>> randomAccess = labeling.randomAccess();
 		randomAccess.setPosition(position);
 		return randomAccess.get();
 	}
-
-	@Test
-	public void testRenameLabel2() {
-		// setup
-		Labeling labeling = new Labeling(Arrays.asList("foreground", "background"),
-			interval);
-		// process
-		labeling.renameLabel("foreground", "fg");
-		// test
-		assertEquals(Arrays.asList("fg", "background"), labeling.getLabels());
-	}
-
 }

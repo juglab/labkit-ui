@@ -7,6 +7,7 @@ import net.imagej.DatasetService;
 import net.imglib2.RandomAccessibleInterval;
 import net.imglib2.converter.Converters;
 import net.imglib2.labkit.Extensible;
+import net.imglib2.labkit.labeling.Label;
 import net.imglib2.labkit.labeling.Labeling;
 import net.imglib2.labkit.models.ImageLabelingModel;
 import net.imglib2.type.logic.BitType;
@@ -57,8 +58,8 @@ public class BitmapImportExportAction extends AbstractFileIoAcion {
 
 	private void exportLabel(String filename) throws IOException {
 		Labeling labeling = model.labeling().get();
-		String selectedLabel = model.selectedLabel().get();
-		RandomAccessibleInterval<BitType> bitmap = labeling.regions().get(
+		Label selectedLabel = model.selectedLabel().get();
+		RandomAccessibleInterval<BitType> bitmap = labeling.getRegion(
 			selectedLabel);
 		Dataset dataset = datasetService.create(toUnsignedByteType(bitmap));
 		datasetIOService.save(dataset, filename);
