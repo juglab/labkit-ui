@@ -8,12 +8,12 @@ import net.imglib2.labkit.models.SegmentationItem;
 /**
  * @author Matthias Arzt
  */
-public class SelectClassifier {
+public class ClassifierSettingsAction {
 
-	public SelectClassifier(Extensible extensible,
+	public ClassifierSettingsAction(Extensible extensible,
 		Holder<? extends SegmentationItem> selectedSegmenter)
 	{
-		extensible.addAction("Segmentation Settings ...", "segmenterSettings",
+		extensible.addAction("Classifier Settings ...", "segmenterSettings",
 			() -> selectedSegmenter.get().segmenter().editSettings(extensible
 				.dialogParent()), "");
 	}

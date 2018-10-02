@@ -1,20 +1,16 @@
 
 package net.imglib2.labkit;
 
-import net.imglib2.Interval;
 import net.imglib2.RandomAccessibleInterval;
 import net.imglib2.labkit.actions.AddLabelingIoAction;
 import net.imglib2.labkit.actions.BatchSegmentAction;
 import net.imglib2.labkit.actions.BitmapImportExportAction;
 import net.imglib2.labkit.actions.ClassifierIoAction;
 import net.imglib2.labkit.actions.LabelingIoAction;
-import net.imglib2.labkit.actions.OpenImageAction;
-import net.imglib2.labkit.actions.OrthogonalView;
+import net.imglib2.labkit.actions.ResetViewAction;
 import net.imglib2.labkit.actions.SegmentationAsLabelAction;
 import net.imglib2.labkit.actions.SegmentationSave;
-import net.imglib2.labkit.actions.SelectClassifier;
-import net.imglib2.labkit.inputimage.DefaultInputImage;
-import net.imglib2.labkit.labeling.Labeling;
+import net.imglib2.labkit.actions.ClassifierSettingsAction;
 import net.imglib2.labkit.models.ColoredLabelsModel;
 import net.imglib2.labkit.models.DefaultSegmentationModel;
 import net.imglib2.labkit.panel.GuiUtils;
@@ -25,13 +21,11 @@ import net.imglib2.labkit.segmentation.PredictionLayer;
 import net.imglib2.labkit.segmentation.TrainClassifier;
 import net.imglib2.type.NativeType;
 import net.imglib2.type.numeric.IntegerType;
-import net.imglib2.type.numeric.NumericType;
 import net.imglib2.type.numeric.real.FloatType;
 import net.miginfocom.swing.MigLayout;
 import org.scijava.Context;
 
 import javax.swing.*;
-import java.util.Arrays;
 import java.util.List;
 
 public class SegmentationComponent implements AutoCloseable {
@@ -72,9 +66,9 @@ public class SegmentationComponent implements AutoCloseable {
 		new AddLabelingIoAction(extensible, segmentationModel.imageLabelingModel()
 			.labeling());
 		new SegmentationSave(extensible, segmentationModel.selectedSegmenter());
-		new OpenImageAction(extensible);
-		new OrthogonalView(extensible, segmentationModel.imageLabelingModel());
-		new SelectClassifier(extensible, segmentationModel.selectedSegmenter());
+		new ResetViewAction(extensible, segmentationModel.imageLabelingModel());
+		new ClassifierSettingsAction(extensible, segmentationModel
+			.selectedSegmenter());
 		new BatchSegmentAction(extensible, segmentationModel.selectedSegmenter());
 		new SegmentationAsLabelAction(extensible, segmentationModel
 			.selectedSegmenter(), segmentationModel.imageLabelingModel().labeling());

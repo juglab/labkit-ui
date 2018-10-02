@@ -30,7 +30,7 @@ public class AddLabelingIoAction extends AbstractFileIoAcion {
 			"labeling"));
 		this.labeling = labeling;
 		serializer = new LabelingSerializer(extensible.context());
-		initOpenAction("Open additional Labeling ...", "openAdditionalLabeling",
+		initOpenAction("Import Labeling ...", "openAdditionalLabeling",
 			this::openAdditional, "");
 	}
 

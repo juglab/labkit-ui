@@ -23,7 +23,7 @@ public class SetLabelsAction {
 		// TODO: clean this mess up
 		this.segmentationComponent = segmentationComponent;
 		this.preference = preferences;
-		addAction("Default Available Labels ...", "defaultLabels",
+		addAction("Available Labels On Start Up ...", "defaultLabels",
 			this::defaultLabels);
 	}
 
@@ -45,9 +45,9 @@ public class SetLabelsAction {
 		textArea.setPreferredSize(new Dimension(200, 200));
 		textArea.setText(joiner.toString());
 		int result = JOptionPane.showConfirmDialog(null, new Object[] {
-			"Please input new labels:", new JScrollPane(textArea) },
-			"Change Available Labels", JOptionPane.OK_CANCEL_OPTION,
-			JOptionPane.PLAIN_MESSAGE);
+			"When Labkit is started the first time for an image,\nthis labels will be available:",
+			new JScrollPane(textArea) }, "Labels On Start Up",
+			JOptionPane.OK_CANCEL_OPTION, JOptionPane.PLAIN_MESSAGE);
 		if (result == JOptionPane.OK_OPTION) return Optional.of(Arrays.asList(
 			textArea.getText().split("\n")));
 		else return Optional.empty();

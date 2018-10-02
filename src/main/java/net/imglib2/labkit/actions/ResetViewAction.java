@@ -8,10 +8,10 @@ import net.imglib2.labkit.models.ImageLabelingModel;
 /**
  * @author Matthias Arzt
  */
-public class OrthogonalView {
+public class ResetViewAction {
 
-	public OrthogonalView(Extensible extensible, ImageLabelingModel model) {
-		extensible.addAction("Orthogonal View", "resetView", () -> {
+	public ResetViewAction(Extensible extensible, ImageLabelingModel model) {
+		extensible.addAction("Reset View", "resetView", () -> {
 			TransformationModel transformationModel = model.transformationModel();
 			transformationModel.transformToShowInterval(model.labeling().get()
 				.interval(), model.labelTransformation());

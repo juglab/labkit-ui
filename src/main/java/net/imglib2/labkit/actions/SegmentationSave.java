@@ -33,15 +33,15 @@ public class SegmentationSave extends AbstractFileIoAcion {
 		this.extensible = extensible;
 		Supplier<RandomAccessibleInterval<ShortType>> segmentationSupplier =
 			() -> selectedSegmenter.get().results().segmentation();
-		initSaveAction("Save Segmentation ...", "saveSegmentation", getSaveAction(
-			segmentationSupplier), "");
-		extensible.addAction("Show Segmentation in ImageJ", "showSegmentation",
-			getShowAction(segmentationSupplier), "");
+		initSaveAction("Save Segmentation Result ...", "saveSegmentation",
+			getSaveAction(segmentationSupplier), "");
+		extensible.addAction("Show Segmentation Result in ImageJ",
+			"showSegmentation", getShowAction(segmentationSupplier), "");
 		Supplier<RandomAccessibleInterval<FloatType>> predictionSupplier =
 			() -> selectedSegmenter.get().results().prediction();
-		initSaveAction("Save Prediction ...", "savePrediction", getSaveAction(
+		initSaveAction("Save Probability Map ...", "savePrediction", getSaveAction(
 			predictionSupplier), "");
-		extensible.addAction("Show Prediction in ImageJ", "showPrediction",
+		extensible.addAction("Show Probability Map in ImageJ", "showPrediction",
 			getShowAction(predictionSupplier), "");
 	}
 

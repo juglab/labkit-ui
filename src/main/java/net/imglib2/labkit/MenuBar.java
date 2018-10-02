@@ -26,14 +26,16 @@ public class MenuBar extends JMenuBar {
 	}
 
 	private void setupSortedMenu() {
-		addMenu("Labels").addItem("openLabeling").addItem("saveLabeling").addItem(
-			"showLabeling").addItem("importLabel").addItem("exportLabel");
-		addMenu("Classifier").addItem("trainClassifier").addItem("saveClassifier")
-			.addItem("openClassifier").addItem("showSegmentation").addItem(
-				"saveSegmentation").addItem("showPrediction").addItem("savePrediction")
-			.addItem("addSegmentationAsLabel").addItem("segmenterSettings");
+		addMenu("Labeling").addItem("openLabeling").addItem("saveLabeling").addItem(
+			"showLabeling").addSeparator().addItem("importLabel").addItem(
+				"openAdditionalLabeling").addItem("exportLabel");
+		addMenu("Segmentation").addItem("trainClassifier").addItem(
+			"segmenterSettings").addItem("saveClassifier").addItem("openClassifier")
+			.addSeparator().addItem("showSegmentation").addItem("saveSegmentation")
+			.addItem("showPrediction").addItem("savePrediction").addSeparator()
+			.addItem("addSegmentationAsLabel");
 		addMenu("View").addCheckBox("toggleImage").addCheckBox("toggleLabeling")
-			.addCheckBox("toggleSegmentation");
+			.addCheckBox("toggleSegmentation").addSeparator().addItem("resetView");
 	}
 
 	private MenuBuilder addMenu(String title) {
@@ -77,5 +79,9 @@ public class MenuBar extends JMenuBar {
 			return this;
 		}
 
+		public MenuBuilder addSeparator() {
+			menu.addSeparator();
+			return this;
+		}
 	}
 }
