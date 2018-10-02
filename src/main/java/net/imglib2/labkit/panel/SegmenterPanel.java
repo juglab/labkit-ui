@@ -7,6 +7,7 @@ import net.miginfocom.swing.MigLayout;
 import org.scijava.ui.behaviour.util.RunnableAction;
 
 import javax.swing.*;
+import javax.swing.plaf.basic.BasicArrowButton;
 
 public class SegmenterPanel {
 
@@ -67,10 +68,7 @@ public class SegmenterPanel {
 
 		private JButton initPopupMenuButton() {
 			JPopupMenu menu = initPopupMenu();
-			JButton button = new JButton("...");
-			button.setBorder(BorderFactory.createEmptyBorder());
-			button.setContentAreaFilled(false);
-			button.setOpaque(false);
+			JButton button = new BasicArrowButton(SwingConstants.SOUTH);
 			button.addActionListener(actionEvent -> {
 				menu.show(button, 0, button.getHeight());
 			});

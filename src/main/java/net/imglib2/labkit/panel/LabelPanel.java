@@ -9,6 +9,7 @@ import org.scijava.ui.behaviour.util.RunnableAction;
 
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
+import javax.swing.plaf.basic.BasicArrowButton;
 import java.awt.*;
 import java.awt.event.ItemEvent;
 import java.awt.event.MouseAdapter;
@@ -132,7 +133,7 @@ public class LabelPanel {
 			JPopupMenu menu = initPopupMenu(value);
 			add(initPopupMenuButton(menu));
 			setComponentPopupMenu(menu);
-			add(initFinderButton(value));
+			add(initFinderButton(value), "gapx 4pt");
 			add(initVisibilityCheckbox(value));
 			initRenameOnDoubleClick(value);
 		}
@@ -148,10 +149,7 @@ public class LabelPanel {
 		}
 
 		private JButton initPopupMenuButton(JPopupMenu menu) {
-			JButton button = new JButton("...");
-			button.setBorder(BorderFactory.createEmptyBorder());
-			button.setContentAreaFilled(false);
-			button.setOpaque(false);
+			JButton button = new BasicArrowButton(BasicArrowButton.SOUTH);
 			button.addActionListener(actionEvent -> {
 				menu.show(button, 0, button.getHeight());
 			});
