@@ -129,7 +129,7 @@ public class LabelPanel {
 			setOpaque(true);
 			setLayout(new MigLayout("insets 4pt, gap 4pt, fillx"));
 			add(initColorButton(value));
-			add(new JLabel(value.name()), "push");
+			add(new JLabel(value.name()), "grow, push, width 0:0:pref");
 			JPopupMenu menu = initPopupMenu(value);
 			add(initPopupMenuButton(menu));
 			setComponentPopupMenu(menu);
