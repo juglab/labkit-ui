@@ -16,7 +16,7 @@ import java.io.IOException;
 /**
  * @author Matthias Arzt
  */
-public class LabelingIoAction extends AbstractFileIoAcion {
+public class LabelingIoAction extends AbstractFileIoAction {
 
 	private final LabelingModel labelingModel;
 	private final LabelingSerializer serializer;

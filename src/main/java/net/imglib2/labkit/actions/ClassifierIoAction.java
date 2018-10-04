@@ -10,7 +10,7 @@ import javax.swing.filechooser.FileNameExtensionFilter;
 /**
  * @author Matthias Arzt
  */
-public class ClassifierIoAction extends AbstractFileIoAcion {
+public class ClassifierIoAction extends AbstractFileIoAction {
 
 	private final Holder<SegmentationItem> selectedSegmenter;
 

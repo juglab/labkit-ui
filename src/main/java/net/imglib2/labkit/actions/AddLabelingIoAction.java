@@ -20,7 +20,7 @@ import java.util.stream.Collectors;
 /**
  * @author Matthias Arzt
  */
-public class AddLabelingIoAction extends AbstractFileIoAcion {
+public class AddLabelingIoAction extends AbstractFileIoAction {
 
 	private final Holder<Labeling> labeling;
 	private final LabelingSerializer serializer;

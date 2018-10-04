@@ -11,7 +11,7 @@ import java.io.File;
 /**
  * @author Matthias Arzt
  */
-public abstract class AbstractFileIoAcion {
+public abstract class AbstractFileIoAction {
 
 	public static final FileFilter TIFF_FILTER = new FileNameExtensionFilter(
 		"TIF Image (*.tif, *.tiff)", "tif", "tiff");
@@ -20,7 +20,7 @@ public abstract class AbstractFileIoAcion {
 
 	private final JFileChooser fileChooser;
 
-	public AbstractFileIoAcion(Extensible extensible, FileFilter fileFilter) {
+	public AbstractFileIoAction(Extensible extensible, FileFilter fileFilter) {
 		this.extensible = extensible;
 		this.fileChooser = new JFileChooser();
 		fileChooser.setAcceptAllFileFilterUsed(false);
@@ -44,11 +44,11 @@ public abstract class AbstractFileIoAcion {
 	private void initAction(String title, String command, Action action,
 		String keyStroke, int dialogType)
 	{
-		extensible.addAction(title, command, () -> OpenDialogAndThen(title,
+		extensible.addAction(title, command, () -> openDialogAndThen(title,
 			dialogType, action), keyStroke);
 	}
 
-	private void OpenDialogAndThen(String title, int dialogType, Action action) {
+	private void openDialogAndThen(String title, int dialogType, Action action) {
 		fileChooser.setDialogTitle(title);
 		String filename = action.suggestedFile();
 		if (filename != null) fileChooser.setSelectedFile(new File(filename));

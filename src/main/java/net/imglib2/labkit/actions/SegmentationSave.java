@@ -22,14 +22,14 @@ import java.util.function.Supplier;
 /**
  * @author Matthias Arzt
  */
-public class SegmentationSave extends AbstractFileIoAcion {
+public class SegmentationSave extends AbstractFileIoAction {
 
 	private final Extensible extensible;
 
 	public SegmentationSave(Extensible extensible,
 		Holder<SegmentationItem> selectedSegmenter)
 	{
-		super(extensible, AbstractFileIoAcion.TIFF_FILTER);
+		super(extensible, AbstractFileIoAction.TIFF_FILTER);
 		this.extensible = extensible;
 		Supplier<RandomAccessibleInterval<ShortType>> segmentationSupplier =
 			() -> selectedSegmenter.get().results().segmentation();
