@@ -23,7 +23,7 @@ import javax.swing.*;
 import java.io.File;
 import java.io.IOException;
 
-public class BitmapImportExportAction extends AbstractFileIoAcion {
+public class BitmapImportExportAction extends AbstractFileIoAction {
 
 	private final ImageLabelingModel model;
 
@@ -41,7 +41,7 @@ public class BitmapImportExportAction extends AbstractFileIoAcion {
 	public BitmapImportExportAction(Extensible extensible,
 		ImageLabelingModel model)
 	{
-		super(extensible, AbstractFileIoAcion.TIFF_FILTER);
+		super(extensible, AbstractFileIoAction.TIFF_FILTER);
 		this.extensible = extensible;
 		this.model = model;
 		extensible.context().inject(this);
