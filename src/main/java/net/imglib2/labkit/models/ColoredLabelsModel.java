@@ -58,41 +58,34 @@ public class ColoredLabelsModel {
 		if (newName == null) return;
 		Label newLabel = labeling.addLabel(newName);
 		model.selectedLabel().set(newLabel);
-		holder.notifier().forEach(l -> l.accept(labeling));
+		fireLabelsChanged();
 	}
 
 	public void removeLabel(Label label) {
-		Holder<Labeling> holder = model.labeling();
-		Labeling labeling = holder.get();
-		holder.get().removeLabel(label);
-		holder.notifier().forEach(l -> l.accept(labeling));
+		model.labeling().get().removeLabel(label);
+		fireLabelsChanged();
 	}
 
 	public void renameLabel(Label label, String newLabel) {
-		Holder<Labeling> holder = model.labeling();
-		Labeling labeling = holder.get();
-		holder.get().renameLabel(label, newLabel);
-		holder.notifier().forEach(l -> l.accept(labeling));
+		model.labeling().get().renameLabel(label, newLabel);
+		fireLabelsChanged();
 	}
 
 	public void moveLabel(Label label, int movement) {
-		Holder<Labeling> holder = model.labeling();
-		Labeling labeling = holder.get();
+		Labeling labeling = model.labeling().get();
 		List<Label> oldOrder = new ArrayList<>(labeling.getLabels());
 		Function<Label, Double> priority = l -> oldOrder.indexOf(l) + (l == label
 			? movement + 0.5 * Math.signum(movement) : 0.0);
 		labeling.setLabelOrder(Comparator.comparing(priority));
-		holder.notifier().forEach(l -> l.accept(labeling));
+		fireLabelsChanged();
 	}
 
 	public void setColor(Label label, ARGBType newColor) {
-		Holder<Labeling> holder = model.labeling();
-		Labeling labeling = holder.get();
 		label.setColor(newColor);
-		holder.notifier().forEach(l -> l.accept(labeling));
+		fireLabelsChanged();
 	}
 
-	private String suggestName(List<String> labels) {
+	private static String suggestName(List<String> labels) {
 		for (int i = 1; i < 10000; i++) {
 			String label = "Label " + i;
 			if (!labels.contains(label)) return label;
@@ -130,16 +123,21 @@ public class ColoredLabelsModel {
 	}
 
 	public void clearLabel(Label selected) {
-		Holder<Labeling> holder = model.labeling();
-		Labeling labeling = holder.get();
-		labeling.clearLabel(selected);
-		holder.notifier().forEach(l -> l.accept(labeling));
+		model.labeling().get().clearLabel(selected);
+		fireLabelsChanged();
 	}
 
 	public void setActive(Label label, boolean b) {
 		label.setActive(b);
+		fireLabelsChanged();
+	}
+
+	// -- Helper methods --
+
+	private void fireLabelsChanged() {
 		Holder<Labeling> holder = model.labeling();
 		Labeling labeling = holder.get();
-		model.labeling().notifier().forEach(l -> l.accept(labeling));
+		holder.notifier().forEach(l -> l.accept(labeling));
 	}
+
 }
