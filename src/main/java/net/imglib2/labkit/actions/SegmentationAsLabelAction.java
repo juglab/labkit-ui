@@ -40,6 +40,10 @@ public class SegmentationAsLabelAction {
 	private void addSegmentationAsLabels() {
 		SegmentationResultsModel selectedResults = selectedSegmenter.get()
 			.results();
+		addSegmentationAsLabel(selectedResults);
+	}
+
+	public void addSegmentationAsLabel(SegmentationResultsModel selectedResults) {
 		List<String> labels = selectedResults.labels();
 		String selected = (String) JOptionPane.showInputDialog(null,
 			"Select label to be added", "Add Segmentation as Labels ...",
