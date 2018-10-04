@@ -42,6 +42,8 @@ public class SegmentationComponent implements AutoCloseable {
 
 	private DefaultSegmentationModel segmentationModel;
 
+	private SegmentationAsLabelAction sal;
+
 	public SegmentationComponent(Context context, JFrame dialogBoxOwner,
 		DefaultSegmentationModel segmentationModel, boolean fixedLabels)
 	{
@@ -70,7 +72,7 @@ public class SegmentationComponent implements AutoCloseable {
 		new ClassifierSettingsAction(extensible, segmentationModel
 			.selectedSegmenter());
 		new BatchSegmentAction(extensible, segmentationModel.selectedSegmenter());
-		new SegmentationAsLabelAction(extensible, segmentationModel
+		sal = new SegmentationAsLabelAction(extensible, segmentationModel
 			.selectedSegmenter(), segmentationModel.imageLabelingModel().labeling());
 		new BitmapImportExportAction(extensible, segmentationModel
 			.imageLabelingModel());
@@ -88,7 +90,7 @@ public class SegmentationComponent implements AutoCloseable {
 			new LabelPanel(dialogBoxOwner, new ColoredLabelsModel(segmentationModel
 				.imageLabelingModel()), fixedLabels, actions).getComponent()), "grow, wrap");
 		panel.add(GuiUtils.createCheckboxGroupedPanel(actions.get("Segmentation"),
-			new SegmenterPanel(segmentationModel).getComponent()), "grow");
+			new SegmenterPanel(segmentationModel, sal).getComponent()), "grow");
 		panel.invalidate();
 		panel.repaint();
 		return panel;
