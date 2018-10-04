@@ -11,28 +11,30 @@ import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import javax.swing.plaf.basic.BasicArrowButton;
 import java.awt.*;
+import java.awt.event.ActionEvent;
 import java.awt.event.ItemEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Set;
 
 public class LabelPanel {
 
 	private final ColoredLabelsModel model;
-	private ComponentList<Label, JPanel> list = new ComponentList<>();
+	private final ComponentList<Label, JPanel> list = new ComponentList<>();
 	private final JPanel panel;
 	private final JFrame dialogParent;
 	private final boolean fixedLabels;
+	private final ActionMap actions;
 
 	public LabelPanel(JFrame dialogParent, ColoredLabelsModel model,
-		boolean fixedLabels)
+		boolean fixedLabels, ActionMap actions)
 	{
 		this.model = model;
 		this.dialogParent = dialogParent;
 		this.panel = initPanel(fixedLabels);
 		this.fixedLabels = fixedLabels;
+		this.actions = actions;
 		model.listeners().add(this::update);
 		update();
 	}
@@ -125,20 +127,23 @@ public class LabelPanel {
 	// -- Helper methods --
 	private class EntryPanel extends JPanel {
 
-		EntryPanel(Label value) {
+		private final Label label;
+
+		EntryPanel(Label label) {
+			this.label = label;
 			setOpaque(true);
 			setLayout(new MigLayout("insets 4pt, gap 4pt, fillx"));
-			add(initColorButton(value));
-			add(new JLabel(value.name()), "grow, push, width 0:0:pref");
-			JPopupMenu menu = initPopupMenu(value);
+			add(initColorButton());
+			add(new JLabel(label.name()), "grow, push, width 0:0:pref");
+			JPopupMenu menu = initPopupMenu();
 			add(initPopupMenuButton(menu));
 			setComponentPopupMenu(menu);
-			add(initFinderButton(value), "gapx 4pt");
-			add(initVisibilityCheckbox(value));
-			initRenameOnDoubleClick(value);
+			add(initFinderButton(), "gapx 4pt");
+			add(initVisibilityCheckbox());
+			initRenameOnDoubleClick();
 		}
 
-		private JCheckBox initVisibilityCheckbox(Label label) {
+		private JCheckBox initVisibilityCheckbox() {
 			JCheckBox checkBox = GuiUtils.styleCheckboxUsingEye(new JCheckBox());
 			checkBox.setSelected(label.isActive());
 			checkBox.addItemListener(event -> {
@@ -156,16 +161,16 @@ public class LabelPanel {
 			return button;
 		}
 
-		private void initRenameOnDoubleClick(Label value) {
+		private void initRenameOnDoubleClick() {
 			addMouseListener(new MouseAdapter() {
 
 				public void mouseClicked(MouseEvent event) {
-					if (event.getClickCount() == 2) renameLabel(value);
+					if (event.getClickCount() == 2) renameLabel(label);
 				}
 			});
 		}
 
-		private JPopupMenu initPopupMenu(Label label) {
+		private JPopupMenu initPopupMenu() {
 			JPopupMenu menu = new JPopupMenu();
 			if (!fixedLabels) menu.add(new JMenuItem(new RunnableAction("Rename",
 				() -> renameLabel(label))));
@@ -177,18 +182,30 @@ public class LabelPanel {
 				label))));
 			if (!fixedLabels) menu.add(new JMenuItem(new RunnableAction("Remove",
 				() -> removeLabel(label))));
+			menu.add(new JMenuItem(new RunnableAction("Export as Bitmap ...",
+				this::exportLabel)));
 			return menu;
 		}
 
-		private JButton initColorButton(Label value) {
+		private void exportLabel() {
+			model.setSelected(label);
+			fireAction(actions.get("Export Selected Label as Bitmap ..."));
+		}
+
+		private void fireAction(Action action) {
+			action.actionPerformed(new ActionEvent(this, ActionEvent.ACTION_PERFORMED,
+				null));
+		}
+
+		private JButton initColorButton() {
 			JButton colorButton = new JButton();
 			colorButton.setBorder(new EmptyBorder(1, 1, 1, 1));
-			colorButton.setIcon(GuiUtils.createIcon(new Color(value.color().get())));
-			colorButton.addActionListener(l -> changeColor(value));
+			colorButton.setIcon(GuiUtils.createIcon(new Color(label.color().get())));
+			colorButton.addActionListener(l -> changeColor(label));
 			return colorButton;
 		}
 
-		private JButton initFinderButton(Label label) {
+		private JButton initFinderButton() {
 			return GuiUtils.createIconButton(GuiUtils.createAction("locate",
 				() -> localize(label), "crosshair.png"));
 		}
