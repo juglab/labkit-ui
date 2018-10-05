@@ -21,7 +21,7 @@ public class LabelPanelDemo {
 		ImageLabelingModel imageLabeling = new ImageLabelingModel(image, labeling,
 			false);
 		ColoredLabelsModel model = new ColoredLabelsModel(imageLabeling);
-		LabelPanel panel = new LabelPanel(null, model, true, new ActionMap());
+		LabelPanel panel = new LabelPanel(null, model, true, ignore -> new JPopupMenu());
 		showInFrame(panel.getComponent());
 	}
 

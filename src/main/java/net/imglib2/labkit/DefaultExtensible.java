@@ -68,8 +68,16 @@ public class DefaultExtensible implements Extensible {
 	}
 
 	public JPopupMenu createSegmenterMenu(Supplier<SegmentationItem> item) {
+		return createPopupMenu(item, this.segmenterMenu);
+	}
+
+	public JPopupMenu createLabelMenu(Supplier<Label> item) {
+		return createPopupMenu(item, this.labelMenu);
+	}
+
+	private <T> JPopupMenu createPopupMenu(Supplier<T> item, List<Entry<T>> segmenterMenu) {
 		JPopupMenu menu = new JPopupMenu();
-		for (Entry<SegmentationItem> entry : segmenterMenu) {
+		for (Entry<T> entry : segmenterMenu) {
 			RunnableAction action = new RunnableAction(entry.title,
 					() -> entry.action.accept(item.get()));
 			action.putValue(Action.SMALL_ICON, entry.icon);
