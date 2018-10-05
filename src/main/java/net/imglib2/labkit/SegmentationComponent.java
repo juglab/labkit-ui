@@ -6,6 +6,7 @@ import net.imglib2.labkit.actions.AddLabelingIoAction;
 import net.imglib2.labkit.actions.BatchSegmentAction;
 import net.imglib2.labkit.actions.BitmapImportExportAction;
 import net.imglib2.labkit.actions.ClassifierIoAction;
+import net.imglib2.labkit.actions.LabelEditAction;
 import net.imglib2.labkit.actions.LabelingIoAction;
 import net.imglib2.labkit.actions.ResetViewAction;
 import net.imglib2.labkit.actions.SegmentationAsLabelAction;
@@ -65,19 +66,21 @@ public class SegmentationComponent implements AutoCloseable {
 		DefaultExtensible extensible = new DefaultExtensible(context,
 			dialogBoxOwner, labelingComponent);
 		new TrainClassifier(extensible, segmentationModel);
+		new ClassifierSettingsAction(extensible, segmentationModel
+			.selectedSegmenter());
 		new ClassifierIoAction(extensible, segmentationModel.selectedSegmenter());
 		new LabelingIoAction(extensible, segmentationModel.imageLabelingModel());
 		new AddLabelingIoAction(extensible, segmentationModel.imageLabelingModel()
 			.labeling());
 		new SegmentationSave(extensible, segmentationModel.selectedSegmenter());
 		new ResetViewAction(extensible, segmentationModel.imageLabelingModel());
-		new ClassifierSettingsAction(extensible, segmentationModel
-			.selectedSegmenter());
 		new BatchSegmentAction(extensible, segmentationModel.selectedSegmenter());
 		new SegmentationAsLabelAction(extensible, segmentationModel
 			.selectedSegmenter(), segmentationModel.imageLabelingModel().labeling());
 		new BitmapImportExportAction(extensible, segmentationModel
 			.imageLabelingModel());
+		new LabelEditAction(extensible, fixedLabels, new ColoredLabelsModel(
+			segmentationModel.imageLabelingModel()));
 		MeasureConnectedComponents.addAction(extensible, segmentationModel
 			.imageLabelingModel());
 		return extensible;
@@ -91,8 +94,8 @@ public class SegmentationComponent implements AutoCloseable {
 			.createDimensionsInfo(segmentationModel.image())), "grow, wrap");
 		panel.add(GuiUtils.createCheckboxGroupedPanel(actions.get("Labeling"),
 			new LabelPanel(dialogBoxOwner, new ColoredLabelsModel(segmentationModel
-				.imageLabelingModel()), fixedLabels, actions).getComponent()),
-			"grow, wrap");
+				.imageLabelingModel()), fixedLabels, extensible::createLabelMenu)
+					.getComponent()), "grow, wrap");
 		panel.add(GuiUtils.createCheckboxGroupedPanel(actions.get("Segmentation"),
 			new SegmenterPanel(segmentationModel, extensible::createSegmenterMenu)
 				.getComponent()), "grow");

@@ -17,6 +17,8 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.Function;
+import java.util.function.Supplier;
 
 public class LabelPanel {
 
@@ -24,17 +26,15 @@ public class LabelPanel {
 	private final ComponentList<Label, JPanel> list = new ComponentList<>();
 	private final JPanel panel;
 	private final JFrame dialogParent;
-	private final boolean fixedLabels;
-	private final ActionMap actions;
+	private final Function<Supplier<Label>, JPopupMenu> menuFactory;
 
 	public LabelPanel(JFrame dialogParent, ColoredLabelsModel model,
-		boolean fixedLabels, ActionMap actions)
+		boolean fixedLabels, Function<Supplier<Label>, JPopupMenu> menuFactory)
 	{
 		this.model = model;
 		this.dialogParent = dialogParent;
 		this.panel = initPanel(fixedLabels);
-		this.fixedLabels = fixedLabels;
-		this.actions = actions;
+		this.menuFactory = menuFactory;
 		model.listeners().add(this::update);
 		update();
 	}
@@ -82,17 +82,9 @@ public class LabelPanel {
 		model.addLabel();
 	}
 
-	private void removeLabel(Label label) {
-		model.removeLabel(label);
-	}
-
 	private void removeAllLabels() {
 		List<Label> items = new ArrayList<>(model.items());
 		items.forEach(model::removeLabel);
-	}
-
-	private void clearLabel(Label label) {
-		model.clearLabel(label);
 	}
 
 	private void renameLabel(Label label) {
@@ -101,14 +93,6 @@ public class LabelPanel {
 			"Rename label \"" + oldName + "\" to:", oldName);
 		if (newName == null) return;
 		model.renameLabel(label, newName);
-	}
-
-	private void moveUpLabel(Label label) {
-		model.moveLabel(label, -1);
-	}
-
-	private void moveDownLabel(Label label) {
-		model.moveLabel(label, 1);
 	}
 
 	private void changeColor(Label label) {
@@ -135,7 +119,7 @@ public class LabelPanel {
 			setLayout(new MigLayout("insets 4pt, gap 4pt, fillx"));
 			add(initColorButton());
 			add(new JLabel(label.name()), "grow, push, width 0:0:pref");
-			JPopupMenu menu = initPopupMenu();
+			JPopupMenu menu = menuFactory.apply(() -> this.label);
 			add(initPopupMenuButton(menu));
 			setComponentPopupMenu(menu);
 			add(initFinderButton(), "gapx 4pt");
@@ -168,33 +152,6 @@ public class LabelPanel {
 					if (event.getClickCount() == 2) renameLabel(label);
 				}
 			});
-		}
-
-		private JPopupMenu initPopupMenu() {
-			JPopupMenu menu = new JPopupMenu();
-			if (!fixedLabels) menu.add(new JMenuItem(new RunnableAction("Rename",
-				() -> renameLabel(label))));
-			if (!fixedLabels) menu.add(new JMenuItem(new RunnableAction("Move up",
-				() -> moveUpLabel(label))));
-			if (!fixedLabels) menu.add(new JMenuItem(new RunnableAction("Move down",
-				() -> moveDownLabel(label))));
-			menu.add(new JMenuItem(new RunnableAction("Clear", () -> clearLabel(
-				label))));
-			if (!fixedLabels) menu.add(new JMenuItem(new RunnableAction("Remove",
-				() -> removeLabel(label))));
-			menu.add(new JMenuItem(new RunnableAction("Export as Bitmap ...",
-				this::exportLabel)));
-			return menu;
-		}
-
-		private void exportLabel() {
-			model.setSelected(label);
-			fireAction(actions.get("Export Selected Label as Bitmap ..."));
-		}
-
-		private void fireAction(Action action) {
-			action.actionPerformed(new ActionEvent(this, ActionEvent.ACTION_PERFORMED,
-				null));
 		}
 
 		private JButton initColorButton() {
