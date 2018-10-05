@@ -36,6 +36,8 @@ public class SegmentationComponent implements AutoCloseable {
 
 	private final JFrame dialogBoxOwner;
 
+	private final DefaultExtensible extensible;
+
 	private BasicLabelingComponent labelingComponent;
 
 	private final Context context;
@@ -55,11 +57,11 @@ public class SegmentationComponent implements AutoCloseable {
 			segmentationModel.imageLabelingModel());
 		labelingComponent.addBdvLayer(new PredictionLayer(segmentationModel
 			.selectedSegmenter()));
-		initActions();
+		this.extensible = initActions();
 		this.panel = initPanel();
 	}
 
-	private void initActions() {
+	private DefaultExtensible initActions() {
 		DefaultExtensible extensible = new DefaultExtensible(context,
 			dialogBoxOwner, labelingComponent);
 		new TrainClassifier(extensible, segmentationModel);
@@ -72,12 +74,13 @@ public class SegmentationComponent implements AutoCloseable {
 		new ClassifierSettingsAction(extensible, segmentationModel
 			.selectedSegmenter());
 		new BatchSegmentAction(extensible, segmentationModel.selectedSegmenter());
-		sal = new SegmentationAsLabelAction(extensible, segmentationModel
+		new SegmentationAsLabelAction(extensible, segmentationModel
 			.selectedSegmenter(), segmentationModel.imageLabelingModel().labeling());
 		new BitmapImportExportAction(extensible, segmentationModel
 			.imageLabelingModel());
 		MeasureConnectedComponents.addAction(extensible, segmentationModel
 			.imageLabelingModel());
+		return extensible;
 	}
 
 	private JPanel initLeftPanel() {
@@ -90,7 +93,7 @@ public class SegmentationComponent implements AutoCloseable {
 			new LabelPanel(dialogBoxOwner, new ColoredLabelsModel(segmentationModel
 				.imageLabelingModel()), fixedLabels, actions).getComponent()), "grow, wrap");
 		panel.add(GuiUtils.createCheckboxGroupedPanel(actions.get("Segmentation"),
-			new SegmenterPanel(segmentationModel, sal).getComponent()), "grow");
+			new SegmenterPanel(segmentationModel, extensible::createSegmenterMenu).getComponent()), "grow");
 		panel.invalidate();
 		panel.repaint();
 		return panel;

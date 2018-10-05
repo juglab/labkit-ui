@@ -33,17 +33,18 @@ public class SegmentationAsLabelAction {
 	{
 		this.labelingHolder = labelingHolder;
 		this.selectedSegmenter = selectedSegmenter;
-		extensible.addAction("Create Label from Segmentation...",
+		extensible.addAction("Create Label from Segmentation ...",
 			"addSegmentationAsLabel", this::addSegmentationAsLabels, "");
+		extensible.addSegmenterMenuItem("Create Label from Segmentation ...", this::addSegmentationAsLabel, null);
 	}
 
 	private void addSegmentationAsLabels() {
-		SegmentationResultsModel selectedResults = selectedSegmenter.get()
-			.results();
-		addSegmentationAsLabel(selectedResults);
+		addSegmentationAsLabel(selectedSegmenter.get());
 	}
 
-	public void addSegmentationAsLabel(SegmentationResultsModel selectedResults) {
+	private void addSegmentationAsLabel(SegmentationItem segmentationItem) {
+		SegmentationResultsModel selectedResults = segmentationItem
+			.results();
 		List<String> labels = selectedResults.labels();
 		String selected = (String) JOptionPane.showInputDialog(null,
 			"Select label to be added", "Add Segmentation as Labels ...",
