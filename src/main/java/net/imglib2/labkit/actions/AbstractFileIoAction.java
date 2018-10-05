@@ -48,7 +48,9 @@ public abstract class AbstractFileIoAction {
 			dialogType, action), keyStroke);
 	}
 
-	private void openDialogAndThen(String title, int dialogType, Action action) {
+	protected void openDialogAndThen(String title, int dialogType,
+		Action action)
+	{
 		fileChooser.setDialogTitle(title);
 		String filename = action.suggestedFile();
 		if (filename != null) fileChooser.setSelectedFile(new File(filename));

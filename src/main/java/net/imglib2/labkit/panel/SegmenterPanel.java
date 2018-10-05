@@ -1,7 +1,6 @@
 
 package net.imglib2.labkit.panel;
 
-import net.imglib2.labkit.actions.SegmentationAsLabelAction;
 import net.imglib2.labkit.models.SegmentationItem;
 import net.imglib2.labkit.models.SegmenterListModel;
 import net.miginfocom.swing.MigLayout;
@@ -9,6 +8,8 @@ import org.scijava.ui.behaviour.util.RunnableAction;
 
 import javax.swing.*;
 import javax.swing.plaf.basic.BasicArrowButton;
+import java.util.function.Function;
+import java.util.function.Supplier;
 
 public class SegmenterPanel {
 
@@ -18,14 +19,14 @@ public class SegmenterPanel {
 
 	private final ComponentList<Object, JPanel> list = new ComponentList<>();
 
-	private final SegmentationAsLabelAction sal;
+	private final Function<Supplier<SegmentationItem>, JPopupMenu> menuFactory;
 
 	public SegmenterPanel(
 		SegmenterListModel<? extends SegmentationItem> segmentationModel,
-		SegmentationAsLabelAction sal)
+		Function<Supplier<SegmentationItem>, JPopupMenu> menuFactory)
 	{
 		this.segmentationModel = segmentationModel;
-		this.sal = sal;
+		this.menuFactory = menuFactory;
 		panel.setLayout(new MigLayout("insets 0, gap 0", "[grow]", "[grow][]"));
 		panel.add(initList(), "grow, wrap");
 		panel.add(initBottomPanel(), "grow");
@@ -81,12 +82,7 @@ public class SegmenterPanel {
 		}
 
 		private JPopupMenu initPopupMenu() {
-			JPopupMenu menu = new JPopupMenu();
-			menu.add(new JMenuItem(settingsAction));
-			menu.add(new JMenuItem(trainAction));
-			menu.add(removeMenuItem());
-			menu.add(createLabelMenuItem());
-			return menu;
+			return menuFactory.apply(() -> item);
 		}
 
 		private JMenuItem removeMenuItem() {
@@ -96,11 +92,6 @@ public class SegmenterPanel {
 			};
 			return new JMenuItem(GuiUtils.createAction("Remove", runnable,
 				"remove.png"));
-		}
-
-		private RunnableAction createLabelMenuItem() {
-			return new RunnableAction("Create Label from Segmentation ...", () -> sal
-				.addSegmentationAsLabel(item.results()));
 		}
 
 		private void showSettings() {
