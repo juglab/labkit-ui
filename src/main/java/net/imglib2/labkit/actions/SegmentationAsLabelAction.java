@@ -35,7 +35,9 @@ public class SegmentationAsLabelAction {
 		this.selectedSegmenter = selectedSegmenter;
 		extensible.addAction("Create Label from Segmentation ...",
 			"addSegmentationAsLabel", this::addSegmentationAsLabels, "");
-		extensible.addSegmenterMenuItem("Create Label from Segmentation ...", this::addSegmentationAsLabel, null);
+		extensible.addMenuItem( SegmentationItem.SEGMENTER_MENU,
+				"Create Label from Segmentation ...",
+				this::addSegmentationAsLabel, null);
 	}
 
 	private void addSegmentationAsLabels() {

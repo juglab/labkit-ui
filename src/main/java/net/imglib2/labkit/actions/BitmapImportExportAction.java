@@ -22,6 +22,7 @@ import org.scijava.plugin.Parameter;
 import javax.swing.*;
 import java.io.File;
 import java.io.IOException;
+import java.util.function.Consumer;
 
 public class BitmapImportExportAction extends AbstractFileIoAction {
 
@@ -48,7 +49,7 @@ public class BitmapImportExportAction extends AbstractFileIoAction {
 		initOpenAction("Import Bitmap ...", "importLabel", this::importLabel, "");
 		initSaveAction("Export Selected Label as Bitmap ...", "exportLabel",
 			this::exportLabel, "");
-		extensible.addLabelMenuItem("Export as Bitmap ...",
+		extensible.addMenuItem( Label.LABEL_MENU, "Export as Bitmap ...",
 				label -> openDialogAndThen("Export Label as Bitmap", JFileChooser.SAVE_DIALOG, filename -> exportLabel(label, filename)),
 				null);
 	}

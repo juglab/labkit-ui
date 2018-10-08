@@ -1,9 +1,12 @@
 
 package net.imglib2.labkit.labeling;
 
+import net.imglib2.labkit.menu.MenuKey;
 import net.imglib2.type.numeric.ARGBType;
 
 public class Label {
+
+	public final static MenuKey<Label> LABEL_MENU = new MenuKey<>(Label.class);
 
 	private String name;
 

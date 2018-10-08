@@ -2,6 +2,7 @@
 package net.imglib2.labkit;
 
 import net.imglib2.labkit.actions.LabelEditAction;
+import net.imglib2.labkit.labeling.Label;
 import net.imglib2.labkit.models.ColoredLabelsModel;
 import net.imglib2.labkit.models.ImageLabelingModel;
 import net.imglib2.labkit.panel.GuiUtils;
@@ -27,7 +28,8 @@ public class LabelingComponent implements AutoCloseable {
 				new DefaultExtensible(null, null, labelingComponent);
 		new LabelEditAction(extensible, false, new ColoredLabelsModel(model));
 		LabelPanel labelPanel = new LabelPanel(dialogBoxOwner,
-			new ColoredLabelsModel(model), false, extensible::createLabelMenu);
+			new ColoredLabelsModel(model), false,
+				item -> extensible.createMenu(Label.LABEL_MENU, item));
 		leftPanel.add(GuiUtils.createCheckboxGroupedPanel(actions.get("Labeling"),
 			labelPanel.getComponent()), "grow");
 		this.panel = initSplitPane(leftPanel, labelingComponent.getComponent());

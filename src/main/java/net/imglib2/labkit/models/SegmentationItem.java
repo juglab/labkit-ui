@@ -1,11 +1,15 @@
 
 package net.imglib2.labkit.models;
 
+import net.imglib2.labkit.menu.MenuKey;
 import net.imglib2.labkit.segmentation.Segmenter;
 
 import java.util.concurrent.atomic.AtomicInteger;
 
 public class SegmentationItem {
+
+	public final static MenuKey<SegmentationItem> SEGMENTER_MENU =
+			new MenuKey<>(SegmentationItem.class);
 
 	private static final AtomicInteger counter = new AtomicInteger();
 

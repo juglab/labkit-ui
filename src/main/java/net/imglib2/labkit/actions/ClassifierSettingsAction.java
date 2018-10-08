@@ -6,6 +6,8 @@ import net.imglib2.labkit.models.Holder;
 import net.imglib2.labkit.models.SegmentationItem;
 import net.imglib2.labkit.panel.GuiUtils;
 
+import java.util.function.Consumer;
+
 /**
  * @author Matthias Arzt
  */
@@ -17,6 +19,8 @@ public class ClassifierSettingsAction {
 		extensible.addAction("Classifier Settings ...", "segmenterSettings",
 			() -> selectedSegmenter.get().segmenter().editSettings(extensible
 				.dialogParent()), "");
-		extensible.addSegmenterMenuItem("Classifier Settings ...", item -> item.segmenter().editSettings(extensible.dialogParent()), GuiUtils.loadIcon("gear.png"));
+		extensible.addMenuItem( SegmentationItem.SEGMENTER_MENU, "Classifier Settings ...",
+						item -> item.segmenter().editSettings(extensible.dialogParent()),
+						GuiUtils.loadIcon("gear.png"));
 	}
 }
