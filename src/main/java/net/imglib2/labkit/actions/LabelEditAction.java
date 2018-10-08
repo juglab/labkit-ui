@@ -6,6 +6,7 @@ import net.imglib2.labkit.labeling.Label;
 import net.imglib2.labkit.models.ColoredLabelsModel;
 
 import javax.swing.*;
+import java.util.function.Consumer;
 
 public class LabelEditAction {
 
@@ -18,15 +19,15 @@ public class LabelEditAction {
 	{
 		this.extensible = extensible;
 		this.model = model;
-		if (!fixedLabels) extensible.addLabelMenuItem("Rename", this::renameLabel,
-			null);
-		if (!fixedLabels) extensible.addLabelMenuItem("Move up", label -> model
-			.moveLabel(label, -1), null);
-		if (!fixedLabels) extensible.addLabelMenuItem("Move down", label -> model
-			.moveLabel(label, 1), null);
-		extensible.addLabelMenuItem("Clear", model::clearLabel, null);
-		if (!fixedLabels) extensible.addLabelMenuItem("Remove", model::removeLabel,
-			null);
+		if (!fixedLabels) extensible.addMenuItem(Label.LABEL_MENU, "Rename",
+			this::renameLabel, null);
+		if (!fixedLabels) extensible.addMenuItem(Label.LABEL_MENU, "Move up",
+			label -> model.moveLabel(label, -1), null);
+		if (!fixedLabels) extensible.addMenuItem(Label.LABEL_MENU, "Move down",
+			label -> model.moveLabel(label, 1), null);
+		extensible.addMenuItem(Label.LABEL_MENU, "Clear", model::clearLabel, null);
+		if (!fixedLabels) extensible.addMenuItem(Label.LABEL_MENU, "Remove",
+			model::removeLabel, null);
 	}
 
 	private void renameLabel(Label label) {

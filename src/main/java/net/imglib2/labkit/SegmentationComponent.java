@@ -12,8 +12,10 @@ import net.imglib2.labkit.actions.ResetViewAction;
 import net.imglib2.labkit.actions.SegmentationAsLabelAction;
 import net.imglib2.labkit.actions.SegmentationSave;
 import net.imglib2.labkit.actions.ClassifierSettingsAction;
+import net.imglib2.labkit.labeling.Label;
 import net.imglib2.labkit.models.ColoredLabelsModel;
 import net.imglib2.labkit.models.DefaultSegmentationModel;
+import net.imglib2.labkit.models.SegmentationItem;
 import net.imglib2.labkit.panel.GuiUtils;
 import net.imglib2.labkit.panel.LabelPanel;
 import net.imglib2.labkit.panel.SegmenterPanel;
@@ -94,11 +96,11 @@ public class SegmentationComponent implements AutoCloseable {
 			.createDimensionsInfo(segmentationModel.image())), "grow, wrap");
 		panel.add(GuiUtils.createCheckboxGroupedPanel(actions.get("Labeling"),
 			new LabelPanel(dialogBoxOwner, new ColoredLabelsModel(segmentationModel
-				.imageLabelingModel()), fixedLabels, extensible::createLabelMenu)
-					.getComponent()), "grow, wrap");
+				.imageLabelingModel()), fixedLabels, item1 -> extensible.createMenu(
+					Label.LABEL_MENU, item1)).getComponent()), "grow, wrap");
 		panel.add(GuiUtils.createCheckboxGroupedPanel(actions.get("Segmentation"),
-			new SegmenterPanel(segmentationModel, extensible::createSegmenterMenu)
-				.getComponent()), "grow");
+			new SegmenterPanel(segmentationModel, item -> extensible.createMenu(
+				SegmentationItem.SEGMENTER_MENU, item)).getComponent()), "grow");
 		panel.invalidate();
 		panel.repaint();
 		return panel;

@@ -12,11 +12,11 @@ import net.imglib2.labkit.utils.LabkitUtils;
 import net.imglib2.type.NativeType;
 import net.imglib2.type.Type;
 import net.imglib2.type.numeric.NumericType;
-import net.imglib2.type.numeric.integer.ShortType;
 
 import javax.swing.*;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
@@ -49,12 +49,13 @@ public class SegmentationSave extends AbstractFileIoAction {
 			selectedResult), "");
 		extensible.addAction("Show " + title + " in ImageJ", "show" + commandKey,
 			getShowAction(selectedResult), "");
-		extensible.addSegmenterMenuItem("Save " + title + " ...",
-			item -> openDialogAndThen("Save " + title + " ...",
+		extensible.addMenuItem(SegmentationItem.SEGMENTER_MENU, "Save " + title +
+			" ...", item -> openDialogAndThen("Save " + title + " ...",
 				JFileChooser.OPEN_DIALOG, getSaveAction(() -> predictionFactory.apply(
 					item))), null);
-		extensible.addSegmenterMenuItem("Show " + title + " in ImageJ",
-			item -> getShowAction(() -> predictionFactory.apply(item)).run(), null);
+		extensible.addMenuItem(SegmentationItem.SEGMENTER_MENU, "Show " + title +
+			" in ImageJ", item -> getShowAction(() -> predictionFactory.apply(item))
+				.run(), null);
 	}
 
 	private <T extends NumericType<T> & NativeType<T>> Runnable getShowAction(
