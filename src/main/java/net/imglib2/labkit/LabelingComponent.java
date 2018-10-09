@@ -2,10 +2,9 @@
 package net.imglib2.labkit;
 
 import net.imglib2.labkit.actions.LabelEditAction;
-import net.imglib2.labkit.labeling.Label;
 import net.imglib2.labkit.models.ColoredLabelsModel;
 import net.imglib2.labkit.models.ImageLabelingModel;
-import net.imglib2.labkit.panel.GuiUtils;
+import net.imglib2.labkit.panel.ImageInfoPanel;
 import net.imglib2.labkit.panel.LabelPanel;
 import net.miginfocom.swing.MigLayout;
 
@@ -21,16 +20,11 @@ public class LabelingComponent implements AutoCloseable {
 		this.labelingComponent = new BasicLabelingComponent(dialogBoxOwner, model);
 		JPanel leftPanel = new JPanel();
 		leftPanel.setLayout(new MigLayout("", "[grow]", "[][grow]"));
-		leftPanel.add(GuiUtils.createCheckboxGroupedPanel( model.imageVisibility(), "Image",
-			GuiUtils.createDimensionsInfo(model.labeling().get()) ), "grow, wrap");
+		leftPanel.add(ImageInfoPanel.newFramedImageInfoPanel(model), "grow, wrap");
 		DefaultExtensible extensible =
 				new DefaultExtensible(null, dialogBoxOwner);
 		new LabelEditAction(extensible, false, new ColoredLabelsModel(model));
-		LabelPanel labelPanel = new LabelPanel(dialogBoxOwner,
-			new ColoredLabelsModel(model), false,
-				item -> extensible.createPopupMenu(Label.LABEL_MENU, item));
-		leftPanel.add(GuiUtils.createCheckboxGroupedPanel( model.labelingVisibility(), "Labeling",
-			labelPanel.getComponent()), "grow");
+		leftPanel.add(LabelPanel.newFramedLabelPanel(model, extensible, false), "grow");
 		this.panel = initSplitPane(leftPanel, labelingComponent.getComponent());
 	}
 

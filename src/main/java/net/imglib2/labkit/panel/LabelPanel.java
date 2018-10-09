@@ -1,8 +1,10 @@
 
 package net.imglib2.labkit.panel;
 
+import net.imglib2.labkit.DefaultExtensible;
 import net.imglib2.labkit.labeling.Label;
 import net.imglib2.labkit.models.ColoredLabelsModel;
+import net.imglib2.labkit.models.ImageLabelingModel;
 import net.imglib2.type.numeric.ARGBType;
 import net.miginfocom.swing.MigLayout;
 import org.scijava.ui.behaviour.util.RunnableAction;
@@ -37,6 +39,20 @@ public class LabelPanel {
 		this.menuFactory = menuFactory;
 		model.listeners().add(this::update);
 		update();
+	}
+
+	public static JPanel newFramedLabelPanel(
+			ImageLabelingModel imageLabelingModel, DefaultExtensible extensible,
+			boolean fixedLabels)
+	{
+		return GuiUtils.createCheckboxGroupedPanel(
+					imageLabelingModel.labelingVisibility(),
+					"Labeling", new LabelPanel(extensible.dialogParent(),
+							new ColoredLabelsModel(
+									imageLabelingModel),
+							fixedLabels, item1 -> extensible
+							.createPopupMenu(Label.LABEL_MENU, item1))
+							.getComponent());
 	}
 
 	public JComponent getComponent() {
