@@ -32,24 +32,23 @@ public class PredictionLayer implements BdvLayer {
 	private final RandomAccessibleContainer<VolatileARGBType> segmentationContainer;
 	private final SharedQueue queue = new SharedQueue(Runtime.getRuntime()
 		.availableProcessors());
+	private final Holder<Boolean> visibility;
 	private Notifier<Runnable> listeners = new Notifier<>();
-	private final Notifier<Runnable> makeVisible = new Notifier<>();
 	private RandomAccessibleInterval<? extends NumericType<?>> view;
 	private AffineTransform3D transformation;
 	private Set<Segmenter> alreadyRegistered = Collections.newSetFromMap(
 		new WeakHashMap<>());
 
-	public PredictionLayer(Holder<? extends SegmentationItem> model) {
+	public PredictionLayer(Holder<? extends SegmentationItem> model,
+		Holder<Boolean> visibility)
+	{
 		this.model = model;
-		SegmentationResultsModel selected = model.get().results(); // don't use
-																																// selected
-																																// segmentation
-																																// result for
-																																// initialization
+		SegmentationResultsModel selected = model.get().results();
 		this.segmentationContainer = new RandomAccessibleContainer<>(
 			getEmptyPrediction(selected));
 		this.transformation = selected.transformation();
 		this.view = Views.interval(segmentationContainer, selected.interval());
+		this.visibility = visibility;
 		model.notifier().add(ignore -> classifierChanged());
 		registerListener(model.get().segmenter());
 	}
@@ -63,7 +62,7 @@ public class PredictionLayer implements BdvLayer {
 	private void onTrainingFinished(Segmenter segmenter) {
 		if (model.get().segmenter() == segmenter) {
 			classifierChanged();
-			makeVisible.forEach(Runnable::run);
+			visibility.set(true);
 		}
 	}
 
@@ -72,12 +71,6 @@ public class PredictionLayer implements BdvLayer {
 	{
 		return ConstantUtils.constantRandomAccessible(new VolatileARGBType(0),
 			selected.interval().numDimensions());
-	}
-
-	private static AffineTransform3D scaleTransformation(double scaling) {
-		AffineTransform3D transformation = new AffineTransform3D();
-		transformation.scale(scaling);
-		return transformation;
 	}
 
 	private void classifierChanged() {
@@ -123,8 +116,8 @@ public class PredictionLayer implements BdvLayer {
 	}
 
 	@Override
-	public Notifier<Runnable> makeVisible() {
-		return makeVisible;
+	public Holder<Boolean> visibility() {
+		return visibility;
 	}
 
 	@Override

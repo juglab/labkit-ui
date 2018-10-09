@@ -3,6 +3,7 @@ package net.imglib2.labkit.actions;
 
 import net.imglib2.RandomAccessibleInterval;
 import net.imglib2.labkit.DefaultExtensible;
+import net.imglib2.labkit.MenuBar;
 import net.imglib2.labkit.models.LabelingModel;
 import net.imglib2.labkit.utils.LabkitUtils;
 import net.imglib2.labkit.labeling.Labeling;
@@ -16,7 +17,7 @@ import java.io.IOException;
 /**
  * @author Matthias Arzt
  */
-public class LabelingIoAction extends AbstractFileIoAcion {
+public class LabelingIoAction extends AbstractFileIoAction {
 
 	private final LabelingModel labelingModel;
 	private final LabelingSerializer serializer;
@@ -28,7 +29,7 @@ public class LabelingIoAction extends AbstractFileIoAcion {
 			"labeling"));
 		this.labelingModel = labelingModel;
 		serializer = new LabelingSerializer(extensible.context());
-		initSaveAction("Save Labeling ...", "saveLabeling", new Action() {
+		initSaveAction(MenuBar.LABELING_MENU, "Save Labeling ...", 2, new Action() {
 
 			@Override
 			public String suggestedFile() {
@@ -40,12 +41,15 @@ public class LabelingIoAction extends AbstractFileIoAcion {
 				serializer.save(labelingModel.labeling().get(), filename);
 			}
 		}, "ctrl S");
-		initOpenAction("Open Labeling ...", "openLabeling", this::open, "ctrl O");
-		extensible.addAction("Show Labeling in ImageJ", "showLabeling", () -> {
+		initOpenAction(MenuBar.LABELING_MENU, "Open Labeling ...", 1, this::open,
+			"ctrl O");
+		Runnable action = () -> {
 			RandomAccessibleInterval<? extends IntegerType<?>> img = labelingModel
 				.labeling().get().getIndexImg();
 			ImageJFunctions.show(LabkitUtils.uncheckedCast(img), "Labeling");
-		}, "");
+		};
+		extensible.addMenuItem(MenuBar.LABELING_MENU, "Show Labeling in ImageJ", 3,
+			ignore -> action.run(), null, "");
 	}
 
 	private void open(String filename) throws IOException {

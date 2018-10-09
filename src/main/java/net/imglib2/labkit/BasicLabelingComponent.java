@@ -19,6 +19,7 @@ import net.miginfocom.swing.MigLayout;
 import org.scijava.ui.behaviour.util.AbstractNamedAction;
 
 import javax.swing.*;
+import java.util.Collection;
 
 public class BasicLabelingComponent implements AutoCloseable {
 
@@ -34,10 +35,6 @@ public class BasicLabelingComponent implements AutoCloseable {
 
 	public JComponent getComponent() {
 		return panel;
-	}
-
-	public ActionMap getActions() {
-		return actionsAndBehaviours.getActions();
 	}
 
 	public BasicLabelingComponent(final JFrame dialogBoxOwner,
@@ -69,7 +66,8 @@ public class BasicLabelingComponent implements AutoCloseable {
 	}
 
 	private void initImageLayer() {
-		addBdvLayer(new BdvLayer.FinalLayer(model.showable(), "Image"));
+		addBdvLayer(new BdvLayer.FinalLayer(model.showable(), "Image", model
+			.imageVisibility()));
 	}
 
 	private void initLabelsLayer() {
@@ -81,8 +79,12 @@ public class BasicLabelingComponent implements AutoCloseable {
 		BdvSource source = layer.image().show(layer.title(), options);
 		layer.listeners().add(this::requestRepaint);
 		ToggleVisibility action = new ToggleVisibility(layer.title(), source);
-		addAction(action);
-		layer.makeVisible().add(() -> action.setVisible(true));
+		actionsAndBehaviours.addAction(action);
+		layer.visibility().notifier().add(action::setVisible);
+		action.addPropertyChangeListener(propertyChangeEvent -> {
+			if (propertyChangeEvent.getPropertyName().equals(Action.SELECTED_KEY))
+				layer.visibility().set((Boolean) propertyChangeEvent.getNewValue());
+		});
 		return source;
 	}
 
@@ -99,8 +101,10 @@ public class BasicLabelingComponent implements AutoCloseable {
 		return toolsPanel;
 	}
 
-	public void addAction(AbstractNamedAction action) {
-		actionsAndBehaviours.addAction(action);
+	public void addShortcuts(
+		Collection<? extends AbstractNamedAction> shortcuts)
+	{
+		shortcuts.forEach(actionsAndBehaviours::addAction);
 	}
 
 	private void requestRepaint() {

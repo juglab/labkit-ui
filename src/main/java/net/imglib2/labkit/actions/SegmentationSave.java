@@ -6,43 +6,57 @@ import net.imglib2.RandomAccessibleInterval;
 import net.imglib2.img.ImgView;
 import net.imglib2.img.display.imagej.ImageJFunctions;
 import net.imglib2.labkit.Extensible;
+import net.imglib2.labkit.MenuBar;
 import net.imglib2.labkit.models.Holder;
 import net.imglib2.labkit.models.SegmentationItem;
 import net.imglib2.labkit.utils.LabkitUtils;
 import net.imglib2.type.NativeType;
 import net.imglib2.type.Type;
 import net.imglib2.type.numeric.NumericType;
-import net.imglib2.type.numeric.integer.ShortType;
-import net.imglib2.type.numeric.real.FloatType;
 
+import javax.swing.*;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.function.Function;
 import java.util.function.Supplier;
 
 /**
  * @author Matthias Arzt
  */
-public class SegmentationSave extends AbstractFileIoAcion {
+public class SegmentationSave extends AbstractFileIoAction {
 
 	private final Extensible extensible;
 
 	public SegmentationSave(Extensible extensible,
 		Holder<SegmentationItem> selectedSegmenter)
 	{
-		super(extensible, AbstractFileIoAcion.TIFF_FILTER);
+		super(extensible, AbstractFileIoAction.TIFF_FILTER);
 		this.extensible = extensible;
-		Supplier<RandomAccessibleInterval<ShortType>> segmentationSupplier =
-			() -> selectedSegmenter.get().results().segmentation();
-		initSaveAction("Save Segmentation Result ...", "saveSegmentation",
-			getSaveAction(segmentationSupplier), "");
-		extensible.addAction("Show Segmentation Result in ImageJ",
-			"showSegmentation", getShowAction(segmentationSupplier), "");
-		Supplier<RandomAccessibleInterval<FloatType>> predictionSupplier =
-			() -> selectedSegmenter.get().results().prediction();
-		initSaveAction("Save Probability Map ...", "savePrediction", getSaveAction(
-			predictionSupplier), "");
-		extensible.addAction("Show Probability Map in ImageJ", "showPrediction",
-			getShowAction(predictionSupplier), "");
+		addMenuItems(selectedSegmenter, item -> item.results().segmentation(),
+			"SegmentationResult");
+		addMenuItems(selectedSegmenter, item -> item.results().prediction(),
+			"Probability Map");
+	}
+
+	private <T extends NumericType<T> & NativeType<T>> void addMenuItems(
+		Holder<SegmentationItem> selectedSegmenter,
+		Function<SegmentationItem, RandomAccessibleInterval<T>> predictionFactory,
+		String title)
+	{
+		Supplier<RandomAccessibleInterval<T>> selectedResult =
+			() -> predictionFactory.apply(selectedSegmenter.get());
+		initSaveAction(MenuBar.SEGMENTER_MENU, "Save " + title + " ...", 200,
+			getSaveAction(selectedResult), "");
+		extensible.addMenuItem(MenuBar.SEGMENTER_MENU, "Show " + title +
+			" in ImageJ", 201, ignore -> getShowAction(selectedResult).run(), null,
+			"");
+		extensible.addMenuItem(SegmentationItem.SEGMENTER_MENU, "Save " + title +
+			" ...", 202, item -> openDialogAndThen("Save " + title + " ...",
+				JFileChooser.OPEN_DIALOG, getSaveAction(() -> predictionFactory.apply(
+					item))), null, null);
+		extensible.addMenuItem(SegmentationItem.SEGMENTER_MENU, "Show " + title +
+			" in ImageJ", 203, item -> getShowAction(() -> predictionFactory.apply(
+				item)).run(), null, null);
 	}
 
 	private <T extends NumericType<T> & NativeType<T>> Runnable getShowAction(

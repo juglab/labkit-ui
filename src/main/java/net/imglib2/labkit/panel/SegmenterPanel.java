@@ -1,6 +1,7 @@
 
 package net.imglib2.labkit.panel;
 
+import net.imglib2.labkit.DefaultExtensible;
 import net.imglib2.labkit.models.SegmentationItem;
 import net.imglib2.labkit.models.SegmenterListModel;
 import net.miginfocom.swing.MigLayout;
@@ -8,6 +9,8 @@ import org.scijava.ui.behaviour.util.RunnableAction;
 
 import javax.swing.*;
 import javax.swing.plaf.basic.BasicArrowButton;
+import java.util.function.Function;
+import java.util.function.Supplier;
 
 public class SegmenterPanel {
 
@@ -17,13 +20,27 @@ public class SegmenterPanel {
 
 	private final ComponentList<Object, JPanel> list = new ComponentList<>();
 
+	private final Function<Supplier<SegmentationItem>, JPopupMenu> menuFactory;
+
 	public SegmenterPanel(
-		SegmenterListModel<? extends SegmentationItem> segmentationModel)
+		SegmenterListModel<? extends SegmentationItem> segmentationModel,
+		Function<Supplier<SegmentationItem>, JPopupMenu> menuFactory)
 	{
 		this.segmentationModel = segmentationModel;
+		this.menuFactory = menuFactory;
 		panel.setLayout(new MigLayout("insets 0, gap 0", "[grow]", "[grow][]"));
 		panel.add(initList(), "grow, wrap");
 		panel.add(initBottomPanel(), "grow");
+	}
+
+	public static JPanel newFramedSegmeterPanel(
+		SegmenterListModel<? extends SegmentationItem> segmentationModel,
+		DefaultExtensible extensible)
+	{
+		return GuiUtils.createCheckboxGroupedPanel(segmentationModel
+			.segmentationVisibility(), "Segmentation", new SegmenterPanel(
+				segmentationModel, item -> extensible.createPopupMenu(
+					SegmentationItem.SEGMENTER_MENU, item)).getComponent());
 	}
 
 	private JComponent initBottomPanel() {
@@ -76,11 +93,7 @@ public class SegmenterPanel {
 		}
 
 		private JPopupMenu initPopupMenu() {
-			JPopupMenu menu = new JPopupMenu();
-			menu.add(new JMenuItem(settingsAction));
-			menu.add(new JMenuItem(trainAction));
-			menu.add(removeMenuItem());
-			return menu;
+			return menuFactory.apply(() -> item);
 		}
 
 		private JMenuItem removeMenuItem() {

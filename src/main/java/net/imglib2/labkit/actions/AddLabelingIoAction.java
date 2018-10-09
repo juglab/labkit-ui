@@ -4,6 +4,7 @@ package net.imglib2.labkit.actions;
 import net.imglib2.Cursor;
 import net.imglib2.RandomAccess;
 import net.imglib2.labkit.Extensible;
+import net.imglib2.labkit.MenuBar;
 import net.imglib2.labkit.labeling.Label;
 import net.imglib2.labkit.models.Holder;
 import net.imglib2.labkit.labeling.Labeling;
@@ -20,7 +21,7 @@ import java.util.stream.Collectors;
 /**
  * @author Matthias Arzt
  */
-public class AddLabelingIoAction extends AbstractFileIoAcion {
+public class AddLabelingIoAction extends AbstractFileIoAction {
 
 	private final Holder<Labeling> labeling;
 	private final LabelingSerializer serializer;
@@ -30,7 +31,7 @@ public class AddLabelingIoAction extends AbstractFileIoAcion {
 			"labeling"));
 		this.labeling = labeling;
 		serializer = new LabelingSerializer(extensible.context());
-		initOpenAction("Import Labeling ...", "openAdditionalLabeling",
+		initOpenAction(MenuBar.LABELING_MENU, "Import Labeling ...", 100,
 			this::openAdditional, "");
 	}
 

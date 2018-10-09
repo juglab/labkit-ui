@@ -9,6 +9,7 @@ import net.imagej.DatasetService;
 import net.imglib2.RandomAccessibleInterval;
 import net.imglib2.converter.Converters;
 import net.imglib2.labkit.Extensible;
+import net.imglib2.labkit.MenuBar;
 import net.imglib2.labkit.labeling.Label;
 import net.imglib2.labkit.labeling.Labeling;
 import net.imglib2.labkit.models.ImageLabelingModel;
@@ -23,7 +24,7 @@ import javax.swing.*;
 import java.io.File;
 import java.io.IOException;
 
-public class BitmapImportExportAction extends AbstractFileIoAcion {
+public class BitmapImportExportAction extends AbstractFileIoAction {
 
 	private final ImageLabelingModel model;
 
@@ -41,13 +42,26 @@ public class BitmapImportExportAction extends AbstractFileIoAcion {
 	public BitmapImportExportAction(Extensible extensible,
 		ImageLabelingModel model)
 	{
-		super(extensible, AbstractFileIoAcion.TIFF_FILTER);
+		super(extensible, AbstractFileIoAction.TIFF_FILTER);
 		this.extensible = extensible;
 		this.model = model;
 		extensible.context().inject(this);
-		initOpenAction("Import Bitmap ...", "importLabel", this::importLabel, "");
-		initSaveAction("Export Selected Label as Bitmap ...", "exportLabel",
-			this::exportLabel, "");
+		initOpenAction(MenuBar.LABELING_MENU, "Import Bitmap ...", 100,
+			this::importLabel, "");
+		initSaveAction(MenuBar.LABELING_MENU, "Export Selected Label as Bitmap ...",
+			101, this::exportLabel, "");
+		extensible.addMenuItem(Label.LABEL_MENU, "Export as Bitmap ...", 400,
+			label -> openDialogAndThen("Export Label as Bitmap",
+				JFileChooser.SAVE_DIALOG, filename -> exportLabel(label, filename)),
+			null, null);
+	}
+
+	private void exportLabel(Label label, String filename) throws IOException {
+		filename = autoAddExtension(filename);
+		Labeling labeling = model.labeling().get();
+		RandomAccessibleInterval<BitType> bitmap = labeling.getRegion(label);
+		Dataset dataset = datasetService.create(toUnsignedByteType(bitmap));
+		datasetIOService.save(dataset, filename);
 	}
 
 	private void importLabel(String filename) throws IOException {
@@ -63,13 +77,8 @@ public class BitmapImportExportAction extends AbstractFileIoAcion {
 	}
 
 	private void exportLabel(String filename) throws IOException {
-		filename = autoAddExtension(filename);
-		Labeling labeling = model.labeling().get();
-		Label selectedLabel = model.selectedLabel().get();
-		RandomAccessibleInterval<BitType> bitmap = labeling.getRegion(
-			selectedLabel);
-		Dataset dataset = datasetService.create(toUnsignedByteType(bitmap));
-		datasetIOService.save(dataset, filename);
+		Label label = model.selectedLabel().get();
+		exportLabel(label, filename);
 	}
 
 	private String autoAddExtension(String filename) {

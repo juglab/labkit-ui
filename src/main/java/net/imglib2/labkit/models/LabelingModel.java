@@ -21,4 +21,6 @@ public interface LabelingModel {
 	AffineTransform3D labelTransformation();
 
 	String defaultFileName();
+
+	Holder<Boolean> labelingVisibility();
 }
