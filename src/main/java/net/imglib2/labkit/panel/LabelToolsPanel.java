@@ -3,8 +3,8 @@ package net.imglib2.labkit.panel;
 
 import bdv.util.BdvHandle;
 import bdv.viewer.ViewerPanel;
-import net.imglib2.labkit.control.brush.FloodFillController;
-import net.imglib2.labkit.control.brush.LabelBrushController;
+import net.imglib2.labkit.brush.FloodFillController;
+import net.imglib2.labkit.brush.LabelBrushController;
 import net.miginfocom.swing.MigLayout;
 import org.scijava.ui.behaviour.*;
 import org.scijava.ui.behaviour.util.TriggerBehaviourBindings;

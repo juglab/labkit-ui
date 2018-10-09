@@ -1,20 +1,16 @@
 
-package net.imglib2.labkit.control.brush.neighborhood;
+package net.imglib2.labkit.brush.neighborhood;
 
 import net.imglib2.Cursor;
-import net.imglib2.FinalInterval;
 import net.imglib2.Interval;
 import net.imglib2.Point;
 import net.imglib2.Positionable;
 import net.imglib2.RandomAccess;
 import net.imglib2.RealPositionable;
 import net.imglib2.algorithm.neighborhood.Neighborhood;
-import net.imglib2.realtransform.AffineTransform3D;
 import net.imglib2.roi.IterableRegion;
 import net.imglib2.type.logic.BitType;
-import net.imglib2.util.Intervals;
 
-import java.util.Arrays;
 import java.util.Iterator;
 
 /**

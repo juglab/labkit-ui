@@ -1,5 +1,5 @@
 
-package net.imglib2.labkit.color;
+package net.imglib2.labkit.utils;
 
 import net.imglib2.type.numeric.ARGBType;
 

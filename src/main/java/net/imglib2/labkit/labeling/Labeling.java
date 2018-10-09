@@ -6,7 +6,7 @@ import net.imagej.axis.CalibratedAxis;
 import net.imagej.axis.DefaultLinearAxis;
 import net.imglib2.*;
 import net.imglib2.RandomAccess;
-import net.imglib2.labkit.color.ColorSupplier;
+import net.imglib2.labkit.utils.ColorSupplier;
 import net.imglib2.labkit.utils.LabkitUtils;
 import net.imglib2.converter.Converter;
 import net.imglib2.converter.Converters;

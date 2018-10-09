@@ -1,5 +1,5 @@
 
-package net.imglib2.labkit.labeling;
+package net.imglib2.labkit.utils;
 
 import net.imglib2.type.numeric.ARGBType;
 
