@@ -12,9 +12,7 @@ import net.imglib2.labkit.labeling.Labeling;
 import net.imglib2.realtransform.AffineTransform3D;
 import net.imglib2.type.numeric.NumericType;
 
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 import java.util.stream.IntStream;
 
 public class ImageLabelingModel implements LabelingModel {
@@ -26,6 +24,10 @@ public class ImageLabelingModel implements LabelingModel {
 	private Notifier<Runnable> dataChangedNotifier = new Notifier<>();
 
 	private Holder<Label> selectedLabelHolder;
+
+	private Holder<Boolean> imageVisibility = new DefaultHolder<>(true);
+
+	private Holder<Boolean> labelingVisibility = new DefaultHolder<>(true);
 
 	private final boolean isTimeSeries;
 
@@ -112,6 +114,14 @@ public class ImageLabelingModel implements LabelingModel {
 	@Override
 	public boolean isTimeSeries() {
 		return isTimeSeries;
+	}
+
+	public Holder<Boolean> imageVisibility() {
+		return imageVisibility;
+	}
+
+	public Holder<Boolean> labelingVisibility() {
+		return labelingVisibility;
 	}
 
 	public TransformationModel transformationModel() {

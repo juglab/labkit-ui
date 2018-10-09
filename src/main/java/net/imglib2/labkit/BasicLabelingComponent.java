@@ -13,6 +13,7 @@ import net.imglib2.labkit.control.brush.FloodFillController;
 import net.imglib2.labkit.control.brush.LabelBrushController;
 import net.imglib2.labkit.labeling.LabelsLayer;
 import net.imglib2.labkit.models.BitmapModel;
+import net.imglib2.labkit.models.Holder;
 import net.imglib2.labkit.models.ImageLabelingModel;
 import net.imglib2.labkit.panel.LabelToolsPanel;
 import net.miginfocom.swing.MigLayout;
@@ -34,10 +35,6 @@ public class BasicLabelingComponent implements AutoCloseable {
 
 	public JComponent getComponent() {
 		return panel;
-	}
-
-	public ActionMap getActions() {
-		return actionsAndBehaviours.getActions();
 	}
 
 	public BasicLabelingComponent(final JFrame dialogBoxOwner,
@@ -69,19 +66,25 @@ public class BasicLabelingComponent implements AutoCloseable {
 	}
 
 	private void initImageLayer() {
-		addBdvLayer(new BdvLayer.FinalLayer(model.showable(), "Image"));
+		addBdvLayer(new BdvLayer.FinalLayer(model.showable(), "Image"), model
+			.imageVisibility());
 	}
 
 	private void initLabelsLayer() {
-		addBdvLayer(new LabelsLayer(model));
+		addBdvLayer(new LabelsLayer(model), model.labelingVisibility());
 	}
 
-	public BdvSource addBdvLayer(BdvLayer layer) {
+	public BdvSource addBdvLayer(BdvLayer layer, Holder<Boolean> visibility) {
 		BdvOptions options = BdvOptions.options().addTo(bdvHandle);
 		BdvSource source = layer.image().show(layer.title(), options);
 		layer.listeners().add(this::requestRepaint);
 		ToggleVisibility action = new ToggleVisibility(layer.title(), source);
 		addAction(action);
+		visibility.notifier().add(action::setVisible);
+		action.addPropertyChangeListener(propertyChangeEvent -> {
+			if (propertyChangeEvent.getPropertyName().equals(Action.SELECTED_KEY))
+				visibility.set((Boolean) propertyChangeEvent.getNewValue());
+		});
 		layer.makeVisible().add(() -> action.setVisible(true));
 		return source;
 	}

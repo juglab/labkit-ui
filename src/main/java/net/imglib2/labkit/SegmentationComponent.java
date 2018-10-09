@@ -60,7 +60,7 @@ public class SegmentationComponent implements AutoCloseable {
 		labelingComponent = new BasicLabelingComponent(dialogBoxOwner,
 			segmentationModel.imageLabelingModel());
 		labelingComponent.addBdvLayer(new PredictionLayer(segmentationModel
-			.selectedSegmenter()));
+			.selectedSegmenter()), segmentationModel.segmentationVisibility());
 		this.extensible = initActions();
 		this.panel = initPanel();
 	}
@@ -93,17 +93,19 @@ public class SegmentationComponent implements AutoCloseable {
 	private JPanel initLeftPanel() {
 		JPanel panel = new JPanel();
 		panel.setLayout(new MigLayout("", "[grow]", "[][grow][grow]"));
-		ActionMap actions = labelingComponent.getActions();
-		panel.add(GuiUtils.createCheckboxGroupedPanel(actions.get("Image"), GuiUtils
-			.createDimensionsInfo(segmentationModel.image())), "grow, wrap");
-		panel.add(GuiUtils.createCheckboxGroupedPanel(actions.get("Labeling"),
-			new LabelPanel(dialogBoxOwner, new ColoredLabelsModel(segmentationModel
-				.imageLabelingModel()), fixedLabels, item1 -> extensible
-					.createPopupMenu(Label.LABEL_MENU, item1)).getComponent()),
+		panel.add(GuiUtils.createCheckboxGroupedPanel(segmentationModel
+			.imageLabelingModel().imageVisibility(), "Image", GuiUtils
+				.createDimensionsInfo(segmentationModel.image())), "grow, wrap");
+		panel.add(GuiUtils.createCheckboxGroupedPanel(segmentationModel
+			.imageLabelingModel().labelingVisibility(), "Labeling", new LabelPanel(
+				dialogBoxOwner, new ColoredLabelsModel(segmentationModel
+					.imageLabelingModel()), fixedLabels, item1 -> extensible
+						.createPopupMenu(Label.LABEL_MENU, item1)).getComponent()),
 			"grow, wrap");
-		panel.add(GuiUtils.createCheckboxGroupedPanel(actions.get("Segmentation"),
-			new SegmenterPanel(segmentationModel, item -> extensible.createPopupMenu(
-				SegmentationItem.SEGMENTER_MENU, item)).getComponent()), "grow");
+		panel.add(GuiUtils.createCheckboxGroupedPanel(segmentationModel
+			.segmentationVisibility(), "Segmentation", new SegmenterPanel(
+				segmentationModel, item -> extensible.createPopupMenu(
+					SegmentationItem.SEGMENTER_MENU, item)).getComponent()), "grow");
 		panel.invalidate();
 		panel.repaint();
 		return panel;
