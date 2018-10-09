@@ -11,9 +11,12 @@ import net.imglib2.labkit.Extensible;
 import net.imglib2.labkit.MenuBar;
 import net.imglib2.labkit.labeling.Label;
 import net.imglib2.labkit.labeling.Labeling;
+import net.imglib2.labkit.models.DefaultSegmentationModel;
 import net.imglib2.labkit.models.Holder;
 import net.imglib2.labkit.models.SegmentationItem;
+import net.imglib2.labkit.models.SegmentationModel;
 import net.imglib2.labkit.models.SegmentationResultsModel;
+import net.imglib2.labkit.models.SegmenterListModel;
 import net.imglib2.type.logic.BitType;
 import net.imglib2.type.numeric.integer.ShortType;
 import net.imglib2.view.Views;
@@ -28,13 +31,13 @@ import java.util.Set;
 public class SegmentationAsLabelAction {
 
 	private final Holder<Labeling> labelingHolder;
-	private final Holder<SegmentationItem> selectedSegmenter;
+	private final Holder<? extends SegmentationItem> selectedSegmenter;
 
-	public SegmentationAsLabelAction(Extensible extensible,
-		Holder<SegmentationItem> selectedSegmenter, Holder<Labeling> labelingHolder)
+	public <T extends SegmenterListModel<? extends SegmentationItem> & SegmentationModel> SegmentationAsLabelAction(
+		Extensible extensible, T segmenationModel)
 	{
-		this.labelingHolder = labelingHolder;
-		this.selectedSegmenter = selectedSegmenter;
+		this.labelingHolder = segmenationModel.imageLabelingModel().labeling();
+		this.selectedSegmenter = segmenationModel.selectedSegmenter();
 		extensible.addMenuItem(MenuBar.SEGMENTER_MENU,
 			"Create Label from Segmentation ...", 300,
 			ignore -> ((Runnable) this::addSegmentationAsLabels).run(), null, "");

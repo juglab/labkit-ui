@@ -67,8 +67,7 @@ public class SegmentationComponent implements AutoCloseable {
 		new SegmentationSave(extensible, selectedSegmenter);
 		new ResetViewAction(extensible, labelingModel);
 		new BatchSegmentAction(extensible, selectedSegmenter);
-		new SegmentationAsLabelAction(extensible, selectedSegmenter, labelingModel
-			.labeling());
+		new SegmentationAsLabelAction(extensible, segmentationModel);
 		new BitmapImportExportAction(extensible, labelingModel);
 		new LabelEditAction(extensible, fixedLabels, new ColoredLabelsModel(
 			labelingModel));
