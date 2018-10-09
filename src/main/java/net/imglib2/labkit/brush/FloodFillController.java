@@ -1,5 +1,5 @@
 
-package net.imglib2.labkit.control.brush;
+package net.imglib2.labkit.brush;
 
 import bdv.viewer.ViewerPanel;
 import net.imglib2.Localizable;

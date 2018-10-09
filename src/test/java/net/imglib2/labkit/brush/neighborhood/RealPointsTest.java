@@ -1,5 +1,5 @@
 
-package net.imglib2.labkit.control.brush.neighborhood;
+package net.imglib2.labkit.brush.neighborhood;
 
 import net.imglib2.RealPoint;
 import org.junit.Test;

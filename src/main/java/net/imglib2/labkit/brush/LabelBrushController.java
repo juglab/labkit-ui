@@ -1,5 +1,5 @@
 
-package net.imglib2.labkit.control.brush;
+package net.imglib2.labkit.brush;
 
 import bdv.util.Affine3DHelpers;
 import bdv.viewer.ViewerPanel;
@@ -10,7 +10,7 @@ import net.imglib2.RealPoint;
 import net.imglib2.algorithm.neighborhood.Neighborhood;
 import net.imglib2.img.array.ArrayImgs;
 import net.imglib2.labkit.ActionsAndBehaviours;
-import net.imglib2.labkit.control.brush.neighborhood.TransformedSphere;
+import net.imglib2.labkit.brush.neighborhood.TransformedSphere;
 import net.imglib2.labkit.models.BitmapModel;
 import net.imglib2.realtransform.AffineTransform3D;
 import net.imglib2.type.logic.BitType;

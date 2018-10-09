@@ -9,6 +9,7 @@ import net.imglib2.labkit.bdv.BdvLayer;
 import net.imglib2.labkit.bdv.BdvShowable;
 import net.imglib2.labkit.models.Holder;
 import net.imglib2.labkit.models.LabelingModel;
+import net.imglib2.labkit.utils.ARGBVector;
 import net.imglib2.labkit.utils.Notifier;
 import net.imglib2.labkit.utils.RandomAccessibleContainer;
 import net.imglib2.type.numeric.ARGBType;

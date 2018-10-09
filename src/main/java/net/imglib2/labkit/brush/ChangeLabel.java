@@ -1,5 +1,5 @@
 
-package net.imglib2.labkit.control.brush;
+package net.imglib2.labkit.brush;
 
 import net.imglib2.labkit.labeling.Label;
 import net.imglib2.labkit.models.LabelingModel;
