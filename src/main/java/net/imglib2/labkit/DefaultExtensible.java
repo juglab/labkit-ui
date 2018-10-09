@@ -6,8 +6,10 @@ import net.imglib2.labkit.menu.MenuKey;
 import net.imglib2.labkit.utils.ProgressConsumer;
 import org.scijava.Context;
 import org.scijava.app.StatusService;
+import org.scijava.ui.behaviour.util.AbstractNamedAction;
 
 import javax.swing.*;
+import java.util.List;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 
@@ -17,8 +19,7 @@ public class DefaultExtensible implements Extensible {
 	private final JFrame dialogBoxOwner;
 	private final MenuFactory menus = new MenuFactory();
 
-	public DefaultExtensible(Context context, JFrame dialogBoxOwner,
-		BasicLabelingComponent labelingComponent)
+	public DefaultExtensible(Context context, JFrame dialogBoxOwner)
 	{
 		this.context = context;
 		this.dialogBoxOwner = dialogBoxOwner;
@@ -54,7 +55,7 @@ public class DefaultExtensible implements Extensible {
 		return menus.createMenu( key, item );
 	}
 
-	public void install(BasicLabelingComponent labelingComponent) {
-		menus.shortCutActions().forEach(labelingComponent::addAction);
+	public List< AbstractNamedAction > getShortCuts() {
+		return menus.shortCutActions();
 	}
 }

@@ -13,13 +13,13 @@ import net.imglib2.labkit.control.brush.FloodFillController;
 import net.imglib2.labkit.control.brush.LabelBrushController;
 import net.imglib2.labkit.labeling.LabelsLayer;
 import net.imglib2.labkit.models.BitmapModel;
-import net.imglib2.labkit.models.Holder;
 import net.imglib2.labkit.models.ImageLabelingModel;
 import net.imglib2.labkit.panel.LabelToolsPanel;
 import net.miginfocom.swing.MigLayout;
 import org.scijava.ui.behaviour.util.AbstractNamedAction;
 
 import javax.swing.*;
+import java.util.Collection;
 
 public class BasicLabelingComponent implements AutoCloseable {
 
@@ -79,7 +79,7 @@ public class BasicLabelingComponent implements AutoCloseable {
 		BdvSource source = layer.image().show(layer.title(), options);
 		layer.listeners().add(this::requestRepaint);
 		ToggleVisibility action = new ToggleVisibility(layer.title(), source);
-		addAction(action);
+		actionsAndBehaviours.addAction(action);
 		layer.visibility().notifier().add(action::setVisible);
 		action.addPropertyChangeListener(propertyChangeEvent -> {
 			if(propertyChangeEvent.getPropertyName().equals(Action.SELECTED_KEY))
@@ -101,8 +101,8 @@ public class BasicLabelingComponent implements AutoCloseable {
 		return toolsPanel;
 	}
 
-	public void addAction(AbstractNamedAction action) {
-		actionsAndBehaviours.addAction(action);
+	public void addShortcuts(Collection<? extends AbstractNamedAction> shortcuts) {
+		shortcuts.forEach(actionsAndBehaviours::addAction);
 	}
 
 	private void requestRepaint() {
