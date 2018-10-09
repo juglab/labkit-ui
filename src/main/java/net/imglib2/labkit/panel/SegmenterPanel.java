@@ -1,6 +1,8 @@
 
 package net.imglib2.labkit.panel;
 
+import net.imglib2.labkit.DefaultExtensible;
+import net.imglib2.labkit.models.DefaultSegmentationModel;
 import net.imglib2.labkit.models.SegmentationItem;
 import net.imglib2.labkit.models.SegmenterListModel;
 import net.miginfocom.swing.MigLayout;
@@ -30,6 +32,16 @@ public class SegmenterPanel {
 		panel.setLayout(new MigLayout("insets 0, gap 0", "[grow]", "[grow][]"));
 		panel.add(initList(), "grow, wrap");
 		panel.add(initBottomPanel(), "grow");
+	}
+
+	public static JPanel newFramedSegmeterPanel(
+		SegmenterListModel<? extends SegmentationItem> segmentationModel,
+		DefaultExtensible extensible)
+	{
+		return GuiUtils.createCheckboxGroupedPanel(segmentationModel
+			.segmentationVisibility(), "Segmentation", new SegmenterPanel(
+				segmentationModel, item -> extensible.createPopupMenu(
+					SegmentationItem.SEGMENTER_MENU, item)).getComponent());
 	}
 
 	private JComponent initBottomPanel() {

@@ -12,12 +12,10 @@ import net.imglib2.labkit.actions.ResetViewAction;
 import net.imglib2.labkit.actions.SegmentationAsLabelAction;
 import net.imglib2.labkit.actions.SegmentationSave;
 import net.imglib2.labkit.actions.ClassifierSettingsAction;
-import net.imglib2.labkit.labeling.Label;
 import net.imglib2.labkit.menu.MenuKey;
 import net.imglib2.labkit.models.ColoredLabelsModel;
 import net.imglib2.labkit.models.DefaultSegmentationModel;
-import net.imglib2.labkit.models.SegmentationItem;
-import net.imglib2.labkit.panel.GuiUtils;
+import net.imglib2.labkit.panel.ImageInfoPanel;
 import net.imglib2.labkit.panel.LabelPanel;
 import net.imglib2.labkit.panel.SegmenterPanel;
 import net.imglib2.labkit.plugin.MeasureConnectedComponents;
@@ -83,19 +81,12 @@ public class SegmentationComponent implements AutoCloseable {
 	private JPanel initLeftPanel() {
 		JPanel panel = new JPanel();
 		panel.setLayout(new MigLayout("", "[grow]", "[][grow][grow]"));
-		panel.add(GuiUtils.createCheckboxGroupedPanel(segmentationModel
-			.imageLabelingModel().imageVisibility(), "Image", GuiUtils
-				.createDimensionsInfo(segmentationModel.image())), "grow, wrap");
-		panel.add(GuiUtils.createCheckboxGroupedPanel(segmentationModel
-			.imageLabelingModel().labelingVisibility(), "Labeling", new LabelPanel(
-				extensible.dialogParent(), new ColoredLabelsModel(segmentationModel
-					.imageLabelingModel()), fixedLabels, item1 -> extensible
-						.createPopupMenu(Label.LABEL_MENU, item1)).getComponent()),
-			"grow, wrap");
-		panel.add(GuiUtils.createCheckboxGroupedPanel(segmentationModel
-			.segmentationVisibility(), "Segmentation", new SegmenterPanel(
-				segmentationModel, item -> extensible.createPopupMenu(
-					SegmentationItem.SEGMENTER_MENU, item)).getComponent()), "grow");
+		panel.add(ImageInfoPanel.newFramedImageInfoPanel(segmentationModel
+			.imageLabelingModel()), "grow, wrap");
+		panel.add(LabelPanel.newFramedLabelPanel(segmentationModel
+			.imageLabelingModel(), extensible, fixedLabels), "grow, wrap");
+		panel.add(SegmenterPanel.newFramedSegmeterPanel(segmentationModel,
+			extensible), "grow");
 		panel.invalidate();
 		panel.repaint();
 		return panel;

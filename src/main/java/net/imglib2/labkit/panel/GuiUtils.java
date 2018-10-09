@@ -1,22 +1,17 @@
 
 package net.imglib2.labkit.panel;
 
-import net.imglib2.Dimensions;
 import net.imglib2.labkit.models.Holder;
-import net.imglib2.util.Intervals;
 import net.miginfocom.swing.MigLayout;
 import org.scijava.ui.behaviour.DragBehaviour;
-import org.scijava.ui.behaviour.util.AbstractNamedAction;
 import org.scijava.ui.behaviour.util.RunnableAction;
 
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.ActionEvent;
 import java.awt.event.ItemEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.image.BufferedImage;
-import java.util.Arrays;
 
 // TODO use Tims CardPanel https://raw.githubusercontent.com/knime-ip/knip-bdv/4489ea811ce5155038ec919c708ed8b84a6b0297/org.knime.knip.bdv.panel/src/org/knime/knip/bdv/uicomponents/CardPanel.java
 public class GuiUtils {
@@ -107,19 +102,6 @@ public class GuiUtils {
 				behavior.drag(e.getX(), e.getY());
 			}
 		};
-	}
-
-	public static JComponent createDimensionsInfo(Dimensions interval) {
-		Color background = UIManager.getColor("List.background");
-		JPanel panel = new JPanel();
-		panel.setLayout(new MigLayout("insets 8, gap 0", "10[grow]", ""));
-		panel.setBackground(background);
-		JLabel label = new JLabel("Dimensions: " + Arrays.toString(Intervals
-			.dimensionsAsLongArray(interval)));
-		label.setBackground(background);
-		label.setOpaque(true);
-		panel.add(label, "grow, span");
-		return panel;
 	}
 
 	public static JButton createIconButton(Action action) {
