@@ -2,13 +2,17 @@
 package net.imglib2.labkit.panel;
 
 import net.imglib2.Dimensions;
+import net.imglib2.labkit.models.Holder;
 import net.imglib2.util.Intervals;
 import net.miginfocom.swing.MigLayout;
 import org.scijava.ui.behaviour.DragBehaviour;
+import org.scijava.ui.behaviour.util.AbstractNamedAction;
 import org.scijava.ui.behaviour.util.RunnableAction;
 
 import javax.swing.*;
 import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ItemEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.image.BufferedImage;
@@ -45,12 +49,13 @@ public class GuiUtils {
 		return new ImageIcon(image);
 	}
 
-	public static JComponent createCheckboxGroupedPanel(Action action,
+	public static JPanel createCheckboxGroupedPanel(
+		Holder<Boolean> visibility, String text,
 		JComponent panel)
 	{
 		JPanel dark = new JPanel();
 		dark.setLayout(new BorderLayout());
-		JCheckBox checkbox = createCheckbox(action);
+		JCheckBox checkbox = createCheckbox(visibility, text);
 		JPanel title = new JPanel();
 		title.setBackground(new Color(200, 200, 200));
 		title.setLayout(new MigLayout("insets 4pt, gap 8pt, fillx", "10[][]10"));
@@ -64,8 +69,15 @@ public class GuiUtils {
 		return dark;
 	}
 
-	private static JCheckBox createCheckbox(Action image) {
-		return styleCheckboxUsingEye(new JCheckBox(image));
+
+	private static JCheckBox createCheckbox(Holder<Boolean> visibility,
+		String text)
+	{
+		final JCheckBox checkbox = new JCheckBox(text);
+		checkbox.setSelected(visibility.get());
+		visibility.notifier().add(checkbox::setSelected);
+		checkbox.addItemListener( itemEvent -> visibility.set(itemEvent.getStateChange() == ItemEvent.SELECTED));
+		return styleCheckboxUsingEye(checkbox);
 	}
 
 	public static JCheckBox styleCheckboxUsingEye(JCheckBox checkbox) {

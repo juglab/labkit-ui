@@ -19,4 +19,6 @@ public interface SegmentationModel {
 	AffineTransform3D labelTransformation();
 
 	void trainSegmenter();
+
+	Holder<Boolean> segmentationVisibility();
 }

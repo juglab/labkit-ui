@@ -40,6 +40,7 @@ public class DefaultSegmentationModel implements SegmentationModel,
 	private List<SegmentationItem> segmenters = new ArrayList<>();
 	private final RandomAccessibleInterval<?> compatibleImage;
 	private final CellGrid grid;
+	private final Holder<Boolean> segmentationVisibility = new DefaultHolder<>(true);
 
 	public DefaultSegmentationModel(InputImage inputImage, Context context) {
 		Labeling labeling = Labeling.createEmpty(Arrays.asList("background",
@@ -131,6 +132,11 @@ public class DefaultSegmentationModel implements SegmentationModel,
 	@Override
 	public void trainSegmenter() {
 		train(selectedSegmenter().get());
+	}
+
+	@Override
+	public Holder<Boolean> segmentationVisibility() {
+		return segmentationVisibility;
 	}
 
 	public <T extends IntegerType<T> & NativeType<T>>
