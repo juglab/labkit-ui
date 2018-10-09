@@ -12,11 +12,8 @@ public interface Extensible {
 
 	Context context();
 
-	void addAction(String title, String command, Runnable action,
-		String keyStroke);
-
-	<T> void addMenuItem(MenuKey<T> key, String title, Consumer<T> action,
-		Icon icon);
+	<T> void addMenuItem(MenuKey<T> key, String title, float priority,
+		Consumer<T> action, Icon icon, String keyStroke);
 
 	JFrame dialogParent();
 

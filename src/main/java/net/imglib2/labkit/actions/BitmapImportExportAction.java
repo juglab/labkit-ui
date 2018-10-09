@@ -9,6 +9,7 @@ import net.imagej.DatasetService;
 import net.imglib2.RandomAccessibleInterval;
 import net.imglib2.converter.Converters;
 import net.imglib2.labkit.Extensible;
+import net.imglib2.labkit.MenuBar;
 import net.imglib2.labkit.labeling.Label;
 import net.imglib2.labkit.labeling.Labeling;
 import net.imglib2.labkit.models.ImageLabelingModel;
@@ -22,7 +23,6 @@ import org.scijava.plugin.Parameter;
 import javax.swing.*;
 import java.io.File;
 import java.io.IOException;
-import java.util.function.Consumer;
 
 public class BitmapImportExportAction extends AbstractFileIoAction {
 
@@ -46,13 +46,14 @@ public class BitmapImportExportAction extends AbstractFileIoAction {
 		this.extensible = extensible;
 		this.model = model;
 		extensible.context().inject(this);
-		initOpenAction("Import Bitmap ...", "importLabel", this::importLabel, "");
-		initSaveAction("Export Selected Label as Bitmap ...", "exportLabel",
-			this::exportLabel, "");
-		extensible.addMenuItem(Label.LABEL_MENU, "Export as Bitmap ...",
+		initOpenAction(MenuBar.LABELING_MENU, "Import Bitmap ...", 100,
+			this::importLabel, "");
+		initSaveAction(MenuBar.LABELING_MENU, "Export Selected Label as Bitmap ...",
+			101, this::exportLabel, "");
+		extensible.addMenuItem(Label.LABEL_MENU, "Export as Bitmap ...", 400,
 			label -> openDialogAndThen("Export Label as Bitmap",
 				JFileChooser.SAVE_DIALOG, filename -> exportLabel(label, filename)),
-			null);
+			null, null);
 	}
 
 	private void exportLabel(Label label, String filename) throws IOException {

@@ -14,7 +14,9 @@ import net.imglib2.RandomAccess;
 import net.imglib2.algorithm.fill.Filter;
 import net.imglib2.algorithm.fill.FloodFill;
 import net.imglib2.algorithm.neighborhood.DiamondShape;
+import net.imglib2.labkit.DefaultExtensible;
 import net.imglib2.labkit.Extensible;
+import net.imglib2.labkit.MenuBar;
 import net.imglib2.labkit.labeling.Labeling;
 import net.imglib2.labkit.labeling.LabelingSerializer;
 import net.imglib2.labkit.models.LabelingModel;
@@ -65,11 +67,12 @@ public class MeasureConnectedComponents implements Command {
 	}
 
 	public static void addAction(Extensible extensible, LabelingModel model) {
-		extensible.addAction("Measure Connected Components ...",
-			"measureConnectedComponents", () -> {
-				Table<?, ?> table = createTable(model.labeling().get(), true);
-				extensible.context().service(UIService.class).show(table);
-			}, "");
+		Runnable action = () -> {
+			Table<?, ?> table = createTable(model.labeling().get(), true);
+			extensible.context().service(UIService.class).show(table);
+		};
+		extensible.addMenuItem(MenuBar.OTHERS_MENU,
+			"Measure Connected Components ...", 0, ignore -> action.run(), null, "");
 	}
 
 	private static Table<?, ?> createTable(Labeling labeling,

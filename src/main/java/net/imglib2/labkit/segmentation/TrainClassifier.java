@@ -1,8 +1,10 @@
 
 package net.imglib2.labkit.segmentation;
 
+import net.imglib2.labkit.DefaultExtensible;
 import net.imglib2.labkit.Extensible;
 
+import net.imglib2.labkit.MenuBar;
 import net.imglib2.labkit.models.SegmentationItem;
 import net.imglib2.labkit.models.SegmentationModel;
 import net.imglib2.labkit.models.SegmenterListModel;
@@ -18,14 +20,14 @@ public class TrainClassifier {
 		Extensible extensible, M model)
 	{
 		this.model = model;
-		extensible.addAction("Train Classifier", "trainClassifier",
-			this::trainClassifier, "ctrl shift T");
+		extensible.addMenuItem(MenuBar.SEGMENTER_MENU, "Train Classifier", 1,
+			ignore -> ((Runnable) this::trainClassifier).run(), null, "ctrl shift T");
 		extensible.addMenuItem(SegmentationItem.SEGMENTER_MENU, "Train Classifier",
-			(Consumer<SegmentationItem>) ((SegmenterListModel) model)::train, GuiUtils
-				.loadIcon("run.png"));
+			1, (Consumer<SegmentationItem>) ((SegmenterListModel) model)::train,
+			GuiUtils.loadIcon("run.png"), null);
 		extensible.addMenuItem(SegmentationItem.SEGMENTER_MENU, "Remove Classifier",
-			(Consumer<SegmentationItem>) ((SegmenterListModel) model)::remove,
-			GuiUtils.loadIcon("remove.png"));
+			3, (Consumer<SegmentationItem>) ((SegmenterListModel) model)::remove,
+			GuiUtils.loadIcon("remove.png"), null);
 	}
 
 	private void trainClassifier() {

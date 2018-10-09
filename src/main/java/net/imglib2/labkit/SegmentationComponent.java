@@ -13,6 +13,7 @@ import net.imglib2.labkit.actions.SegmentationAsLabelAction;
 import net.imglib2.labkit.actions.SegmentationSave;
 import net.imglib2.labkit.actions.ClassifierSettingsAction;
 import net.imglib2.labkit.labeling.Label;
+import net.imglib2.labkit.menu.MenuKey;
 import net.imglib2.labkit.models.ColoredLabelsModel;
 import net.imglib2.labkit.models.DefaultSegmentationModel;
 import net.imglib2.labkit.models.SegmentationItem;
@@ -85,21 +86,23 @@ public class SegmentationComponent implements AutoCloseable {
 			segmentationModel.imageLabelingModel()));
 		MeasureConnectedComponents.addAction(extensible, segmentationModel
 			.imageLabelingModel());
+		extensible.install(labelingComponent);
 		return extensible;
 	}
 
 	private JPanel initLeftPanel() {
 		JPanel panel = new JPanel();
 		panel.setLayout(new MigLayout("", "[grow]", "[][grow][grow]"));
-		ActionMap actions = getActions();
+		ActionMap actions = labelingComponent.getActions();
 		panel.add(GuiUtils.createCheckboxGroupedPanel(actions.get("Image"), GuiUtils
 			.createDimensionsInfo(segmentationModel.image())), "grow, wrap");
 		panel.add(GuiUtils.createCheckboxGroupedPanel(actions.get("Labeling"),
 			new LabelPanel(dialogBoxOwner, new ColoredLabelsModel(segmentationModel
-				.imageLabelingModel()), fixedLabels, item1 -> extensible.createMenu(
-					Label.LABEL_MENU, item1)).getComponent()), "grow, wrap");
+				.imageLabelingModel()), fixedLabels, item1 -> extensible
+					.createPopupMenu(Label.LABEL_MENU, item1)).getComponent()),
+			"grow, wrap");
 		panel.add(GuiUtils.createCheckboxGroupedPanel(actions.get("Segmentation"),
-			new SegmenterPanel(segmentationModel, item -> extensible.createMenu(
+			new SegmenterPanel(segmentationModel, item -> extensible.createPopupMenu(
 				SegmentationItem.SEGMENTER_MENU, item)).getComponent()), "grow");
 		panel.invalidate();
 		panel.repaint();
@@ -120,8 +123,8 @@ public class SegmentationComponent implements AutoCloseable {
 		return panel;
 	}
 
-	public ActionMap getActions() {
-		return labelingComponent.getActions();
+	public JMenu getActions(MenuKey<Void> key) {
+		return extensible.createMenu(key, () -> null);
 	}
 
 	public <T extends IntegerType<T> & NativeType<T>>

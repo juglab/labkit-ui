@@ -6,7 +6,9 @@ import net.imglib2.RandomAccess;
 import net.imglib2.RandomAccessibleInterval;
 import net.imglib2.converter.Converter;
 import net.imglib2.converter.Converters;
+import net.imglib2.labkit.DefaultExtensible;
 import net.imglib2.labkit.Extensible;
+import net.imglib2.labkit.MenuBar;
 import net.imglib2.labkit.labeling.Label;
 import net.imglib2.labkit.labeling.Labeling;
 import net.imglib2.labkit.models.Holder;
@@ -33,10 +35,12 @@ public class SegmentationAsLabelAction {
 	{
 		this.labelingHolder = labelingHolder;
 		this.selectedSegmenter = selectedSegmenter;
-		extensible.addAction("Create Label from Segmentation ...",
-			"addSegmentationAsLabel", this::addSegmentationAsLabels, "");
+		extensible.addMenuItem(MenuBar.SEGMENTER_MENU,
+			"Create Label from Segmentation ...", 300,
+			ignore -> ((Runnable) this::addSegmentationAsLabels).run(), null, "");
 		extensible.addMenuItem(SegmentationItem.SEGMENTER_MENU,
-			"Create Label from Segmentation ...", this::addSegmentationAsLabel, null);
+			"Create Label from Segmentation ...", 300, this::addSegmentationAsLabel,
+			null, null);
 	}
 
 	private void addSegmentationAsLabels() {

@@ -28,7 +28,7 @@ public class LabelingComponent implements AutoCloseable {
 			labelingComponent);
 		new LabelEditAction(extensible, false, new ColoredLabelsModel(model));
 		LabelPanel labelPanel = new LabelPanel(dialogBoxOwner,
-			new ColoredLabelsModel(model), false, item -> extensible.createMenu(
+			new ColoredLabelsModel(model), false, item -> extensible.createPopupMenu(
 				Label.LABEL_MENU, item));
 		leftPanel.add(GuiUtils.createCheckboxGroupedPanel(actions.get("Labeling"),
 			labelPanel.getComponent()), "grow");
