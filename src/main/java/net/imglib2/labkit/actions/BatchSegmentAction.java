@@ -2,7 +2,9 @@
 package net.imglib2.labkit.actions;
 
 import net.imglib2.labkit.BatchSegmenter;
+import net.imglib2.labkit.DefaultExtensible;
 import net.imglib2.labkit.Extensible;
+import net.imglib2.labkit.MenuBar;
 import net.imglib2.labkit.models.Holder;
 import net.imglib2.labkit.models.SegmentationItem;
 import net.imglib2.labkit.segmentation.Segmenter;
@@ -38,8 +40,9 @@ public class BatchSegmentAction {
 	{
 		this.extensible = extensible;
 		this.selectedSegmenter = selectedSegmenter;
-		extensible.addAction("Batch Segment Images ...", "batchSegment",
-			this::segmentImages, "");
+		extensible.addMenuItem(MenuBar.OTHERS_MENU,
+				"Batch Segment Images ...", 0, ignore -> ((Runnable) this::segmentImages)
+						.run(), null, "");
 	}
 
 	private void segmentImages() {

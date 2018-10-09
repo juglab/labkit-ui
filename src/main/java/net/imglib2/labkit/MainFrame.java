@@ -40,7 +40,7 @@ public class MainFrame {
 			context, inputImage, initialLabeling);
 		new SetLabelsAction(segmentationComponent, preferences);
 		setTitle(inputImage.getName());
-		frame.setJMenuBar(new MenuBar(segmentationComponent.getActions()));
+		frame.setJMenuBar(new MenuBar(segmentationComponent::getActions));
 		frame.setVisible(true);
 	}
 

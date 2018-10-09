@@ -2,6 +2,7 @@
 package net.imglib2.labkit.actions;
 
 import net.imglib2.labkit.Extensible;
+import net.imglib2.labkit.MenuBar;
 import net.imglib2.labkit.models.Holder;
 import net.imglib2.labkit.models.SegmentationItem;
 
@@ -19,8 +20,10 @@ public class ClassifierIoAction extends AbstractFileIoAction {
 	{
 		super(extensible, new FileNameExtensionFilter("Classifier", "classifier"));
 		this.selectedSegmenter = selectedSegmenter;
-		initSaveAction("Save Classifier ...", "saveClassifier", this::save, "");
-		initOpenAction("Open Classifier ...", "openClassifier", this::open, "");
+		initSaveAction(MenuBar.SEGMENTER_MENU, "Save Classifier ...", 101,
+				this::save, "");
+		initOpenAction(MenuBar.SEGMENTER_MENU, "Open Classifier ...", 100,
+				this::open, "");
 	}
 
 	private void save(String filename) throws Exception {

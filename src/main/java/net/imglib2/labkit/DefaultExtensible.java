@@ -6,7 +6,6 @@ import net.imglib2.labkit.menu.MenuKey;
 import net.imglib2.labkit.utils.ProgressConsumer;
 import org.scijava.Context;
 import org.scijava.app.StatusService;
-import org.scijava.ui.behaviour.util.RunnableAction;
 
 import javax.swing.*;
 import java.util.function.Consumer;
@@ -16,7 +15,6 @@ public class DefaultExtensible implements Extensible {
 
 	private final Context context;
 	private final JFrame dialogBoxOwner;
-	private final BasicLabelingComponent labelingComponent;
 	private final MenuFactory menus = new MenuFactory();
 
 	public DefaultExtensible(Context context, JFrame dialogBoxOwner,
@@ -24,7 +22,6 @@ public class DefaultExtensible implements Extensible {
 	{
 		this.context = context;
 		this.dialogBoxOwner = dialogBoxOwner;
-		this.labelingComponent = labelingComponent;
 	}
 
 	@Override
@@ -33,20 +30,10 @@ public class DefaultExtensible implements Extensible {
 	}
 
 	@Override
-	public void addAction(String title, String command, Runnable action,
-		String keyStroke)
+	public < T > void addMenuItem(MenuKey< T > key, String title, float priority,
+			Consumer< T > action, Icon icon, String keyStroke)
 	{
-		RunnableAction a = new RunnableAction(title, action);
-		a.putValue(Action.ACTION_COMMAND_KEY, command);
-		a.putValue(Action.ACCELERATOR_KEY, KeyStroke.getKeyStroke(keyStroke));
-		labelingComponent.addAction(a);
-	}
-
-	@Override
-	public < T > void addMenuItem(MenuKey< T > key, String title,
-			Consumer< T > action, Icon icon)
-	{
-		menus.addMenuItem(key, title, action, icon);
+		menus.addMenuItem(key, title, priority, action, icon, keyStroke);
 	}
 
 	@Override
@@ -59,7 +46,15 @@ public class DefaultExtensible implements Extensible {
 		return context.getService(StatusService.class)::showProgress;
 	}
 
-	public <T> JPopupMenu createMenu( MenuKey< T > key, Supplier< T > item ) {
+	public <T> JPopupMenu createPopupMenu( MenuKey< T > key, Supplier< T > item ) {
+		return menus.createPopupMenu( key, item );
+	}
+
+	public <T> JMenu createMenu( MenuKey< T > key, Supplier< T > item ) {
 		return menus.createMenu( key, item );
+	}
+
+	public void install(BasicLabelingComponent labelingComponent) {
+		menus.shortCutActions().forEach(labelingComponent::addAction);
 	}
 }

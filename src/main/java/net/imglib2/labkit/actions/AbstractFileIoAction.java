@@ -2,6 +2,7 @@
 package net.imglib2.labkit.actions;
 
 import net.imglib2.labkit.Extensible;
+import net.imglib2.labkit.menu.MenuKey;
 
 import javax.swing.*;
 import javax.swing.filechooser.FileFilter;
@@ -29,23 +30,24 @@ public abstract class AbstractFileIoAction {
 		fileChooser.setFileFilter(fileFilter);
 	}
 
-	public void initSaveAction(String title, String command, Action action,
-		String keyStroke)
+	public void initSaveAction(MenuKey< Void > menuKey, String title,
+			float priority, Action action, String keyStroke)
 	{
-		initAction(title, command, action, keyStroke, JFileChooser.SAVE_DIALOG);
+		initAction(menuKey, title, priority, action, keyStroke, JFileChooser.SAVE_DIALOG);
 	}
 
-	public void initOpenAction(String title, String command, Action action,
-		String keyStroke)
+	public void initOpenAction(MenuKey< Void > menuKey, String title,
+			float priority, Action action, String keyStroke)
 	{
-		initAction(title, command, action, keyStroke, JFileChooser.OPEN_DIALOG);
+		initAction(menuKey, title, priority, action, keyStroke, JFileChooser.OPEN_DIALOG);
 	}
 
-	private void initAction(String title, String command, Action action,
-		String keyStroke, int dialogType)
+	private void initAction(MenuKey< Void > menuKey, String title,
+			float priority, Action action, String keyStroke, int dialogType)
 	{
-		extensible.addAction(title, command, () -> openDialogAndThen(title,
-			dialogType, action), keyStroke);
+		extensible.addMenuItem(menuKey,
+				title, priority, ignore -> openDialogAndThen(title,
+						dialogType, action), null, keyStroke);
 	}
 
 	protected void openDialogAndThen(String title, int dialogType, Action action) {

@@ -6,6 +6,7 @@ import net.imglib2.RandomAccessibleInterval;
 import net.imglib2.img.ImgView;
 import net.imglib2.img.display.imagej.ImageJFunctions;
 import net.imglib2.labkit.Extensible;
+import net.imglib2.labkit.MenuBar;
 import net.imglib2.labkit.models.Holder;
 import net.imglib2.labkit.models.SegmentationItem;
 import net.imglib2.labkit.utils.LabkitUtils;
@@ -16,7 +17,6 @@ import net.imglib2.type.numeric.NumericType;
 import javax.swing.*;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
@@ -32,25 +32,27 @@ public class SegmentationSave extends AbstractFileIoAction {
 	{
 		super(extensible, AbstractFileIoAction.TIFF_FILTER);
 		this.extensible = extensible;
-		addMenuItems(selectedSegmenter, item -> item.results().segmentation(), "SegmentationResult", "Segmentation");
-		addMenuItems(selectedSegmenter, item -> item.results().prediction(), "Probability Map", "Prediction");
+		addMenuItems(selectedSegmenter, item -> item.results().segmentation(), "SegmentationResult");
+		addMenuItems(selectedSegmenter, item -> item.results().prediction(), "Probability Map");
 	}
 
 	private <T extends NumericType<T> & NativeType<T>> void addMenuItems(
-			Holder<SegmentationItem> selectedSegmenter,
-			Function<SegmentationItem,RandomAccessibleInterval<T>> predictionFactory,
-			String title,
-			String commandKey)
+			Holder< SegmentationItem > selectedSegmenter,
+			Function< SegmentationItem, RandomAccessibleInterval< T > > predictionFactory,
+			String title)
 	{
 		Supplier<RandomAccessibleInterval<T>> selectedResult = () -> predictionFactory.apply(selectedSegmenter.get());
-		initSaveAction("Save " + title + " ...", "save" + commandKey, getSaveAction(selectedResult), "");
-		extensible.addAction("Show " + title + " in ImageJ", "show" + commandKey, getShowAction(selectedResult), "");
-		extensible.addMenuItem( SegmentationItem.SEGMENTER_MENU, "Save " + title + " ...",
+		initSaveAction( MenuBar.SEGMENTER_MENU, "Save " + title + " ...",
+				200, getSaveAction(selectedResult), "");
+		extensible.addMenuItem( MenuBar.SEGMENTER_MENU,
+				"Show " + title + " in ImageJ", 201, ignore -> getShowAction(selectedResult)
+						.run(), null, "");
+		extensible.addMenuItem( SegmentationItem.SEGMENTER_MENU, "Save " + title + " ...", 202,
 				item -> openDialogAndThen("Save " + title + " ...", JFileChooser.OPEN_DIALOG, getSaveAction( () -> predictionFactory.apply(item) )),
-				null);
-		extensible.addMenuItem( SegmentationItem.SEGMENTER_MENU, "Show " + title + " in ImageJ",
+				null, null);
+		extensible.addMenuItem( SegmentationItem.SEGMENTER_MENU, "Show " + title + " in ImageJ", 203,
 				item -> getShowAction( () -> predictionFactory.apply(item) ).run(),
-				null);
+				null, null);
 	}
 
 	private <T extends NumericType<T> & NativeType<T>> Runnable getShowAction(

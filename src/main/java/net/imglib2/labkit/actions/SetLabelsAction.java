@@ -12,6 +12,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.StringJoiner;
 
+// FIXME
 public class SetLabelsAction {
 
 	private final Preferences preference;
@@ -28,9 +29,9 @@ public class SetLabelsAction {
 	}
 
 	private void addAction(String title, String command, Runnable action) {
-		RunnableAction a = new RunnableAction(title, action);
-		a.putValue(Action.ACTION_COMMAND_KEY, command);
-		segmentationComponent.getActions().put(command, a);
+	//	RunnableAction a = new RunnableAction(title, action);
+	//	a.putValue(Action.ACTION_COMMAND_KEY, command);
+	//	segmentationComponent.getActions(key).put(command, a);
 	}
 
 	private void defaultLabels() {
