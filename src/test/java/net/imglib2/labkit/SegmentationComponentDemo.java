@@ -20,6 +20,7 @@ import java.awt.*;
 public class SegmentationComponentDemo {
 
 	private final SegmentationComponent segmenter;
+	private final DefaultSegmentationModel segmentationModel;
 
 	public static void main(String... args) {
 		new SegmentationComponentDemo();
@@ -30,7 +31,7 @@ public class SegmentationComponentDemo {
 		Img<? extends NumericType<?>> image = ImageJFunctions.wrap(new ImagePlus(
 			"/home/arzt/Documents/Datasets/beans.tif"));
 		Context context = new Context();
-		DefaultSegmentationModel segmentationModel = new DefaultSegmentationModel(
+		segmentationModel = new DefaultSegmentationModel(
 			new DefaultInputImage(image), context);
 		segmenter = new SegmentationComponent(context, frame, segmentationModel,
 			false);
@@ -52,9 +53,9 @@ public class SegmentationComponentDemo {
 	}
 
 	private void showSegmentation() {
-		if (!segmenter.isTrained()) System.out.println("not trained yet");
+		if (!segmentationModel.isTrained()) System.out.println("not trained yet");
 		else {
-			for (RandomAccessibleInterval<UnsignedByteType> segmentation : segmenter
+			for (RandomAccessibleInterval<UnsignedByteType> segmentation : segmentationModel
 				.getSegmentations(new UnsignedByteType()))
 			{
 				Views.iterable(segmentation).forEach(x -> x.mul(128));
@@ -64,9 +65,9 @@ public class SegmentationComponentDemo {
 	}
 
 	private void showPrediction() {
-		if (!segmenter.isTrained()) System.out.println("not trained yet");
+		if (!segmentationModel.isTrained()) System.out.println("not trained yet");
 		else {
-			segmenter.getPredictions().forEach(ImageJFunctions::show);
+			segmentationModel.getPredictions().forEach(ImageJFunctions::show);
 		}
 	}
 
