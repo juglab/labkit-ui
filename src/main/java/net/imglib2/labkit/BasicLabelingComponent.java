@@ -66,25 +66,25 @@ public class BasicLabelingComponent implements AutoCloseable {
 	}
 
 	private void initImageLayer() {
-		addBdvLayer(new BdvLayer.FinalLayer(model.showable(), "Image"), model.imageVisibility());
+		addBdvLayer(new BdvLayer.FinalLayer(model.showable(), "Image",
+				model.imageVisibility()));
 	}
 
 	private void initLabelsLayer() {
-		addBdvLayer(new LabelsLayer(model), model.labelingVisibility());
+		addBdvLayer(new LabelsLayer(model));
 	}
 
-	public BdvSource addBdvLayer(BdvLayer layer, Holder<Boolean> visibility) {
+	public BdvSource addBdvLayer(BdvLayer layer) {
 		BdvOptions options = BdvOptions.options().addTo(bdvHandle);
 		BdvSource source = layer.image().show(layer.title(), options);
 		layer.listeners().add(this::requestRepaint);
 		ToggleVisibility action = new ToggleVisibility(layer.title(), source);
 		addAction(action);
-		visibility.notifier().add(action::setVisible);
+		layer.visibility().notifier().add(action::setVisible);
 		action.addPropertyChangeListener(propertyChangeEvent -> {
 			if(propertyChangeEvent.getPropertyName().equals(Action.SELECTED_KEY))
-				visibility.set((Boolean) propertyChangeEvent.getNewValue());
+				layer.visibility().set((Boolean) propertyChangeEvent.getNewValue());
 		} );
-		layer.makeVisible().add(() -> action.setVisible(true));
 		return source;
 	}
 

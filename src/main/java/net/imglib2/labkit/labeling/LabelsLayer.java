@@ -7,6 +7,7 @@ import net.imglib2.RandomAccessibleInterval;
 import net.imglib2.converter.Converters;
 import net.imglib2.labkit.bdv.BdvLayer;
 import net.imglib2.labkit.bdv.BdvShowable;
+import net.imglib2.labkit.models.Holder;
 import net.imglib2.labkit.models.LabelingModel;
 import net.imglib2.labkit.utils.Notifier;
 import net.imglib2.labkit.utils.RandomAccessibleContainer;
@@ -80,6 +81,10 @@ public class LabelsLayer implements BdvLayer {
 	@Override
 	public Notifier<Runnable> listeners() {
 		return listeners;
+	}
+
+	@Override public Holder< Boolean > visibility() {
+		return model.labelingVisibility();
 	}
 
 	@Override
