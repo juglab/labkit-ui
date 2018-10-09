@@ -1,34 +1,32 @@
 
 package net.imglib2.labkit;
 
-import net.imglib2.RandomAccessibleInterval;
 import net.imglib2.labkit.actions.AddLabelingIoAction;
 import net.imglib2.labkit.actions.BatchSegmentAction;
 import net.imglib2.labkit.actions.BitmapImportExportAction;
 import net.imglib2.labkit.actions.ClassifierIoAction;
+import net.imglib2.labkit.actions.ClassifierSettingsAction;
 import net.imglib2.labkit.actions.LabelEditAction;
 import net.imglib2.labkit.actions.LabelingIoAction;
 import net.imglib2.labkit.actions.ResetViewAction;
 import net.imglib2.labkit.actions.SegmentationAsLabelAction;
 import net.imglib2.labkit.actions.SegmentationSave;
-import net.imglib2.labkit.actions.ClassifierSettingsAction;
 import net.imglib2.labkit.menu.MenuKey;
 import net.imglib2.labkit.models.ColoredLabelsModel;
 import net.imglib2.labkit.models.DefaultSegmentationModel;
+import net.imglib2.labkit.models.Holder;
+import net.imglib2.labkit.models.ImageLabelingModel;
+import net.imglib2.labkit.models.SegmentationItem;
 import net.imglib2.labkit.panel.ImageInfoPanel;
 import net.imglib2.labkit.panel.LabelPanel;
 import net.imglib2.labkit.panel.SegmenterPanel;
 import net.imglib2.labkit.plugin.MeasureConnectedComponents;
 import net.imglib2.labkit.segmentation.PredictionLayer;
 import net.imglib2.labkit.segmentation.TrainClassifier;
-import net.imglib2.type.NativeType;
-import net.imglib2.type.numeric.IntegerType;
-import net.imglib2.type.numeric.real.FloatType;
 import net.miginfocom.swing.MigLayout;
 import org.scijava.Context;
 
 import javax.swing.*;
-import java.util.List;
 
 public class SegmentationComponent implements AutoCloseable {
 
@@ -57,24 +55,24 @@ public class SegmentationComponent implements AutoCloseable {
 	}
 
 	private void initActions() {
+		final Holder<SegmentationItem> selectedSegmenter = segmentationModel
+			.selectedSegmenter();
+		final ImageLabelingModel labelingModel = segmentationModel
+			.imageLabelingModel();
 		new TrainClassifier(extensible, segmentationModel);
-		new ClassifierSettingsAction(extensible, segmentationModel
-			.selectedSegmenter());
-		new ClassifierIoAction(extensible, segmentationModel.selectedSegmenter());
-		new LabelingIoAction(extensible, segmentationModel.imageLabelingModel());
-		new AddLabelingIoAction(extensible, segmentationModel.imageLabelingModel()
+		new ClassifierSettingsAction(extensible, selectedSegmenter);
+		new ClassifierIoAction(extensible, selectedSegmenter);
+		new LabelingIoAction(extensible, labelingModel);
+		new AddLabelingIoAction(extensible, labelingModel.labeling());
+		new SegmentationSave(extensible, selectedSegmenter);
+		new ResetViewAction(extensible, labelingModel);
+		new BatchSegmentAction(extensible, selectedSegmenter);
+		new SegmentationAsLabelAction(extensible, selectedSegmenter, labelingModel
 			.labeling());
-		new SegmentationSave(extensible, segmentationModel.selectedSegmenter());
-		new ResetViewAction(extensible, segmentationModel.imageLabelingModel());
-		new BatchSegmentAction(extensible, segmentationModel.selectedSegmenter());
-		new SegmentationAsLabelAction(extensible, segmentationModel
-			.selectedSegmenter(), segmentationModel.imageLabelingModel().labeling());
-		new BitmapImportExportAction(extensible, segmentationModel
-			.imageLabelingModel());
+		new BitmapImportExportAction(extensible, labelingModel);
 		new LabelEditAction(extensible, fixedLabels, new ColoredLabelsModel(
-			segmentationModel.imageLabelingModel()));
-		MeasureConnectedComponents.addAction(extensible, segmentationModel
-			.imageLabelingModel());
+			labelingModel));
+		MeasureConnectedComponents.addAction(extensible, labelingModel);
 		labelingComponent.addShortcuts(extensible.getShortCuts());
 	}
 
@@ -105,22 +103,8 @@ public class SegmentationComponent implements AutoCloseable {
 		return panel;
 	}
 
-	public JMenu getActions(MenuKey<Void> key) {
+	public JMenu createMenu(MenuKey<Void> key) {
 		return extensible.createMenu(key, () -> null);
-	}
-
-	public <T extends IntegerType<T> & NativeType<T>>
-		List<RandomAccessibleInterval<T>> getSegmentations(T type)
-	{
-		return segmentationModel.getSegmentations(type);
-	}
-
-	public List<RandomAccessibleInterval<FloatType>> getPredictions() {
-		return segmentationModel.getPredictions();
-	}
-
-	public boolean isTrained() {
-		return segmentationModel.isTrained();
 	}
 
 	@Override
