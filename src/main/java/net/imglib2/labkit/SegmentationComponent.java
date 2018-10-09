@@ -38,36 +38,27 @@ public class SegmentationComponent implements AutoCloseable {
 
 	private final boolean fixedLabels;
 
-	private final JFrame dialogBoxOwner;
-
 	private final DefaultExtensible extensible;
 
 	private BasicLabelingComponent labelingComponent;
 
-	private final Context context;
-
 	private DefaultSegmentationModel segmentationModel;
-
-	private SegmentationAsLabelAction sal;
 
 	public SegmentationComponent(Context context, JFrame dialogBoxOwner,
 		DefaultSegmentationModel segmentationModel, boolean fixedLabels)
 	{
-		this.dialogBoxOwner = dialogBoxOwner;
-		this.context = context;
+		this.extensible = new DefaultExtensible(context, dialogBoxOwner);
 		this.fixedLabels = fixedLabels;
 		this.segmentationModel = segmentationModel;
 		labelingComponent = new BasicLabelingComponent(dialogBoxOwner,
 			segmentationModel.imageLabelingModel());
 		labelingComponent.addBdvLayer(new PredictionLayer(segmentationModel
 			.selectedSegmenter(), segmentationModel.segmentationVisibility()));
-		this.extensible = initActions();
+		initActions();
 		this.panel = initPanel();
 	}
 
-	private DefaultExtensible initActions() {
-		DefaultExtensible extensible = new DefaultExtensible(context,
-			dialogBoxOwner, labelingComponent);
+	private void initActions() {
 		new TrainClassifier(extensible, segmentationModel);
 		new ClassifierSettingsAction(extensible, segmentationModel
 			.selectedSegmenter());
@@ -86,8 +77,7 @@ public class SegmentationComponent implements AutoCloseable {
 			segmentationModel.imageLabelingModel()));
 		MeasureConnectedComponents.addAction(extensible, segmentationModel
 			.imageLabelingModel());
-		extensible.install(labelingComponent);
-		return extensible;
+		labelingComponent.addShortcuts(extensible.getShortCuts());
 	}
 
 	private JPanel initLeftPanel() {
@@ -98,7 +88,7 @@ public class SegmentationComponent implements AutoCloseable {
 				.createDimensionsInfo(segmentationModel.image())), "grow, wrap");
 		panel.add(GuiUtils.createCheckboxGroupedPanel(segmentationModel
 			.imageLabelingModel().labelingVisibility(), "Labeling", new LabelPanel(
-				dialogBoxOwner, new ColoredLabelsModel(segmentationModel
+				extensible.dialogParent(), new ColoredLabelsModel(segmentationModel
 					.imageLabelingModel()), fixedLabels, item1 -> extensible
 						.createPopupMenu(Label.LABEL_MENU, item1)).getComponent()),
 			"grow, wrap");
@@ -117,7 +107,6 @@ public class SegmentationComponent implements AutoCloseable {
 		panel.setLeftComponent(initLeftPanel());
 		panel.setRightComponent(labelingComponent.getComponent());
 		panel.setBorder(BorderFactory.createEmptyBorder());
-		// panel.add( bottom );
 		return panel;
 	}
 
