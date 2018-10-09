@@ -80,7 +80,7 @@ public class SegmentationUseCaseTest {
 			inputImage, new Context());
 		segmentationModel.imageLabelingModel().labeling().set(labeling);
 		PredictionLayer layer = new PredictionLayer(segmentationModel
-			.selectedSegmenter());
+			.selectedSegmenter(), segmentationModel.segmentationVisibility());
 		assertEquals(2, layer.image().interval().numDimensions());
 		SegmentationItem segmenter = segmentationModel.segmenters().get(0);
 		segmenter.segmenter().train(Collections.singletonList(img), Collections

@@ -120,6 +120,7 @@ public class ImageLabelingModel implements LabelingModel {
 		return imageVisibility;
 	}
 
+	@Override
 	public Holder<Boolean> labelingVisibility() {
 		return labelingVisibility;
 	}
