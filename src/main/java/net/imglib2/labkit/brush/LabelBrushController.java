@@ -178,10 +178,10 @@ public class LabelBrushController {
 
 		@Override
 		public void init(final int x, final int y) {
+			model.makeVisible();
 			RealPoint coords = new RealPoint(x, y);
 			this.before = coords;
 			paint(coords);
-
 			fireBitmapChanged();
 		}
 

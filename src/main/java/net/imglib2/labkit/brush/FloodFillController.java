@@ -2,31 +2,27 @@
 package net.imglib2.labkit.brush;
 
 import bdv.viewer.ViewerPanel;
-import net.imglib2.Localizable;
 import net.imglib2.Point;
-import net.imglib2.RandomAccess;
 import net.imglib2.RandomAccessibleInterval;
 import net.imglib2.RealLocalizable;
 import net.imglib2.RealPoint;
-import net.imglib2.algorithm.neighborhood.DiamondShape;
 import net.imglib2.labkit.ActionsAndBehaviours;
 import net.imglib2.labkit.labeling.Label;
-import net.imglib2.labkit.labeling.Labeling;
 import net.imglib2.labkit.models.LabelingModel;
 import net.imglib2.roi.labeling.LabelingType;
 import net.imglib2.trainable_segmention.RevampUtils;
-import net.imglib2.type.Type;
 import net.imglib2.util.Util;
-import net.imglib2.view.ExtendedRandomAccessibleInterval;
 import net.imglib2.view.Views;
 import org.scijava.ui.behaviour.ClickBehaviour;
 import org.scijava.ui.behaviour.util.RunnableAction;
 
 import javax.swing.*;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Set;
-import java.util.function.BiPredicate;
+import java.util.function.Consumer;
 import java.util.function.Supplier;
+import java.util.stream.Collectors;
 
 public class FloodFillController {
 
@@ -38,11 +34,20 @@ public class FloodFillController {
 
 	private final boolean sliceTime;
 
-	private final FloodFillClick floodEraseBehaviour = new FloodFillClick(
-		Collections::emptySet);
+	private final FloodFillClick floodEraseBehaviour = new FloodFillClick(() -> {
+		Collection<Label> visible = visibleLabels();
+		return l -> l.removeAll(visible);
+	});
 
-	private final FloodFillClick floodFillBehaviour = new FloodFillClick(
-		this::selectedLabel);
+	private Collection<Label> visibleLabels() {
+		return model.labeling().get().getLabels().stream().filter(Label::isActive)
+			.collect(Collectors.toList());
+	}
+
+	private final FloodFillClick floodFillBehaviour = new FloodFillClick(() -> {
+		Label selected = selectedLabel();
+		return l -> l.add(selected);
+	});
 
 	public FloodFillController(final ViewerPanel viewer,
 		final LabelingModel model, final ActionsAndBehaviours behaviors,
@@ -60,8 +65,8 @@ public class FloodFillController {
 			"F button2", "F button3");
 	}
 
-	private Set<Label> selectedLabel() {
-		return Collections.singleton(model.selectedLabel().get());
+	private Label selectedLabel() {
+		return model.selectedLabel().get();
 	}
 
 	public ClickBehaviour floodEraseBehaviour() {
@@ -85,17 +90,18 @@ public class FloodFillController {
 
 	private class FloodFillClick implements ClickBehaviour {
 
-		private final Supplier<Set<Label>> value;
+		private final Supplier<Consumer<Set<Label>>> operationFactory;
 
-		FloodFillClick(Supplier<Set<Label>> value) {
-			this.value = value;
+		FloodFillClick(Supplier<Consumer<Set<Label>>> operationFactory) {
+			this.operationFactory = operationFactory;
 		}
 
 		protected void floodFill(final RealLocalizable coords) {
 			synchronized (viewer) {
 				RandomAccessibleInterval<Set<Label>> labeling1 = labeling();
 				Point seed = roundAndReduceDimension(coords, labeling1.numDimensions());
-				floodFillSet(labeling1, seed, value.get());
+				FloodFill.doFloodFillOnActiveLabels(
+					(RandomAccessibleInterval) labeling1, seed, operationFactory.get());
 			}
 		}
 
@@ -115,34 +121,8 @@ public class FloodFillController {
 		}
 	}
 
-	public static <T> void floodFillSet(RandomAccessibleInterval<Set<T>> image,
-		Point seed, Set<T> label)
-	{
-		RandomAccessibleInterval<LabelingType<T>> labeling = RevampUtils
-			.uncheckedCast(image);
-		LabelingType<T> newValue = Util.getTypeFromInterval(labeling)
-			.createVariable();
-		newValue.clear();
-		newValue.addAll(label);
-		doFloodFill(labeling, seed, newValue);
-	}
-
-	public static <T extends Type<T>> void doFloodFill(
-		RandomAccessibleInterval<T> image, Localizable seed, T value)
-	{
-		RandomAccess<T> ra = image.randomAccess();
-		ra.setPosition(seed);
-		T seedValue = ra.get().copy();
-		if (seedValue.valueEquals(value)) return;
-		BiPredicate<T, T> filter = (f, s) -> f.valueEquals(seedValue);
-		ExtendedRandomAccessibleInterval<T, RandomAccessibleInterval<T>> target =
-			Views.extendValue(image, value);
-		net.imglib2.algorithm.fill.FloodFill.fill(target, target, seed, value,
-			new DiamondShape(1), filter);
-	}
-
 	private RandomAccessibleInterval<Set<Label>> labeling() {
-		Labeling label = model.labeling().get();
+		RandomAccessibleInterval<Set<Label>> label = model.labeling().get();
 		if (sliceTime) return Views.hyperSlice(label, label.numDimensions() - 1,
 			viewer.getState().getCurrentTimepoint());
 		return label;
