@@ -6,6 +6,7 @@ import net.imagej.Dataset;
 import net.imagej.DatasetService;
 import net.imglib2.RandomAccessibleInterval;
 import net.imglib2.converter.Converters;
+import net.imglib2.img.display.imagej.ImageJFunctions;
 import net.imglib2.labkit.Extensible;
 import net.imglib2.labkit.MenuBar;
 import net.imglib2.labkit.labeling.Label;
@@ -49,6 +50,12 @@ public class BitmapImportExportAction extends AbstractFileIoAction {
 			label -> openDialogAndThen("Export Label as Bitmap",
 				JFileChooser.SAVE_DIALOG, filename -> exportLabel(label, filename)),
 			null, null);
+		extensible.addMenuItem(Label.LABEL_MENU, "Show as Bitmap in ImageJ", 401,
+				this::showLabel, null, "");
+	}
+
+	private void showLabel(Label label) {
+		ImageJFunctions.show(model.labeling().get().getRegion(label), label.name());
 	}
 
 	private void exportLabel(Label label, String filename) throws IOException {
