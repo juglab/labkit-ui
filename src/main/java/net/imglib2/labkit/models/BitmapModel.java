@@ -3,6 +3,7 @@ package net.imglib2.labkit.models;
 
 import net.imglib2.RandomAccessibleInterval;
 import net.imglib2.labkit.labeling.Label;
+import net.imglib2.labkit.labeling.Labeling;
 import net.imglib2.realtransform.AffineTransform3D;
 import net.imglib2.type.logic.BitType;
 import net.imglib2.type.numeric.ARGBType;
@@ -37,5 +38,15 @@ public class BitmapModel {
 
 	public AffineTransform3D transformation() {
 		return model.labelTransformation();
+	}
+
+	public void makeVisible() {
+		final Label label = label();
+		if (label == null) return;
+		if (label.isActive()) return;
+		label.setActive(true);
+		Holder<Labeling> holder = model.labeling();
+		Labeling labeling = holder.get();
+		holder.notifier().forEach(r -> r.accept(labeling));
 	}
 }
