@@ -43,8 +43,9 @@ public class BitmapModel {
 	public void makeVisible() {
 		final Label label = label();
 		if (label == null) return;
-		if (label.isVisible()) return;
+		if (label.isVisible() && model.labelingVisibility().get()) return;
 		label.setVisible(true);
+		model.labelingVisibility().set(true);
 		Holder<Labeling> holder = model.labeling();
 		Labeling labeling = holder.get();
 		holder.notifier().forEach(r -> r.accept(labeling));
