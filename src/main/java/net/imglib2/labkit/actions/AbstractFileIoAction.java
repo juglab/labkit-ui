@@ -3,6 +3,7 @@ package net.imglib2.labkit.actions;
 
 import net.imglib2.labkit.Extensible;
 import net.imglib2.labkit.menu.MenuKey;
+import org.apache.commons.io.FilenameUtils;
 
 import javax.swing.*;
 import javax.swing.filechooser.FileFilter;
@@ -16,18 +17,21 @@ public abstract class AbstractFileIoAction {
 
 	public static final FileFilter TIFF_FILTER = new FileNameExtensionFilter(
 		"TIF Image (*.tif, *.tiff)", "tif", "tiff");
+	public static final FileFilter LABELING_FILTER = new FileNameExtensionFilter(
+		"Labeling (*.labeling)", "labeling" );
 
 	private final Extensible extensible;
 
 	private final JFileChooser fileChooser;
 
-	public AbstractFileIoAction(Extensible extensible, FileFilter fileFilter) {
+	public AbstractFileIoAction(Extensible extensible, FileFilter... fileFilters) {
 		this.extensible = extensible;
 		this.fileChooser = new JFileChooser();
 		fileChooser.setAcceptAllFileFilterUsed(false);
-		fileChooser.addChoosableFileFilter(fileFilter);
+		for(FileFilter fileFilter : fileFilters)
+			fileChooser.addChoosableFileFilter(fileFilter);
 		fileChooser.setAcceptAllFileFilterUsed(true);
-		fileChooser.setFileFilter(fileFilter);
+		fileChooser.setFileFilter(fileFilters[0]);
 	}
 
 	public void initSaveAction(MenuKey<Void> menuKey, String title,
@@ -60,8 +64,23 @@ public abstract class AbstractFileIoAction {
 		fileChooser.setDialogType(dialogType);
 		final int returnVal = fileChooser.showDialog(extensible.dialogParent(),
 			null);
-		if (returnVal == JFileChooser.APPROVE_OPTION) runAction(action, fileChooser
-			.getSelectedFile().getAbsolutePath());
+		if (returnVal == JFileChooser.APPROVE_OPTION) runAction(action,
+				getSelectedFile());
+	}
+
+	private String getSelectedFile() {
+		final String path =
+				fileChooser.getSelectedFile().getAbsolutePath();
+		final boolean exists = new File(path).exists();
+		final String extension = FilenameUtils.getExtension(path);
+		if(fileChooser.getDialogType() == JFileChooser.SAVE_DIALOG && !exists && (extension == null || extension.isEmpty())) {
+			FileFilter filter = fileChooser.getFileFilter();
+			if(filter instanceof FileNameExtensionFilter ) {
+				return path + "." +
+						((FileNameExtensionFilter) filter).getExtensions()[0];
+			}
+		}
+		return path;
 	}
 
 	private void runAction(Action action, String filename) {

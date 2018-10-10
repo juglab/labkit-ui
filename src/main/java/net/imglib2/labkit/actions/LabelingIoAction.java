@@ -25,8 +25,8 @@ public class LabelingIoAction extends AbstractFileIoAction {
 	public LabelingIoAction(DefaultExtensible extensible,
 		LabelingModel labelingModel)
 	{
-		super(extensible, new FileNameExtensionFilter("Labeling (*.labeling)",
-			"labeling"));
+		super(extensible, AbstractFileIoAction.LABELING_FILTER,
+			AbstractFileIoAction.TIFF_FILTER);
 		this.labelingModel = labelingModel;
 		serializer = new LabelingSerializer(extensible.context());
 		initSaveAction(MenuBar.LABELING_MENU, "Save Labeling ...", 2, new Action() {
