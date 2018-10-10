@@ -128,7 +128,7 @@ public class ColoredLabelsModel {
 	}
 
 	public void setActive(Label label, boolean b) {
-		label.setActive(b);
+		label.setVisible(b);
 		fireLabelsChanged();
 	}
 

@@ -10,7 +10,7 @@ public class Label {
 
 	private String name;
 
-	private boolean active;
+	private boolean visible;
 
 	private final ARGBType color;
 
@@ -18,7 +18,7 @@ public class Label {
 		this.name = name;
 		this.color = new ARGBType();
 		this.color.set(color);
-		this.active = true;
+		this.visible = true;
 	}
 
 	public String name() {
@@ -37,11 +37,11 @@ public class Label {
 		this.color.set(color);
 	}
 
-	public boolean isActive() {
-		return active;
+	public boolean isVisible() {
+		return visible;
 	}
 
-	public void setActive(boolean active) {
-		this.active = active;
+	public void setVisible(boolean visible) {
+		this.visible = visible;
 	}
 }

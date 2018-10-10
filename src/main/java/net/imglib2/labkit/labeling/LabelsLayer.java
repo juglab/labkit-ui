@@ -65,7 +65,7 @@ public class LabelsLayer implements BdvLayer {
 	}
 
 	private ARGBType getColor(Set<Label> set) {
-		List<Label> visible = set.stream().filter(Label::isActive).collect(
+		List<Label> visible = set.stream().filter(Label::isVisible).collect(
 			Collectors.toList());
 		if (visible.isEmpty()) return BLACK;
 		ARGBVector collector = new ARGBVector();

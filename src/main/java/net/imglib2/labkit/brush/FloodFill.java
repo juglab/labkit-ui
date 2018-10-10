@@ -68,9 +68,9 @@ public class FloodFill {
 	private static boolean activeLabelsAreEquals(LabelingType<Label> a,
 		Set<Label> b)
 	{
-		boolean bIsSubSetOfA = b.stream().filter(Label::isActive).allMatch(
+		boolean bIsSubSetOfA = b.stream().filter(Label::isVisible).allMatch(
 			a::contains);
-		boolean aIsSubSetOfB = a.stream().filter(Label::isActive).allMatch(
+		boolean aIsSubSetOfB = a.stream().filter(Label::isVisible).allMatch(
 			b::contains);
 		return aIsSubSetOfB && bIsSubSetOfA;
 	}

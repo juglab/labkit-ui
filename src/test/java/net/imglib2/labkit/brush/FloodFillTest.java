@@ -8,20 +8,13 @@ import net.imglib2.RandomAccessibleInterval;
 import net.imglib2.img.array.ArrayImgs;
 import net.imglib2.labkit.labeling.Label;
 import net.imglib2.labkit.labeling.Labeling;
-import net.imglib2.roi.IterableRegion;
 import net.imglib2.roi.labeling.ImgLabeling;
 import net.imglib2.roi.labeling.LabelingType;
-import net.imglib2.roi.util.IterableRandomAccessibleRegion;
-import net.imglib2.sparse.SparseIterableRegion;
-import net.imglib2.type.BooleanType;
 import net.imglib2.type.logic.BitType;
 import net.imglib2.util.Intervals;
 import net.imglib2.view.Views;
 import org.junit.Test;
 
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Map;
 import java.util.Set;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
@@ -78,7 +71,7 @@ public class FloodFillTest {
 		Label a = labeling.getLabel("a");
 		Label b = labeling.getLabel("b");
 		Label c = labeling.getLabel("c");
-		c.setActive(false);
+		c.setVisible(false);
 		Label ab = labeling.addLabel("ab");
 		final Consumer<Set<Label>> operation = l -> l.add(ab);
 		FloodFill.doFloodFillOnActiveLabels((RandomAccessibleInterval) labeling,

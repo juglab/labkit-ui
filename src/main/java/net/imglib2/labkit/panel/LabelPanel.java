@@ -13,7 +13,6 @@ import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import javax.swing.plaf.basic.BasicArrowButton;
 import java.awt.*;
-import java.awt.event.ActionEvent;
 import java.awt.event.ItemEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
@@ -142,7 +141,7 @@ public class LabelPanel {
 
 		private JCheckBox initVisibilityCheckbox() {
 			JCheckBox checkBox = GuiUtils.styleCheckboxUsingEye(new JCheckBox());
-			checkBox.setSelected(label.isActive());
+			checkBox.setSelected(label.isVisible());
 			checkBox.addItemListener(event -> {
 				model.setActive(label, event.getStateChange() == ItemEvent.SELECTED);
 			});

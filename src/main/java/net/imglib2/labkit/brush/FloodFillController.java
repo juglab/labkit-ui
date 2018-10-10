@@ -9,16 +9,12 @@ import net.imglib2.RealPoint;
 import net.imglib2.labkit.ActionsAndBehaviours;
 import net.imglib2.labkit.labeling.Label;
 import net.imglib2.labkit.models.LabelingModel;
-import net.imglib2.roi.labeling.LabelingType;
-import net.imglib2.trainable_segmention.RevampUtils;
-import net.imglib2.util.Util;
 import net.imglib2.view.Views;
 import org.scijava.ui.behaviour.ClickBehaviour;
 import org.scijava.ui.behaviour.util.RunnableAction;
 
 import javax.swing.*;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.Set;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
@@ -40,7 +36,7 @@ public class FloodFillController {
 	});
 
 	private Collection<Label> visibleLabels() {
-		return model.labeling().get().getLabels().stream().filter(Label::isActive)
+		return model.labeling().get().getLabels().stream().filter(Label::isVisible)
 			.collect(Collectors.toList());
 	}
 
