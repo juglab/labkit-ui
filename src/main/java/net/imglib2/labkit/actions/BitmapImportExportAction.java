@@ -1,9 +1,7 @@
 
 package net.imglib2.labkit.actions;
 
-import io.scif.FormatException;
 import io.scif.services.DatasetIOService;
-import io.scif.services.FormatService;
 import net.imagej.Dataset;
 import net.imagej.DatasetService;
 import net.imglib2.RandomAccessibleInterval;
@@ -34,9 +32,6 @@ public class BitmapImportExportAction extends AbstractFileIoAction {
 	DatasetService datasetService;
 
 	@Parameter
-	FormatService formatService;
-
-	@Parameter
 	DatasetIOService datasetIOService;
 
 	public BitmapImportExportAction(Extensible extensible,
@@ -57,7 +52,6 @@ public class BitmapImportExportAction extends AbstractFileIoAction {
 	}
 
 	private void exportLabel(Label label, String filename) throws IOException {
-		filename = autoAddExtension(filename);
 		Labeling labeling = model.labeling().get();
 		RandomAccessibleInterval<BitType> bitmap = labeling.getRegion(label);
 		Dataset dataset = datasetService.create(toUnsignedByteType(bitmap));
@@ -79,19 +73,6 @@ public class BitmapImportExportAction extends AbstractFileIoAction {
 	private void exportLabel(String filename) throws IOException {
 		Label label = model.selectedLabel().get();
 		exportLabel(label, filename);
-	}
-
-	private String autoAddExtension(String filename) {
-		return isSupported(filename) ? filename : filename + ".tif";
-	}
-
-	private boolean isSupported(String filename) {
-		try {
-			return null != formatService.getWriterByExtension(filename);
-		}
-		catch (FormatException e) {
-			return false;
-		}
 	}
 
 	private RandomAccessibleInterval<BoolType> toBoolType(
