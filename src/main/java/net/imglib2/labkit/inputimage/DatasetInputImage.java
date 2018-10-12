@@ -62,7 +62,17 @@ public class DatasetInputImage extends AbstractInputImage {
 	}
 
 	public DatasetInputImage(ImgPlus<? extends NumericType<?>> image) {
-		this(image, BdvShowable.wrap(prepareImage(image)));
+		this(image, initializeShowable(image));
+	}
+
+	public static BdvShowable initializeShowable(
+		ImgPlus<? extends NumericType<?>> image)
+	{
+		final BdvShowable showable = BdvShowable.wrap(prepareImage(image));
+		final double min = ContrastUtils.getMin(image);
+		final double max = ContrastUtils.getMax(image);
+		return (min < max) ? ContrastUtils.showableAddSetDisplayRange(showable, min,
+			max) : showable;
 	}
 
 	public DatasetInputImage(Dataset image) {
@@ -71,14 +81,7 @@ public class DatasetInputImage extends AbstractInputImage {
 
 	@Override
 	public Interval interval() {
-		int colorAxis = image.numDimensions() - 1 - (isTimeSeries() ? 1 : 0); // TODO
-																																					// implement
-																																					// nicer
-																																					// way
-																																					// to
-																																					// handle
-																																					// color
-																																					// channel
+		int colorAxis = image.numDimensions() - 1 - (isTimeSeries() ? 1 : 0);
 		return isMultiChannel ? RevampUtils.intervalRemoveDimension(image,
 			colorAxis) : image;
 	}
