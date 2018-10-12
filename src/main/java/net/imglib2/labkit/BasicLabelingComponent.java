@@ -45,8 +45,8 @@ public class BasicLabelingComponent implements AutoCloseable {
 
 		initBdv(model.spatialDimensions().numDimensions() < 3);
 		actionsAndBehaviours = new ActionsAndBehaviours(bdvHandle);
-		initLabelsLayer();
 		initImageLayer();
+		initLabelsLayer();
 		JPanel toolsPanel = initBrushLayer();
 		initPanel(toolsPanel);
 		this.model.transformationModel().initialize(bdvHandle.getViewerPanel());
