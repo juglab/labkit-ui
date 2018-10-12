@@ -23,11 +23,11 @@ import java.util.function.Supplier;
 /**
  * @author Matthias Arzt
  */
-public class SegmentationSave extends AbstractFileIoAction {
+public class SegmentationExportAction extends AbstractFileIoAction {
 
 	private final Extensible extensible;
 
-	public SegmentationSave(Extensible extensible,
+	public SegmentationExportAction(Extensible extensible,
 		Holder<SegmentationItem> selectedSegmenter)
 	{
 		super(extensible, AbstractFileIoAction.TIFF_FILTER);

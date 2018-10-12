@@ -10,7 +10,7 @@ import net.imglib2.labkit.actions.LabelEditAction;
 import net.imglib2.labkit.actions.LabelingIoAction;
 import net.imglib2.labkit.actions.ResetViewAction;
 import net.imglib2.labkit.actions.SegmentationAsLabelAction;
-import net.imglib2.labkit.actions.SegmentationSave;
+import net.imglib2.labkit.actions.SegmentationExportAction;
 import net.imglib2.labkit.menu.MenuKey;
 import net.imglib2.labkit.models.ColoredLabelsModel;
 import net.imglib2.labkit.models.DefaultSegmentationModel;
@@ -64,7 +64,7 @@ public class SegmentationComponent implements AutoCloseable {
 		new ClassifierIoAction(extensible, selectedSegmenter);
 		new LabelingIoAction(extensible, labelingModel);
 		new AddLabelingIoAction(extensible, labelingModel.labeling());
-		new SegmentationSave(extensible, selectedSegmenter);
+		new SegmentationExportAction(extensible, selectedSegmenter);
 		new ResetViewAction(extensible, labelingModel);
 		new BatchSegmentAction(extensible, selectedSegmenter);
 		new SegmentationAsLabelAction(extensible, segmentationModel);
