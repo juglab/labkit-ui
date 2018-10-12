@@ -33,7 +33,7 @@ public class SegmentationSave extends AbstractFileIoAction {
 		super(extensible, AbstractFileIoAction.TIFF_FILTER);
 		this.extensible = extensible;
 		addMenuItems(selectedSegmenter, item -> item.results().segmentation(),
-			"SegmentationResult");
+			"Segmentation Result");
 		addMenuItems(selectedSegmenter, item -> item.results().prediction(),
 			"Probability Map");
 	}
