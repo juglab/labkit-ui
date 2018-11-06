@@ -79,7 +79,7 @@ public class SegmentationComponent implements AutoCloseable {
 		JPanel panel = new JPanel();
 		panel.setLayout(new MigLayout("", "[grow]", "[][grow][grow]"));
 		panel.add(ImageInfoPanel.newFramedImageInfoPanel(segmentationModel
-			.imageLabelingModel()), "grow, wrap");
+			.imageLabelingModel(), labelingComponent), "grow, wrap");
 		panel.add(LabelPanel.newFramedLabelPanel(segmentationModel
 			.imageLabelingModel(), extensible, fixedLabels), "grow, wrap");
 		panel.add(SegmenterPanel.newFramedSegmeterPanel(segmentationModel,

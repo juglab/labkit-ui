@@ -7,6 +7,7 @@ import bdv.util.BdvOptions;
 import bdv.util.BdvSource;
 import bdv.viewer.DisplayMode;
 import net.imglib2.labkit.actions.ToggleVisibility;
+import net.imglib2.labkit.bdv.BdvAutoContrast;
 import net.imglib2.labkit.bdv.BdvLayer;
 import net.imglib2.labkit.brush.ChangeLabel;
 import net.imglib2.labkit.brush.FloodFillController;
@@ -22,6 +23,8 @@ import javax.swing.*;
 import java.util.Collection;
 
 public class BasicLabelingComponent implements AutoCloseable {
+
+	private final BdvSource imageSource;
 
 	private BdvHandle bdvHandle;
 
@@ -45,7 +48,7 @@ public class BasicLabelingComponent implements AutoCloseable {
 
 		initBdv(model.spatialDimensions().numDimensions() < 3);
 		actionsAndBehaviours = new ActionsAndBehaviours(bdvHandle);
-		initImageLayer();
+		this.imageSource = initImageLayer();
 		initLabelsLayer();
 		JPanel toolsPanel = initBrushLayer();
 		initPanel(toolsPanel);
@@ -65,8 +68,8 @@ public class BasicLabelingComponent implements AutoCloseable {
 		panel.add(bdvHandle.getViewerPanel(), "grow");
 	}
 
-	private void initImageLayer() {
-		addBdvLayer(new BdvLayer.FinalLayer(model.showable(), "Image", model
+	private BdvSource initImageLayer() {
+		return addBdvLayer(new BdvLayer.FinalLayer(model.showable(), "Image", model
 			.imageVisibility()));
 	}
 
@@ -115,4 +118,9 @@ public class BasicLabelingComponent implements AutoCloseable {
 	public void close() {
 		bdvHandle.close();
 	}
+
+	public void autoContrast() {
+		BdvAutoContrast.autoContrast(imageSource);
+	}
+
 }
