@@ -8,11 +8,11 @@ import net.imagej.ops.OpEnvironment;
 import net.imagej.ops.OpService;
 import net.imglib2.RandomAccessibleInterval;
 import net.imglib2.labkit.segmentation.Segmenter;
-import net.imglib2.labkit.segmentation.weka.TrainableSegmentationSegmenter;
 import net.imglib2.exception.IncompatibleTypeException;
 import net.imglib2.img.Img;
 import net.imglib2.img.array.ArrayImgs;
 import net.imglib2.img.display.imagej.ImageJFunctions;
+import net.imglib2.labkit.segmentation.weka.NewSegmenter;
 import net.imglib2.labkit.utils.ParallelUtils;
 import net.imglib2.labkit.utils.ProgressConsumer;
 import net.imglib2.trainable_segmention.gson.GsonUtils;
@@ -73,7 +73,8 @@ public class BatchSegmenter {
 		final String classifierPath =
 			"/home/arzt/Documents/20170804_LungImages/0006.classifier";
 		OpEnvironment ops = context.service(OpService.class);
-		return new TrainableSegmentationSegmenter(context,
+		// FIXME: use loadModel here
+		return new NewSegmenter(context,
 			net.imglib2.trainable_segmention.classification.Segmenter.fromJson(ops,
 				GsonUtils.read(classifierPath)));
 	}

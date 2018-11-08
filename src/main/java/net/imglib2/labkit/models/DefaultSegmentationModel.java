@@ -7,8 +7,8 @@ import net.imglib2.img.cell.CellImgFactory;
 import net.imglib2.labkit.inputimage.InputImage;
 import net.imglib2.labkit.labeling.Labeling;
 import net.imglib2.labkit.segmentation.Segmenter;
+import net.imglib2.labkit.segmentation.weka.NewSegmenter;
 import net.imglib2.labkit.segmentation.weka.TimeSeriesSegmenter;
-import net.imglib2.labkit.segmentation.weka.TrainableSegmentationSegmenter;
 import net.imglib2.labkit.utils.LabkitUtils;
 import net.imglib2.realtransform.AffineTransform3D;
 import net.imglib2.trainable_segmention.RevampUtils;
@@ -57,8 +57,8 @@ public class DefaultSegmentationModel implements SegmentationModel,
 	}
 
 	private Segmenter initClassifier(InputImage inputImage, Context context) {
-		TrainableSegmentationSegmenter classifier1 =
-			new TrainableSegmentationSegmenter(context, inputImage);
+		Segmenter classifier1 =
+			new NewSegmenter(context, inputImage);
 		return inputImage.isTimeSeries() ? new TimeSeriesSegmenter(classifier1)
 			: classifier1;
 	}
