@@ -10,7 +10,7 @@ public class ImageController {
 	private static final String template = "Hello, %s!";
 
 	@RequestMapping("/greeting")
-	public String greeting(@RequestParam(value="name", defaultValue="World") String name) {
-		return String.format(template, name);
+	public DvidImageMetadata greeting(@RequestParam(value="name", defaultValue="World") String name) {
+		return new DvidImageMetadata(new long[]{100, 90, 50});
 	}
 }
