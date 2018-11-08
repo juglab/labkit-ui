@@ -6,32 +6,51 @@ import net.imglib2.labkit.actions.AbstractFileIoAction;
 
 import javax.swing.*;
 import javax.swing.filechooser.FileFilter;
-import java.util.function.Consumer;
 
 /**
  * @author Matthias Arzt
  */
 public class Main {
-
 	public static void main(String... args) {
-		fileChooserAndThen(filename -> Main.start(filename));
+		switch (args.length) {
+			case 0:
+				startWithFileDialog();
+				break;
+			case 1:
+				startWithFilename(args[0]);
+				break;
+			default:
+				exitWithErrorMessage();
+				break;
+		}
 	}
 
-	static private void fileChooserAndThen(Consumer<String> action) {
+	private static void startWithFileDialog() {
 		final JFileChooser fileChooser = new JFileChooser();
-		fileChooser.setAcceptAllFileFilterUsed(false);
+		fileChooser.setAcceptAllFileFilterUsed(true);
+
 		FileFilter fileFilter = AbstractFileIoAction.TIFF_FILTER;
 		fileChooser.setFileFilter(fileFilter);
 		fileChooser.addChoosableFileFilter(fileFilter);
-		fileChooser.setAcceptAllFileFilterUsed(true);
+
 		final int returnVal = fileChooser.showOpenDialog(null);
-		if (returnVal == JFileChooser.APPROVE_OPTION) action.accept(fileChooser
-			.getSelectedFile().getAbsolutePath());
+		if (returnVal != JFileChooser.APPROVE_OPTION) {
+			System.exit(1);
+			return;
+		}
+
+		String filename = fileChooser.getSelectedFile().getAbsolutePath();
+		startWithFilename(filename);
 	}
 
-	public static void start(String filename) {
+	private static void startWithFilename(String filename) {
 		ImageJ imageJ = new ImageJ();
 		imageJ.ui().showUI();
 		MainFrame.open(imageJ.context(), filename);
+	}
+
+	private static void exitWithErrorMessage() {
+		System.err.println("error: only 1 image is supported");
+		System.exit(2);
 	}
 }
