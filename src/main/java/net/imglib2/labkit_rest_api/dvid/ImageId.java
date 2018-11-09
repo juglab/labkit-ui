@@ -1,4 +1,4 @@
-package net.imglib2.labkit.imageserver.dvid;
+package net.imglib2.labkit_rest_api.dvid;
 
 public class ImageId {
 	private final String uuid;

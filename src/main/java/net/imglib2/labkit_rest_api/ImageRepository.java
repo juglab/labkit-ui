@@ -1,8 +1,8 @@
-package net.imglib2.labkit.imageserver;
+package net.imglib2.labkit_rest_api;
 
 import com.google.common.collect.HashBiMap;
 import net.imglib2.RandomAccessibleInterval;
-import net.imglib2.labkit.imageserver.dvid.ImageId;
+import net.imglib2.labkit_rest_api.dvid.ImageId;
 
 import java.util.Collection;
 import java.util.Map;

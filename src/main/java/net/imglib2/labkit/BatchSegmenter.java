@@ -12,7 +12,7 @@ import net.imglib2.exception.IncompatibleTypeException;
 import net.imglib2.img.Img;
 import net.imglib2.img.array.ArrayImgs;
 import net.imglib2.img.display.imagej.ImageJFunctions;
-import net.imglib2.labkit.segmentation.weka.NewSegmenter;
+import net.imglib2.labkit_rest_api.RestSegmenter;
 import net.imglib2.labkit.utils.ParallelUtils;
 import net.imglib2.labkit.utils.ProgressConsumer;
 import net.imglib2.trainable_segmention.gson.GsonUtils;
@@ -74,7 +74,7 @@ public class BatchSegmenter {
 			"/home/arzt/Documents/20170804_LungImages/0006.classifier";
 		OpEnvironment ops = context.service(OpService.class);
 		// FIXME: use loadModel here
-		return new NewSegmenter(context,
+		return new RestSegmenter(context,
 			net.imglib2.trainable_segmention.classification.Segmenter.fromJson(ops,
 				GsonUtils.read(classifierPath)));
 	}

@@ -1,11 +1,9 @@
-package net.imglib2.labkit.imageserver.dvid;
+package net.imglib2.labkit_rest_api.dvid;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 
-import java.awt.*;
 import java.util.Arrays;
 import java.util.List;
-import java.util.stream.LongStream;
 
 public class ImageMetadata {
 	private final List<Axis> axes;

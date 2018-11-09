@@ -1,4 +1,4 @@
-package net.imglib2.labkit.imageserver;
+package net.imglib2.labkit_rest_api;
 
 import net.imglib2.labkit.Main;
 import org.springframework.boot.SpringApplication;

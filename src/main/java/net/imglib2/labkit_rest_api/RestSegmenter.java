@@ -1,8 +1,7 @@
-package net.imglib2.labkit.segmentation.weka;
+package net.imglib2.labkit_rest_api;
 
 import net.imglib2.RandomAccessibleInterval;
-import net.imglib2.labkit.imageserver.ImageRepository;
-import net.imglib2.labkit.imageserver.dvid.ImageId;
+import net.imglib2.labkit_rest_api.ImageRepository;
 import net.imglib2.labkit.inputimage.InputImage;
 import net.imglib2.labkit.labeling.Labeling;
 import net.imglib2.labkit.segmentation.Segmenter;
@@ -13,20 +12,19 @@ import org.scijava.Context;
 
 import javax.swing.*;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
 import java.util.function.Consumer;
 
-public class NewSegmenter implements Segmenter {
+public class RestSegmenter implements Segmenter {
 
 	private Notifier<Consumer<Segmenter>> listeners = new Notifier<>();
 
-	public NewSegmenter(Context context, InputImage inputImage) {
+	public RestSegmenter(Context context, InputImage inputImage) {
 
 	}
 
-	// don't know why this exists
-	public NewSegmenter(Context context, Object segmenter) {
+	public RestSegmenter(Context context, Object segmenter) {
+		throw new RuntimeException("TODO, remove the usage of this constructor. It makes no sense.");
 	}
 
 	@Override
@@ -50,7 +48,7 @@ public class NewSegmenter implements Segmenter {
 		// send a training request
 		final ImageRepository imageRepository = ImageRepository.getInstance();
 		for (RandomAccessibleInterval<?> image : images) {
-			imageRepository.addImage(image);
+			imageRepository.addImage("image", image);
 		}
 	}
 

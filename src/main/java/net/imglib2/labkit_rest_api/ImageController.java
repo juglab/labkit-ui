@@ -1,9 +1,9 @@
-package net.imglib2.labkit.imageserver;
+package net.imglib2.labkit_rest_api;
 
 
 import net.imglib2.RandomAccessibleInterval;
-import net.imglib2.labkit.imageserver.dvid.ImageId;
-import net.imglib2.labkit.imageserver.dvid.ImageMetadata;
+import net.imglib2.labkit_rest_api.dvid.ImageId;
+import net.imglib2.labkit_rest_api.dvid.ImageMetadata;
 import net.imglib2.util.Intervals;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
