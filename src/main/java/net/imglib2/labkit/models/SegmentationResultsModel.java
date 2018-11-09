@@ -47,7 +47,7 @@ public class SegmentationResultsModel {
 		segmentation = dummy(new ShortType());
 		prediction = dummy(new FloatType());
 		segmenterTrained(segmenter);
-		segmenter.trainingCompletedListeners().add(this::segmenterTrained);
+		segmenter.trainingCompletedListeners().add(() -> segmenterTrained(segmenter));
 	}
 
 	private void segmenterTrained(Segmenter segmenter) {

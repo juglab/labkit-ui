@@ -23,6 +23,7 @@ import net.imglib2.labkit.segmentation.PredictionLayer;
 import net.imglib2.type.numeric.integer.ShortType;
 import net.imglib2.type.numeric.integer.UnsignedByteType;
 import net.imglib2.util.Intervals;
+import net.imglib2.util.ValuePair;
 import net.imglib2.view.Views;
 import org.junit.Test;
 import org.scijava.Context;
@@ -48,8 +49,8 @@ public class SegmentationUseCaseTest {
 			inputImage, new Context());
 		addLabels(segmentationModel.imageLabelingModel());
 		SegmentationItem segmenter = segmentationModel.segmenters().get(0);
-		segmenter.segmenter().train(Collections.singletonList(image), Collections
-			.singletonList(segmentationModel.imageLabelingModel().labeling().get()));
+		segmenter.segmenter().train(Collections.singletonList( new ValuePair<>(image
+			 ,segmentationModel.imageLabelingModel().labeling().get())));
 		RandomAccessibleInterval<ShortType> result = segmenter.results()
 			.segmentation();
 		List<Integer> list = new ArrayList<>();
@@ -83,8 +84,8 @@ public class SegmentationUseCaseTest {
 			.selectedSegmenter(), segmentationModel.segmentationVisibility());
 		assertEquals(2, layer.image().interval().numDimensions());
 		SegmentationItem segmenter = segmentationModel.segmenters().get(0);
-		segmenter.segmenter().train(Collections.singletonList(img), Collections
-			.singletonList(segmentationModel.imageLabelingModel().labeling().get()));
+		segmenter.segmenter().train(Collections.singletonList(new ValuePair<>(img,
+			segmentationModel.imageLabelingModel().labeling().get())));
 		RandomAccessibleInterval<ShortType> result = segmenter.results()
 			.segmentation();
 		Iterator<ShortType> it = Views.iterable(result).iterator();
