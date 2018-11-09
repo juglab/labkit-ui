@@ -1,6 +1,8 @@
 package net.imglib2.labkit.segmentation.weka;
 
 import net.imglib2.RandomAccessibleInterval;
+import net.imglib2.labkit.imageserver.ImageRepository;
+import net.imglib2.labkit.imageserver.dvid.ImageId;
 import net.imglib2.labkit.inputimage.InputImage;
 import net.imglib2.labkit.labeling.Labeling;
 import net.imglib2.labkit.segmentation.Segmenter;
@@ -43,8 +45,13 @@ public class NewSegmenter implements Segmenter {
 	}
 
 	@Override
-	public void train(List<? extends RandomAccessibleInterval<?>> image, List<? extends Labeling> groundTruth) {
-
+	public void train(List<? extends RandomAccessibleInterval<?>> images, List<? extends Labeling> groundTruth) {
+		// put image into the image repository
+		// send a training request
+		final ImageRepository imageRepository = ImageRepository.getInstance();
+		for (RandomAccessibleInterval<?> image : images) {
+			imageRepository.addImage(image);
+		}
 	}
 
 	@Override

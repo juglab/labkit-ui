@@ -3,15 +3,24 @@ package net.imglib2.labkit.imageserver;
 import com.google.common.collect.HashBiMap;
 import net.imglib2.RandomAccessibleInterval;
 import net.imglib2.labkit.imageserver.dvid.ImageId;
-import org.springframework.stereotype.Repository;
 
 import java.util.Collection;
 import java.util.Map;
 import java.util.UUID;
 
-@Repository
 public class ImageRepository {
+
+	private static final ImageRepository instance = new ImageRepository();
+
 	private final Map<ImageId, RandomAccessibleInterval<?>> idToImg = HashBiMap.create();
+
+	private ImageRepository() {
+		// private, because this is a singleton
+	}
+
+	public static ImageRepository getInstance() {
+		return instance;
+	}
 
 	public Collection<ImageId> all() {
 		return idToImg.keySet();
@@ -22,5 +31,9 @@ public class ImageRepository {
 		final ImageId imageId = new ImageId(uuid, "image");
 		idToImg.put(imageId, image);
 		return imageId;
+	}
+
+	public RandomAccessibleInterval<?> getImage(ImageId imageId) {
+		return idToImg.get(imageId);
 	}
 }
