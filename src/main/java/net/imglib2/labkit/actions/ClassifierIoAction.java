@@ -27,7 +27,7 @@ public class ClassifierIoAction extends AbstractFileIoAction {
 	}
 
 	private void save(String filename) throws Exception {
-		selectedSegmenter.get().segmenter().saveModel(filename, true);
+		selectedSegmenter.get().segmenter().saveModel(filename);
 	}
 
 	private void open(String filename) throws Exception {

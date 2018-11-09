@@ -44,7 +44,7 @@ public class TestTimeSeriesSegmenter {
 
 		@Override
 		public void segment(RandomAccessibleInterval<?> image,
-			RandomAccessibleInterval<? extends IntegerType<?>> labels)
+			RandomAccessibleInterval<? extends IntegerType<?>> output)
 		{
 
 		}
@@ -76,7 +76,7 @@ public class TestTimeSeriesSegmenter {
 		}
 
 		@Override
-		public void saveModel(String path, boolean overwrite) throws Exception {
+		public void saveModel(String path) throws Exception {
 
 		}
 
@@ -86,7 +86,7 @@ public class TestTimeSeriesSegmenter {
 		}
 
 		@Override
-		public Notifier<Consumer<Segmenter>> listeners() {
+		public Notifier<Consumer<Segmenter>> trainingCompletedListeners() {
 			return new Notifier<>();
 		}
 
