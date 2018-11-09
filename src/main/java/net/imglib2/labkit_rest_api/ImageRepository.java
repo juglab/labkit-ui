@@ -26,9 +26,9 @@ public class ImageRepository {
 		return idToImg.keySet();
 	}
 
-	public ImageId addImage(RandomAccessibleInterval<?> image) {
+	public ImageId addImage(String dataName, RandomAccessibleInterval<?> image) {
 		String uuid = UUID.randomUUID().toString().substring(0, 5);
-		final ImageId imageId = new ImageId(uuid, "image");
+		final ImageId imageId = new ImageId(uuid, dataName);
 		idToImg.put(imageId, image);
 		return imageId;
 	}
