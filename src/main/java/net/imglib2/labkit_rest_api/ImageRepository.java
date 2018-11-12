@@ -1,10 +1,12 @@
 package net.imglib2.labkit_rest_api;
 
-import com.google.common.collect.HashBiMap;
 import net.imglib2.RandomAccessibleInterval;
 import net.imglib2.labkit_rest_api.dvid.ImageId;
+import net.imglib2.labkit_rest_api.dvid.ImageRepresentation;
+import net.imglib2.labkit_rest_api.dvid.ImageWrapper;
 
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
 
@@ -12,7 +14,7 @@ public class ImageRepository {
 
 	private static final ImageRepository instance = new ImageRepository();
 
-	private final Map<ImageId, RandomAccessibleInterval<?>> idToImg = HashBiMap.create();
+	private final Map<ImageId, ImageRepresentation> idToImg = new HashMap<>();
 
 	private ImageRepository() {
 		// private, because this is a singleton
@@ -28,12 +30,12 @@ public class ImageRepository {
 
 	public ImageId addImage(String dataName, RandomAccessibleInterval<?> image) {
 		String uuid = UUID.randomUUID().toString().substring(0, 5);
-		final ImageId imageId = new ImageId(uuid, dataName);
-		idToImg.put(imageId, image);
-		return imageId;
+		final ImageId id = new ImageId(uuid, dataName);
+		idToImg.put(id, ImageWrapper.create(image));
+		return id;
 	}
 
-	public RandomAccessibleInterval<?> getImage(ImageId imageId) {
-		return idToImg.get(imageId);
+	public ImageRepresentation getDvidImage(ImageId id) {
+		return idToImg.get(id);
 	}
 }

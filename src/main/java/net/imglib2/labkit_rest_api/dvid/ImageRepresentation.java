@@ -6,7 +6,7 @@ public interface ImageRepresentation {
 
 	String typeSpecification();
 
-	Interval interal();
+	Interval interval();
 
 	byte[] getBinaryData(Interval interval);
 }
