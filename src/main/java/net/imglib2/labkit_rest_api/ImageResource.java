@@ -1,60 +1,57 @@
 package net.imglib2.labkit_rest_api;
 
-
 import net.imglib2.FinalInterval;
 import net.imglib2.Interval;
 import net.imglib2.labkit_rest_api.dvid.ImageId;
 import net.imglib2.labkit_rest_api.dvid.ImageRepresentation;
 import net.imglib2.labkit_rest_api.dvid.metadata.ImageMetadata;
 import net.imglib2.util.Intervals;
-import org.springframework.http.MediaType;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
 
+import javax.ws.rs.GET;
+import javax.ws.rs.Path;
+import javax.ws.rs.PathParam;
+import javax.ws.rs.Produces;
+import javax.ws.rs.core.MediaType;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
-@RestController
-public class ImageController {
+@Path("")
+@Produces(MediaType.APPLICATION_JSON)
+public class ImageResource {
+	private final ImageRepository imageRepository = ImageRepository.getInstance();
 
-	private final ImageRepository imageRepository;
-
-	public ImageController() {
-		this.imageRepository = ImageRepository.getInstance();
-	}
-
-	@RequestMapping("/node/{uuid}/{dataName}/metadata")
-	public ImageMetadata getImageMetadata(@PathVariable(value = "uuid") String uuid, @PathVariable(value = "dataName") String dataName) {
+	@GET
+	@Path("node/{uuid}/{dataName}/metadata")
+	public ImageMetadata getImageMetadata(
+			@PathParam("uuid") String uuid,
+			@PathParam("dataName") String dataName) {
 		ImageRepresentation image = getImage(uuid, dataName);
 		return ImageMetadata.create(Intervals.dimensionsAsLongArray(image.interval()), image.typeSpecification());
 	}
 
-	@RequestMapping(
-			value = "/node/{uuid}/{dataName}/raw/{dims}/{size}/{offset}/octet-stream",
-			produces = MediaType.APPLICATION_OCTET_STREAM_VALUE
-	)
+	@GET
+	@Path("node/{uuid}/{dataName}/raw/{dims}/{size}/{offset}/octet-stream")
+	@Produces(MediaType.APPLICATION_OCTET_STREAM)
 	public byte[] getBinaryData(
-			@PathVariable(value = "uuid") String uuid,
-			@PathVariable(value = "dataName") String dataName,
-			@PathVariable(value = "dims") String dimsAsString,
-			@PathVariable(value = "size") String sizeAsString,
-			@PathVariable(value = "offset") String offsetAsString
-	) {
+			@PathParam("uuid") String uuid,
+			@PathParam("dataName") String dataName,
+			@PathParam("dims") String dimsAsString,
+			@PathParam("size") String sizeAsString,
+			@PathParam("offset") String offsetAsString) {
 		ImageRepresentation image = getImage(uuid, dataName);
 		long[] dims = parseLongArray(dimsAsString);
 		long[] size = parseLongArray(sizeAsString);
 		long[] offset = parseLongArray(offsetAsString);
-		if(!(Arrays.equals(dims, new long[]{0, 1, 2}) && size.length == 3 & offset.length == 3 ))
+		if (!(Arrays.equals(dims, new long[]{0, 1, 2}) && size.length == 3 & offset.length == 3))
 			throw new IllegalArgumentException("Only 3d is supported for now");
 		long[] max = IntStream.range(0, 3).mapToLong(i -> offset[i] + size[i] - 1).toArray();
 		Interval interval = new FinalInterval(offset, max);
 		return image.getBinaryData(interval);
 	}
 
-	private ImageRepresentation getImage(@PathVariable(value = "uuid") String uuid, @PathVariable(value = "dataName") String dataName) {
+	private ImageRepresentation getImage(String uuid, String dataName) {
 		ImageId imageId = new ImageId(uuid, dataName);
 		return imageRepository.getDvidImage(imageId);
 	}
@@ -63,7 +60,8 @@ public class ImageController {
 		return Stream.of(value.split("_")).mapToLong(Long::valueOf).toArray();
 	}
 
-	@RequestMapping("/nodes")
+	@GET
+	@Path("nodes")
 	public Collection<ImageId> getImageIds() {
 		return imageRepository.all();
 	}

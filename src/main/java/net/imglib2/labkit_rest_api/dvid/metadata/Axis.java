@@ -1,49 +1,52 @@
 package net.imglib2.labkit_rest_api.dvid.metadata;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
+import javax.json.bind.annotation.JsonbProperty;
 
 public class Axis {
-	private final String label;
-	private final double resolution;
-	private final Unit unit;
-	private final long size;
-	private final long offset;
+    @JsonbProperty("Label")
+    private final String label;
 
-	public Axis(String label, double resolution, Unit unit, long size, long offset) {
-		this.label = label;
-		this.resolution = resolution;
-		this.unit = unit;
-		this.size = size;
-		this.offset = offset;
-	}
+    @JsonbProperty("Resolution")
+    private final double resolution;
 
-	public static Axis create(String label, long size) {
-		return new Axis(label, 1.0, Unit.PIXEL, size, 0);
-	}
+    @JsonbProperty("Unit")
+    private final Unit unit;
 
-	@JsonProperty("Label")
-	public String getLabel() {
-		return label;
-	}
+    @JsonbProperty("Size")
+    private final long size;
 
-	@JsonProperty("Resolution")
-	public double getResolution() {
-		return resolution;
-	}
+    @JsonbProperty("Offset")
+    private final long offset;
 
-	@JsonProperty("Unit")
-	public Unit getUnit() {
-		return unit;
-	}
+    public Axis(String label, double resolution, Unit unit, long size, long offset) {
+        this.label = label;
+        this.resolution = resolution;
+        this.unit = unit;
+        this.size = size;
+        this.offset = offset;
+    }
 
-	@JsonProperty("Size")
-	public long getSize() {
-		return size;
-	}
+    public static Axis create(String label, long size) {
+        return new Axis(label, 1.0, Unit.PIXEL, size, 0);
+    }
 
-	@JsonProperty("Offset")
-	public long getOffset() {
-		return offset;
-	}
+    public String getLabel() {
+        return label;
+    }
 
+    public double getResolution() {
+        return resolution;
+    }
+
+    public Unit getUnit() {
+        return unit;
+    }
+
+    public long getSize() {
+        return size;
+    }
+
+    public long getOffset() {
+        return offset;
+    }
 }

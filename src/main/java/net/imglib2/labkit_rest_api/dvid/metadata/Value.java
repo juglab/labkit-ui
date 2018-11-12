@@ -1,23 +1,24 @@
 package net.imglib2.labkit_rest_api.dvid.metadata;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
+import javax.json.bind.annotation.JsonbProperty;
 
 public class Value {
-	private final String dataType;
-	private final String labelType;
+    @JsonbProperty("DataType")
+    private final String dataType;
 
-	public Value(String dataType, String labelType) {
-		this.dataType = dataType;
-		this.labelType = labelType;
-	}
+    @JsonbProperty("Label")
+    private final String labelType;
 
-	@JsonProperty("DataType")
-	public String getDataType() {
-		return dataType;
-	}
+    public Value(String dataType, String labelType) {
+        this.dataType = dataType;
+        this.labelType = labelType;
+    }
 
-	@JsonProperty("Label")
-	public String getLabelType() {
-		return labelType;
-	}
+    public String getDataType() {
+        return dataType;
+    }
+
+    public String getLabelType() {
+        return labelType;
+    }
 }

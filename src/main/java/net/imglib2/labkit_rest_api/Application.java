@@ -1,14 +1,31 @@
 package net.imglib2.labkit_rest_api;
 
+import net.imglib2.img.Img;
+import net.imglib2.img.array.ArrayImgs;
 import net.imglib2.labkit.Main;
-import org.springframework.boot.SpringApplication;
-import org.springframework.boot.autoconfigure.SpringBootApplication;
+import net.imglib2.type.numeric.integer.UnsignedByteType;
 
-@SpringBootApplication
+/**
+ * Launcher for the Labkit with the REST server.
+ */
 public class Application {
+    public static void main(String... args) {
+        setupRepositories();
 
-	public static void main(final String[] args) {
-		Main.start("/home/arzt/Documents/Datasets/img_TL199_Chgreen.tif");
-		SpringApplication.run(Application.class, args);
-	}
+        Server server = new Server();
+        server.start();
+        // Hacky way to stop the server at the VM shutdown.
+		// TODO: Find a better way to stop the server.
+        Runtime.getRuntime().addShutdownHook(new Thread(server::stop));
+
+        Main.main(args);
+    }
+
+    private static void setupRepositories() {
+        ImageRepository imageRepository = ImageRepository.getInstance();
+        byte[] array = {1, 2, 3, 4, 5, 6, 7, 8};
+        long[] dims = {2, 2, 2};
+        Img<UnsignedByteType> image = ArrayImgs.unsignedBytes(array, dims);
+        imageRepository.addImage("image", image);
+    }
 }

@@ -1,114 +1,119 @@
 package net.imglib2.labkit_rest_api.dvid.metadata;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
-
+import javax.json.bind.annotation.JsonbProperty;
 import java.util.Arrays;
 import java.util.List;
 import java.util.stream.LongStream;
 
 public class Properties {
-	private final List<Value> values;
-	private final boolean interporable;
-	private final long[] blockSize;
-	private final long[] voxelSize;
-	private final List<Unit> voxelUnits;
-	private final long[] minPoint;
-	private final long[] maxPoint;
-	private final long[] minIndex;
-	private final long[] maxIndex;
-	private final int backgroundLabel;
+    @JsonbProperty("Values")
+    private final List<Value> values;
 
+    @JsonbProperty("Interporable")
+    private final boolean interporable;
 
-	public Properties(List<Value> values, boolean interporable, long[] blockSize, long[] voxelSize, List<Unit> voxelUnits, long[] minPoint, long[] maxPoint, long[] minIndex, long[] maxIndex, int backgroundLabel) {
-		this.values = values;
-		this.interporable = interporable;
-		this.blockSize = blockSize;
-		this.voxelSize = voxelSize;
-		this.voxelUnits = voxelUnits;
-		this.minPoint = minPoint;
-		this.maxPoint = maxPoint;
-		this.minIndex = minIndex;
-		this.maxIndex = maxIndex;
-		this.backgroundLabel = backgroundLabel;
-	}
+    @JsonbProperty("BlockSize")
+    private final long[] blockSize;
 
-	public static Properties create(String dataType, long[] size) {
-		final long[] blockSize = {32, 32, 32};
-		return  new Properties(
-				Arrays.asList(new Value(dataType, "uint8")),
-				true,
-				blockSize,
-				new long[] {1, 1, 1},
-				Arrays.asList(Unit.PIXEL, Unit.PIXEL, Unit.PIXEL),
-				new long[] {0, 0, 0},
-				initMaxPoint(size),
-				new long[] {0, 0, 0},
-				initMaxIndex(size, blockSize),
-				0
-				);
-	}
+    @JsonbProperty("VoxelSize")
+    private final long[] voxelSize;
 
-	@JsonProperty("Values")
-	public List<Value> getValues() {
-		return values;
-	}
+    @JsonbProperty("VoxelUnits")
+    private final List<Unit> voxelUnits;
 
-	@JsonProperty("Interporable")
-	public boolean isInterporable() {
-		return interporable;
-	}
+    @JsonbProperty("MinPoint")
+    private final long[] minPoint;
 
-	@JsonProperty("BlockSize")
-	public long[] getBlockSize() {
-		return blockSize;
-	}
+    @JsonbProperty("MaxPoint")
+    private final long[] maxPoint;
 
-	@JsonProperty("VoxelSize")
-	public long[] getVoxelSize() {
-		return voxelSize;
-	}
+    @JsonbProperty("MinIndex")
+    private final long[] minIndex;
 
-	@JsonProperty("VoxelUnits")
-	public List<Unit> getVoxelUnits() {
-		return voxelUnits;
-	}
+    @JsonbProperty("MaxIndex")
+    private final long[] maxIndex;
 
-	@JsonProperty("MinPoint")
-	public long[] getMinPoint() {
-		return minPoint;
-	}
+    @JsonbProperty("Background")
+    private final int backgroundLabel;
 
-	@JsonProperty("MaxPoint")
-	public long[] getMaxPoint() {
-		return maxPoint;
-	}
+    public Properties(List<Value> values, boolean interporable, long[] blockSize, long[] voxelSize, List<Unit> voxelUnits, long[] minPoint, long[] maxPoint, long[] minIndex, long[] maxIndex, int backgroundLabel) {
+        this.values = values;
+        this.interporable = interporable;
+        this.blockSize = blockSize;
+        this.voxelSize = voxelSize;
+        this.voxelUnits = voxelUnits;
+        this.minPoint = minPoint;
+        this.maxPoint = maxPoint;
+        this.minIndex = minIndex;
+        this.maxIndex = maxIndex;
+        this.backgroundLabel = backgroundLabel;
+    }
 
-	@JsonProperty("MinIndex")
-	public long[] getMinIndex() {
-		return minIndex;
-	}
+    public static Properties create(String dataType, long[] size) {
+        final long[] blockSize = {32, 32, 32};
+        return new Properties(
+                Arrays.asList(new Value(dataType, "uint8")),
+                true,
+                blockSize,
+                new long[]{1, 1, 1},
+                Arrays.asList(Unit.PIXEL, Unit.PIXEL, Unit.PIXEL),
+                new long[]{0, 0, 0},
+                initMaxPoint(size),
+                new long[]{0, 0, 0},
+                initMaxIndex(size, blockSize),
+                0
+        );
+    }
 
-	@JsonProperty("MaxIndex")
-	public long[] getMaxIndex() {
-		return maxIndex;
-	}
+    public List<Value> getValues() {
+        return values;
+    }
 
-	@JsonProperty("Background")
-	public int getBackgroundLabel() {
-		return backgroundLabel;
-	}
+    public boolean isInterporable() {
+        return interporable;
+    }
 
-	private static long[] initMaxPoint(long[] size) {
-		return LongStream.of(size).map(x -> x - 1).toArray();
-	}
+    public long[] getBlockSize() {
+        return blockSize;
+    }
 
-	private static long[] initMaxIndex(long[] size, long[] blockSize) {
-		assert blockSize.length == size.length;
-		long[] result = new long[size.length];
-		for (int i = 0; i < size.length; i++)
-			result[i] = (size[i] - 1) / blockSize[i];
-		return result;
-	}
+    public long[] getVoxelSize() {
+        return voxelSize;
+    }
 
+    public List<Unit> getVoxelUnits() {
+        return voxelUnits;
+    }
+
+    public long[] getMinPoint() {
+        return minPoint;
+    }
+
+    public long[] getMaxPoint() {
+        return maxPoint;
+    }
+
+    public long[] getMinIndex() {
+        return minIndex;
+    }
+
+    public long[] getMaxIndex() {
+        return maxIndex;
+    }
+
+    public int getBackgroundLabel() {
+        return backgroundLabel;
+    }
+
+    private static long[] initMaxPoint(long[] size) {
+        return LongStream.of(size).map(x -> x - 1).toArray();
+    }
+
+    private static long[] initMaxIndex(long[] size, long[] blockSize) {
+        assert blockSize.length == size.length;
+        long[] result = new long[size.length];
+        for (int i = 0; i < size.length; i++)
+            result[i] = (size[i] - 1) / blockSize[i];
+        return result;
+    }
 }
-
