@@ -11,21 +11,27 @@ import javax.swing.filechooser.FileFilter;
  * @author Matthias Arzt
  */
 public class Main {
+
 	public static void main(String... args) {
-		switch (args.length) {
-			case 0:
-				startWithFileDialog();
-				break;
-			case 1:
-				startWithFilename(args[0]);
-				break;
-			default:
-				exitWithErrorMessage();
-				break;
-		}
+		String filename = readCommandline(args);
+		if(filename == null)
+			filename = showOpenDialog();
+		if(filename != null)
+			start(filename);
 	}
 
-	private static void startWithFileDialog() {
+	private static String readCommandline(String[] args) {
+		switch (args.length) {
+			case 1: return args[0];
+			case 0: return null;
+			default:
+				System.err.println("USAGE:    ./start.sh {optional/path/to/image.tif}");
+				System.exit(2);
+		}
+		throw new AssertionError();
+	}
+
+	private static String showOpenDialog() {
 		final JFileChooser fileChooser = new JFileChooser();
 		fileChooser.setAcceptAllFileFilterUsed(true);
 
@@ -34,23 +40,14 @@ public class Main {
 		fileChooser.addChoosableFileFilter(fileFilter);
 
 		final int returnVal = fileChooser.showOpenDialog(null);
-		if (returnVal != JFileChooser.APPROVE_OPTION) {
-			System.exit(1);
-			return;
-		}
-
-		String filename = fileChooser.getSelectedFile().getAbsolutePath();
-		startWithFilename(filename);
+		if (returnVal != JFileChooser.APPROVE_OPTION)
+			return null;
+		return fileChooser.getSelectedFile().getAbsolutePath();
 	}
 
-	private static void startWithFilename(String filename) {
+	public static void start(String filename) {
 		ImageJ imageJ = new ImageJ();
 		imageJ.ui().showUI();
 		MainFrame.open(imageJ.context(), filename);
-	}
-
-	private static void exitWithErrorMessage() {
-		System.err.println("error: only 1 image is supported");
-		System.exit(2);
 	}
 }
