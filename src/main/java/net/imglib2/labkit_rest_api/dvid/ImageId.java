@@ -4,6 +4,13 @@ public class ImageId {
 	private final String uuid;
 	private final String dataName;
 
+	@Deprecated
+	public ImageId() {
+		// don't use
+		uuid = null;
+		dataName = null;
+	}
+
 	public ImageId(String uuid, String dataName) {
 		this.uuid = uuid;
 		this.dataName = dataName;
@@ -33,5 +40,11 @@ public class ImageId {
 		int result = uuid.hashCode();
 		result = 31 * result + dataName.hashCode();
 		return result;
+	}
+
+	@Override
+	public String toString()
+	{
+		return uuid + "/" + dataName;
 	}
 }

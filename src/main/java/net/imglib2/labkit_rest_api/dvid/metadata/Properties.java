@@ -18,6 +18,11 @@ public class Properties {
 	private final long[] maxIndex;
 	private final int backgroundLabel;
 
+	@Deprecated
+	public Properties() {
+		// this constructor should never be used, but is required for JSON deserialization.
+		this(null, false, null, null, null, null, null, null, null, 0);
+	}
 
 	public Properties(List<Value> values, boolean interporable, long[] blockSize, long[] voxelSize, List<Unit> voxelUnits, long[] minPoint, long[] maxPoint, long[] minIndex, long[] maxIndex, int backgroundLabel) {
 		this.values = values;
@@ -32,10 +37,10 @@ public class Properties {
 		this.backgroundLabel = backgroundLabel;
 	}
 
-	public static Properties create(String dataType, long[] size) {
+	public static Properties create(PixelType dataType, long[] size) {
 		final long[] blockSize = {32, 32, 32};
 		return  new Properties(
-				Arrays.asList(new Value(dataType, "uint8")),
+				Arrays.asList(new Value(dataType, PixelType.UNSIGNED_BYTE)),
 				true,
 				blockSize,
 				new long[] {1, 1, 1},

@@ -9,6 +9,12 @@ public class Axis {
 	private final long size;
 	private final long offset;
 
+	@Deprecated
+	public Axis() {
+		// This constructor should never be used but is required for JSON deserialization.
+		this(null, 0, null, 0, 0);
+	}
+
 	public Axis(String label, double resolution, Unit unit, long size, long offset) {
 		this.label = label;
 		this.resolution = resolution;
