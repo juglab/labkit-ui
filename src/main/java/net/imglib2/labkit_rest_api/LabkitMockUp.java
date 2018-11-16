@@ -1,8 +1,9 @@
-package net.imglib2.ilastik_mock_up;
+package net.imglib2.labkit_rest_api;
 
 import bdv.util.BdvFunctions;
 import ij.IJ;
 import net.imglib2.RandomAccessibleInterval;
+import net.imglib2.ilastik_mock_up.Server;
 import net.imglib2.img.Img;
 import net.imglib2.img.display.imagej.ImageJFunctions;
 import net.imglib2.dvid.ImageClient;
@@ -13,8 +14,19 @@ import javax.ws.rs.client.Client;
 import javax.ws.rs.client.ClientBuilder;
 import javax.ws.rs.client.Entity;
 import javax.ws.rs.core.MediaType;
+import java.io.IOException;
 
-public class ExampleClient {
+public class LabkitMockUp {
+
+	public static void main(String... args) {
+		try(Server server = new Server()) {
+			System.out.println("Press any key to exit");
+			LabkitMockUp.run();
+			System.in.read();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+	}
 
 	public static void run() {
 		Img<?> image = ImageJFunctions.wrap(IJ.openImage("http://imagej.nih.gov/ij/images/t1-head.zip"));

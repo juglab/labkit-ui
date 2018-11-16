@@ -1,4 +1,4 @@
-package net.imglib2.ilastik_mock_up;
+package net.imglib2.labkit_rest_api;
 
 public class SegmentationResponse {
 

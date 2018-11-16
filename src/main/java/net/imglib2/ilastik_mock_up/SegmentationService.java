@@ -6,6 +6,10 @@ import net.imglib2.img.Img;
 import net.imglib2.dvid.ImageClient;
 import net.imglib2.dvid.ImageRepository;
 import net.imglib2.dvid.ImageId;
+import net.imglib2.labkit_rest_api.SegmentationRequest;
+import net.imglib2.labkit_rest_api.SegmentationResponse;
+import net.imglib2.labkit_rest_api.TrainingRequest;
+import net.imglib2.labkit_rest_api.TrainingResponse;
 import net.imglib2.type.numeric.RealType;
 import net.imglib2.type.numeric.integer.UnsignedByteType;
 
