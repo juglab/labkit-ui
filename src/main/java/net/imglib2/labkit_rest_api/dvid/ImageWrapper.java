@@ -8,6 +8,7 @@ import net.imglib2.type.Type;
 import net.imglib2.type.numeric.RealType;
 import net.imglib2.util.Intervals;
 import net.imglib2.util.Util;
+import net.imglib2.view.Views;
 
 import java.nio.ByteBuffer;
 
@@ -41,7 +42,7 @@ public class ImageWrapper<T> implements ImageRepresentation {
 	@Override
 	public byte[] getBinaryData(Interval interval) {
 		ByteBuffer buffer = ByteBuffer.allocate( (int) (bytesPerPixel * Intervals.numElements( interval )) );
-		ByteBufferImgCopy.toByteBuffer(buffer, image);
+		ByteBufferImgCopy.toByteBuffer(buffer, Views.interval(image, interval));
 		return buffer.array();
 	}
 }
