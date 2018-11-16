@@ -37,7 +37,7 @@ public class ExampleClient {
 		public TrainingResponse getTrainingId(RandomAccessibleInterval<?> image) {
 			ImageId id = reposory.addImage("dummy", image);
 			TrainingRequest request = new TrainingRequest();
-			request.setImageUrl(id.getUrl("http://localhost:8571"));
+			request.setImageUrl(id.getUrl());
 			return client.target("http://localhost:8571/segmentation/train")
 					.request(MediaType.APPLICATION_JSON)
 					.post(Entity.json(request), TrainingResponse.class);
@@ -47,7 +47,7 @@ public class ExampleClient {
 			SegmentationRequest request = new SegmentationRequest();
 			request.setTrainingId(trainingResponse.getTrainingId());
 			ImageId id = reposory.addImage("image", image);
-			request.setImageUrl(id.getUrl("http://localhost:8571"));
+			request.setImageUrl(id.getUrl());
 			return client.target("http://localhost:8571/segmentation/segment")
 					.request(MediaType.APPLICATION_JSON)
 					.post(Entity.json(request), SegmentationResponse.class);

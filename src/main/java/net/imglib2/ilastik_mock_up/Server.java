@@ -1,6 +1,7 @@
 package net.imglib2.ilastik_mock_up;
 
 import net.imglib2.labkit_rest_api.ImageController;
+import net.imglib2.labkit_rest_api.ImageRepository;
 import org.glassfish.grizzly.http.server.HttpServer;
 import org.glassfish.jersey.grizzly2.httpserver.GrizzlyHttpServerFactory;
 import org.glassfish.jersey.server.ResourceConfig;
@@ -23,9 +24,10 @@ public final class Server implements AutoCloseable {
 	}
 
 	public Server(String host, int port) {
-		URI uri = URI.create(String.format("http://%s:%d/", host, port));
+		URI uri = URI.create(String.format("http://%s:%d", host, port));
 		server = GrizzlyHttpServerFactory.createHttpServer(uri, CONFIG);
 		try {
+			ImageRepository.getInstance().setUrl(uri.toString());
 			server.start();
 		} catch (IOException e) {
 			throw new RuntimeException(e);

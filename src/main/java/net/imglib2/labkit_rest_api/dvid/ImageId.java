@@ -1,6 +1,10 @@
 package net.imglib2.labkit_rest_api.dvid;
 
+import net.imglib2.labkit_rest_api.ImageRepository;
+
 public class ImageId {
+
+	private static final ImageRepository repository = ImageRepository.getInstance();
 	private final String uuid;
 	private final String dataName;
 
@@ -48,7 +52,7 @@ public class ImageId {
 		return uuid + "/" + dataName;
 	}
 
-	public String getUrl(String s) {
-		return s + "/node/" + toString();
+	public String getUrl() {
+		return repository.getUrl() + "/node/" + toString();
 	}
 }

@@ -49,7 +49,7 @@ public class SegmentationService
 			Img<RealType<?>> cached = (Img<RealType<?>>) ImageClient.asCachedImg(url);
 			RandomAccessibleInterval<UnsignedByteType> thresholded = segment(cached);
 			ImageId id = ImageRepository.getInstance().addImage("segmentation", thresholded);
-			response.setSegmentationUrl(id.getUrl("http://localhost:8571"));
+			response.setSegmentationUrl(id.getUrl());
 			return response;
 		} catch ( Exception e ) {
 			e.printStackTrace();

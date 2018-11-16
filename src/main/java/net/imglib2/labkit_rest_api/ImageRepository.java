@@ -16,6 +16,8 @@ public class ImageRepository {
 
 	private final Map<ImageId, ImageRepresentation> idToImg = new HashMap<>();
 
+	private String url;
+
 	private ImageRepository() {
 		// private, because this is a singleton
 	}
@@ -37,5 +39,13 @@ public class ImageRepository {
 
 	public ImageRepresentation getDvidImage(ImageId id) {
 		return idToImg.get(id);
+	}
+
+	public void setUrl(String url) {
+		this.url = url;
+	}
+
+	public String getUrl() {
+		return url;
 	}
 }

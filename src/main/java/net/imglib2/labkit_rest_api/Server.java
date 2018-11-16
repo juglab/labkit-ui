@@ -22,9 +22,10 @@ public final class Server implements AutoCloseable {
 	}
 
 	public Server(String host, int port) {
-		URI uri = URI.create(String.format("http://%s:%d/", host, port));
+		URI uri = URI.create(String.format("http://%s:%d", host, port));
 		server = GrizzlyHttpServerFactory.createHttpServer(uri, CONFIG);
 		try {
+			ImageRepository.getInstance().setUrl(uri.toString());
 			server.start();
 		} catch (IOException e) {
 			throw new RuntimeException(e);

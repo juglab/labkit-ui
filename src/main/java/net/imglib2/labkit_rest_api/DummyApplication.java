@@ -24,6 +24,6 @@ public class DummyApplication {
 		long[] dims = {2, 2, 2};
 		Img<UnsignedByteType> image = ArrayImgs.unsignedBytes(array, dims);
 		ImageId id = imageRepository.addImage("image", image);
-		System.out.println("Expose image as: " + id.getUrl("http://localhost:8572") + "/metadata");
+		System.out.println("Expose image as: " + id.getUrl() + "/metadata");
 	}
 }
