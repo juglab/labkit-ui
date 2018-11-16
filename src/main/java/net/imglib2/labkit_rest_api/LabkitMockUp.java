@@ -3,18 +3,21 @@ package net.imglib2.labkit_rest_api;
 import bdv.util.BdvFunctions;
 import ij.IJ;
 import net.imglib2.RandomAccessibleInterval;
+import net.imglib2.cache.img.CellLoader;
+import net.imglib2.cache.img.DiskCachedCellImg;
+import net.imglib2.cache.img.DiskCachedCellImgFactory;
 import net.imglib2.ilastik_mock_up.Server;
 import net.imglib2.img.Img;
 import net.imglib2.img.display.imagej.ImageJFunctions;
-import net.imglib2.dvid.ImageClient;
-import net.imglib2.dvid.ImageRepository;
-import net.imglib2.dvid.ImageId;
+import net.imglib2.labkit.inputimage.DefaultInputImage;
+import net.imglib2.type.numeric.NumericType;
+import net.imglib2.type.numeric.integer.UnsignedByteType;
+import net.imglib2.util.Intervals;
+import net.imglib2.util.ValuePair;
+import org.scijava.Context;
 
-import javax.ws.rs.client.Client;
-import javax.ws.rs.client.ClientBuilder;
-import javax.ws.rs.client.Entity;
-import javax.ws.rs.core.MediaType;
 import java.io.IOException;
+import java.util.Collections;
 
 public class LabkitMockUp {
 
@@ -30,39 +33,14 @@ public class LabkitMockUp {
 
 	public static void run() {
 		Img<?> image = ImageJFunctions.wrap(IJ.openImage("http://imagej.nih.gov/ij/images/t1-head.zip"));
-		SegmentationClient client = new SegmentationClient();
-		TrainingResponse trainingId = client.getTrainingId(image);
-		System.out.println("trainingId: " + trainingId.getTrainingId());
-		SegmentationResponse segmentationResponse = client.segment(image, trainingId);
-		final String segmentationUrl = segmentationResponse.getSegmentationUrl();
-		System.out.println("segmentationUrl: " + segmentationUrl);
-		Img<?> segmented = ImageClient.asCachedImg(segmentationUrl);
-		BdvFunctions.show(segmented, "segmented");
-	}
-
-	private static class SegmentationClient {
-
-		private final ImageRepository reposory = ImageRepository.getInstance();
-
-		private final Client client = ClientBuilder.newClient();
-
-		public TrainingResponse getTrainingId(RandomAccessibleInterval<?> image) {
-			ImageId id = reposory.addImage("dummy", image);
-			TrainingRequest request = new TrainingRequest();
-			request.setImageUrl(id.getUrl());
-			return client.target("http://localhost:8571/segmentation/train")
-					.request(MediaType.APPLICATION_JSON)
-					.post(Entity.json(request), TrainingResponse.class);
-		}
-
-		public SegmentationResponse segment(RandomAccessibleInterval<?> image, TrainingResponse trainingResponse) {
-			SegmentationRequest request = new SegmentationRequest();
-			request.setTrainingId(trainingResponse.getTrainingId());
-			ImageId id = reposory.addImage("image", image);
-			request.setImageUrl(id.getUrl());
-			return client.target("http://localhost:8571/segmentation/segment")
-					.request(MediaType.APPLICATION_JSON)
-					.post(Entity.json(request), SegmentationResponse.class);
-		}
+		DefaultInputImage inputImage = new DefaultInputImage((RandomAccessibleInterval<? extends NumericType<?>>) image);
+		RestSegmenter segmenter = new RestSegmenter(new Context(), inputImage);
+		segmenter.train(Collections.singletonList(new ValuePair<>(image, null)));
+		CellLoader<UnsignedByteType> loader = cell -> {
+			segmenter.segment(image, cell);
+		};
+		DiskCachedCellImg<UnsignedByteType, ?> result = new DiskCachedCellImgFactory<>(new UnsignedByteType())
+				.create(Intervals.dimensionsAsLongArray(image), loader);
+		BdvFunctions.show(result, "result");
 	}
 }

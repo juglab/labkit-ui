@@ -95,7 +95,7 @@ public class ImageClient {
 		if (!typeMatches)
 			throw new IllegalArgumentException("The give image has the wrong type. " +
 					"Type of the server side image is: " + type.getClass() +
-					" type of output image: " + type.getClass());
+					" type of output image: " + outputType.getClass());
 	}
 
 	private byte[] getBinaryData(Interval interval) {

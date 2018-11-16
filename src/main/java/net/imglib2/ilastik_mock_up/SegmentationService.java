@@ -11,6 +11,7 @@ import net.imglib2.labkit_rest_api.SegmentationResponse;
 import net.imglib2.labkit_rest_api.TrainingRequest;
 import net.imglib2.labkit_rest_api.TrainingResponse;
 import net.imglib2.type.numeric.RealType;
+import net.imglib2.type.numeric.integer.ShortType;
 import net.imglib2.type.numeric.integer.UnsignedByteType;
 
 import javax.ws.rs.Consumes;
@@ -51,7 +52,7 @@ public class SegmentationService
 			final SegmentationResponse response = new SegmentationResponse();
 			final String url = request.getImageUrl();
 			Img<RealType<?>> cached = (Img<RealType<?>>) ImageClient.asCachedImg(url);
-			RandomAccessibleInterval<UnsignedByteType> thresholded = segment(cached);
+			RandomAccessibleInterval<?> thresholded = segment(cached);
 			ImageId id = ImageRepository.getInstance().addImage("segmentation", thresholded);
 			response.setSegmentationUrl(id.getUrl());
 			return response;
@@ -61,9 +62,9 @@ public class SegmentationService
 		}
 	}
 
-	public RandomAccessibleInterval<UnsignedByteType> segment(RandomAccessibleInterval<RealType<?>> cached) {
+	public RandomAccessibleInterval<?> segment(RandomAccessibleInterval<RealType<?>> cached) {
 		return Converters.convert(cached,
-						(i, o) -> o.set(i.getRealDouble() > 100 ? 255 : 0),
-						new UnsignedByteType());
+						(i, o) -> o.set(i.getRealDouble() > 100 ? (short) 1 : (short) 0),
+						new ShortType());
 	}
 }

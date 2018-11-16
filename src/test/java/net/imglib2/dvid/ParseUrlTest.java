@@ -1,4 +1,4 @@
-package net.imglib2.labkit_rest_api;
+package net.imglib2.dvid;
 
 import net.imglib2.dvid.ImageController;
 import org.junit.Test;

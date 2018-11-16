@@ -1,6 +1,6 @@
 package net.imglib2.labkit_rest_api;
 
-import net.imglib2.dvid.Server;
+import net.imglib2.ilastik_mock_up.Server;
 import net.imglib2.labkit.Main;
 
 /**
