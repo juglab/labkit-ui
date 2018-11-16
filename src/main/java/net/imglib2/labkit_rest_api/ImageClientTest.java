@@ -20,18 +20,19 @@ import net.imglib2.util.Intervals;
 public class ImageClientTest {
 
 	public static void main(String... args) {
-		test(new UnsignedByteType(42));
-		test(new ByteType((byte) 42));
-		test(new UnsignedShortType(42));
-		test(new ShortType((short) 42));
-		test(new UnsignedIntType(42));
-		test(new IntType(42));
-		test(new UnsignedLongType(42));
-		test(new LongType(42));
-		test(new FloatType(42));
-		test(new DoubleType(42));
-		System.out.println("sucess");
-		System.exit(0);
+		try(Server server = new Server()) {
+			test(new UnsignedByteType(42));
+			test(new ByteType((byte) 42));
+			test(new UnsignedShortType(42));
+			test(new ShortType((short) 42));
+			test(new UnsignedIntType(42));
+			test(new IntType(42));
+			test(new UnsignedLongType(42));
+			test(new LongType(42));
+			test(new FloatType(42));
+			test(new DoubleType(42));
+			System.out.println("sucess");
+		}
 	}
 
 	public static <T extends NativeType<T>> void test(T type) {
@@ -42,8 +43,7 @@ public class ImageClientTest {
 
 	public static <T extends NativeType<T>> void testImage(Img<T> image) {
 		ImageId id = ImageRepository.getInstance().addImage("image", image);
-		ImageClient client = new ImageClient("http://localhost:8572/node/" + id.getUuid() + "/" + id.getDataName() + "/");
-		Img<T> result = (Img<T>) client.createCachedImg();
+		Img<T> result = (Img<T>) ImageClient.asCachedImg("http://localhost:8572/node/" + id.getUuid() + "/" + id.getDataName());
 		if( !Intervals.equals(image, result) )
 			throw new AssertionError("intervals different");
 		LoopBuilder.setImages(image, result).forEachPixel(

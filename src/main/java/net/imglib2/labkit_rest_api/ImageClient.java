@@ -45,6 +45,11 @@ public class ImageClient {
 		this.type = initializeType(metadata);
 	}
 
+	public static Img<?> asCachedImg(String url) {
+		ImageClient client = new ImageClient(url);
+		return client.createCachedImg();
+	}
+
 	private Interval initializeInterval(ImageMetadata metadata) {
 		List<Axis> axes = metadata.getAxes();
 		long[] min = axes.stream().mapToLong(Axis::getOffset).toArray();
@@ -122,7 +127,7 @@ public class ImageClient {
 			DummyApplication.main(args);
 			String path = getUrl();
 			//String path = "http://localhost:8000/api/node/a9/hello";
-			BdvFunctions.show(new ImageClient(path).createCachedImg(), "image");
+			BdvFunctions.show(ImageClient.asCachedImg(path), "image");
 		}
 		catch (Exception e) {
 			e.printStackTrace();
