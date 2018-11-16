@@ -47,4 +47,8 @@ public class ImageId {
 	{
 		return uuid + "/" + dataName;
 	}
+
+	public String getUrl(String s) {
+		return s + "/node/" + toString();
+	}
 }

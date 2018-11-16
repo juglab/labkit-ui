@@ -19,9 +19,11 @@ import net.imglib2.type.numeric.integer.UnsignedByteType;
 import net.imglib2.util.Intervals;
 import net.imglib2.util.Util;
 import net.imglib2.view.Views;
-import org.springframework.web.client.RestTemplate;
 
 import javax.swing.*;
+import javax.ws.rs.client.Client;
+import javax.ws.rs.client.ClientBuilder;
+import javax.ws.rs.core.MediaType;
 import java.nio.ByteBuffer;
 import java.util.List;
 import java.util.StringJoiner;
@@ -31,13 +33,13 @@ public class ImageClient {
 
 	private final String url;
 	private final Interval interval;
-	private final RestTemplate client = new RestTemplate();
+	private final Client client = ClientBuilder.newClient();
 	private final int[] blockSize;
 	private final RealType<?> type;
 
 	public ImageClient(String url) {
 		this.url = url;
-		final ImageMetadata metadata = client.getForObject(this.url + "metadata", ImageMetadata.class);
+		final ImageMetadata metadata = client.target(this.url + "/metadata").request(MediaType.APPLICATION_JSON).get(ImageMetadata.class);
 		this.interval = initializeInterval(metadata);
 		this.blockSize = initializeBlockSize(metadata);
 		this.type = initializeType(metadata);
@@ -59,9 +61,9 @@ public class ImageClient {
 	}
 
 	private static String getUrl() {
-		RestTemplate client = new RestTemplate();
-		ImageId id = client.getForObject("http://localhost:8572/nodes/", ImageId[].class)[0];
-		return "http://localhost:8572/node/" + id.getUuid() + "/" + id.getDataName() + "/";
+		Client client = ClientBuilder.newClient();
+		ImageId id = client.target("http://localhost:8572/nodes/").request().get(ImageId[].class)[0];
+		return "http://localhost:8572/node/" + id.getUuid() + "/" + id.getDataName();
 	}
 
 	private RandomAccessibleInterval<?> getChunk(Interval interval) {
@@ -91,8 +93,8 @@ public class ImageClient {
 		final long[] size = Intervals.dimensionsAsLongArray(interval);
 		final long[] min = Intervals.minAsLongArray(interval);
 		StringBuilder url = new StringBuilder().append(this.url)
-				.append("raw/0_1_2/").append(toString(size)).append("/").append(toString(min)).append("/octet-stream");
-		return client.getForObject(url.toString(), byte[].class);
+				.append("/raw/0_1_2/").append(toString(size)).append("/").append(toString(min)).append("/octet-stream");
+		return client.target(url.toString()).request().get(byte[].class);
 	}
 
 	private static String toString(long[] longs) {
@@ -103,7 +105,13 @@ public class ImageClient {
 	}
 
 	public Img<?> createCachedImg() {
-		CellLoader loader = this::copyChunk;
+		CellLoader loader = cell -> {
+			try {
+				copyChunk(cell);
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
+		};
 		DiskCachedCellImgOptions options = DiskCachedCellImgOptions.options().cellDimensions(blockSize);
 		return new DiskCachedCellImgFactory<>((NativeType) type, options).create(Intervals.dimensionsAsLongArray(interval), loader);
 	}
@@ -111,9 +119,9 @@ public class ImageClient {
 	public static void main(String... args) {
 		JFrame frame = new JFrame();
 		try {
-			DummyImageServerApplication.main(args);
+			DummyApplication.main(args);
 			String path = getUrl();
-			//String path = "http://localhost:8000/api/node/a9/hello/";
+			//String path = "http://localhost:8000/api/node/a9/hello";
 			BdvFunctions.show(new ImageClient(path).createCachedImg(), "image");
 		}
 		catch (Exception e) {

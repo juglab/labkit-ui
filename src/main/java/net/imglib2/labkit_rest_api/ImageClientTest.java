@@ -16,12 +16,10 @@ import net.imglib2.type.numeric.integer.UnsignedShortType;
 import net.imglib2.type.numeric.real.DoubleType;
 import net.imglib2.type.numeric.real.FloatType;
 import net.imglib2.util.Intervals;
-import org.springframework.boot.SpringApplication;
 
 public class ImageClientTest {
 
 	public static void main(String... args) {
-		SpringApplication.run(DummyImageServerApplication.class, args);
 		test(new UnsignedByteType(42));
 		test(new ByteType((byte) 42));
 		test(new UnsignedShortType(42));

@@ -2,7 +2,6 @@ package net.imglib2.labkit_rest_api;
 
 import net.imglib2.RandomAccessibleInterval;
 import net.imglib2.labkit.inputimage.InputImage;
-import net.imglib2.labkit.labeling.Label;
 import net.imglib2.labkit.labeling.Labeling;
 import net.imglib2.labkit.segmentation.Segmenter;
 import net.imglib2.labkit.utils.Notifier;
@@ -14,7 +13,6 @@ import org.scijava.Context;
 import javax.swing.*;
 import java.util.Arrays;
 import java.util.List;
-import java.util.function.Consumer;
 
 public class RestSegmenter implements Segmenter {
 

@@ -1,27 +1,43 @@
 package net.imglib2.labkit_rest_api.dvid.metadata;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
-
+import javax.json.bind.annotation.JsonbProperty;
 import java.util.Arrays;
 import java.util.List;
 import java.util.stream.LongStream;
 
 public class Properties {
-	private final List<Value> values;
-	private final boolean interporable;
-	private final long[] blockSize;
-	private final long[] voxelSize;
-	private final List<Unit> voxelUnits;
-	private final long[] minPoint;
-	private final long[] maxPoint;
-	private final long[] minIndex;
-	private final long[] maxIndex;
-	private final int backgroundLabel;
 
-	@Deprecated
+	@JsonbProperty("Values")
+	private List<Value> values;
+
+	@JsonbProperty("Interporable")
+	private boolean interporable;
+
+	@JsonbProperty("BlockSize")
+	private long[] blockSize;
+
+	@JsonbProperty("VoxelSize")
+	private long[] voxelSize;
+
+	@JsonbProperty("VoxelUnits")
+	private List<Unit> voxelUnits;
+
+	@JsonbProperty("MinPoint")
+	private long[] minPoint;
+
+	@JsonbProperty("MaxPoint")
+	private long[] maxPoint;
+
+	@JsonbProperty("MinIndex")
+	private long[] minIndex;
+
+	@JsonbProperty("MaxIndex")
+	private long[] maxIndex;
+
+	@JsonbProperty("Background")
+	private int backgroundLabel;
+
 	public Properties() {
-		// this constructor should never be used, but is required for JSON deserialization.
-		this(null, false, null, null, null, null, null, null, null, 0);
 	}
 
 	public Properties(List<Value> values, boolean interporable, long[] blockSize, long[] voxelSize, List<Unit> voxelUnits, long[] minPoint, long[] maxPoint, long[] minIndex, long[] maxIndex, int backgroundLabel) {
@@ -53,52 +69,42 @@ public class Properties {
 				);
 	}
 
-	@JsonProperty("Values")
 	public List<Value> getValues() {
 		return values;
 	}
 
-	@JsonProperty("Interporable")
 	public boolean isInterporable() {
 		return interporable;
 	}
 
-	@JsonProperty("BlockSize")
 	public long[] getBlockSize() {
 		return blockSize;
 	}
 
-	@JsonProperty("VoxelSize")
 	public long[] getVoxelSize() {
 		return voxelSize;
 	}
 
-	@JsonProperty("VoxelUnits")
 	public List<Unit> getVoxelUnits() {
 		return voxelUnits;
 	}
 
-	@JsonProperty("MinPoint")
 	public long[] getMinPoint() {
 		return minPoint;
 	}
 
-	@JsonProperty("MaxPoint")
 	public long[] getMaxPoint() {
 		return maxPoint;
 	}
 
-	@JsonProperty("MinIndex")
 	public long[] getMinIndex() {
 		return minIndex;
 	}
 
-	@JsonProperty("MaxIndex")
 	public long[] getMaxIndex() {
 		return maxIndex;
 	}
 
-	@JsonProperty("Background")
 	public int getBackgroundLabel() {
 		return backgroundLabel;
 	}
@@ -115,5 +121,43 @@ public class Properties {
 		return result;
 	}
 
-}
+	public void setValues(List<Value> values) {
+		this.values = values;
+	}
 
+	public void setInterporable(boolean interporable) {
+		this.interporable = interporable;
+	}
+
+	public void setBlockSize(long[] blockSize) {
+		this.blockSize = blockSize;
+	}
+
+	public void setVoxelSize(long[] voxelSize) {
+		this.voxelSize = voxelSize;
+	}
+
+	public void setVoxelUnits(List<Unit> voxelUnits) {
+		this.voxelUnits = voxelUnits;
+	}
+
+	public void setMinPoint(long[] minPoint) {
+		this.minPoint = minPoint;
+	}
+
+	public void setMaxPoint(long[] maxPoint) {
+		this.maxPoint = maxPoint;
+	}
+
+	public void setMinIndex(long[] minIndex) {
+		this.minIndex = minIndex;
+	}
+
+	public void setMaxIndex(long[] maxIndex) {
+		this.maxIndex = maxIndex;
+	}
+
+	public void setBackgroundLabel(int backgroundLabel) {
+		this.backgroundLabel = backgroundLabel;
+	}
+}

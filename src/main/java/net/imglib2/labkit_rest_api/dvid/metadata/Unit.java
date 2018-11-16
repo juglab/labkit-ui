@@ -1,12 +1,12 @@
 package net.imglib2.labkit_rest_api.dvid.metadata;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
+import javax.json.bind.annotation.JsonbProperty;
 
 public enum Unit {
-	@JsonProperty("nanometers")
+	@JsonbProperty("nanometers")
 	NANOMETERS,
-	@JsonProperty("micrometers")
+	@JsonbProperty("micrometers")
 	MICROMETERS,
-	@JsonProperty("pixel")
+	@JsonbProperty("pixel")
 	PIXEL
 }
