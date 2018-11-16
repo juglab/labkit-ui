@@ -1,6 +1,4 @@
-package net.imglib2.labkit_rest_api.dvid;
-
-import net.imglib2.labkit_rest_api.ImageRepository;
+package net.imglib2.dvid;
 
 public class ImageId {
 

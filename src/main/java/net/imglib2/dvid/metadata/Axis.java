@@ -1,4 +1,4 @@
-package net.imglib2.labkit_rest_api.dvid.metadata;
+package net.imglib2.dvid.metadata;
 
 import javax.json.bind.annotation.JsonbProperty;
 

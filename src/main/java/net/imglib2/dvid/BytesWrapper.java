@@ -1,7 +1,6 @@
-package net.imglib2.labkit_rest_api.dvid;
+package net.imglib2.dvid;
 
 import net.imglib2.img.Img;
-import net.imglib2.img.array.ArrayImgFactory;
 import net.imglib2.img.array.ArrayImgs;
 import net.imglib2.img.basictypeaccess.ByteAccess;
 import net.imglib2.img.basictypeaccess.DoubleAccess;

@@ -1,10 +1,8 @@
-package net.imglib2.labkit_rest_api;
+package net.imglib2.dvid;
 
 import net.imglib2.FinalInterval;
 import net.imglib2.Interval;
-import net.imglib2.labkit_rest_api.dvid.ImageId;
-import net.imglib2.labkit_rest_api.dvid.ImageRepresentation;
-import net.imglib2.labkit_rest_api.dvid.metadata.ImageMetadata;
+import net.imglib2.dvid.metadata.ImageMetadata;
 import net.imglib2.util.Intervals;
 
 import javax.ws.rs.GET;

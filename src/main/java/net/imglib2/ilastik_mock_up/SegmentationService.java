@@ -3,9 +3,9 @@ package net.imglib2.ilastik_mock_up;
 import net.imglib2.RandomAccessibleInterval;
 import net.imglib2.converter.Converters;
 import net.imglib2.img.Img;
-import net.imglib2.labkit_rest_api.ImageClient;
-import net.imglib2.labkit_rest_api.ImageRepository;
-import net.imglib2.labkit_rest_api.dvid.ImageId;
+import net.imglib2.dvid.ImageClient;
+import net.imglib2.dvid.ImageRepository;
+import net.imglib2.dvid.ImageId;
 import net.imglib2.type.numeric.RealType;
 import net.imglib2.type.numeric.integer.UnsignedByteType;
 

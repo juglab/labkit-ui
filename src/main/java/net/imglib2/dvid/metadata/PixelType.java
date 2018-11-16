@@ -1,4 +1,4 @@
-package net.imglib2.labkit_rest_api.dvid.metadata;
+package net.imglib2.dvid.metadata;
 
 import net.imglib2.type.Type;
 import net.imglib2.type.numeric.integer.ByteType;

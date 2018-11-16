@@ -1,9 +1,9 @@
-package net.imglib2.labkit_rest_api.dvid;
+package net.imglib2.dvid;
 
 import net.imglib2.Interval;
 import net.imglib2.RandomAccessibleInterval;
 import net.imglib2.copy.ByteBufferImgCopy;
-import net.imglib2.labkit_rest_api.dvid.metadata.PixelType;
+import net.imglib2.dvid.metadata.PixelType;
 import net.imglib2.type.Type;
 import net.imglib2.type.numeric.RealType;
 import net.imglib2.util.Intervals;

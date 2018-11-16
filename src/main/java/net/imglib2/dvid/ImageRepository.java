@@ -1,9 +1,6 @@
-package net.imglib2.labkit_rest_api;
+package net.imglib2.dvid;
 
 import net.imglib2.RandomAccessibleInterval;
-import net.imglib2.labkit_rest_api.dvid.ImageId;
-import net.imglib2.labkit_rest_api.dvid.ImageRepresentation;
-import net.imglib2.labkit_rest_api.dvid.ImageWrapper;
 
 import java.util.Collection;
 import java.util.HashMap;

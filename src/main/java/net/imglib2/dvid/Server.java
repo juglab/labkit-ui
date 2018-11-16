@@ -1,5 +1,7 @@
-package net.imglib2.labkit_rest_api;
+package net.imglib2.dvid;
 
+import net.imglib2.dvid.ImageController;
+import net.imglib2.dvid.ImageRepository;
 import org.glassfish.grizzly.http.server.HttpServer;
 import org.glassfish.jersey.grizzly2.httpserver.GrizzlyHttpServerFactory;
 import org.glassfish.jersey.server.ResourceConfig;

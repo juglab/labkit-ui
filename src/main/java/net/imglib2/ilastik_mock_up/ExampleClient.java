@@ -5,9 +5,9 @@ import ij.IJ;
 import net.imglib2.RandomAccessibleInterval;
 import net.imglib2.img.Img;
 import net.imglib2.img.display.imagej.ImageJFunctions;
-import net.imglib2.labkit_rest_api.ImageClient;
-import net.imglib2.labkit_rest_api.ImageRepository;
-import net.imglib2.labkit_rest_api.dvid.ImageId;
+import net.imglib2.dvid.ImageClient;
+import net.imglib2.dvid.ImageRepository;
+import net.imglib2.dvid.ImageId;
 
 import javax.ws.rs.client.Client;
 import javax.ws.rs.client.ClientBuilder;

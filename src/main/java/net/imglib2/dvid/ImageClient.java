@@ -1,4 +1,4 @@
-package net.imglib2.labkit_rest_api;
+package net.imglib2.dvid;
 
 import bdv.util.BdvFunctions;
 import net.imglib2.FinalInterval;
@@ -10,9 +10,8 @@ import net.imglib2.cache.img.DiskCachedCellImgOptions;
 import net.imglib2.copy.ByteBufferImgCopy;
 import net.imglib2.img.Img;
 import net.imglib2.img.array.ArrayImgFactory;
-import net.imglib2.labkit_rest_api.dvid.ImageId;
-import net.imglib2.labkit_rest_api.dvid.metadata.Axis;
-import net.imglib2.labkit_rest_api.dvid.metadata.ImageMetadata;
+import net.imglib2.dvid.metadata.Axis;
+import net.imglib2.dvid.metadata.ImageMetadata;
 import net.imglib2.type.NativeType;
 import net.imglib2.type.numeric.RealType;
 import net.imglib2.type.numeric.integer.UnsignedByteType;

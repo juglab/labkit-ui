@@ -1,7 +1,7 @@
 package net.imglib2.ilastik_mock_up;
 
-import net.imglib2.labkit_rest_api.ImageController;
-import net.imglib2.labkit_rest_api.ImageRepository;
+import net.imglib2.dvid.ImageController;
+import net.imglib2.dvid.ImageRepository;
 import org.glassfish.grizzly.http.server.HttpServer;
 import org.glassfish.jersey.grizzly2.httpserver.GrizzlyHttpServerFactory;
 import org.glassfish.jersey.server.ResourceConfig;

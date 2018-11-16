@@ -1,9 +1,7 @@
 package net.imglib2.labkit_rest_api;
 
-import net.imglib2.img.Img;
-import net.imglib2.img.array.ArrayImgs;
+import net.imglib2.dvid.Server;
 import net.imglib2.labkit.Main;
-import net.imglib2.type.numeric.integer.UnsignedByteType;
 
 /**
  * Launcher for the Labkit with the REST server.

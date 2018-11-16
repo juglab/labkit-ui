@@ -1,7 +1,7 @@
-package net.imglib2.labkit_rest_api.dvid;
+package net.imglib2.dvid;
 
 import net.imglib2.Interval;
-import net.imglib2.labkit_rest_api.dvid.metadata.PixelType;
+import net.imglib2.dvid.metadata.PixelType;
 
 public interface ImageRepresentation {
 

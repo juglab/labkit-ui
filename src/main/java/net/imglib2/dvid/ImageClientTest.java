@@ -1,8 +1,7 @@
-package net.imglib2.labkit_rest_api;
+package net.imglib2.dvid;
 
 import net.imglib2.img.Img;
 import net.imglib2.img.array.ArrayImgFactory;
-import net.imglib2.labkit_rest_api.dvid.ImageId;
 import net.imglib2.loops.LoopBuilder;
 import net.imglib2.type.NativeType;
 import net.imglib2.type.numeric.integer.ByteType;

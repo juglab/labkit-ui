@@ -1,5 +1,6 @@
 package net.imglib2.labkit_rest_api;
 
+import net.imglib2.dvid.ImageController;
 import org.junit.Test;
 
 import static org.junit.Assert.assertArrayEquals;
