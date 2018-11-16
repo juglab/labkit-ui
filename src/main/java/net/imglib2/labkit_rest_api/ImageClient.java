@@ -21,6 +21,7 @@ import net.imglib2.util.Util;
 import net.imglib2.view.Views;
 
 import javax.swing.*;
+import javax.ws.rs.NotFoundException;
 import javax.ws.rs.client.Client;
 import javax.ws.rs.client.ClientBuilder;
 import javax.ws.rs.core.MediaType;
@@ -38,11 +39,15 @@ public class ImageClient {
 	private final RealType<?> type;
 
 	public ImageClient(String url) {
-		this.url = url;
-		final ImageMetadata metadata = client.target(this.url + "/metadata").request(MediaType.APPLICATION_JSON).get(ImageMetadata.class);
-		this.interval = initializeInterval(metadata);
-		this.blockSize = initializeBlockSize(metadata);
-		this.type = initializeType(metadata);
+		try {
+			this.url = url;
+			final ImageMetadata metadata = client.target(this.url + "/metadata").request(MediaType.APPLICATION_JSON).get(ImageMetadata.class);
+			this.interval = initializeInterval(metadata);
+			this.blockSize = initializeBlockSize(metadata);
+			this.type = initializeType(metadata);
+		} catch (NotFoundException e) {
+			throw new NotFoundException("Image Metadata could not be opened: " + url);
+		}
 	}
 
 	public static Img<?> asCachedImg(String url) {
