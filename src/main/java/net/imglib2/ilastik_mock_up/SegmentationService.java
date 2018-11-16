@@ -1,6 +1,5 @@
 package net.imglib2.ilastik_mock_up;
 
-import bdv.util.BdvFunctions;
 import net.imglib2.RandomAccessibleInterval;
 import net.imglib2.converter.Converters;
 import net.imglib2.img.Img;
@@ -17,6 +16,7 @@ import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
+import java.util.UUID;
 
 @Path("/segmentation")
 public class SegmentationService
@@ -33,14 +33,21 @@ public class SegmentationService
 	@Consumes(MediaType.APPLICATION_JSON)
 	@Produces(MediaType.APPLICATION_JSON)
 	public TrainingResponse train(TrainingRequest request) {
+		final TrainingResponse response = new TrainingResponse();
+		response.setTrainingId(UUID.randomUUID().toString());
+		return response;
+	}
+
+	@POST
+	@Path("/segment")
+	@Consumes(MediaType.APPLICATION_JSON)
+	@Produces(MediaType.APPLICATION_JSON)
+	public SegmentationResponse segment(SegmentationRequest request) {
 		try {
-			final TrainingResponse response = new TrainingResponse();
-			ImageClient client = new ImageClient(request.getImageUrl());
-			Img<?> cached = client.createCachedImg();
-			RandomAccessibleInterval<UnsignedByteType> thresholded =
-					Converters.convert((RandomAccessibleInterval<RealType<?>>) cached,
-					(i, o) -> { o.set(i.getRealDouble() > 100 ? 255 : 0); },
-					new UnsignedByteType());
+			final SegmentationResponse response = new SegmentationResponse();
+			final String url = request.getImageUrl();
+			Img<RealType<?>> cached = (Img<RealType<?>>) ImageClient.asCachedImg(url);
+			RandomAccessibleInterval<UnsignedByteType> thresholded = segment(cached);
 			ImageId id = ImageRepository.getInstance().addImage("segmentation", thresholded);
 			response.setSegmentationUrl(id.getUrl("http://localhost:8571"));
 			return response;
@@ -48,5 +55,11 @@ public class SegmentationService
 			e.printStackTrace();
 			return null;
 		}
+	}
+
+	public RandomAccessibleInterval<UnsignedByteType> segment(RandomAccessibleInterval<RealType<?>> cached) {
+		return Converters.convert(cached,
+						(i, o) -> o.set(i.getRealDouble() > 100 ? 255 : 0),
+						new UnsignedByteType());
 	}
 }
