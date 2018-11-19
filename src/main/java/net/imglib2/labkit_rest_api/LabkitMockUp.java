@@ -9,7 +9,7 @@ import net.imglib2.Dimensions;
 import net.imglib2.RandomAccessibleInterval;
 import net.imglib2.cache.img.CellLoader;
 import net.imglib2.cache.img.DiskCachedCellImgFactory;
-import net.imglib2.ilastik_mock_up.Server;
+import net.imglib2.ilastik_mock_up.IlastikMockUpServer;
 import net.imglib2.img.Img;
 import net.imglib2.img.display.imagej.ImageJFunctions;
 import net.imglib2.labkit.inputimage.DefaultInputImage;
@@ -27,7 +27,7 @@ import java.util.Collections;
 public class LabkitMockUp {
 
 	public static void main(String... args) {
-		try(Server server = new Server()) {
+		try(IlastikMockUpServer server = new IlastikMockUpServer()) {
 			System.out.println("Press any key to exit");
 			LabkitMockUp.run();
 			System.in.read();

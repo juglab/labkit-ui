@@ -15,11 +15,13 @@ import net.imglib2.type.numeric.integer.UnsignedShortType;
 import net.imglib2.type.numeric.real.DoubleType;
 import net.imglib2.type.numeric.real.FloatType;
 import net.imglib2.util.Intervals;
+import org.junit.Test;
 
-public class ImageClientTest {
+public class ImageServerAndClientTest {
 
-	public static void main(String... args) {
-		try(Server server = new Server()) {
+	@Test
+	public void test() {
+		try(ImageServer server = new ImageServer()) {
 			test(new UnsignedByteType(42));
 			test(new ByteType((byte) 42));
 			test(new UnsignedShortType(42));
@@ -42,7 +44,7 @@ public class ImageClientTest {
 
 	public static <T extends NativeType<T>> void testImage(Img<T> image) {
 		ImageId id = ImageRepository.getInstance().addImage("image", image);
-		Img<T> result = (Img<T>) ImageClient.asCachedImg("http://localhost:8572/node/" + id.getUuid() + "/" + id.getDataName());
+		Img<T> result = (Img<T>) ImageClient.asCachedImg(id.getUrl());
 		if( !Intervals.equals(image, result) )
 			throw new AssertionError("intervals different");
 		LoopBuilder.setImages(image, result).forEachPixel(

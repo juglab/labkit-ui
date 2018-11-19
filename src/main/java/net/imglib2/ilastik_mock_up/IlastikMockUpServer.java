@@ -1,4 +1,4 @@
-package net.imglib2.dvid;
+package net.imglib2.ilastik_mock_up;
 
 import net.imglib2.dvid.ImageController;
 import net.imglib2.dvid.ImageRepository;
@@ -12,18 +12,18 @@ import java.net.URI;
 /**
  * Server for the Labkit REST API.
  */
-public final class Server implements AutoCloseable {
+public final class IlastikMockUpServer implements AutoCloseable {
 
 	private static final ResourceConfig CONFIG = new ResourceConfig()
-			.registerClasses(ImageController.class);
+			.registerClasses(SegmentationService.class, ImageController.class);
 
 	private final HttpServer server;
 
-	public Server() {
-		this("127.0.0.1", 8572);
+	public IlastikMockUpServer() {
+		this("127.0.0.1", 8571);
 	}
 
-	public Server(String host, int port) {
+	public IlastikMockUpServer(String host, int port) {
 		URI uri = URI.create(String.format("http://%s:%d", host, port));
 		server = GrizzlyHttpServerFactory.createHttpServer(uri, CONFIG);
 		try {
@@ -34,7 +34,6 @@ public final class Server implements AutoCloseable {
 		}
 	}
 
-	@Override
 	public void close() {
 		server.shutdownNow();
 	}

@@ -19,7 +19,6 @@ import net.imglib2.util.Intervals;
 import net.imglib2.util.Util;
 import net.imglib2.view.Views;
 
-import javax.swing.*;
 import javax.ws.rs.NotFoundException;
 import javax.ws.rs.client.Client;
 import javax.ws.rs.client.ClientBuilder;
@@ -67,12 +66,6 @@ public class ImageClient {
 
 	private RealType<?> initializeType(ImageMetadata metadata) {
 		return (RealType<?>) metadata.getProperties().getValues().get(0).getDataType().getType();
-	}
-
-	private static String getUrl() {
-		Client client = ClientBuilder.newClient();
-		ImageId id = client.target("http://localhost:8572/nodes/").request().get(ImageId[].class)[0];
-		return "http://localhost:8572/node/" + id.getUuid() + "/" + id.getDataName();
 	}
 
 	private RandomAccessibleInterval<?> getChunk(Interval interval) {
@@ -124,18 +117,4 @@ public class ImageClient {
 		DiskCachedCellImgOptions options = DiskCachedCellImgOptions.options().cellDimensions(blockSize);
 		return new DiskCachedCellImgFactory<>((NativeType) type, options).create(Intervals.dimensionsAsLongArray(interval), loader);
 	}
-
-	public static void main(String... args) {
-		JFrame frame = new JFrame();
-		try {
-			DummyApplication.main(args);
-			String path = getUrl();
-			//String path = "http://localhost:8000/api/node/a9/hello";
-			BdvFunctions.show(ImageClient.asCachedImg(path), "image");
-		}
-		catch (Exception e) {
-			e.printStackTrace();
-		}
-	}
-
 }
