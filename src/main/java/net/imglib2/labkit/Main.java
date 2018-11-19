@@ -6,7 +6,6 @@ import net.imglib2.labkit.actions.AbstractFileIoAction;
 
 import javax.swing.*;
 import javax.swing.filechooser.FileFilter;
-import java.util.function.Consumer;
 
 /**
  * @author Matthias Arzt
@@ -14,19 +13,35 @@ import java.util.function.Consumer;
 public class Main {
 
 	public static void main(String... args) {
-		fileChooserAndThen(filename -> Main.start(filename));
+		String filename = readCommandline(args);
+		if (filename == null) filename = showOpenDialog();
+		if (filename != null) start(filename);
 	}
 
-	static private void fileChooserAndThen(Consumer<String> action) {
+	private static String readCommandline(String[] args) {
+		switch (args.length) {
+			case 1:
+				return args[0];
+			case 0:
+				return null;
+			default:
+				System.err.println("USAGE:    ./start.sh {optional/path/to/image.tif}");
+				System.exit(2);
+		}
+		throw new AssertionError();
+	}
+
+	private static String showOpenDialog() {
 		final JFileChooser fileChooser = new JFileChooser();
-		fileChooser.setAcceptAllFileFilterUsed(false);
+		fileChooser.setAcceptAllFileFilterUsed(true);
+
 		FileFilter fileFilter = AbstractFileIoAction.TIFF_FILTER;
 		fileChooser.setFileFilter(fileFilter);
 		fileChooser.addChoosableFileFilter(fileFilter);
-		fileChooser.setAcceptAllFileFilterUsed(true);
+
 		final int returnVal = fileChooser.showOpenDialog(null);
-		if (returnVal == JFileChooser.APPROVE_OPTION) action.accept(fileChooser
-			.getSelectedFile().getAbsolutePath());
+		if (returnVal != JFileChooser.APPROVE_OPTION) return null;
+		return fileChooser.getSelectedFile().getAbsolutePath();
 	}
 
 	public static void start(String filename) {
