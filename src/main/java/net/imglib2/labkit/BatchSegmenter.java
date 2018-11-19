@@ -73,9 +73,9 @@ public class BatchSegmenter {
 		final String classifierPath =
 			"/home/arzt/Documents/20170804_LungImages/0006.classifier";
 		OpEnvironment ops = context.service(OpService.class);
-		return new TrainableSegmentationSegmenter(context,
-			net.imglib2.trainable_segmention.classification.Segmenter.fromJson(ops,
-				GsonUtils.read(classifierPath)));
+		Segmenter segmenter = new TrainableSegmentationSegmenter(context);
+		segmenter.openModel(classifierPath);
+		return segmenter;
 	}
 
 	public static Img<UnsignedByteType> segment(Img<ARGBType> rawImg,

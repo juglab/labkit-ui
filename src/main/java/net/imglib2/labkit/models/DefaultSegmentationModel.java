@@ -15,6 +15,7 @@ import net.imglib2.trainable_segmention.RevampUtils;
 import net.imglib2.type.NativeType;
 import net.imglib2.type.numeric.IntegerType;
 import net.imglib2.type.numeric.real.FloatType;
+import net.imglib2.util.ValuePair;
 import org.scijava.Context;
 
 import javax.swing.*;
@@ -109,8 +110,8 @@ public class DefaultSegmentationModel implements SegmentationModel,
 	@Override
 	public void train(SegmentationItem item) {
 		try {
-			item.segmenter().train(Collections.singletonList(image()), Collections
-				.singletonList(labeling()));
+			item.segmenter().train(Collections.singletonList(new ValuePair<>(image(),
+				labeling())));
 		}
 		catch (CancellationException e) {
 			JOptionPane.showMessageDialog(null, e.getMessage(), "Training Cancelled",

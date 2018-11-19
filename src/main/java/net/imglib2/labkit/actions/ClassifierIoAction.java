@@ -26,11 +26,11 @@ public class ClassifierIoAction extends AbstractFileIoAction {
 			this::open, "");
 	}
 
-	private void save(String filename) throws Exception {
-		selectedSegmenter.get().segmenter().saveModel(filename, true);
+	private void save(String filename) {
+		selectedSegmenter.get().segmenter().saveModel(filename);
 	}
 
-	private void open(String filename) throws Exception {
+	private void open(String filename) {
 		selectedSegmenter.get().segmenter().openModel(filename);
 	}
 }

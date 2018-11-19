@@ -32,6 +32,7 @@ import net.imglib2.type.numeric.IntegerType;
 import net.imglib2.type.numeric.RealType;
 import net.imglib2.type.numeric.integer.IntType;
 import net.imglib2.type.numeric.real.FloatType;
+import net.imglib2.util.Pair;
 import net.imglib2.view.Views;
 import net.imglib2.view.composite.Composite;
 import org.scijava.Context;
@@ -45,7 +46,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.CancellationException;
-import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -59,22 +59,10 @@ public class TrainableSegmentationSegmenter implements Segmenter {
 
 	private net.imglib2.trainable_segmention.classification.Segmenter segmenter;
 
-	private final Notifier<Consumer<Segmenter>> listeners = new Notifier<>();
-
-	// This method is used to prepare the image for segmentation.
-	// TODO: make this a private method. consider moving image preparation to
-	// imglib2-trainable-segmentation.
-	public static RandomAccessibleInterval<?> prepareOriginal(
-		RandomAccessibleInterval<?> original)
-	{
-		Object voxel = original.randomAccess().get();
-		if (voxel instanceof RealType && !(voxel instanceof FloatType))
-			return LabkitUtils.toFloat(RevampUtils.uncheckedCast(original));
-		return original;
-	}
+	private final Notifier<Runnable> listeners = new Notifier<>();
 
 	@Override
-	public Notifier<Consumer<Segmenter>> listeners() {
+	public Notifier<Runnable> trainingCompletedListeners() {
 		return listeners;
 	}
 
@@ -107,13 +95,13 @@ public class TrainableSegmentationSegmenter implements Segmenter {
 		this.segmenter = null;
 	}
 
-	public TrainableSegmentationSegmenter(Context context,
-		net.imglib2.trainable_segmention.classification.Segmenter segmenter)
-	{
+	public TrainableSegmentationSegmenter(Context context) {
+		GlobalSettings globalSettings = GlobalSettings.default3dSettings();
 		this.context = context;
 		this.initialWekaClassifier = new FastRandomForest();
-		this.featureSettings = segmenter.settings();
-		this.segmenter = segmenter;
+		this.featureSettings = new FeatureSettings(globalSettings, SingleFeatures
+			.identity());
+		this.segmenter = null;
 	}
 
 	@Override
@@ -131,13 +119,12 @@ public class TrainableSegmentationSegmenter implements Segmenter {
 	}
 
 	@Override
-	public void train(List<? extends RandomAccessibleInterval<?>> images,
-		List<? extends Labeling> labelings)
+	public void train(
+		List<Pair<? extends RandomAccessibleInterval<?>, ? extends Labeling>> data)
 	{
 		try {
-			if (labelings.size() != images.size())
-				throw new IllegalArgumentException();
-			List<String> classes = collectLabels(labelings);
+			List<String> classes = collectLabels(data.stream().map(Pair::getB)
+				.collect(Collectors.toList()));
 			weka.classifiers.Classifier wekaClassifier = RevampUtils.wrapException(
 				() -> AbstractClassifier.makeCopy(this.initialWekaClassifier));
 			OpEnvironment ops = context.service(OpService.class);
@@ -145,12 +132,12 @@ public class TrainableSegmentationSegmenter implements Segmenter {
 				new net.imglib2.trainable_segmention.classification.Segmenter(ops,
 					classes, featureSettings, wekaClassifier);
 			Training training = segmenter.training();
-			for (int i = 0; i < images.size(); i++)
-				train(training, classes, labelings.get(i), images.get(i), segmenter
+			for (Pair<? extends RandomAccessibleInterval<?>, ? extends Labeling> pair : data)
+				train(training, classes, pair.getB(), pair.getA(), segmenter
 					.features());
 			training.train();
 			this.segmenter = segmenter;
-			listeners.forEach(l -> l.accept(this));
+			listeners.forEach(Runnable::run);
 		}
 		catch (RuntimeException e) {
 			Throwable cause = e.getCause();
@@ -248,16 +235,15 @@ public class TrainableSegmentationSegmenter implements Segmenter {
 	}
 
 	@Override
-	synchronized public void saveModel(final String path, final boolean overwrite)
-		throws Exception
-	{
+	synchronized public void saveModel(final String path) {
 		GsonUtils.write(segmenter.toJsonTree(), path);
 	}
 
 	@Override
-	public void openModel(final String path) throws Exception {
+	public void openModel(final String path) {
 		segmenter = net.imglib2.trainable_segmention.classification.Segmenter
 			.fromJson(context.service(OpService.class), GsonUtils.read(path));
-		listeners.forEach(l -> l.accept(this));
+		featureSettings = segmenter.features().settings();
+		listeners.forEach(Runnable::run);
 	}
 }

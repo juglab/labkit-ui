@@ -11,6 +11,7 @@ import net.imglib2.loops.LoopBuilder;
 import net.imglib2.type.numeric.IntegerType;
 import net.imglib2.type.numeric.RealType;
 import net.imglib2.type.numeric.real.FloatType;
+import net.imglib2.util.Pair;
 import net.imglib2.view.Views;
 import net.imglib2.view.composite.GenericComposite;
 import org.junit.Test;
@@ -43,8 +44,15 @@ public class TestTimeSeriesSegmenter {
 		}
 
 		@Override
+		public void train(
+			List<Pair<? extends RandomAccessibleInterval<?>, ? extends Labeling>> image)
+		{
+
+		}
+
+		@Override
 		public void segment(RandomAccessibleInterval<?> image,
-			RandomAccessibleInterval<? extends IntegerType<?>> labels)
+			RandomAccessibleInterval<? extends IntegerType<?>> output)
 		{
 
 		}
@@ -64,29 +72,22 @@ public class TestTimeSeriesSegmenter {
 		}
 
 		@Override
-		public void train(List<? extends RandomAccessibleInterval<?>> image,
-			List<? extends Labeling> groundTruth)
-		{
-
-		}
-
-		@Override
 		public boolean isTrained() {
 			return false;
 		}
 
 		@Override
-		public void saveModel(String path, boolean overwrite) throws Exception {
+		public void saveModel(String path) {
 
 		}
 
 		@Override
-		public void openModel(String path) throws Exception {
+		public void openModel(String path) {
 
 		}
 
 		@Override
-		public Notifier<Consumer<Segmenter>> listeners() {
+		public Notifier<Runnable> trainingCompletedListeners() {
 			return new Notifier<>();
 		}
 

@@ -6,37 +6,80 @@ import net.imglib2.labkit.utils.Notifier;
 import net.imglib2.labkit.labeling.Labeling;
 import net.imglib2.type.numeric.IntegerType;
 import net.imglib2.type.numeric.RealType;
+import net.imglib2.util.Pair;
 
-import javax.swing.*;
+import javax.swing.JFrame;
 import java.util.List;
-import java.util.function.Consumer;
 
+/**
+ * Interface for a segmentation model.
+ */
 public interface Segmenter {
 
+	/**
+	 * Show a GUI dialog and allow the user to edit the settings of the model.
+	 */
 	void editSettings(JFrame dialogParent);
 
-	void segment(RandomAccessibleInterval<?> image,
-		RandomAccessibleInterval<? extends IntegerType<?>> labels);
-
-	void predict(RandomAccessibleInterval<?> image,
-		RandomAccessibleInterval<? extends RealType<?>> prediction);
-
 	/**
+	 * Train the model with the given data.
+	 * <p>
 	 * If the requirements for training are not met, and you want to give an
 	 * advice to the user, simple throw a
 	 * {@link java.util.concurrent.CancellationException} that describes what has
 	 * to be fixed.
 	 */
-	void train(List<? extends RandomAccessibleInterval<?>> image,
-		List<? extends Labeling> groundTruth);
+	void train(
+		List<Pair<? extends RandomAccessibleInterval<?>, ? extends Labeling>> image);
 
+	/**
+	 * Segment the image and write the result into the provided output. The output
+	 * might be smaller than the image, in this case only the chunk specified by
+	 * the output's interval is segmented.
+	 * 
+	 * @param image Image to be segmented.
+	 * @param outputSegmentation Buffer to hold the result. Pixel value is the
+	 *          index of the class, as returned by {@link #classNames()}
+	 */
+	void segment(RandomAccessibleInterval<?> image,
+		RandomAccessibleInterval<? extends IntegerType<?>> outputSegmentation);
+
+	/**
+	 * Segment the image and write the probability distribution (probability map)
+	 * into the provided output. The output has therefor one more axis than the
+	 * input. The output might be smaller than the image, in this case only the
+	 * chunk specified by the output's interval is segmented.
+	 * 
+	 * @param image Image to be segmented.
+	 * @param outputProbabilityMap Buffer to hold the result. Pixel value is the
+	 *          index of the class, as returned by {@link #classNames()}
+	 */
+	void predict(RandomAccessibleInterval<?> image,
+		RandomAccessibleInterval<? extends RealType<?>> outputProbabilityMap);
+
+	/**
+	 * Return true if the model is trained.
+	 */
 	boolean isTrained();
 
-	void saveModel(String path, boolean overwrite) throws Exception;
+	/**
+	 * Save the model to the given file.
+	 */
+	void saveModel(String path);
 
-	void openModel(String path) throws Exception;
+	/**
+	 * Load the model from the given file.
+	 */
+	void openModel(String path);
 
-	Notifier<Consumer<Segmenter>> listeners();
+	/**
+	 * Object to subscribe / unsubscribe listeners.
+	 */
+	Notifier<Runnable> trainingCompletedListeners();
 
+	/**
+	 * Return a list of classes, this segmenter return. For example ["background",
+	 * "foreground"]
+	 */
 	List<String> classNames();
 }

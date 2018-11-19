@@ -56,10 +56,11 @@ public class PredictionLayer implements BdvLayer {
 	private void registerListener(Segmenter segmenter) {
 		if (alreadyRegistered.contains(segmenter)) return;
 		alreadyRegistered.add(segmenter);
-		segmenter.listeners().add(this::onTrainingFinished);
+		segmenter.trainingCompletedListeners().add(() -> onTrainingCompleted(
+			segmenter));
 	}
 
-	private void onTrainingFinished(Segmenter segmenter) {
+	private void onTrainingCompleted(Segmenter segmenter) {
 		if (model.get().segmenter() == segmenter) {
 			classifierChanged();
 			visibility.set(true);

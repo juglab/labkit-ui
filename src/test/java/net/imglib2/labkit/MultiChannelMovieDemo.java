@@ -25,6 +25,7 @@ import net.imglib2.loops.LoopBuilder;
 import net.imglib2.type.numeric.integer.ShortType;
 import net.imglib2.type.numeric.integer.UnsignedByteType;
 import net.imglib2.util.Localizables;
+import net.imglib2.util.ValuePair;
 import net.imglib2.view.Views;
 import org.junit.Test;
 import org.scijava.Context;
@@ -90,8 +91,8 @@ public class MultiChannelMovieDemo {
 		SegmentationItem segmenter = segmentationModel.selectedSegmenter().get();
 		Labeling labeling1 = labeling5d();
 		segmentationModel.imageLabelingModel().labeling().set(labeling1);
-		segmenter.segmenter().train(Collections.singletonList(inputImage
-			.imageForSegmentation()), Collections.singletonList(labeling1));
+		segmenter.segmenter().train(Collections.singletonList(new ValuePair<>(
+			inputImage.imageForSegmentation(), labeling1)));
 		RandomAccessibleInterval<ShortType> result = segmenter.results()
 			.segmentation();
 		Labeling labeling = labeling5d();

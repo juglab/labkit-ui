@@ -9,6 +9,8 @@ import net.imglib2.labkit.labeling.Labelings;
 import net.imglib2.trainable_segmention.RevampUtils;
 import net.imglib2.type.numeric.IntegerType;
 import net.imglib2.type.numeric.RealType;
+import net.imglib2.util.Pair;
+import net.imglib2.util.ValuePair;
 import net.imglib2.view.Views;
 
 import javax.swing.*;
@@ -16,19 +18,21 @@ import java.util.List;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
+import java.util.stream.IntStream;
+import java.util.stream.Stream;
 
 public class TimeSeriesSegmenter implements Segmenter {
 
 	private final Segmenter segmenter;
-	private final Notifier<Consumer<Segmenter>> listeners = new Notifier<>();
+	private final Notifier<Runnable> listeners = new Notifier<>();
 
 	public TimeSeriesSegmenter(Segmenter segmenter) {
 		this.segmenter = segmenter;
-		segmenter.listeners().add(this::update);
+		segmenter.trainingCompletedListeners().add(this::update);
 	}
 
-	private void update(Segmenter segmenter) {
-		listeners.forEach(l -> l.accept(this));
+	private void update() {
+		listeners.forEach(l -> l.run());
 	}
 
 	@Override
@@ -38,16 +42,16 @@ public class TimeSeriesSegmenter implements Segmenter {
 
 	@Override
 	public void segment(RandomAccessibleInterval<?> image,
-		RandomAccessibleInterval<? extends IntegerType<?>> labels)
+		RandomAccessibleInterval<? extends IntegerType<?>> output)
 	{
-		applyOnSlices(segmenter::segment, image, labels, 0);
+		applyOnSlices(segmenter::segment, image, output, 0);
 	}
 
 	@Override
 	public void predict(RandomAccessibleInterval<?> image,
-		RandomAccessibleInterval<? extends RealType<?>> prediction)
+		RandomAccessibleInterval<? extends RealType<?>> output)
 	{
-		applyOnSlices(segmenter::predict, image, prediction, 1);
+		applyOnSlices(segmenter::predict, image, output, 1);
 	}
 
 	private <T> void applyOnSlices(
@@ -67,14 +71,23 @@ public class TimeSeriesSegmenter implements Segmenter {
 	}
 
 	@Override
-	public void train(List<? extends RandomAccessibleInterval<?>> image,
-		List<? extends Labeling> groundTruth)
+	public void train(
+		List<Pair<? extends RandomAccessibleInterval<?>, ? extends Labeling>> data)
 	{
-		List<RandomAccessibleInterval<?>> images = image.stream().flatMap(
-			i -> RevampUtils.slices(i).stream()).collect(Collectors.toList());
-		List<Labeling> labels = groundTruth.stream().flatMap(g -> Labelings.slices(
-			g).stream()).collect(Collectors.toList());
-		segmenter.train(images, labels);
+		List<Pair<? extends RandomAccessibleInterval<?>, ? extends Labeling>> slicedData =
+			data.stream().flatMap(this::slice).collect(Collectors.toList());
+		segmenter.train(slicedData);
+	}
+
+	private
+		Stream<? extends Pair<? extends RandomAccessibleInterval<?>, ? extends Labeling>>
+		slice(Pair<? extends RandomAccessibleInterval<?>, ? extends Labeling> pair)
+	{
+		List<? extends RandomAccessibleInterval<?>> imageSlices = RevampUtils
+			.slices(pair.getA());
+		List<? extends Labeling> labelSlices = Labelings.slices(pair.getB());
+		return IntStream.range(0, imageSlices.size()).mapToObj(i -> new ValuePair<>(
+			imageSlices.get(i), labelSlices.get(i)));
 	}
 
 	@Override
@@ -83,17 +96,17 @@ public class TimeSeriesSegmenter implements Segmenter {
 	}
 
 	@Override
-	public void saveModel(String path, boolean overwrite) throws Exception {
-		segmenter.saveModel(path, overwrite);
+	public void saveModel(String path) {
+		segmenter.saveModel(path);
 	}
 
 	@Override
-	public void openModel(String path) throws Exception {
+	public void openModel(String path) {
 		segmenter.openModel(path);
 	}
 
 	@Override
-	public Notifier<Consumer<Segmenter>> listeners() {
+	public Notifier<Runnable> trainingCompletedListeners() {
 		return listeners;
 	}
 
