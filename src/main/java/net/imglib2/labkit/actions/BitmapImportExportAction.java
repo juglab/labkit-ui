@@ -51,7 +51,7 @@ public class BitmapImportExportAction extends AbstractFileIoAction {
 				JFileChooser.SAVE_DIALOG, filename -> exportLabel(label, filename)),
 			null, null);
 		extensible.addMenuItem(Label.LABEL_MENU, "Show as Bitmap in ImageJ", 401,
-				this::showLabel, null, "");
+			this::showLabel, null, "");
 	}
 
 	private void showLabel(Label label) {

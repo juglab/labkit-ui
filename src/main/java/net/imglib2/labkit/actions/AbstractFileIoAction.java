@@ -18,17 +18,19 @@ public abstract class AbstractFileIoAction {
 	public static final FileFilter TIFF_FILTER = new FileNameExtensionFilter(
 		"TIF Image (*.tif, *.tiff)", "tif", "tiff");
 	public static final FileFilter LABELING_FILTER = new FileNameExtensionFilter(
-		"Labeling (*.labeling)", "labeling" );
+		"Labeling (*.labeling)", "labeling");
 
 	private final Extensible extensible;
 
 	private final JFileChooser fileChooser;
 
-	public AbstractFileIoAction(Extensible extensible, FileFilter... fileFilters) {
+	public AbstractFileIoAction(Extensible extensible,
+		FileFilter... fileFilters)
+	{
 		this.extensible = extensible;
 		this.fileChooser = new JFileChooser();
 		fileChooser.setAcceptAllFileFilterUsed(false);
-		for(FileFilter fileFilter : fileFilters)
+		for (FileFilter fileFilter : fileFilters)
 			fileChooser.addChoosableFileFilter(fileFilter);
 		fileChooser.setAcceptAllFileFilterUsed(true);
 		fileChooser.setFileFilter(fileFilters[0]);
@@ -65,19 +67,20 @@ public abstract class AbstractFileIoAction {
 		final int returnVal = fileChooser.showDialog(extensible.dialogParent(),
 			null);
 		if (returnVal == JFileChooser.APPROVE_OPTION) runAction(action,
-				getSelectedFile());
+			getSelectedFile());
 	}
 
 	private String getSelectedFile() {
-		final String path =
-				fileChooser.getSelectedFile().getAbsolutePath();
+		final String path = fileChooser.getSelectedFile().getAbsolutePath();
 		final boolean exists = new File(path).exists();
 		final String extension = FilenameUtils.getExtension(path);
-		if(fileChooser.getDialogType() == JFileChooser.SAVE_DIALOG && !exists && (extension == null || extension.isEmpty())) {
+		if (fileChooser.getDialogType() == JFileChooser.SAVE_DIALOG && !exists &&
+			(extension == null || extension.isEmpty()))
+		{
 			FileFilter filter = fileChooser.getFileFilter();
-			if(filter instanceof FileNameExtensionFilter ) {
-				return path + "." +
-						((FileNameExtensionFilter) filter).getExtensions()[0];
+			if (filter instanceof FileNameExtensionFilter) {
+				return path + "." + ((FileNameExtensionFilter) filter)
+					.getExtensions()[0];
 			}
 		}
 		return path;

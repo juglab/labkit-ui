@@ -28,7 +28,7 @@ public class AddLabelingIoAction extends AbstractFileIoAction {
 
 	public AddLabelingIoAction(Extensible extensible, Holder<Labeling> labeling) {
 		super(extensible, AbstractFileIoAction.LABELING_FILTER,
-				AbstractFileIoAction.TIFF_FILTER);
+			AbstractFileIoAction.TIFF_FILTER);
 		this.labeling = labeling;
 		serializer = new LabelingSerializer(extensible.context());
 		initOpenAction(MenuBar.LABELING_MENU, "Import Labeling ...", 100,
