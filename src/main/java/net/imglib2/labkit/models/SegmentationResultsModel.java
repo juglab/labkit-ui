@@ -98,10 +98,11 @@ public class SegmentationResultsModel {
 		DiskCachedCellImgOptions optional = DiskCachedCellImgOptions.options()
 			// .cacheType( CacheType.BOUNDED )
 			// .maxCacheSize( 1000 )
-			.cellDimensions(cellDimensions);
+			.cellDimensions(cellDimensions).initializeCellsAsDirty(true);
 		final DiskCachedCellImgFactory<T> factory = new DiskCachedCellImgFactory<>(
 			type, optional);
-		return factory.create(grid.getImgDimensions(), loader);
+		return factory.create(grid.getImgDimensions(), loader,
+			DiskCachedCellImgOptions.options().initializeCellsAsDirty(true));
 	}
 
 	private int[] getCellDimensions(CellGrid grid) {
