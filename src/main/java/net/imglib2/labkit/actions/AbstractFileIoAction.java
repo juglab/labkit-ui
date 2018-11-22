@@ -9,6 +9,10 @@ import javax.swing.*;
 import javax.swing.filechooser.FileFilter;
 import javax.swing.filechooser.FileNameExtensionFilter;
 import java.io.File;
+import java.util.concurrent.CancellationException;
+import java.util.concurrent.Executor;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 /**
  * @author Matthias Arzt
@@ -19,6 +23,8 @@ public abstract class AbstractFileIoAction {
 		"TIF Image (*.tif, *.tiff)", "tif", "tiff");
 	public static final FileFilter LABELING_FILTER = new FileNameExtensionFilter(
 		"Labeling (*.labeling)", "labeling");
+	public static final FileFilter HDF5_FILTER = new FileNameExtensionFilter(
+		"HDF5 + XML (*.h5, *.xml)", "h5", "xml");
 
 	private final Extensible extensible;
 
@@ -87,12 +93,21 @@ public abstract class AbstractFileIoAction {
 	}
 
 	private void runAction(Action action, String filename) {
-		try {
-			action.run(filename);
-		}
-		catch (Exception e) {
-			e.printStackTrace();
-		}
+		ExecutorService executor = Executors.newSingleThreadExecutor();
+		executor.execute(() -> {
+			try {
+				action.run(filename);
+			}
+			catch (CancellationException e) {
+				// ignore it was just cancelled
+			}
+			catch (Exception e) {
+				e.printStackTrace();
+			}
+			finally {
+				executor.shutdown();
+			}
+		});
 	}
 
 	public interface Action {
