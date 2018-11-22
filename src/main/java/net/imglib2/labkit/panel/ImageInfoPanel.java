@@ -44,7 +44,7 @@ public class ImageInfoPanel {
 			.dimensionsAsLongArray(interval)));
 		panel.add(label, "grow, span, wrap");
 		if (labelingComponent != null) {
-			final JButton button = new JButton("fix contrast");
+			final JButton button = new JButton("auto contrast");
 			button.addActionListener(ignore -> labelingComponent.autoContrast());
 			panel.add(button, "grow, span");
 		}
