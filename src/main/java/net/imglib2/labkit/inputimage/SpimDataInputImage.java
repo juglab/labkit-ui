@@ -102,7 +102,7 @@ public class SpimDataInputImage implements InputImage {
 		if (timePoints.size() == 1) return imgLoader.getImage(timePoints.get(0)
 			.getId(), level);
 		List<RandomAccessibleInterval<T>> slices = timePoints.stream().map(
-			t -> imgLoader.getImage(t.getId(), 2)).collect(Collectors.toList());
+			t -> imgLoader.getImage(t.getId(), level)).collect(Collectors.toList());
 		return Views.stack(slices);
 	}
 
