@@ -11,6 +11,7 @@ import net.imglib2.view.Views;
 import org.junit.Test;
 import org.scijava.Context;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.Map;
 import java.util.Set;
@@ -35,11 +36,18 @@ public class LabelingSerializationTest {
 
 	@Test
 	public void testOpenAndSaveToTiff() throws IOException {
+		final String filename = tempFileWithExtension("tif");
 		Labeling labeling = exampleLabeling();
 		LabelingSerializer serializer = new LabelingSerializer(new Context());
-		serializer.save(labeling, "test.tif");
-		Labeling deserialized = serializer.open("test.tif");
+		serializer.save(labeling, filename);
+		Labeling deserialized = serializer.open(filename);
 		assertTrue(labelingsEqual(labeling, deserialized));
+	}
+
+	public String tempFileWithExtension(String extension) throws IOException {
+		File file = File.createTempFile("test-", "." + extension);
+		file.deleteOnExit();
+		return file.getAbsolutePath();
 	}
 
 	private boolean labelingsEqual(Labeling expected, Labeling actual) {
