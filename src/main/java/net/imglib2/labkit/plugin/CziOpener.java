@@ -4,6 +4,8 @@ package net.imglib2.labkit.plugin;
 import bdv.export.ProgressWriterConsole;
 import bdv.util.AbstractSource;
 import bdv.util.BdvOptions;
+import com.google.common.io.PatternFilenameFilter;
+import ij.io.OpenDialog;
 import io.scif.img.ImgIOException;
 import loci.formats.ClassList;
 import loci.formats.FormatException;
@@ -44,6 +46,9 @@ import ome.units.quantity.Length;
 import ome.xml.model.primitives.PositiveInteger;
 
 import javax.swing.*;
+import java.awt.*;
+import java.io.File;
+import java.io.FilenameFilter;
 import java.io.IOException;
 import java.util.List;
 import java.util.OptionalInt;
@@ -60,15 +65,6 @@ public class CziOpener {
 
 	public CziOpener(ProgressWriter progressWriter) {
 		this.progressWriter = progressWriter;
-	}
-
-	public static void main(String... args) throws IOException, FormatException,
-		IncompatibleTypeException, ImgIOException
-	{
-		CziOpener opener = new CziOpener(new ProgressWriterConsole());
-		DatasetInputImage out = opener.openWithDialog(
-			"/home/arzt/Documents/Datasets/Lung Images/labeled/2017_11_30__0033.czi");
-		out.showable().show("Image", BdvOptions.options().is2D());
 	}
 
 	public DatasetInputImage openWithDialog(String filename) {
