@@ -1,7 +1,9 @@
 
 package net.imglib2.labkit;
 
+import ij.ImagePlus;
 import net.imglib2.RandomAccessibleInterval;
+import net.imglib2.img.Img;
 import net.imglib2.img.array.ArrayImgs;
 import net.imglib2.img.display.imagej.ImageJFunctions;
 import net.imglib2.labkit.labeling.Labeling;
@@ -28,13 +30,12 @@ public class LabelingComponentDemo {
 	}
 
 	private static ImageLabelingModel initModel() {
-		RandomAccessibleInterval<? extends NumericType<?>> labelingIndexImage =
-			ArrayImgs.bytes(100, 100, 100);
-		Labeling labeling = Labeling.createEmpty(Arrays.asList("fg", "bg"),
-			labelingIndexImage);
+		final ImagePlus imp = new ImagePlus(
+			"https://imagej.nih.gov/ij/images/FluorescentCells.jpg");
+		Img<? extends NumericType<?>> image = ImageJFunctions.wrap(imp);
+		Labeling labeling = Labeling.createEmpty(Arrays.asList("fg", "bg"), image);
 		boolean isTimeSeries = false;
-		return new ImageLabelingModel(greenNoiseImage(100, 100, 100), labeling,
-			isTimeSeries);
+		return new ImageLabelingModel(image, labeling, isTimeSeries);
 	}
 
 	private static JComponent initLabelingComponent(JFrame frame,

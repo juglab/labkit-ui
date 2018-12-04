@@ -20,13 +20,17 @@ import net.imglib2.type.numeric.RealType;
 import net.imglib2.type.numeric.integer.UnsignedShortType;
 import net.imglib2.view.Views;
 
+import java.io.File;
+import java.io.IOException;
 import java.util.List;
 
 public class HDF5SaverDemo {
 
 	public static <T extends RealType<T>> void main(String... args)
-		throws SpimDataException
+		throws SpimDataException, IOException
 	{
+		String outputFilename = File.createTempFile("output-", ".xml")
+			.getAbsolutePath();
 		// TODO: cancellation doesn't work properly. The jvm stays alive after the
 		// cancel button is clicked.
 		RandomAccessibleInterval<T> image =
@@ -37,7 +41,7 @@ public class HDF5SaverDemo {
 		RandomAccessibleInterval<UnsignedShortType> result = treshold(image);
 		HDF5Saver saver = new HDF5Saver();
 		saver.setProgressWriter(new SwingProgressWriter(null, "Save Huge Image"));
-		saver.save("/home/arzt/tmp/segmentation/output.xml", result);
+		saver.save(outputFilename, result);
 	}
 
 	public static RandomAccessibleInterval<UnsignedShortType> treshold(

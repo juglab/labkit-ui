@@ -9,6 +9,7 @@ import net.imglib2.labkit.utils.progress.StatusServiceProgressWriter;
 import org.scijava.Context;
 import org.scijava.app.StatusService;
 import org.scijava.command.Command;
+import org.scijava.command.CommandService;
 import org.scijava.plugin.Parameter;
 import org.scijava.plugin.Plugin;
 
@@ -51,11 +52,9 @@ public class LabkitImportPlugin implements Command {
 	}
 
 	public static void main(String... args) {
-		final String mouse =
-			"/home/arzt/Documents/Datasets/Mouse Brain/hdf5/export.xml";
-		final String xwing = "/home/arzt/Documents/Datasets/XWing/xwing.xml";
-		final String lung =
-			"/home/arzt/Documents/Datasets/Lung Images/labeled/2017_11_30__0033.czi";
-		run(new Context(), new File(mouse));
+		// demo
+		final CommandService commandService = new Context().service(
+			CommandService.class);
+		commandService.run(LabkitImportPlugin.class, true);
 	}
 }
