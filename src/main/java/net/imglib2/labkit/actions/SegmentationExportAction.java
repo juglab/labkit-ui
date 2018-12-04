@@ -11,6 +11,7 @@ import net.imglib2.labkit.MenuBar;
 import net.imglib2.labkit.models.Holder;
 import net.imglib2.labkit.models.SegmentationItem;
 import net.imglib2.labkit.utils.LabkitUtils;
+import net.imglib2.labkit.utils.ProgressConsumer;
 import net.imglib2.labkit.utils.progress.SwingProgressWriter;
 import net.imglib2.type.NativeType;
 import net.imglib2.type.Type;
@@ -54,32 +55,44 @@ public class SegmentationExportAction extends AbstractFileIoAction {
 			" in ImageJ", 201, ignore -> getShowAction(selectedResult).run(), null,
 			"");
 		extensible.addMenuItem(SegmentationItem.SEGMENTER_MENU, "Save " + title +
-			" as TIF / HDF5 ...", 202, item -> openDialogAndThen("Save " + title +
+			" as TIF / HDF5 ...", 200, item -> openDialogAndThen("Save " + title +
 				" ...", JFileChooser.SAVE_DIALOG, getSaveAction(() -> predictionFactory
 					.apply(item))), null, null);
 		extensible.addMenuItem(SegmentationItem.SEGMENTER_MENU, "Show " + title +
-			" in ImageJ", 203, item -> getShowAction(() -> predictionFactory.apply(
+			" in ImageJ", 201, item -> getShowAction(() -> predictionFactory.apply(
 				item)).run(), null, null);
+		extensible.addMenuItem(MenuBar.SEGMENTER_MENU, "Calculate entire " + title,
+			300, ignore -> populate(selectedResult), null, "");
+		extensible.addMenuItem(SegmentationItem.SEGMENTER_MENU,
+			"Calculate entire " + title, 300, item -> populate(() -> predictionFactory
+				.apply(item)), null, "");
+	}
+
+	private <T extends NumericType<T> & NativeType<T>> void populate(
+		Supplier<RandomAccessibleInterval<T>> supplier)
+	{
+		startInNewThread(() -> {
+			final ProgressConsumer progress = new SwingProgressWriter(null,
+				"Segment Entire Image Volume");
+			LabkitUtils.populateCachedImg(supplier.get(), progress);
+		});
 	}
 
 	private <T extends NumericType<T> & NativeType<T>> Runnable getShowAction(
 		Supplier<RandomAccessibleInterval<T>> supplier)
 	{
-		return startInNewThread(() -> {
-			final RandomAccessibleInterval<T> img = LabkitUtils.populateCachedImg(
-				supplier.get(), extensible.progressConsumer());
-			ImageJFunctions.show(img);
-		});
+		return () -> {
+			populate(supplier);
+			startInNewThread(() -> ImageJFunctions.show(supplier.get()));
+		};
 	}
 
-	private Runnable startInNewThread(Runnable action) {
-		return () -> {
-			ExecutorService executer = Executors.newSingleThreadExecutor();
-			executer.submit(() -> {
-				action.run();
-				executer.shutdown();
-			});
-		};
+	private void startInNewThread(Runnable action) {
+		ExecutorService executer = Executors.newSingleThreadExecutor();
+		executer.submit(() -> {
+			action.run();
+			executer.shutdown();
+		});
 	}
 
 	private <T extends Type<T>> Action getSaveAction(

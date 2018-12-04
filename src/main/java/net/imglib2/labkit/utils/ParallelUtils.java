@@ -7,11 +7,14 @@ import net.imglib2.RandomAccessibleInterval;
 import net.imglib2.img.Img;
 import net.imglib2.img.cell.CellGrid;
 import net.imglib2.trainable_segmention.RevampUtils;
+import net.imglib2.type.BooleanType;
+import net.imglib2.type.logic.BoolType;
 import net.imglib2.util.Intervals;
 import net.imglib2.view.Views;
 
 import java.util.List;
 import java.util.concurrent.Callable;
+import java.util.concurrent.CancellationException;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Future;
@@ -64,9 +67,17 @@ public class ParallelUtils {
 	{
 		AtomicInteger i = new AtomicInteger(0);
 		int n = chunks.size();
+		BooleanType cancelled = new BoolType(false);
 		return chunks.stream().map(runnable -> (Callable<Void>) (() -> {
-			runnable.call();
-			progressConsumer.showProgress(i.incrementAndGet(), n);
+			if (cancelled.get()) throw new CancellationException();
+			try {
+				runnable.call();
+				progressConsumer.showProgress(i.incrementAndGet(), n);
+			}
+			catch (CancellationException e) {
+				cancelled.set(true);
+				throw e;
+			}
 			return null;
 		})).collect(Collectors.toList());
 	}
@@ -75,14 +86,9 @@ public class ParallelUtils {
 		List<Callable<Void>> collection)
 	{
 		RevampUtils.wrapException(() -> {
-			executor.invokeAll(collection).forEach(future -> {
-				try {
-					future.get();
-				}
-				catch (InterruptedException | ExecutionException e) {
-					e.printStackTrace();
-				}
-			});
+			for (Future<Void> future : executor.invokeAll(collection)) {
+				future.get();
+			}
 		});
 	}
 }

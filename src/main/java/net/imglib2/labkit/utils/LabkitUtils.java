@@ -26,6 +26,7 @@ import net.imglib2.view.Views;
 
 import java.util.List;
 import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.function.Consumer;
 import java.util.stream.IntStream;
@@ -137,8 +138,15 @@ public class LabkitUtils {
 		};
 		List<Callable<Void>> tasks = ParallelUtils.chunkOperation(img,
 			cellDimensions, accessPixel);
-		ParallelUtils.executeInParallel(Executors.newFixedThreadPool(10),
-			ParallelUtils.addProgress(tasks, progressConsumer));
+		final ExecutorService executor = Executors.newFixedThreadPool(Runtime
+			.getRuntime().availableProcessors());
+		try {
+			ParallelUtils.executeInParallel(executor, ParallelUtils.addProgress(tasks,
+				progressConsumer));
+		}
+		finally {
+			executor.shutdown();
+		}
 	}
 
 	public static CellGrid suggestGrid(Interval interval, boolean isTimeSeries) {
