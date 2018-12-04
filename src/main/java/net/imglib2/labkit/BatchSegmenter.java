@@ -1,6 +1,7 @@
 
 package net.imglib2.labkit;
 
+import bdv.export.ProgressWriterConsole;
 import ij.ImagePlus;
 import io.scif.img.ImgIOException;
 import io.scif.img.ImgSaver;
@@ -14,8 +15,7 @@ import net.imglib2.img.Img;
 import net.imglib2.img.array.ArrayImgs;
 import net.imglib2.img.display.imagej.ImageJFunctions;
 import net.imglib2.labkit.utils.ParallelUtils;
-import net.imglib2.labkit.utils.ProgressConsumer;
-import net.imglib2.trainable_segmention.gson.GsonUtils;
+import bdv.export.ProgressWriter;
 import net.imglib2.type.numeric.ARGBType;
 import net.imglib2.type.numeric.integer.UnsignedByteType;
 import net.imglib2.util.Intervals;
@@ -34,20 +34,18 @@ import java.util.function.Consumer;
 public class BatchSegmenter {
 
 	private final Segmenter segmenter;
-	private final ProgressConsumer progressConsumer;
+	private final ProgressWriter progressWriter;
 
-	public BatchSegmenter(Segmenter segmenter,
-		ProgressConsumer progressConsumer)
-	{
+	public BatchSegmenter(Segmenter segmenter, ProgressWriter progressWriter) {
 		this.segmenter = segmenter;
-		this.progressConsumer = progressConsumer;
+		this.progressWriter = progressWriter;
 	}
 
 	public void segment(File inputFile, File outputFile) throws Exception {
 		Img<ARGBType> img = ImageJFunctions.wrap(new ImagePlus(inputFile
 			.getAbsolutePath()));
 		Img<UnsignedByteType> segmentation = segment(img, segmenter, Intervals
-			.dimensionsAsIntArray(img), progressConsumer);
+			.dimensionsAsIntArray(img), progressWriter);
 		new ImgSaver().saveImg(outputFile.getAbsolutePath(), segmentation);
 	}
 
@@ -59,7 +57,7 @@ public class BatchSegmenter {
 		Segmenter segmenter = openClassifier(context);
 		final int[] cellDimensions = new int[] { 256, 256 };
 		Img<UnsignedByteType> segmentation = segment(rawImg, segmenter,
-			cellDimensions, ProgressConsumer.systemOut());
+			cellDimensions, new ProgressWriterConsole());
 		new ImgSaver().saveImg("/home/arzt/test.tif", segmentation);
 	}
 
@@ -79,8 +77,8 @@ public class BatchSegmenter {
 	}
 
 	public static Img<UnsignedByteType> segment(Img<ARGBType> rawImg,
-		Segmenter segmenter, int[] cellDimensions,
-		ProgressConsumer progressConsumer) throws InterruptedException
+		Segmenter segmenter, int[] cellDimensions, ProgressWriter progressWriter)
+		throws InterruptedException
 	{
 		Consumer<RandomAccessibleInterval<UnsignedByteType>> loader =
 			target -> segmenter.segment(rawImg, target);
@@ -89,7 +87,7 @@ public class BatchSegmenter {
 		List<Callable<Void>> chunks = ParallelUtils.chunkOperation(result,
 			cellDimensions, loader);
 		ParallelUtils.executeInParallel(Executors.newFixedThreadPool(10),
-			ParallelUtils.addProgress(chunks, progressConsumer));
+			ParallelUtils.addProgress(chunks, progressWriter));
 		return result;
 	}
 }

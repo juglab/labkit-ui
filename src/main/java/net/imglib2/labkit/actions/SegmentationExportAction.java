@@ -11,7 +11,7 @@ import net.imglib2.labkit.MenuBar;
 import net.imglib2.labkit.models.Holder;
 import net.imglib2.labkit.models.SegmentationItem;
 import net.imglib2.labkit.utils.LabkitUtils;
-import net.imglib2.labkit.utils.ProgressConsumer;
+import bdv.export.ProgressWriter;
 import net.imglib2.labkit.utils.progress.SwingProgressWriter;
 import net.imglib2.type.NativeType;
 import net.imglib2.type.Type;
@@ -72,7 +72,7 @@ public class SegmentationExportAction extends AbstractFileIoAction {
 		Supplier<RandomAccessibleInterval<T>> supplier)
 	{
 		startInNewThread(() -> {
-			final ProgressConsumer progress = new SwingProgressWriter(null,
+			final ProgressWriter progress = new SwingProgressWriter(null,
 				"Segment Entire Image Volume");
 			LabkitUtils.populateCachedImg(supplier.get(), progress);
 		});

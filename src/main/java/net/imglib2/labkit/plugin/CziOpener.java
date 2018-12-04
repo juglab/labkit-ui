@@ -1,6 +1,7 @@
 
 package net.imglib2.labkit.plugin;
 
+import bdv.export.ProgressWriterConsole;
 import bdv.util.AbstractSource;
 import bdv.util.BdvOptions;
 import io.scif.img.ImgIOException;
@@ -30,7 +31,7 @@ import net.imglib2.labkit.bdv.BdvShowable;
 import net.imglib2.labkit.inputimage.DatasetInputImage;
 import net.imglib2.labkit.plugin.ui.ImageSelectionDialog;
 import net.imglib2.labkit.utils.ParallelUtils;
-import net.imglib2.labkit.utils.ProgressConsumer;
+import bdv.export.ProgressWriter;
 import net.imglib2.trainable_segmention.RevampUtils;
 import net.imglib2.type.NativeType;
 import net.imglib2.type.numeric.ARGBType;
@@ -55,16 +56,16 @@ import java.util.stream.Stream;
 
 public class CziOpener {
 
-	private ProgressConsumer progressConsumer;
+	private ProgressWriter progressWriter;
 
-	public CziOpener(ProgressConsumer progressConsumer) {
-		this.progressConsumer = progressConsumer;
+	public CziOpener(ProgressWriter progressWriter) {
+		this.progressWriter = progressWriter;
 	}
 
 	public static void main(String... args) throws IOException, FormatException,
 		IncompatibleTypeException, ImgIOException
 	{
-		CziOpener opener = new CziOpener(ProgressConsumer.systemOut());
+		CziOpener opener = new CziOpener(new ProgressWriterConsole());
 		DatasetInputImage out = opener.openWithDialog(
 			"/home/arzt/Documents/Datasets/Lung Images/labeled/2017_11_30__0033.czi");
 		out.showable().show("Image", BdvOptions.options().is2D());
@@ -120,7 +121,7 @@ public class CziOpener {
 		List<Callable<Void>> chunks = ParallelUtils.chunkOperation(out,
 			cellDimensions, cell -> reader.readToInterval(series, cell));
 		ParallelUtils.executeInParallel(Executors.newFixedThreadPool(8),
-			ParallelUtils.addProgress(chunks, progressConsumer));
+			ParallelUtils.addProgress(chunks, progressWriter));
 		return imgPlus(filename, out, reader.getCalibratedAxes(fullres, series));
 	}
 

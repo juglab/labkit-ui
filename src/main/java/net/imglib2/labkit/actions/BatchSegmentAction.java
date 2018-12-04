@@ -2,12 +2,12 @@
 package net.imglib2.labkit.actions;
 
 import net.imglib2.labkit.BatchSegmenter;
-import net.imglib2.labkit.DefaultExtensible;
 import net.imglib2.labkit.Extensible;
 import net.imglib2.labkit.MenuBar;
 import net.imglib2.labkit.models.Holder;
 import net.imglib2.labkit.models.SegmentationItem;
 import net.imglib2.labkit.segmentation.Segmenter;
+import net.imglib2.labkit.utils.progress.StatusServiceProgressWriter;
 import net.imglib2.trainable_segmention.RevampUtils;
 import org.scijava.Cancelable;
 import org.scijava.Context;
@@ -93,7 +93,7 @@ public class BatchSegmentAction {
 		@Override
 		public void run() {
 			BatchSegmenter batchSegmenter = new BatchSegmenter(segmenter,
-				statusService::showProgress);
+				new StatusServiceProgressWriter(statusService));
 			for (File file : inputDirectory.listFiles())
 				if (file.isFile()) processFile(batchSegmenter, file);
 		}

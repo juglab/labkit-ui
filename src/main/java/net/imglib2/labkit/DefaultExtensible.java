@@ -3,12 +3,13 @@ package net.imglib2.labkit;
 
 import net.imglib2.labkit.menu.MenuFactory;
 import net.imglib2.labkit.menu.MenuKey;
-import net.imglib2.labkit.utils.ProgressConsumer;
 import org.scijava.Context;
-import org.scijava.app.StatusService;
 import org.scijava.ui.behaviour.util.AbstractNamedAction;
 
 import javax.swing.*;
+import java.io.IOException;
+import java.io.OutputStream;
+import java.io.PrintStream;
 import java.util.List;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
@@ -39,11 +40,6 @@ public class DefaultExtensible implements Extensible {
 	@Override
 	public JFrame dialogParent() {
 		return dialogBoxOwner;
-	}
-
-	@Override
-	public ProgressConsumer progressConsumer() {
-		return context.getService(StatusService.class)::showProgress;
 	}
 
 	public <T> JPopupMenu createPopupMenu(MenuKey<T> key, Supplier<T> item) {

@@ -4,7 +4,8 @@ package net.imglib2.labkit.plugin;
 import net.imglib2.labkit.MainFrame;
 import net.imglib2.labkit.inputimage.InputImage;
 import net.imglib2.labkit.inputimage.SpimDataInputImage;
-import net.imglib2.labkit.utils.ProgressConsumer;
+import bdv.export.ProgressWriter;
+import net.imglib2.labkit.utils.progress.StatusServiceProgressWriter;
 import org.scijava.Context;
 import org.scijava.app.StatusService;
 import org.scijava.command.Command;
@@ -32,17 +33,17 @@ public class LabkitImportPlugin implements Command {
 	}
 
 	private static void run(Context context, File file) {
-		ProgressConsumer progressConsumer = context.service(
-			StatusService.class)::showProgress;
-		InputImage image = openImage(progressConsumer, file);
+		ProgressWriter progressWriter = new StatusServiceProgressWriter(context
+			.service(StatusService.class));
+		InputImage image = openImage(progressWriter, file);
 		new MainFrame(context, image);
 	}
 
-	private static InputImage openImage(ProgressConsumer progressConsumer,
+	private static InputImage openImage(ProgressWriter progressWriter,
 		File file)
 	{
 		String filename = file.getAbsolutePath();
-		if (filename.endsWith(".czi")) return new CziOpener(progressConsumer)
+		if (filename.endsWith(".czi")) return new CziOpener(progressWriter)
 			.openWithDialog(file.getAbsolutePath());
 		if (filename.endsWith(".xml")) return new SpimDataInputImage(filename);
 		throw new UnsupportedOperationException(
@@ -55,6 +56,6 @@ public class LabkitImportPlugin implements Command {
 		final String xwing = "/home/arzt/Documents/Datasets/XWing/xwing.xml";
 		final String lung =
 			"/home/arzt/Documents/Datasets/Lung Images/labeled/2017_11_30__0033.czi";
-		run(new Context(), new File(lung));
+		run(new Context(), new File(mouse));
 	}
 }

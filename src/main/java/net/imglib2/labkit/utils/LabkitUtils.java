@@ -1,6 +1,7 @@
 
 package net.imglib2.labkit.utils;
 
+import bdv.export.ProgressWriter;
 import net.imglib2.Interval;
 import net.imglib2.RandomAccess;
 import net.imglib2.RandomAccessible;
@@ -118,15 +119,15 @@ public class LabkitUtils {
 	}
 
 	public static <T> RandomAccessibleInterval<T> populateCachedImg(
-		RandomAccessibleInterval<T> img, ProgressConsumer progressConsumer)
+		RandomAccessibleInterval<T> img, ProgressWriter progressWriter)
 	{
 		if (img instanceof CachedCellImg) internPopulateCachedImg(LabkitUtils
-			.uncheckedCast(img), progressConsumer);
+			.uncheckedCast(img), progressWriter);
 		return img;
 	}
 
 	private static <T extends NativeType<T>> void internPopulateCachedImg(
-		CachedCellImg<T, ?> img, ProgressConsumer progressConsumer)
+		CachedCellImg<T, ?> img, ProgressWriter progressWriter)
 	{
 		int[] cellDimensions = new int[img.getCellGrid().numDimensions()];
 		img.getCellGrid().cellDimensions(cellDimensions);
@@ -142,7 +143,7 @@ public class LabkitUtils {
 			.getRuntime().availableProcessors());
 		try {
 			ParallelUtils.executeInParallel(executor, ParallelUtils.addProgress(tasks,
-				progressConsumer));
+				progressWriter));
 		}
 		finally {
 			executor.shutdown();

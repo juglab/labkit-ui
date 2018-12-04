@@ -2,13 +2,12 @@
 package net.imglib2.labkit.utils.progress;
 
 import bdv.export.ProgressWriter;
-import net.imglib2.labkit.utils.ProgressConsumer;
 
 import javax.swing.*;
 import java.io.PrintStream;
 import java.util.concurrent.CancellationException;
 
-public class SwingProgressWriter implements ProgressWriter, ProgressConsumer {
+public class SwingProgressWriter implements ProgressWriter {
 
 	private final ProgressMonitor dialog;
 	private final PrintStream out = PrintStreamToLines.printStreamToLines(
@@ -42,7 +41,6 @@ public class SwingProgressWriter implements ProgressWriter, ProgressConsumer {
 		if (dialog.isCanceled()) throw new CancellationException();
 	}
 
-	@Override
 	public void showProgress(int stop, int total) {
 		setProgress((double) stop / (double) total);
 	}

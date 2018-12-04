@@ -2,7 +2,7 @@
 package net.imglib2.labkit;
 
 import net.imglib2.labkit.menu.MenuKey;
-import net.imglib2.labkit.utils.ProgressConsumer;
+import bdv.export.ProgressWriter;
 import org.scijava.Context;
 
 import javax.swing.*;
@@ -16,6 +16,4 @@ public interface Extensible {
 		Consumer<T> action, Icon icon, String keyStroke);
 
 	JFrame dialogParent();
-
-	ProgressConsumer progressConsumer();
 }

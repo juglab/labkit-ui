@@ -1,6 +1,7 @@
 
 package net.imglib2.labkit.utils;
 
+import bdv.export.ProgressWriter;
 import net.imglib2.FinalInterval;
 import net.imglib2.Interval;
 import net.imglib2.RandomAccessibleInterval;
@@ -15,7 +16,6 @@ import net.imglib2.view.Views;
 import java.util.List;
 import java.util.concurrent.Callable;
 import java.util.concurrent.CancellationException;
-import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Future;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -56,14 +56,8 @@ public class ParallelUtils {
 		return new FinalInterval(min, max);
 	}
 
-	public static List<Callable<Void>> addShowProgress(
-		List<Callable<Void>> chunks)
-	{
-		return addProgress(chunks, ProgressConsumer.systemOut());
-	}
-
 	public static List<Callable<Void>> addProgress(List<Callable<Void>> chunks,
-		ProgressConsumer progressConsumer)
+		ProgressWriter progressWriter)
 	{
 		AtomicInteger i = new AtomicInteger(0);
 		int n = chunks.size();
@@ -71,8 +65,9 @@ public class ParallelUtils {
 		return chunks.stream().map(runnable -> (Callable<Void>) (() -> {
 			if (cancelled.get()) throw new CancellationException();
 			try {
+				progressWriter.out().println("Chunk " + i + " of " + n);
 				runnable.call();
-				progressConsumer.showProgress(i.incrementAndGet(), n);
+				progressWriter.setProgress((double) i.incrementAndGet() / n);
 			}
 			catch (CancellationException e) {
 				cancelled.set(true);
