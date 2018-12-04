@@ -45,7 +45,7 @@ public class LabelBrushController {
 	private MoveBrush moveBrushBehaviour = new MoveBrush();
 	private final PaintBehavior paintBehavior = new PaintBehavior(true);
 	private final PaintBehavior eraseBehavior = new PaintBehavior(false);
-	private double brushRadius = 5;
+	private double brushRadius = 1;
 
 	boolean sliceTime;
 
