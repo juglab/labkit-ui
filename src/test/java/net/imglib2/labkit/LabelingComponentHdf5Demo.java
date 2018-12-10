@@ -13,12 +13,15 @@ import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.util.Arrays;
 
+/**
+ * This example because it uses a multiview big data viewer dataset. But I
+ * consider Labkit to work only on a dataset with one view.
+ */
 public class LabelingComponentHdf5Demo {
 
 	public static void main(String... args) throws SpimDataException {
 		JFrame frame = initFrame();
-		final String fn =
-			"/home/arzt/Documents/Datasets/Mouse Brain/hdf5/export.xml";
+		final String fn = "http://fly.mpi-cbg.de/~pietzsch/bdv-examples/remote.xml";
 		final SpimDataMinimal spimData = new XmlIoSpimDataMinimal().load(fn);
 		frame.add(initLabelingComponent(frame, spimData));
 		frame.setVisible(true);

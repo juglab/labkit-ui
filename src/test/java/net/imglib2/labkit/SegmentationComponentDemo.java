@@ -29,7 +29,7 @@ public class SegmentationComponentDemo {
 	private SegmentationComponentDemo() {
 		JFrame frame = setupFrame();
 		Img<? extends NumericType<?>> image = ImageJFunctions.wrap(new ImagePlus(
-			"/home/arzt/Documents/Datasets/beans.tif"));
+			"https://imagej.nih.gov/ij/images/FluorescentCells.jpg"));
 		Context context = new Context();
 		segmentationModel = new DefaultSegmentationModel(new DefaultInputImage(
 			image), context);
