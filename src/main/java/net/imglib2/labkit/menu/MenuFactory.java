@@ -1,7 +1,7 @@
 
 package net.imglib2.labkit.menu;
 
-import net.imglib2.trainable_segmention.RevampUtils;
+import net.imglib2.labkit.utils.Casts;
 import org.scijava.ui.behaviour.util.AbstractNamedAction;
 import org.scijava.ui.behaviour.util.RunnableAction;
 
@@ -72,8 +72,7 @@ public class MenuFactory {
 	}
 
 	private <T> List<Entry<T>> getMenu(MenuKey<T> key) {
-		return RevampUtils.uncheckedCast(menus.computeIfAbsent(key,
-			k -> new ArrayList<>()));
+		return Casts.unchecked(menus.computeIfAbsent(key, k -> new ArrayList<>()));
 	}
 
 	private static final AtomicInteger id = new AtomicInteger();

@@ -11,8 +11,6 @@ import net.imglib2.RandomAccessibleInterval;
 import net.imglib2.img.Img;
 import net.imglib2.img.array.ArrayImgs;
 import net.imglib2.labkit.bdv.BdvShowable;
-import net.imglib2.trainable_segmention.pixel_feature.settings.ChannelSetting;
-import net.imglib2.type.numeric.ARGBType;
 import net.imglib2.type.numeric.RealType;
 import net.imglib2.type.numeric.integer.UnsignedByteType;
 import net.imglib2.util.Intervals;
@@ -71,38 +69,6 @@ public class DatasetInputImageTest {
 			.unsignedBytes(2, 2, 3), "", new AxisType[] { Axes.X, Axes.Y,
 				Axes.CHANNEL }));
 		assertFalse(color.isMultiChannel());
-	}
-
-	@Test
-	public void testChannelSettingSingle() {
-		InputImage single = new DatasetInputImage(new ImgPlus<>(ArrayImgs
-			.unsignedBytes(2, 2)));
-		assertEquals(ChannelSetting.SINGLE, single.getChannelSetting());
-	}
-
-	@Test
-	public void testChannelSettingColor() {
-		InputImage color = new DatasetInputImage(new ImgPlus<>(ArrayImgs.argbs(2,
-			2)));
-		assertEquals(ChannelSetting.RGB, color.getChannelSetting());
-	}
-
-	@Test
-	public void testChannelSettingColor2() {
-		InputImage color2 = new DatasetInputImage(new ImgPlus<>(ArrayImgs
-			.unsignedBytes(2, 2, 3), "", new AxisType[] { Axes.X, Axes.Y,
-				Axes.CHANNEL }));
-		assertEquals(ARGBType.class, color2.imageForSegmentation().randomAccess()
-			.get().getClass());
-		assertEquals(ChannelSetting.RGB, color2.getChannelSetting());
-	}
-
-	@Test
-	public void testChannelSettingMultiple() {
-		InputImage multi = new DatasetInputImage(new ImgPlus<>(ArrayImgs
-			.unsignedBytes(2, 2, 4), "", new AxisType[] { Axes.X, Axes.Y,
-				Axes.CHANNEL }));
-		assertEquals(ChannelSetting.multiple(4), multi.getChannelSetting());
 	}
 
 	private static DatasetInputImage inputImage5d() {

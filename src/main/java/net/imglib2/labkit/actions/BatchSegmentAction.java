@@ -8,24 +8,14 @@ import net.imglib2.labkit.models.Holder;
 import net.imglib2.labkit.models.SegmentationItem;
 import net.imglib2.labkit.segmentation.Segmenter;
 import net.imglib2.labkit.utils.progress.StatusServiceProgressWriter;
-import net.imglib2.trainable_segmention.RevampUtils;
 import org.scijava.Cancelable;
-import org.scijava.Context;
 import org.scijava.app.StatusService;
 import org.scijava.command.Command;
-import org.scijava.command.CommandInfo;
-import org.scijava.module.Module;
-import org.scijava.module.ModuleException;
-import org.scijava.module.process.PreprocessorPlugin;
+import org.scijava.command.CommandService;
 import org.scijava.plugin.Parameter;
-import org.scijava.plugin.PluginService;
-import org.scijava.ui.swing.widget.SwingInputHarvester;
 import org.scijava.widget.FileWidget;
-import org.scijava.widget.InputHarvester;
 
-import javax.swing.*;
 import java.io.File;
-import java.util.List;
 
 /**
  * @author Matthias Arzt
@@ -45,32 +35,9 @@ public class BatchSegmentAction {
 	}
 
 	private void segmentImages() {
-		BatchSegment commandInstance = new BatchSegment();
-		commandInstance.setSegmenter(selectedSegmenter.get().segmenter());
-		boolean success = harvest(commandInstance, "Batch Segment Images");
-		if (success) commandInstance.run();
-	}
-
-	private static boolean harvest(Command commandInstance, String title) {
-		CommandInfo ci = new CommandInfo(commandInstance.getClass());
-		Module module = ci.createModule(commandInstance);
-		ci.setLabel(title);
-		try {
-			getHarvester(new Context()).harvest(module);
-		}
-		catch (ModuleException e) {
-			return false;
-		}
-		return true;
-	}
-
-	private static InputHarvester<JPanel, JPanel> getHarvester(Context context) {
-		List<InputHarvester> harvester1 = RevampUtils.filterForClass(
-			InputHarvester.class, context.service(PluginService.class)
-				.createInstancesOfType(PreprocessorPlugin.class));
-		List<SwingInputHarvester> swing = RevampUtils.filterForClass(
-			SwingInputHarvester.class, harvester1);
-		return swing.isEmpty() ? harvester1.get(0) : swing.get(0);
+		CommandService command = extensible.context().service(CommandService.class);
+		command.run(BatchSegment.class, true, "segmenter", selectedSegmenter.get()
+			.segmenter());
 	}
 
 	public static class BatchSegment implements Command, Cancelable {
@@ -84,6 +51,7 @@ public class BatchSegmentAction {
 		@Parameter
 		private StatusService statusService;
 
+		@Parameter
 		private Segmenter segmenter;
 
 		public void setSegmenter(Segmenter segmenter) {

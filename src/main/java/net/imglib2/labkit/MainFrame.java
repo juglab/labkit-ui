@@ -8,7 +8,7 @@ import net.imglib2.labkit.inputimage.DatasetInputImage;
 import net.imglib2.labkit.inputimage.InputImage;
 import net.imglib2.labkit.labeling.Labeling;
 import net.imglib2.labkit.models.DefaultSegmentationModel;
-import net.imglib2.trainable_segmention.RevampUtils;
+import net.imglib2.labkit.utils.CheckedExceptionUtils;
 import org.scijava.Context;
 
 import javax.swing.*;
@@ -27,7 +27,7 @@ public class MainFrame {
 
 	public static MainFrame open(Context context, String filename) {
 		final Context context2 = (context == null) ? new Context() : context;
-		Dataset dataset = RevampUtils.wrapException(() -> context2.service(
+		Dataset dataset = CheckedExceptionUtils.run(() -> context2.service(
 			DatasetIOService.class).open(filename));
 		return new MainFrame(context2, new DatasetInputImage(dataset));
 	}

@@ -8,7 +8,6 @@ import net.imglib2.RandomAccessible;
 import net.imglib2.RandomAccessibleInterval;
 import net.imglib2.cache.img.CachedCellImg;
 import net.imglib2.img.cell.CellGrid;
-import net.imglib2.trainable_segmention.RevampUtils;
 import net.imglib2.converter.Converters;
 import net.imglib2.img.Img;
 import net.imglib2.img.array.ArrayImgs;
@@ -90,9 +89,9 @@ public class LabkitUtils {
 			255.);
 		if (firstElement instanceof ARGBType) return new ValuePair<>(0., 255.);
 		if (firstElement instanceof UnsignedShortType) return tryEstimateMinMax(
-			RevampUtils.uncheckedCast(rawData), 0., 256. * 256. - 1);
-		if (firstElement instanceof RealType) return tryEstimateMinMax(RevampUtils
-			.uncheckedCast(rawData), 0., 1.);
+			Casts.unchecked(rawData), 0., 256. * 256. - 1);
+		if (firstElement instanceof RealType) return tryEstimateMinMax(Casts
+			.unchecked(rawData), 0., 1.);
 		return new ValuePair<>(0., 255.);
 	}
 
@@ -158,7 +157,7 @@ public class LabkitUtils {
 	}
 
 	private static int[] initCellDimension(int n, boolean isTimeSeries) {
-		return isTimeSeries ? RevampUtils.extend(initCellDimension(n - 1), 1)
+		return isTimeSeries ? DimensionUtils.extend(initCellDimension(n - 1), 1)
 			: initCellDimension(n);
 	}
 

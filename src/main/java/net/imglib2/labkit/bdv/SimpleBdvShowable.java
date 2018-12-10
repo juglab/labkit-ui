@@ -7,9 +7,9 @@ import bdv.util.BdvSource;
 import net.imglib2.FinalInterval;
 import net.imglib2.Interval;
 import net.imglib2.RandomAccessibleInterval;
+import net.imglib2.labkit.utils.Casts;
 import net.imglib2.labkit.utils.LabkitUtils;
 import net.imglib2.realtransform.AffineTransform3D;
-import net.imglib2.trainable_segmention.RevampUtils;
 import net.imglib2.type.numeric.NumericType;
 import net.imglib2.util.Pair;
 
@@ -38,8 +38,8 @@ class SimpleBdvShowable implements BdvShowable {
 	@Override
 	public BdvSource show(String title, BdvOptions options) {
 		Pair<Double, Double> minMax = LabkitUtils.estimateMinMax(image);
-		BdvSource source = BdvFunctions.show(RevampUtils.uncheckedCast(image),
-			title, options.sourceTransform(transformation));
+		BdvSource source = BdvFunctions.show(Casts.unchecked(image), title, options
+			.sourceTransform(transformation));
 		source.setDisplayRange(minMax.getA(), minMax.getB());
 		return source;
 	}

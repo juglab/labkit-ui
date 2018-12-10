@@ -15,9 +15,8 @@ import net.imagej.axis.DefaultLinearAxis;
 import net.imglib2.Dimensions;
 import net.imglib2.RandomAccessibleInterval;
 import net.imglib2.labkit.bdv.BdvShowable;
+import net.imglib2.labkit.utils.CheckedExceptionUtils;
 import net.imglib2.labkit.utils.LabkitUtils;
-import net.imglib2.trainable_segmention.RevampUtils;
-import net.imglib2.trainable_segmention.pixel_feature.settings.ChannelSetting;
 import net.imglib2.type.numeric.NumericType;
 import net.imglib2.util.Intervals;
 import net.imglib2.view.Views;
@@ -45,7 +44,7 @@ public class SpimDataInputImage implements InputImage {
 	private AbstractSequenceDescription<?, ?, ?> sequence;
 
 	public SpimDataInputImage(String filename) {
-		this.spimData = RevampUtils.wrapException(() -> new XmlIoSpimDataMinimal()
+		this.spimData = CheckedExceptionUtils.run(() -> new XmlIoSpimDataMinimal()
 			.load(filename));
 		this.sequence = spimData.getSequenceDescription();
 		this.filename = filename;
@@ -104,11 +103,6 @@ public class SpimDataInputImage implements InputImage {
 		List<RandomAccessibleInterval<T>> slices = timePoints.stream().map(
 			t -> imgLoader.getImage(t.getId(), level)).collect(Collectors.toList());
 		return Views.stack(slices);
-	}
-
-	@Override
-	public ChannelSetting getChannelSetting() {
-		return ChannelSetting.SINGLE;
 	}
 
 	@Override

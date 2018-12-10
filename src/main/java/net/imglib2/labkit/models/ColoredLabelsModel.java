@@ -8,7 +8,7 @@ import net.imglib2.labkit.labeling.Label;
 import net.imglib2.labkit.labeling.Labeling;
 import net.imglib2.labkit.utils.Notifier;
 import net.imglib2.roi.IterableRegion;
-import net.imglib2.trainable_segmention.RevampUtils;
+import net.imglib2.labkit.utils.DimensionUtils;
 import net.imglib2.type.logic.BitType;
 import net.imglib2.type.numeric.ARGBType;
 
@@ -96,7 +96,7 @@ public class ColoredLabelsModel {
 	public void localizeLabel(final Label label) {
 		Interval labelBox = getBoundingBox(model.labeling().get().iterableRegions()
 			.get(label));
-		if (model.isTimeSeries()) labelBox = RevampUtils.removeLastDimension(
+		if (model.isTimeSeries()) labelBox = DimensionUtils.removeLastDimension(
 			labelBox);
 		if (labelBox != null) model.transformationModel().transformToShowInterval(
 			labelBox, model.labelTransformation());
