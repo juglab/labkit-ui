@@ -12,7 +12,7 @@ import net.imglib2.img.cell.CellGrid;
 import net.imglib2.labkit.segmentation.Segmenter;
 import net.imglib2.labkit.utils.Notifier;
 import net.imglib2.realtransform.AffineTransform3D;
-import net.imglib2.trainable_segmention.RevampUtils;
+import net.imglib2.labkit.utils.DimensionUtils;
 import net.imglib2.type.NativeType;
 import net.imglib2.type.numeric.ARGBType;
 import net.imglib2.type.numeric.integer.ShortType;
@@ -80,8 +80,9 @@ public class SegmentationResultsModel {
 	private void updatePrediction(Segmenter segmenter) {
 		int count = segmenter.classNames().size();
 		CellGrid grid = model.grid();
-		CellGrid extended = new CellGrid(RevampUtils.extend(grid.getImgDimensions(),
-			count), RevampUtils.extend(getCellDimensions(grid), count));
+		CellGrid extended = new CellGrid(DimensionUtils.extend(grid
+			.getImgDimensions(), count), DimensionUtils.extend(getCellDimensions(
+				grid), count));
 		prediction = setupCachedImage(target -> segmenter.predict(model.image(),
 			target), extended, new FloatType());
 	}

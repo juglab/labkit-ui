@@ -1,12 +1,7 @@
 
 package net.imglib2.labkit.plugin;
 
-import bdv.export.ProgressWriterConsole;
 import bdv.util.AbstractSource;
-import bdv.util.BdvOptions;
-import com.google.common.io.PatternFilenameFilter;
-import ij.io.OpenDialog;
-import io.scif.img.ImgIOException;
 import loci.formats.ClassList;
 import loci.formats.FormatException;
 import loci.formats.IFormatReader;
@@ -25,16 +20,15 @@ import net.imglib2.RandomAccessibleInterval;
 import net.imglib2.cache.img.CellLoader;
 import net.imglib2.cache.img.DiskCachedCellImgFactory;
 import net.imglib2.cache.img.DiskCachedCellImgOptions;
-import net.imglib2.exception.IncompatibleTypeException;
 import net.imglib2.img.Img;
 import net.imglib2.img.cell.CellGrid;
 import net.imglib2.img.cell.CellImgFactory;
 import net.imglib2.labkit.bdv.BdvShowable;
 import net.imglib2.labkit.inputimage.DatasetInputImage;
 import net.imglib2.labkit.plugin.ui.ImageSelectionDialog;
+import net.imglib2.labkit.utils.CheckedExceptionUtils;
 import net.imglib2.labkit.utils.ParallelUtils;
 import bdv.export.ProgressWriter;
-import net.imglib2.trainable_segmention.RevampUtils;
 import net.imglib2.type.NativeType;
 import net.imglib2.type.numeric.ARGBType;
 import net.imglib2.type.numeric.NumericType;
@@ -46,9 +40,6 @@ import ome.units.quantity.Length;
 import ome.xml.model.primitives.PositiveInteger;
 
 import javax.swing.*;
-import java.awt.*;
-import java.io.File;
-import java.io.FilenameFilter;
 import java.io.IOException;
 import java.util.List;
 import java.util.OptionalInt;
@@ -254,7 +245,7 @@ public class CziOpener {
 			int[] min = Intervals.minAsIntArray(interval);
 			int[] size = Intervals.dimensionsAsIntArray(interval);
 			ImageReader reader = getReader(series);
-			byte[] bytes = RevampUtils.wrapException(() -> reader.openBytes(0, min[0],
+			byte[] bytes = CheckedExceptionUtils.run(() -> reader.openBytes(0, min[0],
 				min[1], size[0], size[1]));
 			Cursor<ARGBType> cursor = Views.flatIterable(interval).cursor();
 			int index = 0;

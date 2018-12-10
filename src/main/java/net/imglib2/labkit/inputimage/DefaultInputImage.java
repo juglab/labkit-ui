@@ -4,8 +4,6 @@ package net.imglib2.labkit.inputimage;
 import net.imagej.axis.CalibratedAxis;
 import net.imagej.axis.DefaultLinearAxis;
 import net.imglib2.RandomAccessibleInterval;
-import net.imglib2.trainable_segmention.pixel_feature.settings.ChannelSetting;
-import net.imglib2.type.numeric.ARGBType;
 import net.imglib2.type.numeric.NumericType;
 import net.imglib2.util.Util;
 
@@ -35,12 +33,6 @@ public class DefaultInputImage extends AbstractInputImage {
 		imageForSegmentation()
 	{
 		return image;
-	}
-
-	@Override
-	public ChannelSetting getChannelSetting() {
-		return type instanceof ARGBType ? ChannelSetting.RGB
-			: ChannelSetting.SINGLE;
 	}
 
 	@Override

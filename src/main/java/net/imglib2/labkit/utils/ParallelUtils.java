@@ -7,7 +7,6 @@ import net.imglib2.Interval;
 import net.imglib2.RandomAccessibleInterval;
 import net.imglib2.img.Img;
 import net.imglib2.img.cell.CellGrid;
-import net.imglib2.trainable_segmention.RevampUtils;
 import net.imglib2.type.BooleanType;
 import net.imglib2.type.logic.BoolType;
 import net.imglib2.util.Intervals;
@@ -80,7 +79,7 @@ public class ParallelUtils {
 	public static void executeInParallel(ExecutorService executor,
 		List<Callable<Void>> collection)
 	{
-		RevampUtils.wrapException(() -> {
+		CheckedExceptionUtils.run(() -> {
 			for (Future<Void> future : executor.invokeAll(collection)) {
 				future.get();
 			}

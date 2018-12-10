@@ -11,7 +11,7 @@ import net.imglib2.labkit.segmentation.weka.TimeSeriesSegmenter;
 import net.imglib2.labkit.segmentation.weka.TrainableSegmentationSegmenter;
 import net.imglib2.labkit.utils.LabkitUtils;
 import net.imglib2.realtransform.AffineTransform3D;
-import net.imglib2.trainable_segmention.RevampUtils;
+import net.imglib2.labkit.utils.DimensionUtils;
 import net.imglib2.type.NativeType;
 import net.imglib2.type.numeric.IntegerType;
 import net.imglib2.type.numeric.real.FloatType;
@@ -160,8 +160,8 @@ public class DefaultSegmentationModel implements SegmentationModel,
 		return trainedSegmenters.map(segmenter -> {
 			int numberOfClasses = segmenter.classNames().size();
 			RandomAccessibleInterval<FloatType> prediction = new CellImgFactory<>(
-				new FloatType()).create(RevampUtils.appendDimensionToInterval(image, 0,
-					numberOfClasses - 1));
+				new FloatType()).create(DimensionUtils.appendDimensionToInterval(image,
+					0, numberOfClasses - 1));
 			segmenter.predict(image, prediction);
 			return prediction;
 		}).collect(Collectors.toList());

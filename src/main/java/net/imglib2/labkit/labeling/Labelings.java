@@ -7,7 +7,7 @@ import net.imglib2.RandomAccess;
 import net.imglib2.RandomAccessibleInterval;
 import net.imglib2.roi.labeling.ImgLabeling;
 import net.imglib2.roi.labeling.LabelingMapping;
-import net.imglib2.trainable_segmention.RevampUtils;
+import net.imglib2.labkit.utils.DimensionUtils;
 import net.imglib2.view.Views;
 
 import java.util.ArrayList;
@@ -23,7 +23,7 @@ public class Labelings {
 
 	public static List<Labeling> slices(Labeling labeling) {
 		int sliceDimension = labeling.numDimensions() - 1;
-		Interval sliceInterval = RevampUtils.removeLastDimension(labeling);
+		Interval sliceInterval = DimensionUtils.removeLastDimension(labeling);
 		List<Label> labels = labeling.getLabels();
 		List<Labeling> slices = IntStream.range(0, Math.toIntExact(labeling
 			.dimension(sliceDimension))).mapToObj(ignore -> Labeling

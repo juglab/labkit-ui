@@ -10,8 +10,7 @@ import net.imglib2.Interval;
 import net.imglib2.RandomAccessibleInterval;
 import net.imglib2.img.display.imagej.ImgPlusViews;
 import net.imglib2.labkit.bdv.BdvShowable;
-import net.imglib2.trainable_segmention.RevampUtils;
-import net.imglib2.trainable_segmention.pixel_feature.settings.ChannelSetting;
+import net.imglib2.labkit.utils.DimensionUtils;
 import net.imglib2.type.numeric.ARGBType;
 import net.imglib2.type.numeric.NumericType;
 import net.imglib2.type.numeric.RealType;
@@ -82,7 +81,7 @@ public class DatasetInputImage extends AbstractInputImage {
 	@Override
 	public Interval interval() {
 		int colorAxis = image.numDimensions() - 1 - (isTimeSeries() ? 1 : 0);
-		return isMultiChannel ? RevampUtils.intervalRemoveDimension(image,
+		return isMultiChannel ? DimensionUtils.intervalRemoveDimension(image,
 			colorAxis) : image;
 	}
 
@@ -107,14 +106,6 @@ public class DatasetInputImage extends AbstractInputImage {
 		imageForSegmentation()
 	{
 		return image;
-	}
-
-	@Override
-	public ChannelSetting getChannelSetting() {
-		if (isMultiChannel()) return ChannelSetting.multiple((int) image.dimension(
-			image.numDimensions() - 1));
-		return image.randomAccess().get() instanceof ARGBType ? ChannelSetting.RGB
-			: ChannelSetting.SINGLE;
 	}
 
 	@Override

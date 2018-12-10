@@ -6,7 +6,7 @@ import net.imglib2.labkit.utils.Notifier;
 import net.imglib2.labkit.segmentation.Segmenter;
 import net.imglib2.labkit.labeling.Labeling;
 import net.imglib2.labkit.labeling.Labelings;
-import net.imglib2.trainable_segmention.RevampUtils;
+import net.imglib2.labkit.utils.DimensionUtils;
 import net.imglib2.type.numeric.IntegerType;
 import net.imglib2.type.numeric.RealType;
 import net.imglib2.util.Pair;
@@ -16,7 +16,6 @@ import net.imglib2.view.Views;
 import javax.swing.*;
 import java.util.List;
 import java.util.function.BiConsumer;
-import java.util.function.Consumer;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
@@ -83,7 +82,7 @@ public class TimeSeriesSegmenter implements Segmenter {
 		Stream<? extends Pair<? extends RandomAccessibleInterval<?>, ? extends Labeling>>
 		slice(Pair<? extends RandomAccessibleInterval<?>, ? extends Labeling> pair)
 	{
-		List<? extends RandomAccessibleInterval<?>> imageSlices = RevampUtils
+		List<? extends RandomAccessibleInterval<?>> imageSlices = DimensionUtils
 			.slices(pair.getA());
 		List<? extends Labeling> labelSlices = Labelings.slices(pair.getB());
 		return IntStream.range(0, imageSlices.size()).mapToObj(i -> new ValuePair<>(

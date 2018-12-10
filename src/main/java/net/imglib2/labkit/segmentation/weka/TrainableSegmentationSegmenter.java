@@ -17,17 +17,20 @@ import net.imglib2.labkit.labeling.Label;
 import net.imglib2.labkit.segmentation.Segmenter;
 import net.imglib2.labkit.inputimage.InputImage;
 import net.imglib2.labkit.labeling.Labeling;
+import net.imglib2.labkit.utils.CheckedExceptionUtils;
 import net.imglib2.labkit.utils.LabkitUtils;
 import net.imglib2.labkit.utils.Notifier;
 import net.imglib2.sparse.SparseRandomAccessIntType;
-import net.imglib2.trainable_segmention.RevampUtils;
+import net.imglib2.labkit.utils.DimensionUtils;
 import net.imglib2.trainable_segmention.classification.Training;
 import net.imglib2.trainable_segmention.gson.GsonUtils;
 import net.imglib2.trainable_segmention.pixel_feature.calculator.FeatureCalculator;
 import net.imglib2.trainable_segmention.pixel_feature.filter.GroupedFeatures;
 import net.imglib2.trainable_segmention.pixel_feature.filter.SingleFeatures;
+import net.imglib2.trainable_segmention.pixel_feature.settings.ChannelSetting;
 import net.imglib2.trainable_segmention.pixel_feature.settings.FeatureSettings;
 import net.imglib2.trainable_segmention.pixel_feature.settings.GlobalSettings;
+import net.imglib2.type.numeric.ARGBType;
 import net.imglib2.type.numeric.IntegerType;
 import net.imglib2.type.numeric.RealType;
 import net.imglib2.type.numeric.integer.IntType;
@@ -83,11 +86,20 @@ public class TrainableSegmentationSegmenter implements Segmenter {
 		}
 	}
 
+	public static ChannelSetting getChannelSetting(InputImage inputImage) {
+		RandomAccessibleInterval<?> image = inputImage.imageForSegmentation();
+		if (inputImage.isMultiChannel()) return ChannelSetting.multiple((int) image
+			.dimension(image.numDimensions() - 1));
+		return image.randomAccess().get() instanceof ARGBType ? ChannelSetting.RGB
+			: ChannelSetting.SINGLE;
+	}
+
 	public TrainableSegmentationSegmenter(Context context,
 		InputImage inputImage)
 	{
-		GlobalSettings globalSettings = new GlobalSettings(inputImage
-			.getChannelSetting(), inputImage.getSpatialDimensions(), 1.0, 8.0, 1.0);
+		final ChannelSetting channelSetting = getChannelSetting(inputImage);
+		GlobalSettings globalSettings = new GlobalSettings(channelSetting,
+			inputImage.getSpatialDimensions(), 1.0, 8.0, 1.0);
 		this.context = context;
 		this.initialWekaClassifier = new FastRandomForest();
 		this.featureSettings = new FeatureSettings(globalSettings, SingleFeatures
@@ -125,7 +137,7 @@ public class TrainableSegmentationSegmenter implements Segmenter {
 		try {
 			List<String> classes = collectLabels(data.stream().map(Pair::getB)
 				.collect(Collectors.toList()));
-			weka.classifiers.Classifier wekaClassifier = RevampUtils.wrapException(
+			weka.classifiers.Classifier wekaClassifier = CheckedExceptionUtils.run(
 				() -> AbstractClassifier.makeCopy(this.initialWekaClassifier));
 			OpEnvironment ops = context.service(OpService.class);
 			net.imglib2.trainable_segmention.classification.Segmenter segmenter =
@@ -187,7 +199,7 @@ public class TrainableSegmentationSegmenter implements Segmenter {
 		final DiskCachedCellImgFactory<FloatType> featureFactory =
 			new DiskCachedCellImgFactory<>(new FloatType(), featureOpts);
 		CellLoader<FloatType> loader = target -> feature.apply(extendedOriginal,
-			RevampUtils.slices(target));
+			DimensionUtils.slices(target));
 		return featureFactory.create(dimensions, loader);
 	}
 
