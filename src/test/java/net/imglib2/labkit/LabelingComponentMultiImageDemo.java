@@ -1,7 +1,6 @@
 
 package net.imglib2.labkit;
 
-import bdv.util.BdvStackSource;
 import ij.ImagePlus;
 import net.imglib2.RandomAccessibleInterval;
 import net.imglib2.img.array.ArrayImgs;
@@ -14,7 +13,6 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -22,8 +20,9 @@ import java.util.List;
 public class LabelingComponentMultiImageDemo {
 
 	JFrame frame = initFrame();
-	LabelingComponent bdvHandle = initBdvHandlePanel();
-	List<BdvStackSource<?>> sources = new ArrayList<>();
+	private final ImageLabelingModel imageLabelingModel = new ImageLabelingModel(
+		false);
+	private final LabelingComponent bdvHandle = initBdvHandlePanel();
 
 	private List<String> list = Arrays.asList(
 		"https://imagej.nih.gov/ij/images/boats.gif",
@@ -42,11 +41,8 @@ public class LabelingComponentMultiImageDemo {
 	}
 
 	private LabelingComponent initBdvHandlePanel() {
-		RandomAccessibleInterval<? extends NumericType<?>> image = ArrayImgs
-			.unsignedBytes(100, 100);
-		Labeling labeling = Labeling.createEmpty(Collections.emptyList(), image);
-		ImageLabelingModel imageLabelingModel = new ImageLabelingModel(image,
-			labeling, false);
+		imageLabelingModel.setImage(ArrayImgs.unsignedBytes(100, 100));
+		imageLabelingModel.createEmptyLabeling();
 		final LabelingComponent panel = new LabelingComponent(null,
 			imageLabelingModel);
 		frame.add(panel.getComponent());
@@ -73,13 +69,9 @@ public class LabelingComponentMultiImageDemo {
 	}
 
 	private void selectImage(Entry entry) {
-		removeOldSources();
-		System.out.println(entry);
-	}
-
-	private void removeOldSources() {
-		sources.forEach(BdvStackSource::removeFromBdv);
-		sources.clear();
+		imageLabelingModel.setImage(entry.image());
+		imageLabelingModel.createEmptyLabeling();
+		imageLabelingModel.resetTransformation();
 	}
 
 	private static class Entry {

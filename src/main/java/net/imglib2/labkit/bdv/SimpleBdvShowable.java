@@ -10,15 +10,14 @@ import net.imglib2.RandomAccessibleInterval;
 import net.imglib2.labkit.utils.Casts;
 import net.imglib2.labkit.utils.LabkitUtils;
 import net.imglib2.realtransform.AffineTransform3D;
-import net.imglib2.type.numeric.NumericType;
 import net.imglib2.util.Pair;
 
 class SimpleBdvShowable implements BdvShowable {
 
-	private final RandomAccessibleInterval<? extends NumericType<?>> image;
+	private final RandomAccessibleInterval<?> image;
 	private final AffineTransform3D transformation;
 
-	SimpleBdvShowable(RandomAccessibleInterval<? extends NumericType<?>> image,
+	SimpleBdvShowable(RandomAccessibleInterval<?> image,
 		AffineTransform3D transformation)
 	{
 		this.image = image;

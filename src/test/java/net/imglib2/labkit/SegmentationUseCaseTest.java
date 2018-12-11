@@ -82,7 +82,7 @@ public class SegmentationUseCaseTest {
 		segmentationModel.imageLabelingModel().labeling().set(labeling);
 		PredictionLayer layer = new PredictionLayer(segmentationModel
 			.selectedSegmenter(), segmentationModel.segmentationVisibility());
-		assertEquals(2, layer.image().interval().numDimensions());
+		assertEquals(2, layer.image().get().interval().numDimensions());
 		SegmentationItem segmenter = segmentationModel.segmenters().get(0);
 		segmenter.segmenter().train(Collections.singletonList(new ValuePair<>(img,
 			segmentationModel.imageLabelingModel().labeling().get())));

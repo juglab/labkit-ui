@@ -9,6 +9,7 @@ import net.imglib2.converter.Converter;
 import net.imglib2.converter.Converters;
 import net.imglib2.labkit.bdv.BdvLayer;
 import net.imglib2.labkit.bdv.BdvShowable;
+import net.imglib2.labkit.models.DefaultHolder;
 import net.imglib2.labkit.models.Holder;
 import net.imglib2.labkit.models.SegmentationItem;
 import net.imglib2.labkit.models.SegmentationResultsModel;
@@ -107,8 +108,8 @@ public class PredictionLayer implements BdvLayer {
 	}
 
 	@Override
-	public BdvShowable image() {
-		return BdvShowable.wrap(view, transformation);
+	public Holder<BdvShowable> image() {
+		return new DefaultHolder<>(BdvShowable.wrap(view, transformation));
 	}
 
 	@Override

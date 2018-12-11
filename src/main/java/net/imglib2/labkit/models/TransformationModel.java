@@ -42,7 +42,7 @@ public class TransformationModel {
 	private static AffineTransform3D getTransformation(Interval interval,
 		double[] screenSize)
 	{
-		final double scale = 0.5 * getBiggestScaleFactor(screenSize, interval);
+		final double scale = 1 * getBiggestScaleFactor(screenSize, interval);
 		final double[] translate = getTranslation(screenSize, interval, scale);
 		final AffineTransform3D transform = new AffineTransform3D();
 		transform.scale(scale);

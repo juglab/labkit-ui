@@ -47,8 +47,9 @@ public class DefaultSegmentationModel implements SegmentationModel,
 	public DefaultSegmentationModel(InputImage inputImage, Context context) {
 		Labeling labeling = Labeling.createEmpty(Arrays.asList("background",
 			"foreground"), inputImage.interval());
-		this.imageLabelingModel = new ImageLabelingModel(inputImage.showable(),
-			labeling, inputImage.isTimeSeries());
+		this.imageLabelingModel = new ImageLabelingModel(inputImage.isTimeSeries());
+		imageLabelingModel.showable().set(inputImage.showable());
+		imageLabelingModel.labeling().set(labeling);
 		this.imageLabelingModel.labelingFileName().set(inputImage
 			.getDefaultLabelingFilename());
 		this.compatibleImage = inputImage.imageForSegmentation();

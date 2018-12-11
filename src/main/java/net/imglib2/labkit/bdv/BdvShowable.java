@@ -15,14 +15,11 @@ import java.util.Objects;
 
 public interface BdvShowable {
 
-	static BdvShowable wrap(
-		RandomAccessibleInterval<? extends NumericType<?>> image)
-	{
+	static BdvShowable wrap(RandomAccessibleInterval<?> image) {
 		return wrap(image, new AffineTransform3D());
 	}
 
-	static BdvShowable wrap(
-		RandomAccessibleInterval<? extends NumericType<?>> image,
+	static BdvShowable wrap(RandomAccessibleInterval<?> image,
 		AffineTransform3D transformation)
 	{
 		return new SimpleBdvShowable(Objects.requireNonNull(image), transformation);

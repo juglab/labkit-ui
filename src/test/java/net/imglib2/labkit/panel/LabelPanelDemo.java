@@ -18,9 +18,10 @@ public class LabelPanelDemo {
 		RandomAccessibleInterval<? extends NumericType<?>> image = ArrayImgs
 			.unsignedBytes(10, 10);
 		Labeling labeling = Labeling.createEmpty(Arrays.asList("bg", "fg"), image);
-		ImageLabelingModel imageLabeling = new ImageLabelingModel(image, labeling,
-			false);
-		ColoredLabelsModel model = new ColoredLabelsModel(imageLabeling);
+		ImageLabelingModel imageLabelingModel = new ImageLabelingModel(false);
+		imageLabelingModel.setImage(image);
+		imageLabelingModel.labeling().set(labeling);
+		ColoredLabelsModel model = new ColoredLabelsModel(imageLabelingModel);
 		LabelPanel panel = new LabelPanel(null, model, true,
 			ignore -> new JPopupMenu());
 		showInFrame(panel.getComponent());

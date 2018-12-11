@@ -6,6 +6,7 @@ import net.imglib2.RandomAccessibleInterval;
 import net.imglib2.img.Img;
 import net.imglib2.img.array.ArrayImgs;
 import net.imglib2.img.display.imagej.ImageJFunctions;
+import net.imglib2.labkit.bdv.BdvShowable;
 import net.imglib2.labkit.labeling.Labeling;
 import net.imglib2.labkit.models.ImageLabelingModel;
 import net.imglib2.type.numeric.ARGBType;
@@ -35,7 +36,10 @@ public class LabelingComponentDemo {
 		Img<? extends NumericType<?>> image = ImageJFunctions.wrap(imp);
 		Labeling labeling = Labeling.createEmpty(Arrays.asList("fg", "bg"), image);
 		boolean isTimeSeries = false;
-		return new ImageLabelingModel(image, labeling, isTimeSeries);
+		ImageLabelingModel result = new ImageLabelingModel(isTimeSeries);
+		result.setImage(image);
+		result.labeling().set(labeling);
+		return result;
 	}
 
 	private static JComponent initLabelingComponent(JFrame frame,

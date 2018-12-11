@@ -4,9 +4,11 @@ package net.imglib2.labkit;
 import bdv.spimdata.SpimDataMinimal;
 import bdv.spimdata.XmlIoSpimDataMinimal;
 import mpicbg.spim.data.SpimDataException;
+import net.imglib2.img.Img;
 import net.imglib2.labkit.bdv.BdvShowable;
 import net.imglib2.labkit.labeling.Labeling;
 import net.imglib2.labkit.models.ImageLabelingModel;
+import net.imglib2.type.numeric.NumericType;
 
 import javax.swing.*;
 import java.awt.event.WindowAdapter;
@@ -56,7 +58,10 @@ public class LabelingComponentHdf5Demo {
 		Labeling labeling = Labeling.createEmpty(Arrays.asList("fg", "bg"), wrap
 			.interval());
 		boolean isTimeSeries = false;
-		return new ImageLabelingModel(wrap, labeling, isTimeSeries);
+		ImageLabelingModel result = new ImageLabelingModel(isTimeSeries);
+		result.showable().set(wrap);
+		result.labeling().set(labeling);
+		return result;
 	}
 
 }

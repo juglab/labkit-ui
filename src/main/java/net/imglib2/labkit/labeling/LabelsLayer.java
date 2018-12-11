@@ -7,13 +7,12 @@ import net.imglib2.RandomAccessibleInterval;
 import net.imglib2.converter.Converters;
 import net.imglib2.labkit.bdv.BdvLayer;
 import net.imglib2.labkit.bdv.BdvShowable;
+import net.imglib2.labkit.models.DefaultHolder;
 import net.imglib2.labkit.models.Holder;
 import net.imglib2.labkit.models.LabelingModel;
 import net.imglib2.labkit.utils.ARGBVector;
 import net.imglib2.labkit.utils.Notifier;
-import net.imglib2.labkit.utils.RandomAccessibleContainer;
 import net.imglib2.type.numeric.ARGBType;
-import net.imglib2.view.Views;
 
 import java.util.List;
 import java.util.Set;
@@ -24,11 +23,9 @@ import java.util.stream.Collectors;
  */
 public class LabelsLayer implements BdvLayer {
 
-	private final RandomAccessibleContainer<ARGBType> container;
-
 	private final LabelingModel model;
 
-	private final RandomAccessibleInterval<ARGBType> view;
+	private final Holder<BdvShowable> view = new DefaultHolder<>(null);
 
 	private final Notifier<Runnable> listeners = new Notifier<>();
 
@@ -36,15 +33,13 @@ public class LabelsLayer implements BdvLayer {
 
 	public LabelsLayer(LabelingModel model) {
 		this.model = model;
-		RandomAccessibleInterval<ARGBType> view = colorView();
-		container = new RandomAccessibleContainer<>(view);
-		this.view = Views.interval(container, view);
+		this.view.set(BdvShowable.wrap(colorView(), model.labelTransformation()));
 		model.labeling().notifier().add(ignore -> updateView());
 		model.dataChangedNotifier().add(() -> listeners.forEach(Runnable::run));
 	}
 
 	private void updateView() {
-		container.setSource(colorView());
+		view.set(BdvShowable.wrap(colorView(), model.labelTransformation()));
 		listeners.forEach(Runnable::run);
 	}
 
@@ -75,8 +70,8 @@ public class LabelsLayer implements BdvLayer {
 	}
 
 	@Override
-	public BdvShowable image() {
-		return BdvShowable.wrap(view, model.labelTransformation());
+	public Holder<BdvShowable> image() {
+		return view;
 	}
 
 	@Override

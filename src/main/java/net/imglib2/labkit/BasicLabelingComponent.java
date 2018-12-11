@@ -16,6 +16,7 @@ import net.imglib2.labkit.labeling.LabelsLayer;
 import net.imglib2.labkit.models.BitmapModel;
 import net.imglib2.labkit.models.ImageLabelingModel;
 import net.imglib2.labkit.panel.LabelToolsPanel;
+import net.imglib2.type.numeric.ARGBType;
 import net.miginfocom.swing.MigLayout;
 import org.scijava.ui.behaviour.util.AbstractNamedAction;
 
@@ -78,17 +79,86 @@ public class BasicLabelingComponent implements AutoCloseable {
 	}
 
 	public BdvSource addBdvLayer(BdvLayer layer) {
-		BdvOptions options = BdvOptions.options().addTo(bdvHandle);
-		BdvSource source = layer.image().show(layer.title(), options);
-		layer.listeners().add(this::requestRepaint);
-		ToggleVisibility action = new ToggleVisibility(layer.title(), source);
+		final BdvSource bdvSource = addToBdv(bdvHandle, layer);
+		ToggleVisibility action = new ToggleVisibility(layer.title(), bdvSource);
 		actionsAndBehaviours.addAction(action);
 		layer.visibility().notifier().add(action::setVisible);
 		action.addPropertyChangeListener(propertyChangeEvent -> {
 			if (propertyChangeEvent.getPropertyName().equals(Action.SELECTED_KEY))
 				layer.visibility().set((Boolean) propertyChangeEvent.getNewValue());
 		});
+		return bdvSource;
+	}
+
+	private static BdvSource addToBdv(BdvHandle bdvHandle, BdvLayer layer) {
+		ForwardingSource source = new ForwardingSource(bdvHandle);
+		BdvOptions options = BdvOptions.options().addTo(bdvHandle);
+		source.setSource(layer.image().get().show(layer.title(), options));
+		layer.image().notifier().add(showable -> {
+			source.removeFromBdv();
+			source.setSource(layer.image().get().show(layer.title(), options));
+		});
+		layer.listeners().add(bdvHandle.getViewerPanel()::requestRepaint);
 		return source;
+	}
+
+	private static class ForwardingSource extends BdvSource {
+
+		private BdvSource source = null;
+
+		public ForwardingSource(BdvHandle handle) {
+			super(handle, 1);
+		}
+
+		public void setSource(BdvSource source) {
+			this.source = source;
+		}
+
+		@Override
+		public void close() {
+			if (source != null) source.close();
+		}
+
+		@Override
+		public void removeFromBdv() {
+			if (source != null) source.removeFromBdv();
+		}
+
+		@Override
+		public void setDisplayRange(double min, double max) {
+			if (source != null) source.setDisplayRange(min, max);
+		}
+
+		@Override
+		public void setDisplayRangeBounds(double min, double max) {
+			if (source != null) source.setDisplayRangeBounds(min, max);
+		}
+
+		@Override
+		public void setColor(ARGBType color) {
+			if (source != null) source.setColor(color);
+		}
+
+		@Override
+		public void setCurrent() {
+			if (source != null) source.setCurrent();
+		}
+
+		@Override
+		public boolean isCurrent() {
+			if (source == null) return false;
+			return source.isCurrent();
+		}
+
+		@Override
+		public void setActive(boolean isActive) {
+			if (source != null) source.setActive(isActive);
+		}
+
+		@Override
+		protected boolean isPlaceHolderSource() {
+			return false;
+		}
 	}
 
 	private JPanel initBrushLayer() {

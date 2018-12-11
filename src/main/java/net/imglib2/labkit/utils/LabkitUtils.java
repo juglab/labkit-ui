@@ -81,7 +81,7 @@ public class LabkitUtils {
 		return dest;
 	}
 
-	public static <R extends NumericType<?>> Pair<Double, Double> estimateMinMax(
+	public static <R> Pair<Double, Double> estimateMinMax(
 		RandomAccessibleInterval<R> rawData)
 	{
 		R firstElement = rawData.randomAccess().get();

@@ -6,7 +6,7 @@ import net.imglib2.labkit.utils.Notifier;
 
 public interface BdvLayer {
 
-	BdvShowable image();
+	Holder<BdvShowable> image();
 
 	Notifier<Runnable> listeners();
 
@@ -16,12 +16,12 @@ public interface BdvLayer {
 
 	class FinalLayer implements BdvLayer {
 
-		private final BdvShowable image;
+		private final Holder<BdvShowable> image;
 		private final String title;
 		private final Notifier<Runnable> listeners = new Notifier<>();
 		private final Holder<Boolean> visibility;
 
-		public FinalLayer(BdvShowable image, String title,
+		public FinalLayer(Holder<BdvShowable> image, String title,
 			Holder<Boolean> visibility)
 		{
 			this.image = image;
@@ -30,7 +30,7 @@ public interface BdvLayer {
 		}
 
 		@Override
-		public BdvShowable image() {
+		public Holder<BdvShowable> image() {
 			return image;
 		}
 
