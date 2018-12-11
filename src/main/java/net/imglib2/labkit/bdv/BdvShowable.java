@@ -25,7 +25,7 @@ public interface BdvShowable {
 		return new SimpleBdvShowable(Objects.requireNonNull(image), transformation);
 	}
 
-	static BdvShowable wrap(ImgPlus<? extends NumericType<?>> image) {
+	static BdvShowable wrap(ImgPlus<?> image) {
 		return new ImgPlusBdvShowable(image);
 	}
 

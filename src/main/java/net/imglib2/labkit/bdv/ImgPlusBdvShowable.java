@@ -21,10 +21,10 @@ import java.util.stream.IntStream;
 
 class ImgPlusBdvShowable implements BdvShowable {
 
-	private final ImgPlus<? extends NumericType<?>> image;
+	private final ImgPlus<?> image;
 	private AxisOrder axisOrder;
 
-	ImgPlusBdvShowable(ImgPlus<? extends NumericType<?>> image) {
+	ImgPlusBdvShowable(ImgPlus<?> image) {
 		this.image = image;
 	}
 
