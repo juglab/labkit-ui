@@ -22,10 +22,14 @@ import java.util.Random;
 public class LabelingComponentDemo {
 
 	public static void main(String... args) {
+		ImageLabelingModel model = initModel();
+		show(model);
+	}
+
+	public static void show(ImageLabelingModel model) {
 		JFrame frame = new JFrame();
 		frame.setSize(400, 400);
 		frame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
-		ImageLabelingModel model = initModel();
 		frame.add(initLabelingComponent(frame, model));
 		frame.setVisible(true);
 	}
