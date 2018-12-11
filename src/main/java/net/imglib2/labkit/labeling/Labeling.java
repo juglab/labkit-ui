@@ -166,7 +166,7 @@ public class Labeling extends AbstractWrappedInterval<Interval> implements
 		}
 	}
 
-	public static <T> RandomAccessibleInterval<BitType> slice(
+	private static <T> RandomAccessibleInterval<BitType> slice(
 		RandomAccessibleInterval<? extends Set<T>> labeling, T value)
 	{
 		Converter<Set<T>, BitType> converter = (in, out) -> {
