@@ -36,17 +36,17 @@ public class ImageLabelingModel implements LabelingModel {
 
 	private BdvShowable showable;
 
-	private String defaultFileName;
+	private final Holder<String> labelingFileName = new DefaultHolder<>("");
 
 	public ImageLabelingModel(
 		RandomAccessibleInterval<? extends NumericType<?>> image, Labeling labeling,
 		boolean isTimeSeries)
 	{
-		this(BdvShowable.wrap(image), labeling, isTimeSeries, "");
+		this(BdvShowable.wrap(image), labeling, isTimeSeries);
 	}
 
 	public ImageLabelingModel(BdvShowable showable, Labeling labeling,
-		boolean isTimeSeries, String defaultFileName)
+		boolean isTimeSeries)
 	{
 		this.showable = showable;
 		this.labelingHolder = new DefaultHolder<>(labeling);
@@ -55,7 +55,6 @@ public class ImageLabelingModel implements LabelingModel {
 		this.selectedLabelHolder = new DefaultHolder<>(labeling.getLabels().stream()
 			.findAny().orElse(null));
 		this.isTimeSeries = isTimeSeries;
-		this.defaultFileName = defaultFileName;
 	}
 
 	private void updateLabelTransform() {
@@ -92,8 +91,8 @@ public class ImageLabelingModel implements LabelingModel {
 	}
 
 	@Override
-	public String defaultFileName() {
-		return defaultFileName;
+	public Holder<String> labelingFileName() {
+		return labelingFileName;
 	}
 
 	@Override

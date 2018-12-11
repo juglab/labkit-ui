@@ -20,7 +20,7 @@ public interface LabelingModel {
 
 	AffineTransform3D labelTransformation();
 
-	String defaultFileName();
+	Holder<String> labelingFileName();
 
 	Holder<Boolean> labelingVisibility();
 }

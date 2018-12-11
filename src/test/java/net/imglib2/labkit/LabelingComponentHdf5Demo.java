@@ -56,7 +56,7 @@ public class LabelingComponentHdf5Demo {
 		Labeling labeling = Labeling.createEmpty(Arrays.asList("fg", "bg"), wrap
 			.interval());
 		boolean isTimeSeries = false;
-		return new ImageLabelingModel(wrap, labeling, isTimeSeries, "");
+		return new ImageLabelingModel(wrap, labeling, isTimeSeries);
 	}
 
 }

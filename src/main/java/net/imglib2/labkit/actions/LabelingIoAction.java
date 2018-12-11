@@ -11,7 +11,6 @@ import net.imglib2.labkit.labeling.LabelingSerializer;
 import net.imglib2.img.display.imagej.ImageJFunctions;
 import net.imglib2.type.numeric.IntegerType;
 
-import javax.swing.filechooser.FileNameExtensionFilter;
 import java.io.IOException;
 
 /**
@@ -33,7 +32,7 @@ public class LabelingIoAction extends AbstractFileIoAction {
 
 			@Override
 			public String suggestedFile() {
-				return LabelingIoAction.this.labelingModel.defaultFileName();
+				return labelingModel.labelingFileName().get();
 			}
 
 			@Override

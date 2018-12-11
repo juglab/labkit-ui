@@ -48,8 +48,9 @@ public class DefaultSegmentationModel implements SegmentationModel,
 		Labeling labeling = Labeling.createEmpty(Arrays.asList("background",
 			"foreground"), inputImage.interval());
 		this.imageLabelingModel = new ImageLabelingModel(inputImage.showable(),
-			labeling, inputImage.isTimeSeries(), inputImage
-				.getDefaultLabelingFilename());
+			labeling, inputImage.isTimeSeries());
+		this.imageLabelingModel.labelingFileName().set(inputImage
+			.getDefaultLabelingFilename());
 		this.compatibleImage = inputImage.imageForSegmentation();
 		this.grid = LabkitUtils.suggestGrid(inputImage.interval(),
 			imageLabelingModel.isTimeSeries());
