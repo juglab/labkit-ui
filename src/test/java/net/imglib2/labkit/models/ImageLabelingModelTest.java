@@ -13,6 +13,7 @@ import org.junit.Test;
 import java.util.Arrays;
 
 import static org.junit.Assert.assertArrayEquals;
+import static org.junit.Assert.assertEquals;
 
 public class ImageLabelingModelTest {
 
@@ -29,6 +30,25 @@ public class ImageLabelingModelTest {
 		model.labeling().set(initLabeling(2, 2));
 		assertArrayEquals(expectedTransform(4.0), labelTransformation
 			.getRowPackedCopy(), 0.0);
+	}
+
+	@Test
+	public void testLabelingTransformation() {
+		ImageLabelingModel model = new ImageLabelingModel(false);
+		final AffineTransform3D transform = transform(1.0, 1.0, 2.0);
+		model.showable().set(BdvShowable.wrap(ArrayImgs.ints(10, 10, 10),
+			transform));
+		model.createEmptyLabeling();
+		assertArrayEquals(transform.getRowPackedCopy(), model.labelTransformation()
+			.getRowPackedCopy(), 0.0);
+	}
+
+	private AffineTransform3D transform(double xScale, double yScale,
+		double zScale)
+	{
+		final AffineTransform3D affineTransform3D = new AffineTransform3D();
+		affineTransform3D.set(xScale, 0, 0, 0, 0, yScale, 0, 0, 0, 0, zScale, 0);
+		return affineTransform3D;
 	}
 
 	private Labeling initLabeling(long... dimensions) {
