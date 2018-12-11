@@ -1,6 +1,7 @@
 
 package net.imglib2.labkit.models;
 
+import net.imagej.ImgPlus;
 import net.imglib2.Dimensions;
 import net.imglib2.FinalDimensions;
 import net.imglib2.Interval;
@@ -112,9 +113,15 @@ public class ImageLabelingModel implements LabelingModel {
 		this.showable.set(BdvShowable.wrap(image));
 	}
 
+	public void setImage(ImgPlus<?> image) {
+		this.showable.set(BdvShowable.wrap(image));
+	}
+
 	public void createEmptyLabeling() {
-		this.labeling().set(Labeling.createEmpty(Collections.emptyList(), this
-			.showable().get().interval()));
+		final BdvShowable showable = this.showable().get();
+		this.labeling().set(Labeling.createEmpty(Collections.emptyList(), showable
+			.interval()));
+		this.labelTransformation.set(showable.transformation().copy());
 	}
 
 	public void resetTransformation() {
