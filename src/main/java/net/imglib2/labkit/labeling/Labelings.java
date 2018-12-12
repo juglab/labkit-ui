@@ -21,6 +21,8 @@ import java.util.stream.IntStream;
 
 public class Labelings {
 
+	private static Object labelSets;
+
 	public static List<Labeling> slices(Labeling labeling) {
 		int sliceDimension = labeling.numDimensions() - 1;
 		Interval sliceInterval = DimensionUtils.removeLastDimension(labeling);
@@ -78,5 +80,12 @@ public class Labelings {
 		}
 		return LabelingSerializer.fromImageAndLabelSets(input.getIndexImg(),
 			newLabels);
+	}
+
+	public static List<Set<String>> getLabelSets(
+		LabelingMapping<String> mapping)
+	{
+		return IntStream.range(0, mapping.numSets()).mapToObj(
+			mapping::labelsAtIndex).collect(Collectors.toList());
 	}
 }
