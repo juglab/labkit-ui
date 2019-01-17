@@ -1,6 +1,8 @@
 
 package net.imglib2.labkit.models;
 
+import net.imglib2.labkit.utils.Notifier;
+
 import java.util.List;
 
 public interface SegmenterListModel<T> {
@@ -16,4 +18,6 @@ public interface SegmenterListModel<T> {
 	void remove(T item);
 
 	Holder<Boolean> segmentationVisibility();
+
+	Notifier<Runnable> listChangeListeners();
 }

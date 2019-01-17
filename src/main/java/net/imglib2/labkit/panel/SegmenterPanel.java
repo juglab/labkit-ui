@@ -55,7 +55,6 @@ public class SegmenterPanel {
 		return GuiUtils.createActionIconButton("Add classifier", new RunnableAction(
 			"Add classifier", () -> {
 				segmentationModel.addSegmenter();
-				updateList();
 			}), "add.png");
 	}
 
@@ -99,7 +98,6 @@ public class SegmenterPanel {
 		private JMenuItem removeMenuItem() {
 			final Runnable runnable = () -> {
 				((SegmenterListModel) segmentationModel).remove(item);
-				updateList();
 			};
 			return new JMenuItem(GuiUtils.createAction("Remove", runnable,
 				"remove.png"));
@@ -112,7 +110,6 @@ public class SegmenterPanel {
 		private void runTraining() {
 			((SegmenterListModel) segmentationModel).selectedSegmenter().set(item);
 			((SegmenterListModel) segmentationModel).train(item);
-			updateList();
 		}
 
 	}
@@ -120,6 +117,7 @@ public class SegmenterPanel {
 	private JComponent initList() {
 		updateList();
 		list.listeners().add(this::userChangedSelection);
+		segmentationModel.listChangeListeners().add(this::updateList);
 		JComponent component = list.getComponent();
 		component.setBorder(BorderFactory.createEmptyBorder());
 		return component;

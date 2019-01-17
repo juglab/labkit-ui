@@ -10,6 +10,7 @@ import net.imglib2.labkit.segmentation.Segmenter;
 import net.imglib2.labkit.segmentation.weka.TimeSeriesSegmenter;
 import net.imglib2.labkit.segmentation.weka.TrainableSegmentationSegmenter;
 import net.imglib2.labkit.utils.LabkitUtils;
+import net.imglib2.labkit.utils.Notifier;
 import net.imglib2.realtransform.AffineTransform3D;
 import net.imglib2.labkit.utils.DimensionUtils;
 import net.imglib2.type.NativeType;
@@ -38,11 +39,12 @@ public class DefaultSegmentationModel implements SegmentationModel,
 	private final ImageLabelingModel imageLabelingModel;
 	private final Holder<SegmentationItem> selectedSegmenter;
 	private final Supplier<Segmenter> segmenterFactory;
-	private List<SegmentationItem> segmenters = new ArrayList<>();
+	private final List<SegmentationItem> segmenters = new ArrayList<>();
 	private final RandomAccessibleInterval<?> compatibleImage;
 	private final CellGrid grid;
 	private final Holder<Boolean> segmentationVisibility = new DefaultHolder<>(
 		true);
+	private final Notifier<Runnable> listeners = new Notifier<>();
 
 	public DefaultSegmentationModel(InputImage inputImage, Context context) {
 		Labeling labeling = Labeling.createEmpty(Arrays.asList("background",
@@ -86,7 +88,7 @@ public class DefaultSegmentationModel implements SegmentationModel,
 
 	@Override
 	public List<SegmentationItem> segmenters() {
-		return segmenters;
+		return Collections.unmodifiableList(segmenters);
 	}
 
 	@Override
@@ -103,7 +105,8 @@ public class DefaultSegmentationModel implements SegmentationModel,
 	public SegmentationItem addSegmenter() {
 		SegmentationItem segmentationItem = new SegmentationItem(this,
 			segmenterFactory.get());
-		this.segmenters.add(segmentationItem);
+		segmenters.add(segmentationItem);
+		listeners.forEach(Runnable::run);
 		return segmentationItem;
 	}
 
@@ -129,6 +132,7 @@ public class DefaultSegmentationModel implements SegmentationModel,
 		segmenters.remove(item);
 		if (!segmenters.contains(selectedSegmenter.get())) selectedSegmenter.set(
 			segmenters.get(0));
+		listeners.forEach(Runnable::run);
 	}
 
 	@Override
@@ -139,6 +143,11 @@ public class DefaultSegmentationModel implements SegmentationModel,
 	@Override
 	public Holder<Boolean> segmentationVisibility() {
 		return segmentationVisibility;
+	}
+
+	@Override
+	public Notifier<Runnable> listChangeListeners() {
+		return listeners;
 	}
 
 	public <T extends IntegerType<T> & NativeType<T>>
