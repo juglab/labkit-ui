@@ -46,12 +46,10 @@ public class SegmentationResultsModel {
 		this.model = model;
 		segmentation = dummy(new ShortType());
 		prediction = dummy(new FloatType());
-		segmenterTrained(segmenter);
-		segmenter.trainingCompletedListeners().add(() -> segmenterTrained(
-			segmenter));
+		update(segmenter);
 	}
 
-	private void segmenterTrained(Segmenter segmenter) {
+	public void update(Segmenter segmenter) {
 		if (segmenter.isTrained()) {
 			updateSegmentation(segmenter);
 			updatePrediction(segmenter);

@@ -87,11 +87,6 @@ public class TestTimeSeriesSegmenter {
 		}
 
 		@Override
-		public Notifier<Runnable> trainingCompletedListeners() {
-			return new Notifier<>();
-		}
-
-		@Override
 		public List<String> classNames() {
 			return null;
 		}

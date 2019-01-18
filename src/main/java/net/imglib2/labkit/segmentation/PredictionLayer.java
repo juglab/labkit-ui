@@ -36,7 +36,7 @@ public class PredictionLayer implements BdvLayer {
 	private Notifier<Runnable> listeners = new Notifier<>();
 	private RandomAccessibleInterval<? extends NumericType<?>> view;
 	private AffineTransform3D transformation;
-	private Set<Segmenter> alreadyRegistered = Collections.newSetFromMap(
+	private Set<SegmentationItem> alreadyRegistered = Collections.newSetFromMap(
 		new WeakHashMap<>());
 
 	public PredictionLayer(Holder<? extends SegmentationItem> model,
@@ -50,14 +50,14 @@ public class PredictionLayer implements BdvLayer {
 		this.view = Views.interval(segmentationContainer, selected.interval());
 		this.visibility = visibility;
 		model.notifier().add(ignore -> classifierChanged());
-		registerListener(model.get().segmenter());
+		registerListener(model.get());
 	}
 
-	private void registerListener(Segmenter segmenter) {
+	private void registerListener(SegmentationItem segmenter) {
 		if (alreadyRegistered.contains(segmenter)) return;
 		alreadyRegistered.add(segmenter);
-		segmenter.trainingCompletedListeners().add(() -> onTrainingCompleted(
-			segmenter));
+		segmenter.results().segmentationChangedListeners().add(
+			() -> onTrainingCompleted(segmenter.segmenter()));
 	}
 
 	private void onTrainingCompleted(Segmenter segmenter) {
@@ -76,7 +76,7 @@ public class PredictionLayer implements BdvLayer {
 
 	private void classifierChanged() {
 		SegmentationItem segmentationItem = model.get();
-		registerListener(segmentationItem.segmenter());
+		registerListener(segmentationItem);
 		SegmentationResultsModel selected = segmentationItem.results();
 		RandomAccessible<VolatileARGBType> source = selected.hasResults() ? Views
 			.extendValue(coloredVolatileView(selected), new VolatileARGBType(0))

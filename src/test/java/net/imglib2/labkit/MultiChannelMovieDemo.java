@@ -91,8 +91,8 @@ public class MultiChannelMovieDemo {
 		SegmentationItem segmenter = segmentationModel.selectedSegmenter().get();
 		Labeling labeling1 = labeling5d();
 		segmentationModel.imageLabelingModel().labeling().set(labeling1);
-		segmenter.segmenter().train(Collections.singletonList(new ValuePair<>(
-			inputImage.imageForSegmentation(), labeling1)));
+		segmenter.train(Collections.singletonList(new ValuePair<>(inputImage
+			.imageForSegmentation(), labeling1)));
 		RandomAccessibleInterval<ShortType> result = segmenter.results()
 			.segmentation();
 		Labeling labeling = labeling5d();

@@ -27,11 +27,6 @@ public class TimeSeriesSegmenter implements Segmenter {
 
 	public TimeSeriesSegmenter(Segmenter segmenter) {
 		this.segmenter = segmenter;
-		segmenter.trainingCompletedListeners().add(this::update);
-	}
-
-	private void update() {
-		listeners.forEach(l -> l.run());
 	}
 
 	@Override
@@ -102,11 +97,6 @@ public class TimeSeriesSegmenter implements Segmenter {
 	@Override
 	public void openModel(String path) {
 		segmenter.openModel(path);
-	}
-
-	@Override
-	public Notifier<Runnable> trainingCompletedListeners() {
-		return listeners;
 	}
 
 	@Override

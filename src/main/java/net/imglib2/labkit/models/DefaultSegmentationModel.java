@@ -113,7 +113,7 @@ public class DefaultSegmentationModel implements SegmentationModel,
 	@Override
 	public void train(SegmentationItem item) {
 		try {
-			item.segmenter().train(Collections.singletonList(new ValuePair<>(image(),
+			item.train(Collections.singletonList(new ValuePair<>(image(),
 				labeling())));
 		}
 		catch (CancellationException e) {

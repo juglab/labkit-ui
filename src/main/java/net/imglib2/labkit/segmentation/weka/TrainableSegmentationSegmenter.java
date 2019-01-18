@@ -62,13 +62,6 @@ public class TrainableSegmentationSegmenter implements Segmenter {
 
 	private net.imglib2.trainable_segmention.classification.Segmenter segmenter;
 
-	private final Notifier<Runnable> listeners = new Notifier<>();
-
-	@Override
-	public Notifier<Runnable> trainingCompletedListeners() {
-		return listeners;
-	}
-
 	@Override
 	public List<String> classNames() {
 		return segmenter.classNames();
@@ -149,7 +142,6 @@ public class TrainableSegmentationSegmenter implements Segmenter {
 					.features());
 			training.train();
 			this.segmenter = segmenter;
-			listeners.forEach(Runnable::run);
 		}
 		catch (RuntimeException e) {
 			Throwable cause = e.getCause();
@@ -256,6 +248,5 @@ public class TrainableSegmentationSegmenter implements Segmenter {
 		segmenter = net.imglib2.trainable_segmention.classification.Segmenter
 			.fromJson(context.service(OpService.class), GsonUtils.read(path));
 		featureSettings = segmenter.features().settings();
-		listeners.forEach(Runnable::run);
 	}
 }

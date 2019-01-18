@@ -73,11 +73,6 @@ public interface Segmenter {
 	void openModel(String path);
 
 	/**
-	 * Object to subscribe / unsubscribe listeners.
-	 */
-	Notifier<Runnable> trainingCompletedListeners();
-
-	/**
 	 * Return a list of classes, this segmenter return. For example ["background",
 	 * "foreground"]
 	 */
