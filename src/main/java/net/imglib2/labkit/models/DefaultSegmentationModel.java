@@ -75,6 +75,10 @@ public class DefaultSegmentationModel implements SegmentationModel,
 		this.segmenterFactory = segmenterFactory;
 	}
 
+	public Context context() {
+		return context;
+	}
+
 	@Override
 	public ImageLabelingModel imageLabelingModel() {
 		return imageLabelingModel;

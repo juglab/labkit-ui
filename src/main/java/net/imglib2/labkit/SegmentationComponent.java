@@ -24,7 +24,6 @@ import net.imglib2.labkit.plugin.MeasureConnectedComponents;
 import net.imglib2.labkit.segmentation.PredictionLayer;
 import net.imglib2.labkit.segmentation.TrainClassifier;
 import net.miginfocom.swing.MigLayout;
-import org.scijava.Context;
 
 import javax.swing.*;
 
@@ -40,10 +39,11 @@ public class SegmentationComponent implements AutoCloseable {
 
 	private DefaultSegmentationModel segmentationModel;
 
-	public SegmentationComponent(Context context, JFrame dialogBoxOwner,
+	public SegmentationComponent(JFrame dialogBoxOwner,
 		DefaultSegmentationModel segmentationModel, boolean fixedLabels)
 	{
-		this.extensible = new DefaultExtensible(context, dialogBoxOwner);
+		this.extensible = new DefaultExtensible(segmentationModel.context(),
+			dialogBoxOwner);
 		this.fixedLabels = fixedLabels;
 		this.segmentationModel = segmentationModel;
 		labelingComponent = new BasicLabelingComponent(dialogBoxOwner,

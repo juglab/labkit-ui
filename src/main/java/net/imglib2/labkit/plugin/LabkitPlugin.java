@@ -24,6 +24,6 @@ public class LabkitPlugin implements Command {
 	@Override
 	public void run() {
 		DatasetInputImage input = new DatasetInputImage(dataset);
-		new MainFrame(context, input);
+		MainFrame.showForImage(context, input);
 	}
 }

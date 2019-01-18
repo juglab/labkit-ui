@@ -37,7 +37,7 @@ public class LabkitImportPlugin implements Command {
 		ProgressWriter progressWriter = new StatusServiceProgressWriter(context
 			.service(StatusService.class));
 		InputImage image = openImage(progressWriter, file);
-		new MainFrame(context, image);
+		MainFrame.showForImage(context, image);
 	}
 
 	private static InputImage openImage(ProgressWriter progressWriter,
