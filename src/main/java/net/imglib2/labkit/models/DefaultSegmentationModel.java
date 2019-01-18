@@ -25,7 +25,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.CancellationException;
-import java.util.function.Supplier;
+import java.util.function.BiFunction;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -36,17 +36,22 @@ public class DefaultSegmentationModel implements SegmentationModel,
 	SegmenterListModel<SegmentationItem>
 {
 
+	private final Context context;
+	private final InputImage inputImage;
 	private final ImageLabelingModel imageLabelingModel;
 	private final Holder<SegmentationItem> selectedSegmenter;
-	private final Supplier<Segmenter> segmenterFactory;
 	private final List<SegmentationItem> segmenters = new ArrayList<>();
 	private final RandomAccessibleInterval<?> compatibleImage;
 	private final CellGrid grid;
 	private final Holder<Boolean> segmentationVisibility = new DefaultHolder<>(
 		true);
 	private final Notifier<Runnable> listeners = new Notifier<>();
+	private BiFunction<Context, InputImage, Segmenter> segmenterFactory =
+		TrainableSegmentationSegmenter::new;
 
 	public DefaultSegmentationModel(InputImage inputImage, Context context) {
+		this.context = context;
+		this.inputImage = inputImage;
 		Labeling labeling = Labeling.createEmpty(Arrays.asList("background",
 			"foreground"), inputImage.interval());
 		this.imageLabelingModel = new ImageLabelingModel(inputImage.showable(),
@@ -55,15 +60,19 @@ public class DefaultSegmentationModel implements SegmentationModel,
 		this.compatibleImage = inputImage.imageForSegmentation();
 		this.grid = LabkitUtils.suggestGrid(inputImage.interval(),
 			imageLabelingModel.isTimeSeries());
-		this.segmenterFactory = () -> initClassifier(inputImage, context);
 		this.selectedSegmenter = new DefaultHolder<>(addSegmenter());
 	}
 
-	private Segmenter initClassifier(InputImage inputImage, Context context) {
-		TrainableSegmentationSegmenter classifier1 =
-			new TrainableSegmentationSegmenter(context, inputImage);
-		return inputImage.isTimeSeries() ? new TimeSeriesSegmenter(classifier1)
-			: classifier1;
+	private Segmenter initClassifier() {
+		Segmenter segmenter = segmenterFactory.apply(context, inputImage);
+		return inputImage.isTimeSeries() ? new TimeSeriesSegmenter(segmenter)
+			: segmenter;
+	}
+
+	public void setSegmenterFactory(
+		BiFunction<Context, InputImage, Segmenter> segmenterFactory)
+	{
+		this.segmenterFactory = segmenterFactory;
 	}
 
 	@Override
@@ -104,7 +113,7 @@ public class DefaultSegmentationModel implements SegmentationModel,
 	@Override
 	public SegmentationItem addSegmenter() {
 		SegmentationItem segmentationItem = new SegmentationItem(this,
-			segmenterFactory.get());
+			initClassifier());
 		segmenters.add(segmentationItem);
 		listeners.forEach(Runnable::run);
 		return segmentationItem;
