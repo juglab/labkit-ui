@@ -42,7 +42,7 @@ public class CustomSegmenterDemo {
 		Context context = new Context();
 		DefaultSegmentationModel segmentationModel = new DefaultSegmentationModel(
 			new DefaultInputImage(image), context, MySegmenter::new);
-		new LabkitFrame(segmentationModel, "Demonstrate other Segmenter");
+		LabkitFrame.show(segmentationModel, "Demonstrate other Segmenter");
 	}
 
 	private static class MySegmenter implements Segmenter {

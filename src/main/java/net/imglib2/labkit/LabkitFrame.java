@@ -37,10 +37,18 @@ public class LabkitFrame {
 		final DefaultSegmentationModel model = new DefaultSegmentationModel(
 			inputImage, context);
 		InitialLabeling.initializeLabeling(inputImage, model);
-		return new LabkitFrame(model, inputImage.getName());
+		return show(model, inputImage.getName());
 	}
 
-	public LabkitFrame(final DefaultSegmentationModel model, final String title) {
+	public static LabkitFrame show(final DefaultSegmentationModel model,
+		final String title)
+	{
+		return new LabkitFrame(model, title);
+	}
+
+	private LabkitFrame(final DefaultSegmentationModel model,
+		final String title)
+	{
 		SegmentationComponent segmentationComponent = initSegmentationComponent(
 			model);
 		setTitle(title);
