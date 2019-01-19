@@ -1,11 +1,12 @@
 
-package net.imglib2.labkit;
+package demo;
 
 import ij.ImagePlus;
 import net.imglib2.RandomAccessibleInterval;
 import net.imglib2.img.Img;
 import net.imglib2.img.array.ArrayImgs;
 import net.imglib2.img.display.imagej.ImageJFunctions;
+import net.imglib2.labkit.LabelingComponent;
 import net.imglib2.labkit.labeling.Labeling;
 import net.imglib2.labkit.models.ImageLabelingModel;
 import net.imglib2.type.numeric.ARGBType;

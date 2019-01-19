@@ -1,9 +1,10 @@
 
-package net.imglib2.labkit;
+package demo;
 
 import bdv.spimdata.SpimDataMinimal;
 import bdv.spimdata.XmlIoSpimDataMinimal;
 import mpicbg.spim.data.SpimDataException;
+import net.imglib2.labkit.BasicLabelingComponent;
 import net.imglib2.labkit.bdv.BdvShowable;
 import net.imglib2.labkit.labeling.Labeling;
 import net.imglib2.labkit.models.ImageLabelingModel;

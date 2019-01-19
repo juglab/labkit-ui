@@ -1,5 +1,5 @@
 
-package net.imglib2.labkit;
+package demo;
 
 import net.imagej.ImgPlus;
 import net.imagej.axis.Axes;
@@ -15,6 +15,7 @@ import net.imglib2.img.array.ArrayImg;
 import net.imglib2.img.array.ArrayImgFactory;
 import net.imglib2.img.array.ArrayImgs;
 import net.imglib2.img.basictypeaccess.array.ByteArray;
+import net.imglib2.labkit.LabkitFrame;
 import net.imglib2.labkit.bdv.BdvShowable;
 import net.imglib2.labkit.inputimage.DatasetInputImage;
 import net.imglib2.labkit.labeling.Label;

@@ -1,5 +1,5 @@
 
-package net.imglib2.labkit;
+package demo;
 
 import net.imagej.ImageJ;
 import net.imglib2.labkit.plugin.LabkitPlugin;

@@ -1,5 +1,5 @@
 
-package net.imglib2.labkit;
+package demo;
 
 import ij.ImagePlus;
 import net.imglib2.Cursor;
@@ -8,6 +8,7 @@ import net.imglib2.RandomAccessibleInterval;
 import net.imglib2.converter.Converters;
 import net.imglib2.img.Img;
 import net.imglib2.img.display.imagej.ImageJFunctions;
+import net.imglib2.labkit.LabkitFrame;
 import net.imglib2.labkit.inputimage.DefaultInputImage;
 import net.imglib2.labkit.inputimage.InputImage;
 import net.imglib2.labkit.labeling.Label;
