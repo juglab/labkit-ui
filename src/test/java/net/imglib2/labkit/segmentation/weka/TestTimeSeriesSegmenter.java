@@ -45,7 +45,7 @@ public class TestTimeSeriesSegmenter {
 
 		@Override
 		public void train(
-			List<Pair<? extends RandomAccessibleInterval<?>, ? extends Labeling>> image)
+			List<Pair<? extends RandomAccessibleInterval<?>, ? extends Labeling>> trainingData)
 		{
 
 		}
@@ -84,11 +84,6 @@ public class TestTimeSeriesSegmenter {
 		@Override
 		public void openModel(String path) {
 
-		}
-
-		@Override
-		public Notifier<Runnable> trainingCompletedListeners() {
-			return new Notifier<>();
 		}
 
 		@Override

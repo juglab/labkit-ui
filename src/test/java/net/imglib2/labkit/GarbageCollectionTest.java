@@ -8,7 +8,6 @@ import bdv.util.BdvHandlePanel;
 import net.imglib2.img.array.ArrayImgs;
 import net.imglib2.labkit.inputimage.DefaultInputImage;
 import net.imglib2.labkit.models.DefaultSegmentationModel;
-import net.imglib2.labkit.models.SegmentationModel;
 import org.junit.Test;
 import org.scijava.Context;
 
@@ -51,7 +50,7 @@ public class GarbageCollectionTest {
 	private void addSegmentationComponent(JFrame frame) {
 		DefaultSegmentationModel segmentationModel = new DefaultSegmentationModel(
 			new DefaultInputImage(ArrayImgs.bytes(10, 10)), context);
-		SegmentationComponent component = new SegmentationComponent(context, frame,
+		SegmentationComponent component = new SegmentationComponent(frame,
 			segmentationModel, false);
 		frame.add(component.getComponent());
 		frame.addWindowListener(new WindowAdapter() {

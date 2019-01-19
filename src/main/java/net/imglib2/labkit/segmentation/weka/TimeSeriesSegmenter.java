@@ -27,11 +27,6 @@ public class TimeSeriesSegmenter implements Segmenter {
 
 	public TimeSeriesSegmenter(Segmenter segmenter) {
 		this.segmenter = segmenter;
-		segmenter.trainingCompletedListeners().add(this::update);
-	}
-
-	private void update() {
-		listeners.forEach(l -> l.run());
 	}
 
 	@Override
@@ -71,10 +66,10 @@ public class TimeSeriesSegmenter implements Segmenter {
 
 	@Override
 	public void train(
-		List<Pair<? extends RandomAccessibleInterval<?>, ? extends Labeling>> data)
+		List<Pair<? extends RandomAccessibleInterval<?>, ? extends Labeling>> trainingData)
 	{
 		List<Pair<? extends RandomAccessibleInterval<?>, ? extends Labeling>> slicedData =
-			data.stream().flatMap(this::slice).collect(Collectors.toList());
+			trainingData.stream().flatMap(this::slice).collect(Collectors.toList());
 		segmenter.train(slicedData);
 	}
 
@@ -102,11 +97,6 @@ public class TimeSeriesSegmenter implements Segmenter {
 	@Override
 	public void openModel(String path) {
 		segmenter.openModel(path);
-	}
-
-	@Override
-	public Notifier<Runnable> trainingCompletedListeners() {
-		return listeners;
 	}
 
 	@Override

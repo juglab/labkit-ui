@@ -1,7 +1,7 @@
 
 package net.imglib2.labkit.plugin;
 
-import net.imglib2.labkit.MainFrame;
+import net.imglib2.labkit.LabkitFrame;
 import net.imglib2.labkit.inputimage.InputImage;
 import net.imglib2.labkit.inputimage.SpimDataInputImage;
 import bdv.export.ProgressWriter;
@@ -37,7 +37,7 @@ public class LabkitImportPlugin implements Command {
 		ProgressWriter progressWriter = new StatusServiceProgressWriter(context
 			.service(StatusService.class));
 		InputImage image = openImage(progressWriter, file);
-		new MainFrame(context, image);
+		LabkitFrame.showForImage(context, image);
 	}
 
 	private static InputImage openImage(ProgressWriter progressWriter,

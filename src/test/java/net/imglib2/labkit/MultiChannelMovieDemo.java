@@ -54,12 +54,12 @@ public class MultiChannelMovieDemo {
 		AxisType[] axes = { Axes.X, Axes.Y, Axes.Z, Axes.CHANNEL };
 		DatasetInputImage inputImage = new DatasetInputImage(new ImgPlus<>(image,
 			"", axes), BdvShowable.wrap(Views.hyperSlice(image, 3, 0)));
-		new MainFrame(new Context(), inputImage);
+		LabkitFrame.showForImage(new Context(), inputImage);
 	}
 
 	private static void main2() {
 		DatasetInputImage inputImage = inputImage5d();
-		new MainFrame(new Context(), inputImage);
+		LabkitFrame.showForImage(new Context(), inputImage);
 	}
 
 	private static DatasetInputImage inputImage5d() {
@@ -91,8 +91,8 @@ public class MultiChannelMovieDemo {
 		SegmentationItem segmenter = segmentationModel.selectedSegmenter().get();
 		Labeling labeling1 = labeling5d();
 		segmentationModel.imageLabelingModel().labeling().set(labeling1);
-		segmenter.segmenter().train(Collections.singletonList(new ValuePair<>(
-			inputImage.imageForSegmentation(), labeling1)));
+		segmenter.train(Collections.singletonList(new ValuePair<>(inputImage
+			.imageForSegmentation(), labeling1)));
 		RandomAccessibleInterval<ShortType> result = segmenter.results()
 			.segmentation();
 		Labeling labeling = labeling5d();

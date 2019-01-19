@@ -1,9 +1,13 @@
 
 package net.imglib2.labkit.models;
 
+import net.imglib2.RandomAccessibleInterval;
+import net.imglib2.labkit.labeling.Labeling;
 import net.imglib2.labkit.menu.MenuKey;
 import net.imglib2.labkit.segmentation.Segmenter;
+import net.imglib2.util.Pair;
 
+import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 
 public class SegmentationItem {
@@ -37,5 +41,12 @@ public class SegmentationItem {
 	@Override
 	public String toString() {
 		return name();
+	}
+
+	public void train(
+		List<Pair<? extends RandomAccessibleInterval<?>, ? extends Labeling>> data)
+	{
+		segmenter.train(data);
+		results.update(segmenter);
 	}
 }

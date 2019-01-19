@@ -8,6 +8,7 @@ import net.imglib2.Interval;
 import net.imglib2.labkit.inputimage.InputImage;
 import net.imglib2.labkit.labeling.Labeling;
 import net.imglib2.labkit.labeling.LabelingSerializer;
+import net.imglib2.labkit.models.DefaultSegmentationModel;
 import net.imglib2.util.Intervals;
 import org.scijava.Context;
 
@@ -23,6 +24,16 @@ import java.util.stream.IntStream;
 import java.util.stream.LongStream;
 
 public class InitialLabeling {
+
+	static void initializeLabeling(InputImage inputImage,
+		DefaultSegmentationModel segmentationModel)
+	{
+		final Context context = segmentationModel.context();
+		Preferences preferences = new Preferences(context);
+		List<String> defaultLabels = preferences.getDefaultLabels();
+		Labeling initialLabeling = initLabeling(inputImage, context, defaultLabels);
+		segmentationModel.imageLabelingModel().labeling().set(initialLabeling);
+	}
 
 	static Labeling initLabeling(InputImage inputImage, Context context,
 		List<String> defaultLabels)
