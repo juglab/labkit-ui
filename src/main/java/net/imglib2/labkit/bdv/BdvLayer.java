@@ -8,7 +8,7 @@ public interface BdvLayer {
 
 	BdvShowable image();
 
-	Notifier<Runnable> listeners();
+	Notifier listeners();
 
 	Holder<Boolean> visibility();
 
@@ -18,7 +18,7 @@ public interface BdvLayer {
 
 		private final BdvShowable image;
 		private final String title;
-		private final Notifier<Runnable> listeners = new Notifier<>();
+		private final Notifier listeners = new Notifier();
 		private final Holder<Boolean> visibility;
 
 		public FinalLayer(BdvShowable image, String title,
@@ -35,7 +35,7 @@ public interface BdvLayer {
 		}
 
 		@Override
-		public Notifier<Runnable> listeners() {
+		public Notifier listeners() {
 			return listeners;
 		}
 

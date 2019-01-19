@@ -23,7 +23,7 @@ public class ComponentList<K, C extends JComponent> {
 	private JComponent component = new JScrollPane(background);
 	private K selected;
 	private Map<C, K> panels = new HashMap<>();
-	private Notifier<Runnable> listeners = new Notifier<>();
+	private Notifier listeners = new Notifier();
 
 	public ComponentList() {
 		background.setLayout(new MigLayout("insets 4pt, gap 4pt", "[grow]"));
@@ -55,7 +55,7 @@ public class ComponentList<K, C extends JComponent> {
 		this.selected = key;
 		panels.forEach((component, k) -> component.setBackground(k == selected
 			? SELECTED_BACKGROUND : BACKGROUND));
-		listeners.forEach(l -> l.run());
+		listeners.notifyListeners();
 	}
 
 	public K getSelected() {
@@ -69,7 +69,7 @@ public class ComponentList<K, C extends JComponent> {
 		background.repaint();
 	}
 
-	public Notifier<Runnable> listeners() {
+	public Notifier listeners() {
 		return listeners;
 	}
 

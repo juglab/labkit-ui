@@ -8,19 +8,19 @@ import java.util.function.Consumer;
 /**
  * @author Matthias Arzt
  */
-public class Notifier<T> {
+public class Notifier {
 
-	private final List<T> listeners = new CopyOnWriteArrayList<>();
+	private final List<Runnable> listeners = new CopyOnWriteArrayList<>();
 
-	public void forEach(Consumer<? super T> runnable) {
-		listeners.forEach(runnable);
+	public void notifyListeners() {
+		listeners.forEach(Runnable::run);
 	}
 
-	public void add(T listener) {
+	public void add(Runnable listener) {
 		listeners.add(listener);
 	}
 
-	public void remove(T listener) {
+	public void remove(Runnable listener) {
 		listeners.remove(listener);
 	}
 }

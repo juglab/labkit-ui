@@ -12,7 +12,6 @@ import net.imglib2.labkit.labeling.LabelingSerializer;
 import net.imglib2.roi.IterableRegion;
 import net.imglib2.type.logic.BitType;
 
-import javax.swing.filechooser.FileNameExtensionFilter;
 import java.io.IOException;
 import java.util.List;
 import java.util.Set;
@@ -38,7 +37,7 @@ public class AddLabelingIoAction extends AbstractFileIoAction {
 	private void openAdditional(String filename) throws IOException {
 		Labeling newLabeling = serializer.open(filename);
 		extendLabeling(labeling.get(), newLabeling);
-		labeling.notifier().forEach(listener -> listener.accept(labeling.get()));
+		labeling.notifier().notifyListeners();
 	}
 
 	// TODO: move to package Labeling

@@ -19,5 +19,5 @@ public interface SegmenterListModel<T> {
 
 	Holder<Boolean> segmentationVisibility();
 
-	Notifier<Runnable> listChangeListeners();
+	Notifier listChangeListeners();
 }

@@ -74,7 +74,7 @@ public class BitmapImportExportAction extends AbstractFileIoAction {
 			"Import Label", JOptionPane.ERROR_MESSAGE);
 		labeling.addLabel("Label \"" + new File(filename).getName() + "\"",
 			toBoolType(image));
-		model.labeling().notifier().forEach(l -> l.accept(labeling));
+		model.labeling().notifier().notifyListeners();
 	}
 
 	private void exportLabel(String filename) throws IOException {

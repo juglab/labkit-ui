@@ -33,7 +33,7 @@ public class BitmapModel {
 	}
 
 	public void fireBitmapChanged() {
-		model.dataChangedNotifier().forEach(Runnable::run);
+		model.dataChangedNotifier().notifyListeners();
 	}
 
 	public AffineTransform3D transformation() {
@@ -47,7 +47,6 @@ public class BitmapModel {
 		label.setVisible(true);
 		model.labelingVisibility().set(true);
 		Holder<Labeling> holder = model.labeling();
-		Labeling labeling = holder.get();
-		holder.notifier().forEach(r -> r.accept(labeling));
+		holder.notifier().notifyListeners();
 	}
 }

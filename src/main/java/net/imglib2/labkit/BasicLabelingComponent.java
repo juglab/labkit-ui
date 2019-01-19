@@ -83,7 +83,8 @@ public class BasicLabelingComponent implements AutoCloseable {
 		layer.listeners().add(this::requestRepaint);
 		ToggleVisibility action = new ToggleVisibility(layer.title(), source);
 		actionsAndBehaviours.addAction(action);
-		layer.visibility().notifier().add(action::setVisible);
+		layer.visibility().notifier().add(() -> action.setVisible(layer.visibility()
+			.get()));
 		action.addPropertyChangeListener(propertyChangeEvent -> {
 			if (propertyChangeEvent.getPropertyName().equals(Action.SELECTED_KEY))
 				layer.visibility().set((Boolean) propertyChangeEvent.getNewValue());

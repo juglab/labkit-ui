@@ -33,7 +33,7 @@ public class PredictionLayer implements BdvLayer {
 	private final SharedQueue queue = new SharedQueue(Runtime.getRuntime()
 		.availableProcessors());
 	private final Holder<Boolean> visibility;
-	private Notifier<Runnable> listeners = new Notifier<>();
+	private Notifier listeners = new Notifier();
 	private RandomAccessibleInterval<? extends NumericType<?>> view;
 	private AffineTransform3D transformation;
 	private Set<SegmentationItem> alreadyRegistered = Collections.newSetFromMap(
@@ -49,7 +49,7 @@ public class PredictionLayer implements BdvLayer {
 		this.transformation = selected.transformation();
 		this.view = Views.interval(segmentationContainer, selected.interval());
 		this.visibility = visibility;
-		model.notifier().add(ignore -> classifierChanged());
+		model.notifier().add(() -> classifierChanged());
 		registerListener(model.get());
 	}
 
@@ -82,7 +82,7 @@ public class PredictionLayer implements BdvLayer {
 			.extendValue(coloredVolatileView(selected), new VolatileARGBType(0))
 			: getEmptyPrediction(selected);
 		segmentationContainer.setSource(source);
-		listeners.forEach(Runnable::run);
+		listeners.notifyListeners();
 	}
 
 	private RandomAccessibleInterval<VolatileARGBType> coloredVolatileView(
@@ -112,7 +112,7 @@ public class PredictionLayer implements BdvLayer {
 	}
 
 	@Override
-	public Notifier<Runnable> listeners() {
+	public Notifier listeners() {
 		return listeners;
 	}
 

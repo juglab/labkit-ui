@@ -6,12 +6,10 @@ import net.imglib2.RandomAccess;
 import net.imglib2.RandomAccessibleInterval;
 import net.imglib2.converter.Converter;
 import net.imglib2.converter.Converters;
-import net.imglib2.labkit.DefaultExtensible;
 import net.imglib2.labkit.Extensible;
 import net.imglib2.labkit.MenuBar;
 import net.imglib2.labkit.labeling.Label;
 import net.imglib2.labkit.labeling.Labeling;
-import net.imglib2.labkit.models.DefaultSegmentationModel;
 import net.imglib2.labkit.models.Holder;
 import net.imglib2.labkit.models.SegmentationItem;
 import net.imglib2.labkit.models.SegmentationModel;
@@ -70,7 +68,7 @@ public class SegmentationAsLabelAction {
 		RandomAccessibleInterval<BitType> result = Converters.convert(segmentation,
 			converter, new BitType());
 		addLabel(labelingHolder.get(), "segmented " + selected, result);
-		labelingHolder.notifier().forEach(l -> l.accept(labelingHolder.get()));
+		labelingHolder.notifier().notifyListeners();
 	}
 
 	// TODO move to better place

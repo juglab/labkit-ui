@@ -3,14 +3,12 @@ package net.imglib2.labkit.models;
 
 import net.imglib2.labkit.utils.Notifier;
 
-import java.util.function.Consumer;
-
 /**
  * Created by arzt on 21.08.17.
  */
 public class DefaultHolder<T> implements Holder<T> {
 
-	private Notifier<Consumer<T>> notifier = new Notifier<>();
+	private Notifier notifier = new Notifier();
 
 	private T value;
 
@@ -22,7 +20,7 @@ public class DefaultHolder<T> implements Holder<T> {
 	public void set(T value) {
 		if (value == this.value) return;
 		this.value = value;
-		notifier.forEach(listener -> listener.accept(value));
+		notifier.notifyListeners();
 	}
 
 	@Override
@@ -31,7 +29,7 @@ public class DefaultHolder<T> implements Holder<T> {
 	}
 
 	@Override
-	public Notifier<Consumer<T>> notifier() {
+	public Notifier notifier() {
 		return notifier;
 	}
 }

@@ -45,7 +45,7 @@ public class DefaultSegmentationModel implements SegmentationModel,
 	private final CellGrid grid;
 	private final Holder<Boolean> segmentationVisibility = new DefaultHolder<>(
 		true);
-	private final Notifier<Runnable> listeners = new Notifier<>();
+	private final Notifier listeners = new Notifier();
 	private final BiFunction<Context, InputImage, Segmenter> segmenterFactory;
 
 	public DefaultSegmentationModel(InputImage inputImage, Context context) {
@@ -119,7 +119,7 @@ public class DefaultSegmentationModel implements SegmentationModel,
 		SegmentationItem segmentationItem = new SegmentationItem(this,
 			initClassifier());
 		segmenters.add(segmentationItem);
-		listeners.forEach(Runnable::run);
+		listeners.notifyListeners();
 		return segmentationItem;
 	}
 
@@ -145,7 +145,7 @@ public class DefaultSegmentationModel implements SegmentationModel,
 		segmenters.remove(item);
 		if (!segmenters.contains(selectedSegmenter.get())) selectedSegmenter.set(
 			segmenters.get(0));
-		listeners.forEach(Runnable::run);
+		listeners.notifyListeners();
 	}
 
 	@Override
@@ -159,7 +159,7 @@ public class DefaultSegmentationModel implements SegmentationModel,
 	}
 
 	@Override
-	public Notifier<Runnable> listChangeListeners() {
+	public Notifier listChangeListeners() {
 		return listeners;
 	}
 

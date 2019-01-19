@@ -113,7 +113,7 @@ public class FloodFillController {
 		@Override
 		public void click(int x, int y) {
 			floodFill(displayToImageCoordinates(x, y));
-			model.dataChangedNotifier().forEach(Runnable::run);
+			model.dataChangedNotifier().notifyListeners();
 		}
 	}
 

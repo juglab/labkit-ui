@@ -23,7 +23,7 @@ import java.util.stream.Stream;
 public class TimeSeriesSegmenter implements Segmenter {
 
 	private final Segmenter segmenter;
-	private final Notifier<Runnable> listeners = new Notifier<>();
+	private final Notifier listeners = new Notifier();
 
 	public TimeSeriesSegmenter(Segmenter segmenter) {
 		this.segmenter = segmenter;

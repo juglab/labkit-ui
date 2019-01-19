@@ -68,7 +68,7 @@ public class GuiUtils {
 	{
 		final JCheckBox checkbox = new JCheckBox(text);
 		checkbox.setSelected(visibility.get());
-		visibility.notifier().add(checkbox::setSelected);
+		visibility.notifier().add(() -> checkbox.setSelected(visibility.get()));
 		checkbox.addItemListener(itemEvent -> visibility.set(itemEvent
 			.getStateChange() == ItemEvent.SELECTED));
 		return styleCheckboxUsingEye(checkbox);

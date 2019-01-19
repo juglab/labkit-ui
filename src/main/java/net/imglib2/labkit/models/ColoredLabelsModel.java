@@ -22,16 +22,16 @@ public class ColoredLabelsModel {
 
 	private final ImageLabelingModel model;
 
-	private final Notifier<Runnable> listeners = new Notifier<>();
+	private final Notifier listeners = new Notifier();
 
 	public ColoredLabelsModel(ImageLabelingModel model) {
 		this.model = model;
-		model.labeling().notifier().add(l -> notifyListeners());
-		model.selectedLabel().notifier().add(s -> notifyListeners());
+		model.labeling().notifier().add(this::notifyListeners);
+		model.selectedLabel().notifier().add(this::notifyListeners);
 	}
 
 	private void notifyListeners() {
-		listeners.forEach(Runnable::run);
+		listeners.notifyListeners();
 	}
 
 	public List<Label> items() {
@@ -46,7 +46,7 @@ public class ColoredLabelsModel {
 		model.selectedLabel().set(value);
 	}
 
-	public Notifier<Runnable> listeners() {
+	public Notifier listeners() {
 		return listeners;
 	}
 
@@ -136,8 +136,7 @@ public class ColoredLabelsModel {
 
 	private void fireLabelsChanged() {
 		Holder<Labeling> holder = model.labeling();
-		Labeling labeling = holder.get();
-		holder.notifier().forEach(l -> l.accept(labeling));
+		holder.notifier().notifyListeners();
 	}
 
 }

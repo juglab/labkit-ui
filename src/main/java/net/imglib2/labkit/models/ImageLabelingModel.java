@@ -21,7 +21,7 @@ public class ImageLabelingModel implements LabelingModel {
 
 	private Holder<Labeling> labelingHolder;
 
-	private Notifier<Runnable> dataChangedNotifier = new Notifier<>();
+	private Notifier dataChangedNotifier = new Notifier();
 
 	private Holder<Label> selectedLabelHolder;
 
@@ -72,7 +72,7 @@ public class ImageLabelingModel implements LabelingModel {
 		return result;
 	}
 
-	private void labelingReplacedEvent(Labeling labeling) {
+	private void labelingReplacedEvent() {
 		updateLabelTransform();
 		Label selectedLabel = selectedLabelHolder.get();
 		List<Label> labels = labelingHolder.get().getLabels();
@@ -107,7 +107,7 @@ public class ImageLabelingModel implements LabelingModel {
 	}
 
 	@Override
-	public Notifier<Runnable> dataChangedNotifier() {
+	public Notifier dataChangedNotifier() {
 		return dataChangedNotifier;
 	}
 

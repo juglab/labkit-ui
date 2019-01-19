@@ -38,7 +38,7 @@ public class SegmentationResultsModel {
 	private List<String> labels = Collections.emptyList();
 	private List<ARGBType> colors = Collections.emptyList();
 
-	private Notifier<Runnable> listeners = new Notifier<>();
+	private Notifier listeners = new Notifier();
 
 	public SegmentationResultsModel(SegmentationModel model,
 		Segmenter segmenter)
@@ -57,7 +57,7 @@ public class SegmentationResultsModel {
 			this.colors = this.labels.stream().map(name -> model.labeling().getLabel(
 				name).color()).collect(Collectors.toList());
 			hasResults = true;
-			listeners.forEach(Runnable::run);
+			listeners.notifyListeners();
 		}
 	}
 
@@ -122,7 +122,7 @@ public class SegmentationResultsModel {
 		return colors;
 	}
 
-	public Notifier<Runnable> segmentationChangedListeners() {
+	public Notifier segmentationChangedListeners() {
 		return listeners;
 	}
 

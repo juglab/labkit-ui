@@ -30,7 +30,7 @@ public class LabelsLayer implements BdvLayer {
 
 	private final RandomAccessibleInterval<ARGBType> view;
 
-	private final Notifier<Runnable> listeners = new Notifier<>();
+	private final Notifier listeners = new Notifier();
 
 	private final ARGBType BLACK = new ARGBType(0);
 
@@ -39,13 +39,13 @@ public class LabelsLayer implements BdvLayer {
 		RandomAccessibleInterval<ARGBType> view = colorView();
 		container = new RandomAccessibleContainer<>(view);
 		this.view = Views.interval(container, view);
-		model.labeling().notifier().add(ignore -> updateView());
-		model.dataChangedNotifier().add(() -> listeners.forEach(Runnable::run));
+		model.labeling().notifier().add(this::updateView);
+		model.dataChangedNotifier().add(() -> listeners.notifyListeners());
 	}
 
 	private void updateView() {
 		container.setSource(colorView());
-		listeners.forEach(Runnable::run);
+		listeners.notifyListeners();
 	}
 
 	private RandomAccessibleInterval<ARGBType> colorView() {
@@ -80,7 +80,7 @@ public class LabelsLayer implements BdvLayer {
 	}
 
 	@Override
-	public Notifier<Runnable> listeners() {
+	public Notifier listeners() {
 		return listeners;
 	}
 
