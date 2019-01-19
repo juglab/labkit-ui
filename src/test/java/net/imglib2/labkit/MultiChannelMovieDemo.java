@@ -54,12 +54,12 @@ public class MultiChannelMovieDemo {
 		AxisType[] axes = { Axes.X, Axes.Y, Axes.Z, Axes.CHANNEL };
 		DatasetInputImage inputImage = new DatasetInputImage(new ImgPlus<>(image,
 			"", axes), BdvShowable.wrap(Views.hyperSlice(image, 3, 0)));
-		MainFrame.showForImage(new Context(), inputImage);
+		LabkitFrame.showForImage(new Context(), inputImage);
 	}
 
 	private static void main2() {
 		DatasetInputImage inputImage = inputImage5d();
-		MainFrame.showForImage(new Context(), inputImage);
+		LabkitFrame.showForImage(new Context(), inputImage);
 	}
 
 	private static DatasetInputImage inputImage5d() {

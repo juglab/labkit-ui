@@ -18,11 +18,11 @@ import java.awt.event.WindowEvent;
  *
  * @author Matthias Arzt
  */
-public class MainFrame {
+public class LabkitFrame {
 
 	private JFrame frame = initFrame();
 
-	public static MainFrame showForFile(final Context context,
+	public static LabkitFrame showForFile(final Context context,
 		final String filename)
 	{
 		final Context context2 = (context == null) ? new Context() : context;
@@ -31,16 +31,16 @@ public class MainFrame {
 		return showForImage(context2, new DatasetInputImage(dataset));
 	}
 
-	public static MainFrame showForImage(final Context context,
+	public static LabkitFrame showForImage(final Context context,
 		final InputImage inputImage)
 	{
 		final DefaultSegmentationModel model = new DefaultSegmentationModel(
 			inputImage, context);
 		InitialLabeling.initializeLabeling(inputImage, model);
-		return new MainFrame(model, inputImage.getName());
+		return new LabkitFrame(model, inputImage.getName());
 	}
 
-	public MainFrame(final DefaultSegmentationModel model, final String title) {
+	public LabkitFrame(final DefaultSegmentationModel model, final String title) {
 		SegmentationComponent segmentationComponent = initSegmentationComponent(
 			model);
 		setTitle(title);

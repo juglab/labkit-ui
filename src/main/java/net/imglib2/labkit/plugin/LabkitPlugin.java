@@ -2,7 +2,7 @@
 package net.imglib2.labkit.plugin;
 
 import net.imagej.Dataset;
-import net.imglib2.labkit.MainFrame;
+import net.imglib2.labkit.LabkitFrame;
 import net.imglib2.labkit.inputimage.DatasetInputImage;
 import org.scijava.Context;
 import org.scijava.command.Command;
@@ -24,6 +24,6 @@ public class LabkitPlugin implements Command {
 	@Override
 	public void run() {
 		DatasetInputImage input = new DatasetInputImage(dataset);
-		MainFrame.showForImage(context, input);
+		LabkitFrame.showForImage(context, input);
 	}
 }

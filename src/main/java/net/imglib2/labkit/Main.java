@@ -47,6 +47,6 @@ public class Main {
 	public static void start(String filename) {
 		ImageJ imageJ = new ImageJ();
 		imageJ.ui().showUI();
-		MainFrame.showForFile(imageJ.context(), filename);
+		LabkitFrame.showForFile(imageJ.context(), filename);
 	}
 }
