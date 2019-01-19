@@ -45,7 +45,7 @@ public class TestTimeSeriesSegmenter {
 
 		@Override
 		public void train(
-			List<Pair<? extends RandomAccessibleInterval<?>, ? extends Labeling>> image)
+			List<Pair<? extends RandomAccessibleInterval<?>, ? extends Labeling>> trainingData)
 		{
 
 		}

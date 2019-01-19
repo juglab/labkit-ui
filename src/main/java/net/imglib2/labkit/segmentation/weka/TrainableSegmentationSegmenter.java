@@ -19,7 +19,6 @@ import net.imglib2.labkit.inputimage.InputImage;
 import net.imglib2.labkit.labeling.Labeling;
 import net.imglib2.labkit.utils.CheckedExceptionUtils;
 import net.imglib2.labkit.utils.LabkitUtils;
-import net.imglib2.labkit.utils.Notifier;
 import net.imglib2.sparse.SparseRandomAccessIntType;
 import net.imglib2.labkit.utils.DimensionUtils;
 import net.imglib2.trainable_segmention.classification.Training;
@@ -125,10 +124,10 @@ public class TrainableSegmentationSegmenter implements Segmenter {
 
 	@Override
 	public void train(
-		List<Pair<? extends RandomAccessibleInterval<?>, ? extends Labeling>> data)
+		List<Pair<? extends RandomAccessibleInterval<?>, ? extends Labeling>> trainingData)
 	{
 		try {
-			List<String> classes = collectLabels(data.stream().map(Pair::getB)
+			List<String> classes = collectLabels(trainingData.stream().map(Pair::getB)
 				.collect(Collectors.toList()));
 			weka.classifiers.Classifier wekaClassifier = CheckedExceptionUtils.run(
 				() -> AbstractClassifier.makeCopy(this.initialWekaClassifier));
@@ -137,7 +136,7 @@ public class TrainableSegmentationSegmenter implements Segmenter {
 				new net.imglib2.trainable_segmention.classification.Segmenter(ops,
 					classes, featureSettings, wekaClassifier);
 			Training training = segmenter.training();
-			for (Pair<? extends RandomAccessibleInterval<?>, ? extends Labeling> pair : data)
+			for (Pair<? extends RandomAccessibleInterval<?>, ? extends Labeling> pair : trainingData)
 				train(training, classes, pair.getB(), pair.getA(), segmenter
 					.features());
 			training.train();

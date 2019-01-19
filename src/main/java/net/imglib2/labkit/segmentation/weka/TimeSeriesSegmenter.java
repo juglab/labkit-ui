@@ -66,10 +66,10 @@ public class TimeSeriesSegmenter implements Segmenter {
 
 	@Override
 	public void train(
-		List<Pair<? extends RandomAccessibleInterval<?>, ? extends Labeling>> data)
+		List<Pair<? extends RandomAccessibleInterval<?>, ? extends Labeling>> trainingData)
 	{
 		List<Pair<? extends RandomAccessibleInterval<?>, ? extends Labeling>> slicedData =
-			data.stream().flatMap(this::slice).collect(Collectors.toList());
+			trainingData.stream().flatMap(this::slice).collect(Collectors.toList());
 		segmenter.train(slicedData);
 	}
 

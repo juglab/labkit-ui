@@ -30,7 +30,7 @@ public interface Segmenter {
 	 * to be fixed.
 	 */
 	void train(
-		List<Pair<? extends RandomAccessibleInterval<?>, ? extends Labeling>> image);
+		List<Pair<? extends RandomAccessibleInterval<?>, ? extends Labeling>> trainingData);
 
 	/**
 	 * Segment the image and write the result into the provided output. The output
