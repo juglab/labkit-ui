@@ -46,12 +46,18 @@ public class DefaultSegmentationModel implements SegmentationModel,
 	private final Holder<Boolean> segmentationVisibility = new DefaultHolder<>(
 		true);
 	private final Notifier<Runnable> listeners = new Notifier<>();
-	private BiFunction<Context, InputImage, Segmenter> segmenterFactory =
-		TrainableSegmentationSegmenter::new;
+	private final BiFunction<Context, InputImage, Segmenter> segmenterFactory;
 
 	public DefaultSegmentationModel(InputImage inputImage, Context context) {
+		this(inputImage, context, TrainableSegmentationSegmenter::new);
+	}
+
+	public DefaultSegmentationModel(InputImage inputImage, Context context,
+		BiFunction<Context, InputImage, Segmenter> segmenterFactory)
+	{
 		this.context = context;
 		this.inputImage = inputImage;
+		this.segmenterFactory = segmenterFactory;
 		Labeling labeling = Labeling.createEmpty(Arrays.asList("background",
 			"foreground"), inputImage.interval());
 		this.imageLabelingModel = new ImageLabelingModel(inputImage.showable(),
@@ -67,12 +73,6 @@ public class DefaultSegmentationModel implements SegmentationModel,
 		Segmenter segmenter = segmenterFactory.apply(context, inputImage);
 		return inputImage.isTimeSeries() ? new TimeSeriesSegmenter(segmenter)
 			: segmenter;
-	}
-
-	public void setSegmenterFactory(
-		BiFunction<Context, InputImage, Segmenter> segmenterFactory)
-	{
-		this.segmenterFactory = segmenterFactory;
 	}
 
 	public Context context() {
