@@ -2,7 +2,6 @@
 package net.imglib2.labkit.actions;
 
 import net.imglib2.labkit.Extensible;
-import net.imglib2.labkit.MenuBar;
 import net.imglib2.labkit.models.Holder;
 import net.imglib2.labkit.models.SegmentationItem;
 
@@ -27,10 +26,10 @@ public class ClassifierIoAction extends AbstractFileIoAction {
 	}
 
 	private void save(SegmentationItem item, String filename) {
-		item.segmenter().saveModel(filename);
+		item.saveModel(filename);
 	}
 
 	private void open(SegmentationItem item, String filename) {
-		item.segmenter().openModel(filename);
+		item.openModel(filename);
 	}
 }
