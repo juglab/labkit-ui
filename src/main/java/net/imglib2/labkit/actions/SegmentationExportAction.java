@@ -12,14 +12,13 @@ import net.imglib2.labkit.models.Holder;
 import net.imglib2.labkit.models.SegmentationItem;
 import net.imglib2.labkit.utils.LabkitUtils;
 import bdv.export.ProgressWriter;
+import net.imglib2.labkit.utils.ParallelUtils;
 import net.imglib2.labkit.utils.progress.SwingProgressWriter;
 import net.imglib2.type.NativeType;
 import net.imglib2.type.Type;
 import net.imglib2.type.numeric.NumericType;
 
 import javax.swing.*;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
@@ -71,7 +70,7 @@ public class SegmentationExportAction extends AbstractFileIoAction {
 	private <T extends NumericType<T> & NativeType<T>> void populate(
 		Supplier<RandomAccessibleInterval<T>> supplier)
 	{
-		startInNewThread(() -> {
+		ParallelUtils.runInOtherThread(() -> {
 			final ProgressWriter progress = new SwingProgressWriter(null,
 				"Segment Entire Image Volume");
 			LabkitUtils.populateCachedImg(supplier.get(), progress);
@@ -83,16 +82,9 @@ public class SegmentationExportAction extends AbstractFileIoAction {
 	{
 		return () -> {
 			populate(supplier);
-			startInNewThread(() -> ImageJFunctions.show(supplier.get()));
+			ParallelUtils.runInOtherThread(() -> ImageJFunctions.show(supplier
+				.get()));
 		};
-	}
-
-	private void startInNewThread(Runnable action) {
-		ExecutorService executer = Executors.newSingleThreadExecutor();
-		executer.submit(() -> {
-			action.run();
-			executer.shutdown();
-		});
 	}
 
 	private <T extends Type<T>> Action getSaveAction(

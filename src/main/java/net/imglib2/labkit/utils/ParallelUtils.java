@@ -16,6 +16,7 @@ import java.util.List;
 import java.util.concurrent.Callable;
 import java.util.concurrent.CancellationException;
 import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Consumer;
@@ -83,6 +84,14 @@ public class ParallelUtils {
 			for (Future<Void> future : executor.invokeAll(collection)) {
 				future.get();
 			}
+		});
+	}
+
+	public static void runInOtherThread(Runnable action) {
+		ExecutorService executer = Executors.newSingleThreadExecutor();
+		executer.submit(() -> {
+			action.run();
+			executer.shutdown();
 		});
 	}
 }
