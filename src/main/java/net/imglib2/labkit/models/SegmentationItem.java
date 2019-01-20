@@ -40,6 +40,12 @@ public class SegmentationItem extends ForwardingSegmenter {
 	}
 
 	@Override
+	public void openModel(String path) {
+		super.openModel(path);
+		results.update();
+	}
+
+	@Override
 	public void train(
 		List<Pair<? extends RandomAccessibleInterval<?>, ? extends Labeling>> data)
 	{
