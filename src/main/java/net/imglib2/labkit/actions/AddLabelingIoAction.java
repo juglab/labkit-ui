@@ -34,7 +34,7 @@ public class AddLabelingIoAction extends AbstractFileIoAction {
 			this::openAdditional, "");
 	}
 
-	private void openAdditional(String filename) throws IOException {
+	private void openAdditional(Void ignore, String filename) throws IOException {
 		Labeling newLabeling = serializer.open(filename);
 		extendLabeling(labeling.get(), newLabeling);
 		labeling.notifier().notifyListeners();

@@ -29,18 +29,20 @@ public class LabelingIoAction extends AbstractFileIoAction {
 			AbstractFileIoAction.TIFF_FILTER);
 		this.labelingModel = labelingModel;
 		serializer = new LabelingSerializer(extensible.context());
-		initSaveAction(MenuBar.LABELING_MENU, "Save Labeling ...", 2, new Action() {
+		initSaveAction(MenuBar.LABELING_MENU, "Save Labeling ...", 2,
+			new Action<Void>()
+			{
 
-			@Override
-			public String suggestedFile() {
-				return LabelingIoAction.this.labelingModel.defaultFileName();
-			}
+				@Override
+				public String suggestedFile() {
+					return LabelingIoAction.this.labelingModel.defaultFileName();
+				}
 
-			@Override
-			public void run(String filename) throws Exception {
-				serializer.save(labelingModel.labeling().get(), filename);
-			}
-		}, "ctrl S");
+				@Override
+				public void run(Void ignore, String filename) throws Exception {
+					serializer.save(labelingModel.labeling().get(), filename);
+				}
+			}, "ctrl S");
 		initOpenAction(MenuBar.LABELING_MENU, "Open Labeling ...", 1, this::open,
 			"ctrl O");
 		Runnable action = () -> {
@@ -52,7 +54,7 @@ public class LabelingIoAction extends AbstractFileIoAction {
 			ignore -> action.run(), null, "");
 	}
 
-	private void open(String filename) throws IOException {
+	private void open(Void ignore, String filename) throws IOException {
 		Labeling labeling = serializer.open(filename);
 		labelingModel.labeling().set(labeling);
 	}

@@ -7,8 +7,6 @@ import net.imglib2.RandomAccessibleInterval;
 import net.imglib2.img.ImgView;
 import net.imglib2.img.display.imagej.ImageJFunctions;
 import net.imglib2.labkit.Extensible;
-import net.imglib2.labkit.MenuBar;
-import net.imglib2.labkit.models.Holder;
 import net.imglib2.labkit.models.SegmentationItem;
 import net.imglib2.labkit.utils.LabkitUtils;
 import bdv.export.ProgressWriter;
@@ -20,7 +18,6 @@ import net.imglib2.type.numeric.NumericType;
 
 import javax.swing.*;
 import java.util.function.Function;
-import java.util.function.Supplier;
 
 /**
  * @author Matthias Arzt
@@ -29,68 +26,47 @@ public class SegmentationExportAction extends AbstractFileIoAction {
 
 	private final Extensible extensible;
 
-	public SegmentationExportAction(Extensible extensible,
-		Holder<SegmentationItem> selectedSegmenter)
-	{
+	public SegmentationExportAction(Extensible extensible) {
 		super(extensible, AbstractFileIoAction.TIFF_FILTER,
 			AbstractFileIoAction.HDF5_FILTER);
 		this.extensible = extensible;
-		addMenuItems(selectedSegmenter, item -> item.results().segmentation(),
-			"Segmentation Result");
-		addMenuItems(selectedSegmenter, item -> item.results().prediction(),
-			"Probability Map");
+		addMenuItems(item -> item.results().segmentation(), "Segmentation Result");
+		addMenuItems(item -> item.results().prediction(), "Probability Map");
 	}
 
 	private <T extends NumericType<T> & NativeType<T>> void addMenuItems(
-		Holder<SegmentationItem> selectedSegmenter,
 		Function<SegmentationItem, RandomAccessibleInterval<T>> predictionFactory,
 		String title)
 	{
-		Supplier<RandomAccessibleInterval<T>> selectedResult =
-			() -> predictionFactory.apply(selectedSegmenter.get());
-		initSaveAction(MenuBar.SEGMENTER_MENU, "Save " + title + " ...", 200,
-			getSaveAction(selectedResult), "");
-		extensible.addMenuItem(MenuBar.SEGMENTER_MENU, "Show " + title +
-			" in ImageJ", 201, ignore -> getShowAction(selectedResult).run(), null,
-			"");
-		extensible.addMenuItem(SegmentationItem.SEGMENTER_MENU, "Save " + title +
-			" as TIF / HDF5 ...", 200, item -> openDialogAndThen("Save " + title +
-				" ...", JFileChooser.SAVE_DIALOG, getSaveAction(() -> predictionFactory
-					.apply(item))), null, null);
+		initSaveAction(SegmentationItem.SEGMENTER_MENU, "Save " + title +
+			" as TIF / HDF5 ...", 200, (data, filename) -> saveImage(filename,
+				predictionFactory.apply(data)), "");
 		extensible.addMenuItem(SegmentationItem.SEGMENTER_MENU, "Show " + title +
-			" in ImageJ", 201, item -> getShowAction(() -> predictionFactory.apply(
-				item)).run(), null, null);
-		extensible.addMenuItem(MenuBar.SEGMENTER_MENU, "Calculate entire " + title,
-			300, ignore -> populate(selectedResult), null, "");
+			" in ImageJ", 201, data -> show(predictionFactory.apply(data)), null, "");
 		extensible.addMenuItem(SegmentationItem.SEGMENTER_MENU,
-			"Calculate entire " + title, 300, item -> populate(() -> predictionFactory
+			"Calculate entire " + title, 300, item -> populate(predictionFactory
 				.apply(item)), null, "");
 	}
 
 	private <T extends NumericType<T> & NativeType<T>> void populate(
-		Supplier<RandomAccessibleInterval<T>> supplier)
+		RandomAccessibleInterval<T> result)
 	{
-		ParallelUtils.runInOtherThread(() -> {
-			final ProgressWriter progress = new SwingProgressWriter(null,
-				"Segment Entire Image Volume");
-			LabkitUtils.populateCachedImg(supplier.get(), progress);
-		});
+		ParallelUtils.runInOtherThread(() -> populate2(result));
 	}
 
-	private <T extends NumericType<T> & NativeType<T>> Runnable getShowAction(
-		Supplier<RandomAccessibleInterval<T>> supplier)
+	private <T extends NumericType<T> & NativeType<T>> void populate2(
+		RandomAccessibleInterval<T> result)
 	{
-		return () -> {
-			populate(supplier);
-			ParallelUtils.runInOtherThread(() -> ImageJFunctions.show(supplier
-				.get()));
-		};
+		final ProgressWriter progress = new SwingProgressWriter(null,
+			"Segment Entire Image Volume");
+		LabkitUtils.populateCachedImg(result, progress);
 	}
 
-	private <T extends Type<T>> Action getSaveAction(
-		Supplier<RandomAccessibleInterval<T>> supplier)
+	private <T extends NumericType<T> & NativeType<T>> void show(
+		RandomAccessibleInterval<T> result)
 	{
-		return filename -> saveImage(filename, supplier.get());
+		populate(result);
+		ParallelUtils.runInOtherThread(() -> ImageJFunctions.show(result));
 	}
 
 	private <T extends Type<T>> void saveImage(String filename,

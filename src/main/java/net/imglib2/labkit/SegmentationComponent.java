@@ -64,7 +64,7 @@ public class SegmentationComponent implements AutoCloseable {
 		new ClassifierIoAction(extensible, selectedSegmenter);
 		new LabelingIoAction(extensible, labelingModel);
 		new AddLabelingIoAction(extensible, labelingModel.labeling());
-		new SegmentationExportAction(extensible, selectedSegmenter);
+		new SegmentationExportAction(extensible);
 		new ResetViewAction(extensible, labelingModel);
 		new BatchSegmentAction(extensible, selectedSegmenter);
 		new SegmentationAsLabelAction(extensible, segmentationModel);
@@ -103,6 +103,9 @@ public class SegmentationComponent implements AutoCloseable {
 	}
 
 	public JMenu createMenu(MenuKey<Void> key) {
+		if (key == MenuBar.SEGMENTER_MENU) return extensible.createMenu(
+			SegmentationItem.SEGMENTER_MENU, segmentationModel
+				.selectedSegmenter()::get);
 		return extensible.createMenu(key, () -> null);
 	}
 

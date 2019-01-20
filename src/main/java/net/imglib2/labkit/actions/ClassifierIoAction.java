@@ -20,17 +20,17 @@ public class ClassifierIoAction extends AbstractFileIoAction {
 	{
 		super(extensible, new FileNameExtensionFilter("Classifier", "classifier"));
 		this.selectedSegmenter = selectedSegmenter;
-		initSaveAction(MenuBar.SEGMENTER_MENU, "Save Classifier ...", 101,
+		initSaveAction(SegmentationItem.SEGMENTER_MENU, "Save Classifier ...", 101,
 			this::save, "");
-		initOpenAction(MenuBar.SEGMENTER_MENU, "Open Classifier ...", 100,
+		initOpenAction(SegmentationItem.SEGMENTER_MENU, "Open Classifier ...", 100,
 			this::open, "");
 	}
 
-	private void save(String filename) {
-		selectedSegmenter.get().segmenter().saveModel(filename);
+	private void save(SegmentationItem item, String filename) {
+		item.segmenter().saveModel(filename);
 	}
 
-	private void open(String filename) {
-		selectedSegmenter.get().segmenter().openModel(filename);
+	private void open(SegmentationItem item, String filename) {
+		item.segmenter().openModel(filename);
 	}
 }

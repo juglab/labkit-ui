@@ -18,8 +18,6 @@ public class ClassifierSettingsAction {
 	{
 		Runnable action = () -> selectedSegmenter.get().segmenter().editSettings(
 			extensible.dialogParent());
-		extensible.addMenuItem(MenuBar.SEGMENTER_MENU, "Classifier Settings ...", 2,
-			ignore -> action.run(), null, "");
 		extensible.addMenuItem(SegmentationItem.SEGMENTER_MENU,
 			"Classifier Settings ...", 2, item -> item.segmenter().editSettings(
 				extensible.dialogParent()), GuiUtils.loadIcon("gear.png"), null);

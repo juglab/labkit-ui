@@ -10,7 +10,6 @@ import javax.swing.filechooser.FileFilter;
 import javax.swing.filechooser.FileNameExtensionFilter;
 import java.io.File;
 import java.util.concurrent.CancellationException;
-import java.util.concurrent.Executor;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -42,29 +41,29 @@ public abstract class AbstractFileIoAction {
 		fileChooser.setFileFilter(fileFilters[0]);
 	}
 
-	public void initSaveAction(MenuKey<Void> menuKey, String title,
-		float priority, Action action, String keyStroke)
+	public <T> void initSaveAction(MenuKey<T> menuKey, String title,
+		float priority, Action<T> action, String keyStroke)
 	{
 		initAction(menuKey, title, priority, action, keyStroke,
 			JFileChooser.SAVE_DIALOG);
 	}
 
-	public void initOpenAction(MenuKey<Void> menuKey, String title,
-		float priority, Action action, String keyStroke)
+	public <T> void initOpenAction(MenuKey<T> menuKey, String title,
+		float priority, Action<T> action, String keyStroke)
 	{
 		initAction(menuKey, title, priority, action, keyStroke,
 			JFileChooser.OPEN_DIALOG);
 	}
 
-	private void initAction(MenuKey<Void> menuKey, String title, float priority,
-		Action action, String keyStroke, int dialogType)
+	private <T> void initAction(MenuKey<T> menuKey, String title, float priority,
+		Action<T> action, String keyStroke, int dialogType)
 	{
-		extensible.addMenuItem(menuKey, title, priority,
-			ignore -> openDialogAndThen(title, dialogType, action), null, keyStroke);
+		extensible.addMenuItem(menuKey, title, priority, data -> openDialogAndThen(
+			title, dialogType, data, action), null, keyStroke);
 	}
 
-	protected void openDialogAndThen(String title, int dialogType,
-		Action action)
+	protected <T> void openDialogAndThen(String title, int dialogType, T data,
+		Action<T> action)
 	{
 		fileChooser.setDialogTitle(title);
 		String filename = action.suggestedFile();
@@ -72,7 +71,7 @@ public abstract class AbstractFileIoAction {
 		fileChooser.setDialogType(dialogType);
 		final int returnVal = fileChooser.showDialog(extensible.dialogParent(),
 			null);
-		if (returnVal == JFileChooser.APPROVE_OPTION) runAction(action,
+		if (returnVal == JFileChooser.APPROVE_OPTION) runAction(data, action,
 			getSelectedFile());
 	}
 
@@ -92,11 +91,11 @@ public abstract class AbstractFileIoAction {
 		return path;
 	}
 
-	private void runAction(Action action, String filename) {
+	private <T> void runAction(T data, Action<T> action, String filename) {
 		ExecutorService executor = Executors.newSingleThreadExecutor();
 		executor.execute(() -> {
 			try {
-				action.run(filename);
+				action.run(data, filename);
 			}
 			catch (CancellationException e) {
 				// ignore it was just cancelled
@@ -110,12 +109,12 @@ public abstract class AbstractFileIoAction {
 		});
 	}
 
-	public interface Action {
+	public interface Action<T> {
 
 		default String suggestedFile() {
 			return null;
 		}
 
-		void run(String filename) throws Exception;
+		void run(T data, String filename) throws Exception;
 	}
 }
