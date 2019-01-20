@@ -210,8 +210,7 @@ public class DefaultSegmentationModel implements SegmentationModel,
 	}
 
 	private Stream<Segmenter> getTrainedSegmenters() {
-		return segmenters().stream().map(SegmentationItem::segmenter).filter(
-			Segmenter::isTrained);
+		return segmenters().stream().filter(Segmenter::isTrained).map(x -> x);
 	}
 
 }

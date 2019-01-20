@@ -36,8 +36,7 @@ public class BatchSegmentAction {
 
 	private void segmentImages() {
 		CommandService command = extensible.context().service(CommandService.class);
-		command.run(BatchSegment.class, true, "segmenter", selectedSegmenter.get()
-			.segmenter());
+		command.run(BatchSegment.class, true, "segmenter", selectedSegmenter.get());
 	}
 
 	public static class BatchSegment implements Command, Cancelable {

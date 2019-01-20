@@ -4,13 +4,14 @@ package net.imglib2.labkit.models;
 import net.imglib2.RandomAccessibleInterval;
 import net.imglib2.labkit.labeling.Labeling;
 import net.imglib2.labkit.menu.MenuKey;
+import net.imglib2.labkit.segmentation.ForwardingSegmenter;
 import net.imglib2.labkit.segmentation.Segmenter;
 import net.imglib2.util.Pair;
 
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 
-public class SegmentationItem {
+public class SegmentationItem extends ForwardingSegmenter {
 
 	public final static MenuKey<SegmentationItem> SEGMENTER_MENU = new MenuKey<>(
 		SegmentationItem.class);
@@ -18,16 +19,11 @@ public class SegmentationItem {
 	private static final AtomicInteger counter = new AtomicInteger();
 
 	private final String name = "Classifier-#" + counter.incrementAndGet();
-	private final Segmenter segmenter;
 	private final SegmentationResultsModel results;
 
 	public SegmentationItem(SegmentationModel model, Segmenter segmenter) {
-		this.segmenter = segmenter;
+		super(segmenter);
 		this.results = new SegmentationResultsModel(model, segmenter);
-	}
-
-	public Segmenter segmenter() {
-		return segmenter;
 	}
 
 	public String name() {
@@ -43,11 +39,12 @@ public class SegmentationItem {
 		return name();
 	}
 
+	@Override
 	public void train(
 		List<Pair<? extends RandomAccessibleInterval<?>, ? extends Labeling>> data)
 	{
 		results.clear();
-		segmenter.train(data);
+		super.train(data);
 		results.update();
 	}
 }

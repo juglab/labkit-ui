@@ -57,11 +57,11 @@ public class PredictionLayer implements BdvLayer {
 		if (alreadyRegistered.contains(segmenter)) return;
 		alreadyRegistered.add(segmenter);
 		segmenter.results().segmentationChangedListeners().add(
-			() -> onTrainingCompleted(segmenter.segmenter()));
+			() -> onTrainingCompleted(segmenter));
 	}
 
 	private void onTrainingCompleted(Segmenter segmenter) {
-		if (model.get().segmenter() == segmenter) {
+		if (model.get() == segmenter) {
 			classifierChanged();
 			visibility.set(true);
 		}

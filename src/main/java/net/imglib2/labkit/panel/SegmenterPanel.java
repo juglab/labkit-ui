@@ -104,7 +104,7 @@ public class SegmenterPanel {
 		}
 
 		private void showSettings() {
-			item.segmenter().editSettings(null);
+			item.editSettings(null);
 		}
 
 		private void runTraining() {
