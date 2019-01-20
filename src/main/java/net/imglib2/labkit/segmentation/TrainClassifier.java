@@ -9,12 +9,13 @@ import net.imglib2.labkit.models.SegmentationItem;
 import net.imglib2.labkit.models.SegmentationModel;
 import net.imglib2.labkit.models.SegmenterListModel;
 import net.imglib2.labkit.panel.GuiUtils;
+import net.imglib2.labkit.utils.progress.SwingProgressWriter;
 
 import java.util.function.Consumer;
 
 public class TrainClassifier {
 
-	SegmentationModel model;
+	private final SegmentationModel model;
 
 	public <M extends SegmentationModel & SegmenterListModel<?>> TrainClassifier(
 		Extensible extensible, M model)
@@ -31,13 +32,7 @@ public class TrainClassifier {
 	}
 
 	private void trainClassifier() {
-		try {
-			model.trainSegmenter();
-		}
-		catch (final Exception e1) {
-			System.out.println("Training was interrupted by exception:");
-			e1.printStackTrace();
-		}
+		model.trainSegmenter();
 	}
 
 }

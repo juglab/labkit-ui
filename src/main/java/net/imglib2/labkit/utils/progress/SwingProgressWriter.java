@@ -39,4 +39,16 @@ public class SwingProgressWriter implements ProgressWriter {
 		dialog.setProgress(completionRatio);
 		if (dialog.isCanceled()) throw new CancellationException();
 	}
+
+	public void setVisible(boolean visible) {
+		dialog.setVisible(visible);
+	}
+
+	public void setProgressBarVisible(boolean visible) {
+		dialog.setProgressBarVisible(visible);
+	}
+
+	public void setDetailsVisible(boolean visible) {
+		dialog.setDetailsVisible(visible);
+	}
 }

@@ -46,7 +46,8 @@ public class SegmentationItem {
 	public void train(
 		List<Pair<? extends RandomAccessibleInterval<?>, ? extends Labeling>> data)
 	{
+		results.clear();
 		segmenter.train(data);
-		results.update(segmenter);
+		results.update();
 	}
 }

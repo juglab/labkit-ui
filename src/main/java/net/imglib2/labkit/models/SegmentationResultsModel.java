@@ -32,6 +32,7 @@ import java.util.stream.Collectors;
 public class SegmentationResultsModel {
 
 	private final SegmentationModel model;
+	private final Segmenter segmenter;
 	private boolean hasResults = false;
 	private RandomAccessibleInterval<ShortType> segmentation;
 	private RandomAccessibleInterval<FloatType> prediction;
@@ -44,12 +45,13 @@ public class SegmentationResultsModel {
 		Segmenter segmenter)
 	{
 		this.model = model;
+		this.segmenter = segmenter;
 		segmentation = dummy(new ShortType());
 		prediction = dummy(new FloatType());
-		update(segmenter);
+		update();
 	}
 
-	public void update(Segmenter segmenter) {
+	public void update() {
 		if (segmenter.isTrained()) {
 			updateSegmentation(segmenter);
 			updatePrediction(segmenter);
@@ -59,6 +61,13 @@ public class SegmentationResultsModel {
 			hasResults = true;
 			listeners.notifyListeners();
 		}
+	}
+
+	public void clear() {
+		segmentation = dummy(new ShortType());
+		prediction = dummy(new FloatType());
+		hasResults = false;
+		listeners.notifyListeners();
 	}
 
 	public RandomAccessibleInterval<ShortType> segmentation() {

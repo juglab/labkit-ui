@@ -11,6 +11,8 @@ import net.imglib2.labkit.segmentation.weka.TimeSeriesSegmenter;
 import net.imglib2.labkit.segmentation.weka.TrainableSegmentationSegmenter;
 import net.imglib2.labkit.utils.LabkitUtils;
 import net.imglib2.labkit.utils.Notifier;
+import net.imglib2.labkit.utils.ParallelUtils;
+import net.imglib2.labkit.utils.progress.SwingProgressWriter;
 import net.imglib2.realtransform.AffineTransform3D;
 import net.imglib2.labkit.utils.DimensionUtils;
 import net.imglib2.type.NativeType;
@@ -125,17 +127,31 @@ public class DefaultSegmentationModel implements SegmentationModel,
 
 	@Override
 	public void train(SegmentationItem item) {
+		ParallelUtils.runInOtherThread(() -> internTrain(item));
+	}
+
+	private void internTrain(SegmentationItem item) {
+		SwingProgressWriter progressWriter = new SwingProgressWriter(null,
+			"Training in Progress");
+		progressWriter.setVisible(true);
+		progressWriter.setProgressBarVisible(false);
+		progressWriter.setDetailsVisible(false);
 		try {
 			item.train(Collections.singletonList(new ValuePair<>(image(),
 				labeling())));
 		}
 		catch (CancellationException e) {
+			progressWriter.setVisible(false);
 			JOptionPane.showMessageDialog(null, e.getMessage(), "Training Cancelled",
 				JOptionPane.PLAIN_MESSAGE);
 		}
 		catch (Exception e) {
+			progressWriter.setVisible(false);
 			JOptionPane.showMessageDialog(null, e.toString(), "Training Failed",
 				JOptionPane.WARNING_MESSAGE);
+		}
+		finally {
+			progressWriter.setVisible(false);
 		}
 	}
 

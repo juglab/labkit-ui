@@ -42,9 +42,14 @@ public class ProgressDialog {
 	public void setProgress(double progress) {
 		progressBar.getModel().setValue((int) (progress * 1000));
 		if (progress < 1.0) {
-			if (!canceled) dialog.setVisible(true);
+			if (!canceled) setVisible(true);
 		}
-		else dialog.dispose();
+		else setVisible(false);
+	}
+
+	public void setVisible(boolean visible) {
+		if (visible) dialog.setVisible(true);
+		else dialog.dispose(); // is dispose here to allow garbage collection
 	}
 
 	public void addDetails(String line) {
@@ -72,6 +77,14 @@ public class ProgressDialog {
 
 	public boolean isCanceled() {
 		return canceled;
+	}
+
+	public void setProgressBarVisible(boolean visible) {
+		progressBar.setVisible(visible);
+	}
+
+	public void setDetailsVisible(boolean visible) {
+		details.setVisible(visible);
 	}
 
 	private static class DetailsPane extends JPanel {
