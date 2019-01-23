@@ -72,6 +72,10 @@
 			<id>imagej.public</id>
 			<url>http://maven.imagej.net/content/groups/public</url>
 		</repository>
+		<repository>
+			<id>saalfeld-lab-maven-repo</id>
+			<url>https://saalfeldlab.github.io/maven</url>
+		</repository>
 	</repositories>
 
 	<scm>
@@ -162,6 +166,11 @@
 		<dependency>
 			<groupId>io.scif</groupId>
 			<artifactId>scifio</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.janelia.saalfeldlab</groupId>
+			<artifactId>n5-imglib2</artifactId>
+			<version>3.0.0</version>
 		</dependency>
 		<!-- Test dependencies -->
 		<dependency>
