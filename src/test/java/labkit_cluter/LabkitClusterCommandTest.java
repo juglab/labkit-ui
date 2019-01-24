@@ -68,7 +68,7 @@ public class LabkitClusterCommandTest {
 		map.put("output", outputPath);
 		map.put("classifier", value);
 		List<Interval> cells = listIntervals(grid);
-		map.put("interval", JsonIntervals.toJson(cells.get(0)));
+		map.put("interval", cells.get(0));
 		return map;
 	}
 
