@@ -11,53 +11,68 @@ import net.imglib2.labkit.inputimage.SpimDataInputImage;
 import net.imglib2.util.Intervals;
 import org.junit.Test;
 import org.scijava.Context;
-import org.scijava.command.CommandModule;
-import org.scijava.command.CommandService;
+import org.scijava.parallel.ParallelService;
+import org.scijava.parallel.ParallelizationParadigm;
+import org.scijava.parallel.utils.StartImageJServer;
 
 import java.util.AbstractList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ExecutionException;
-import java.util.concurrent.Future;
 
 public class LabkitClusterCommandTest {
 
 	private Context context = new Context();
-	private CommandService commandService = context.service(CommandService.class);
+	private ParallelService parallelService = context.service(
+		ParallelService.class);
 
-	@Test
-	public void test() throws ExecutionException, InterruptedException {
-		final String outputPath = "/home/arzt/tmp/output/result.xml";
-		final String inputXml =
-			"/home/arzt/Documents/Datasets/Mouse Brain/hdf5/export.xml";
-		final String value =
-			"/home/arzt/Documents/Datasets/Mouse Brain/hdf5/classifier.classifier";
-		final long[] dimensions = Intervals.dimensionsAsLongArray(
-			new SpimDataInputImage(inputXml, 0).interval());
-		CellGrid grid = new CellGrid(dimensions, new int[] { 100, 100, 100 });
-		MyN5.createDataset(outputPath, grid);
-		Map<String, Object> map = initializeParameters(outputPath, inputXml, value,
-			grid);
-		Future<CommandModule> result = commandService.run(
-			LabkitClusterCommand.class, false, map);
-		result.get();
-		System.out.println("Results written to: " + outputPath);
+	public static void main(String... args) throws ExecutionException,
+		InterruptedException
+	{
+		new LabkitClusterCommandTest().test();
 	}
 
-	private Map<String, Object> initializeParameters(String outputPath,
+	public void test() throws ExecutionException, InterruptedException {
+		Process process = StartImageJServer.startImageJServerIfNecessary(
+			"/home/arzt/Applications/Fiji.app/");
+		try (ParallelizationParadigm paradigm = StartImageJServer.getTestParadigm(
+			parallelService))
+		{
+			final String outputPath = "/home/arzt/tmp/output/result.xml";
+			final String inputXml =
+				"/home/arzt/Documents/Datasets/Mouse Brain/hdf5/export.xml";
+			final String value =
+				"/home/arzt/Documents/Datasets/Mouse Brain/hdf5/classifier.classifier";
+			final long[] dimensions = Intervals.dimensionsAsLongArray(
+				new SpimDataInputImage(inputXml, 0).interval());
+			CellGrid grid = new CellGrid(dimensions, new int[] { 100, 100, 100 });
+			MyN5.createDataset(outputPath, grid);
+			Map<String, ?> map = initializeParameters(outputPath, inputXml, value,
+				grid);
+			List<Map<String, ?>> result = paradigm.runAll(Collections.singletonList(
+				LabkitClusterCommand.class), Collections.singletonList(map));
+			System.out.println("Results written to: " + outputPath);
+		}
+		finally {
+			if (process != null) process.destroy();
+		}
+	}
+
+	private Map<String, ?> initializeParameters(String outputPath,
 		String inputXml, String value, CellGrid grid)
 	{
 		Map<String, Object> map = new HashMap<>();
 		map.put("input", inputXml);
 		map.put("output", outputPath);
 		map.put("classifier", value);
-		List<Interval> cells = gridAsList(grid);
+		List<Interval> cells = listIntervals(grid);
 		map.put("interval", JsonIntervals.toJson(cells.get(0)));
 		return map;
 	}
 
-	private List<Interval> gridAsList(CellGrid grid) {
+	private static List<Interval> listIntervals(CellGrid grid) {
 		int numCells = (int) Intervals.numElements(grid.getGridDimensions());
 		int n = grid.numDimensions();
 		return new AbstractList<Interval>() {

@@ -12,6 +12,7 @@ import net.imglib2.util.Intervals;
 import net.imglib2.view.IntervalView;
 import net.imglib2.view.Views;
 import org.scijava.Context;
+import org.scijava.ItemIO;
 import org.scijava.command.Command;
 import org.scijava.plugin.Parameter;
 import org.scijava.plugin.Plugin;
@@ -29,10 +30,13 @@ public class LabkitClusterCommand implements Command {
 	private String interval;
 
 	@Parameter
+	// TODO rename because it's not an output an therefore confusiong
 	private String output;
 
 	@Parameter
 	private Context context;
+
+	public LabkitClusterCommand() {}
 
 	@Override
 	public void run() {

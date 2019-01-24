@@ -94,6 +94,7 @@
 	</ciManagement>
 
 	<properties>
+		<enforcer.skip>true</enforcer.skip>
 		<package-name>net.imglib2.labkit</package-name>
 		<license.licenseName>bsd_2</license.licenseName>
 		<license.copyrightOwners>Matthias Arzt, Philipp Hanslovsky</license.copyrightOwners>
@@ -171,6 +172,11 @@
 			<groupId>org.janelia.saalfeldlab</groupId>
 			<artifactId>n5-imglib2</artifactId>
 			<version>3.0.0</version>
+		</dependency>
+		<dependency>
+			<groupId>org.scijava</groupId>
+			<artifactId>scijava-parallel</artifactId>
+			<version>0.1.1-SNAPSHOT</version>
 		</dependency>
 		<!-- Test dependencies -->
 		<dependency>
