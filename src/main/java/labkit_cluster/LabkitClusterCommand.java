@@ -2,6 +2,16 @@
 package labkit_cluster;
 
 import net.imglib2.Interval;
+import net.imglib2.RandomAccessibleInterval;
+import net.imglib2.img.array.ArrayImgs;
+import net.imglib2.labkit.inputimage.SpimDataInputImage;
+import net.imglib2.labkit.segmentation.weka.TrainableSegmentationSegmenter;
+import net.imglib2.type.numeric.NumericType;
+import net.imglib2.type.numeric.integer.UnsignedByteType;
+import net.imglib2.util.Intervals;
+import net.imglib2.view.IntervalView;
+import net.imglib2.view.Views;
+import org.scijava.Context;
 import org.scijava.command.Command;
 import org.scijava.plugin.Parameter;
 import org.scijava.plugin.Plugin;
@@ -21,10 +31,29 @@ public class LabkitClusterCommand implements Command {
 	@Parameter
 	private String output;
 
+	@Parameter
+	private Context context;
+
 	@Override
 	public void run() {
-		Interval interval = JsonIntervals.fromJson(this.interval);
 		System.out.println(interval);
+		Interval interval = JsonIntervals.fromJson(this.interval);
+		SpimDataInputImage data = new SpimDataInputImage(input, 0);
+		RandomAccessibleInterval<? extends NumericType<?>> image = data
+			.imageForSegmentation();
+		TrainableSegmentationSegmenter segmenter =
+			new TrainableSegmentationSegmenter(context, data);
+		segmenter.openModel(classifier);
+		IntervalView<UnsignedByteType> segmentation = createImg(interval);
+		segmenter.segment(image, segmentation);
+		MyN5.writeBlock(output, segmentation);
+		System.out.println(interval);
+	}
+
+	private IntervalView<UnsignedByteType> createImg(Interval interval) {
+		long[] offset = Intervals.minAsLongArray(interval);
+		final long[] dim = Intervals.dimensionsAsLongArray(interval);
+		return Views.translate(ArrayImgs.unsignedBytes(dim), offset);
 	}
 
 }

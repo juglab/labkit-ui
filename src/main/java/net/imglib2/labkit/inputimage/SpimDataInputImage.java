@@ -43,13 +43,19 @@ public class SpimDataInputImage implements InputImage {
 	private final boolean timeseries;
 	private AbstractSequenceDescription<?, ?, ?> sequence;
 
-	public SpimDataInputImage(String filename) {
+	public SpimDataInputImage(String filename, Integer level) {
 		this.spimData = CheckedExceptionUtils.run(() -> new XmlIoSpimDataMinimal()
 			.load(filename));
 		this.sequence = spimData.getSequenceDescription();
 		this.filename = filename;
 		this.timeseries = sequence.getTimePoints().size() > 1;
-		this.imageForSegmentation = initImageForSegmentation();
+		this.imageForSegmentation = initImageForSegmentation(level);
+	}
+
+	public static SpimDataInputImage openWithGuiForLevelSelection(
+		String filename)
+	{
+		return new SpimDataInputImage(filename, null);
 	}
 
 	@Override
@@ -64,13 +70,13 @@ public class SpimDataInputImage implements InputImage {
 		return LabkitUtils.uncheckedCast(imageForSegmentation);
 	}
 
-	private RandomAccessibleInterval<?> initImageForSegmentation() {
+	private RandomAccessibleInterval<?> initImageForSegmentation(Integer level) {
 		BasicViewSetup setup = getSetup();
 		ViewerSetupImgLoader<?, ?> imgLoader = (ViewerSetupImgLoader) sequence
 			.getImgLoader().getSetupImgLoader(setup.getId());
 		List<TimePoint> timePoints = sequence.getTimePoints()
 			.getTimePointsOrdered();
-		int level = selectResolution(setup.getSize(), imgLoader
+		if (level == null) level = selectResolution(setup.getSize(), imgLoader
 			.getMipmapResolutions());
 		return combineFrames(imgLoader, timePoints, level);
 	}

@@ -7,7 +7,7 @@ import net.imglib2.Interval;
 
 public class JsonIntervals {
 
-	public static String toJson(FinalInterval interval) {
+	public static String toJson(Interval interval) {
 		return new Gson().toJson(new FinalInterval(interval));
 	}
 
