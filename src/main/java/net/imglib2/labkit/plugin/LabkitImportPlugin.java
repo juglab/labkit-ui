@@ -46,7 +46,8 @@ public class LabkitImportPlugin implements Command {
 		String filename = file.getAbsolutePath();
 		if (filename.endsWith(".czi")) return new CziOpener(progressWriter)
 			.openWithDialog(file.getAbsolutePath());
-		if (filename.endsWith(".xml")) return new SpimDataInputImage(filename);
+		if (filename.endsWith(".xml")) return SpimDataInputImage
+			.openWithGuiForLevelSelection(filename);
 		throw new UnsupportedOperationException(
 			"Only files with extension czi / xml are supported.");
 	}
