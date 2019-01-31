@@ -28,6 +28,8 @@ public interface Segmenter {
 	 * advice to the user, simple throw a
 	 * {@link java.util.concurrent.CancellationException} that describes what has
 	 * to be fixed.
+	 * <p>
+	 * Blocks until training is done.
 	 */
 	void train(
 		List<Pair<? extends RandomAccessibleInterval<?>, ? extends Labeling>> trainingData);
@@ -36,7 +38,9 @@ public interface Segmenter {
 	 * Segment the image and write the result into the provided output. The output
 	 * might be smaller than the image, in this case only the chunk specified by
 	 * the output's interval is segmented.
-	 * 
+	 * <p>
+	 * Blocks until segmentation is done.
+	 *
 	 * @param image Image to be segmented.
 	 * @param outputSegmentation Buffer to hold the result. Pixel value is the
 	 *          index of the class, as returned by {@link #classNames()}
@@ -49,7 +53,9 @@ public interface Segmenter {
 	 * into the provided output. The output has therefor one more axis than the
 	 * input. The output might be smaller than the image, in this case only the
 	 * chunk specified by the output's interval is segmented.
-	 * 
+	 * <p>
+	 * Blocks until probabilities are calculated.
+	 *
 	 * @param image Image to be segmented.
 	 * @param outputProbabilityMap Buffer to hold the result. Pixel value is the
 	 *          index of the class, as returned by {@link #classNames()}
