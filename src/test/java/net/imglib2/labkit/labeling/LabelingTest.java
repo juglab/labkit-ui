@@ -52,4 +52,15 @@ public class LabelingTest {
 		randomAccess.setPosition(position);
 		return randomAccess.get();
 	}
+
+	@Test
+	public void testFromStrings() {
+		Labeling labeling = Labeling.fromStrings(new String[] { null, "a", "b",
+			null }, 2, 2);
+		assertEquals(Collections.singleton(labeling.getLabel("a")), getPixelLabels(
+			labeling, 1, 0));
+		assertEquals(Collections.singleton(labeling.getLabel("b")), getPixelLabels(
+			labeling, 0, 1));
+		assertEquals(Collections.emptySet(), getPixelLabels(labeling, 1, 1));
+	}
 }

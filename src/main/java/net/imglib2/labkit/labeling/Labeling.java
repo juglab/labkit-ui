@@ -1,6 +1,7 @@
 
 package net.imglib2.labkit.labeling;
 
+import com.google.common.collect.Ordering;
 import com.google.gson.annotations.JsonAdapter;
 import net.imagej.axis.CalibratedAxis;
 import net.imagej.axis.DefaultLinearAxis;
@@ -72,6 +73,22 @@ public class Labeling extends AbstractWrappedInterval<Interval> implements
 		final ArrayList<Label> labels = new ArrayList<>(regions2.keySet());
 		final ImgLabeling<Label, ?> imgLabling = initImgLabling(regions2);
 		return new Labeling(labels, imgLabling, colors);
+	}
+
+	public static Labeling fromStrings(String[] content, long... dimensions) {
+		if (content.length != Intervals.numElements(dimensions))
+			throw new IllegalArgumentException();
+		ImgLabeling<String, ?> imgLabeling = new ImgLabeling<>(
+			new SparseRandomAccessIntType(new FinalInterval(dimensions)));
+		Cursor<LabelingType<String>> cursor = Views.flatIterable(imgLabeling)
+			.cursor();
+		for (String label : content) {
+			cursor.fwd();
+			if (label != null) cursor.get().add(label);
+		}
+		final Labeling labeling = fromImgLabeling(imgLabeling);
+		labeling.setLabelOrder(Comparator.comparing(Label::name));
+		return labeling;
 	}
 
 	private static ImgLabeling<Label, ?> initImgLabling(
