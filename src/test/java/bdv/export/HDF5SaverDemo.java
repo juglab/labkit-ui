@@ -22,8 +22,6 @@ public class HDF5SaverDemo {
 	{
 		String outputFilename = File.createTempFile("output-", ".xml")
 			.getAbsolutePath();
-		// TODO: cancellation doesn't work properly. The jvm stays alive after the
-		// cancel button is clicked.
 		RandomAccessibleInterval<T> image =
 			(RandomAccessibleInterval<T>) VirtualStackAdapter.wrap(new ImagePlus(
 				"https://imagej.nih.gov/ij/images/t1-head.zip"));

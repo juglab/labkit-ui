@@ -376,79 +376,89 @@ public class WriteSequenceToHdf5v2 {
 		if (hdf5File.exists()) hdf5File.delete();
 		final Hdf5BlockWriterThread writerQueue = new Hdf5BlockWriterThread(
 			hdf5File, blockWriterQueueLength);
-		writerQueue.start();
+		try {
+			writerQueue.start();
 
-		// start CellCreatorThreads
-		final CellCreatorThread[] cellCreatorThreads =
-			createAndStartCellCreatorThreads(numCellCreatorThreads);
+			// start CellCreatorThreads
+			final CellCreatorThread[] cellCreatorThreads =
+				createAndStartCellCreatorThreads(numCellCreatorThreads);
+			try {
+				// calculate number of tasks for progressWriter
+				int numTasks = 0; // first task is for writing mipmap descriptions
+													// etc...
+				for (final int timepointIdSequence : timepointIdsSequence)
+					for (final int setupIdSequence : setupIdsSequence)
+						if (seq.getViewDescriptions().get(new ViewId(timepointIdSequence,
+							setupIdSequence)).isPresent()) numTasks++;
+				int numCompletedTasks = 0;
 
-		// calculate number of tasks for progressWriter
-		int numTasks = 0; // first task is for writing mipmap descriptions etc...
-		for (final int timepointIdSequence : timepointIdsSequence)
-			for (final int setupIdSequence : setupIdsSequence)
-				if (seq.getViewDescriptions().get(new ViewId(timepointIdSequence,
-					setupIdSequence)).isPresent()) numTasks++;
-		int numCompletedTasks = 0;
+				// write Mipmap descriptions
+				for (final Entry<Integer, Integer> entry : partition
+					.getSetupIdSequenceToPartition().entrySet())
+				{
+					final int setupIdSequence = entry.getKey();
+					final int setupIdPartition = entry.getValue();
+					final ExportMipmapInfo mipmapInfo = perSetupMipmapInfo.get(
+						setupIdSequence);
+					writerQueue.writeMipmapDescription(setupIdPartition, mipmapInfo);
+				}
+				progressWriter.setProgress(0.01);
+				progressWriter = new SubTaskProgressWriter(progressWriter, 0.01, 1.0);
 
-		// write Mipmap descriptions
-		for (final Entry<Integer, Integer> entry : partition
-			.getSetupIdSequenceToPartition().entrySet())
-		{
-			final int setupIdSequence = entry.getKey();
-			final int setupIdPartition = entry.getValue();
-			final ExportMipmapInfo mipmapInfo = perSetupMipmapInfo.get(
-				setupIdSequence);
-			writerQueue.writeMipmapDescription(setupIdPartition, mipmapInfo);
-		}
-		progressWriter.setProgress(0.01);
-		progressWriter = new SubTaskProgressWriter(progressWriter, 0.01, 1.0);
+				// write image data for all views to the HDF5 file
+				int timepointIndex = 0;
+				for (final int timepointIdSequence : timepointIdsSequence) {
+					final int timepointIdPartition = partition
+						.getTimepointIdSequenceToPartition().get(timepointIdSequence);
+					progressWriter.out().printf("proccessing timepoint %d / %d\n",
+						++timepointIndex, numTimepoints);
 
-		// write image data for all views to the HDF5 file
-		int timepointIndex = 0;
-		for (final int timepointIdSequence : timepointIdsSequence) {
-			final int timepointIdPartition = partition
-				.getTimepointIdSequenceToPartition().get(timepointIdSequence);
-			progressWriter.out().printf("proccessing timepoint %d / %d\n",
-				++timepointIndex, numTimepoints);
+					// assemble the viewsetups that are present in this timepoint
+					final ArrayList<Integer> setupsTimePoint = new ArrayList<>();
 
-			// assemble the viewsetups that are present in this timepoint
-			final ArrayList<Integer> setupsTimePoint = new ArrayList<>();
+					for (final int setupIdSequence : setupIdsSequence)
+						if (seq.getViewDescriptions().get(new ViewId(timepointIdSequence,
+							setupIdSequence)).isPresent()) setupsTimePoint.add(
+								setupIdSequence);
 
-			for (final int setupIdSequence : setupIdsSequence)
-				if (seq.getViewDescriptions().get(new ViewId(timepointIdSequence,
-					setupIdSequence)).isPresent()) setupsTimePoint.add(setupIdSequence);
+					final int numSetups = setupsTimePoint.size();
 
-			final int numSetups = setupsTimePoint.size();
+					int setupIndex = 0;
+					for (final int setupIdSequence : setupsTimePoint) {
+						final int setupIdPartition = partition
+							.getSetupIdSequenceToPartition().get(setupIdSequence);
+						progressWriter.out().printf("proccessing setup %d / %d\n",
+							++setupIndex, numSetups);
 
-			int setupIndex = 0;
-			for (final int setupIdSequence : setupsTimePoint) {
-				final int setupIdPartition = partition.getSetupIdSequenceToPartition()
-					.get(setupIdSequence);
-				progressWriter.out().printf("proccessing setup %d / %d\n", ++setupIndex,
-					numSetups);
+						@SuppressWarnings("unchecked")
+						final RandomAccessibleInterval<UnsignedShortType> img =
+							((BasicSetupImgLoader<UnsignedShortType>) imgLoader
+								.getSetupImgLoader(setupIdSequence)).getImage(
+									timepointIdSequence);
+						final ExportMipmapInfo mipmapInfo = perSetupMipmapInfo.get(
+							setupIdSequence);
+						final double startCompletionRatio = (double) numCompletedTasks++ /
+							numTasks;
+						final double endCompletionRatio = (double) numCompletedTasks /
+							numTasks;
+						final ProgressWriter subProgressWriter = new SubTaskProgressWriter(
+							progressWriter, startCompletionRatio, endCompletionRatio);
 
-				@SuppressWarnings("unchecked")
-				final RandomAccessibleInterval<UnsignedShortType> img =
-					((BasicSetupImgLoader<UnsignedShortType>) imgLoader.getSetupImgLoader(
-						setupIdSequence)).getImage(timepointIdSequence);
-				final ExportMipmapInfo mipmapInfo = perSetupMipmapInfo.get(
-					setupIdSequence);
-				final double startCompletionRatio = (double) numCompletedTasks++ /
-					numTasks;
-				final double endCompletionRatio = (double) numCompletedTasks / numTasks;
-				final ProgressWriter subProgressWriter = new SubTaskProgressWriter(
-					progressWriter, startCompletionRatio, endCompletionRatio);
+						writeViewToHdf5PartitionFile(img, timepointIdPartition,
+							setupIdPartition, mipmapInfo, false, deflate, writerQueue,
+							cellCreatorThreads, loopbackHeuristic, afterEachPlane,
+							subProgressWriter);
+					}
+				}
 
-				writeViewToHdf5PartitionFile(img, timepointIdPartition,
-					setupIdPartition, mipmapInfo, false, deflate, writerQueue,
-					cellCreatorThreads, loopbackHeuristic, afterEachPlane,
-					subProgressWriter);
+			}
+			finally {
+				stopCellCreatorThreads(cellCreatorThreads);
 			}
 		}
-
-		// shutdown and close file
-		stopCellCreatorThreads(cellCreatorThreads);
-		writerQueue.close();
+		finally {
+			writerQueue.close();
+		}
 		progressWriter.setProgress(1.0);
 	}
 
