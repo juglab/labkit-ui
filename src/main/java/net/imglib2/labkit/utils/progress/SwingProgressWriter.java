@@ -51,4 +51,16 @@ public class SwingProgressWriter implements ProgressWriter {
 	public void setDetailsVisible(boolean visible) {
 		dialog.setDetailsVisible(visible);
 	}
+
+	public static void main(String... args) throws InterruptedException {
+		SwingProgressWriter pw = new SwingProgressWriter(null,
+			"SwingProgressWriter Demo");
+		int steps = 30;
+		for (int i = 0; i < steps; i++) {
+			pw.setProgress((double) i / steps);
+			pw.out().println("step " + i + " of " + steps);
+			Thread.sleep(1000);
+		}
+		pw.setProgress(1.0);
+	}
 }

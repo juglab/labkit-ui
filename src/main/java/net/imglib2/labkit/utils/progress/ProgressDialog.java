@@ -17,6 +17,7 @@ public class ProgressDialog {
 	private final JProgressBar progressBar = new JProgressBar(0, 1000);
 	private final DetailsPane details = new DetailsPane();
 	private boolean canceled = false;
+	private boolean hide = false;
 
 	public ProgressDialog(Frame parent, String text) {
 		JOptionPane pane = new JOptionPane(new Object[] { text, note, progressBar,
@@ -31,8 +32,10 @@ public class ProgressDialog {
 	}
 
 	private void buttonClicked(PropertyChangeEvent event) {
-		if (event.getPropertyName().equals(JOptionPane.VALUE_PROPERTY)) if (event
-			.getNewValue().equals("Cancel")) canceled = true;
+		if (event.getPropertyName().equals(JOptionPane.VALUE_PROPERTY)) {
+			if (event.getNewValue().equals("Cancel")) canceled = true;
+			if (event.getNewValue().equals("Hide")) hide = true;
+		}
 	}
 
 	public void setNote(String note) {
@@ -41,10 +44,7 @@ public class ProgressDialog {
 
 	public void setProgress(double progress) {
 		progressBar.getModel().setValue((int) (progress * 1000));
-		if (progress < 1.0) {
-			if (!canceled) setVisible(true);
-		}
-		else setVisible(false);
+		setVisible(!canceled && !hide && progress < 1.0);
 	}
 
 	public void setVisible(boolean visible) {
@@ -59,16 +59,10 @@ public class ProgressDialog {
 	public static void main(String... args) throws InterruptedException {
 		ProgressDialog dialog = new ProgressDialog(null,
 			"Demonstrate ProgressDialog");
-		for (int i = 0; i < 5; i++) {
-			dialog.setProgress((double) i / 5.0);
-			dialog.setNote("Step " + i + " of " + 5);
-			Thread.sleep(1000);
-			dialog.addDetails("Step " + i + " completed\n");
-		}
-		dialog.setProgress(1.0);
-		for (int i = 0; i < 5; i++) {
-			dialog.setProgress((double) i / 5.0);
-			dialog.setNote("Step " + i + " of " + 5);
+		int steps = 20;
+		for (int i = 0; i < steps; i++) {
+			dialog.setProgress((double) i / steps);
+			dialog.setNote("Step " + i + " of " + steps);
 			Thread.sleep(1000);
 			dialog.addDetails("Step " + i + " completed\n");
 		}
