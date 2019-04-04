@@ -33,12 +33,14 @@ import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.lang.reflect.Type;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
-import java.util.TreeSet;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
@@ -127,9 +129,14 @@ public class LabelingSerializer {
 	private void saveAsJson(Labeling labeling, String filename)
 		throws IOException
 	{
-		try (FileWriter writer = new FileWriter(filename)) {
+		final String tmpFilename = filename + ".tmp";
+		try (FileWriter writer = new FileWriter(tmpFilename)) {
 			new Gson().toJson(labeling, Labeling.class, writer);
 		}
+		// Rename the file at the end, ensures to not corrupt an existing file,
+		// it the saving is interrupted by an exception.
+		Files.move(Paths.get(tmpFilename), Paths.get(filename),
+			StandardCopyOption.REPLACE_EXISTING);
 	}
 
 	private <I extends IntegerType<I>> void saveAsTiff(Labeling labeling,

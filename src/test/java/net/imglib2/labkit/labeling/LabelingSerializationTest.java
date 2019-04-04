@@ -19,7 +19,6 @@ import java.util.Set;
 import java.util.TreeMap;
 import java.util.stream.Collectors;
 
-import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
 /**
@@ -28,35 +27,28 @@ import static org.junit.Assert.assertTrue;
 public class LabelingSerializationTest {
 
 	@Test
-	public void testJsonForExampleLabeling() {
-		Labeling labeling = exampleLabeling();
-		jsonSerializeDeserializeAndCompare(labeling);
+	public void testJson() throws IOException {
+		testSerialization(exampleLabeling(), "json");
+		testSerialization(emptyLabeling(), "json");
 	}
 
 	@Test
-	public void testJsonLabelingWithoutLabels() {
-		Labeling labeling = Labeling.createEmpty(Collections.emptyList(),
-			new FinalInterval(2, 2));
-		jsonSerializeDeserializeAndCompare(labeling);
+	public void testTif() throws IOException {
+		testSerialization(exampleLabeling(), "tif");
+		testSerialization(emptyLabeling(), "tif");
 	}
 
-	private void jsonSerializeDeserializeAndCompare(Labeling labeling) {
-		String json = new Gson().toJson(labeling, Labeling.class);
-		Labeling deserialized = new Gson().fromJson(json, Labeling.class);
-		assertTrue(labelingsEqual(labeling, deserialized));
-	}
-
-	@Test
-	public void testOpenAndSaveToTiff() throws IOException {
-		final String filename = tempFileWithExtension("tif");
-		Labeling labeling = exampleLabeling();
+	private void testSerialization(Labeling labeling, String extension)
+		throws IOException
+	{
+		final String filename = tempFileWithExtension(extension);
 		LabelingSerializer serializer = new LabelingSerializer(new Context());
 		serializer.save(labeling, filename);
 		Labeling deserialized = serializer.open(filename);
 		assertTrue(labelingsEqual(labeling, deserialized));
 	}
 
-	public String tempFileWithExtension(String extension) throws IOException {
+	private String tempFileWithExtension(String extension) throws IOException {
 		File file = File.createTempFile("test-", "." + extension);
 		file.deleteOnExit();
 		return file.getAbsolutePath();
@@ -85,6 +77,11 @@ public class LabelingSerializationTest {
 		regions.put("A", region1);
 		regions.put("B", region2);
 		return Labeling.fromMap(regions);
+	}
+
+	private static Labeling emptyLabeling() {
+		return Labeling.createEmpty(Collections.emptyList(), new FinalInterval(2,
+			2));
 	}
 
 	private static IterableRegion<BitType> exampleRegion(long... position) {
