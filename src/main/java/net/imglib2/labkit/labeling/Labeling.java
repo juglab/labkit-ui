@@ -65,6 +65,8 @@ public class Labeling extends AbstractWrappedInterval<Interval> implements
 	}
 
 	public static Labeling fromMap(Map<String, IterableRegion<BitType>> regions) {
+		if (regions.isEmpty()) throw new IllegalArgumentException(
+			"Labeling.fromMap: The given map must not be empty.");
 		ColorSupplier colors = new ColorSupplier();
 		Map<Label, IterableRegion<BitType>> regions2 = regions.entrySet().stream()
 			.collect(Collectors.toMap(entry -> new Label(entry.getKey(), colors

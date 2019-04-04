@@ -252,7 +252,8 @@ public class LabelingSerializer {
 				object.getAsJsonObject("labels").entrySet().forEach(entry -> regions
 					.put(entry.getKey(), regionFromJson(context, interval, entry
 						.getValue())));
-				Labeling labeling = Labeling.fromMap(regions);
+				Labeling labeling = regions.isEmpty() ? Labeling.createEmptyLabels(
+					Collections.emptyList(), interval) : Labeling.fromMap(regions);
 				labeling.setAxes(pixelSizesToAxes(axes));
 				return labeling;
 			}

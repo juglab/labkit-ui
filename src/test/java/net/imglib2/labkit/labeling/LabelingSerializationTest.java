@@ -13,6 +13,7 @@ import org.scijava.Context;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.Collections;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
@@ -27,8 +28,19 @@ import static org.junit.Assert.assertTrue;
 public class LabelingSerializationTest {
 
 	@Test
-	public void test() {
+	public void testJsonForExampleLabeling() {
 		Labeling labeling = exampleLabeling();
+		jsonSerializeDeserializeAndCompare(labeling);
+	}
+
+	@Test
+	public void testJsonLabelingWithoutLabels() {
+		Labeling labeling = Labeling.createEmpty(Collections.emptyList(),
+			new FinalInterval(2, 2));
+		jsonSerializeDeserializeAndCompare(labeling);
+	}
+
+	private void jsonSerializeDeserializeAndCompare(Labeling labeling) {
 		String json = new Gson().toJson(labeling, Labeling.class);
 		Labeling deserialized = new Gson().fromJson(json, Labeling.class);
 		assertTrue(labelingsEqual(labeling, deserialized));

@@ -42,9 +42,15 @@ public class InitialLabeling {
 		if (new File(filename).exists()) try {
 			return openLabeling(inputImage, context, filename);
 		}
-		catch (IOException e) {
+		catch (Exception e) {
 			System.err.println(e.getMessage());
 		}
+		return defaultLabeling(inputImage, defaultLabels);
+	}
+
+	private static Labeling defaultLabeling(InputImage inputImage,
+		List<String> defaultLabels)
+	{
 		Interval interval = inputImage.interval();
 		Labeling labeling = Labeling.createEmpty(defaultLabels, askShrinkInterval(
 			interval));
