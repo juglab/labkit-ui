@@ -13,7 +13,6 @@ import net.imglib2.labkit.brush.ChangeLabel;
 import net.imglib2.labkit.brush.FloodFillController;
 import net.imglib2.labkit.brush.LabelBrushController;
 import net.imglib2.labkit.labeling.LabelsLayer;
-import net.imglib2.labkit.models.BitmapModel;
 import net.imglib2.labkit.models.ImageLabelingModel;
 import net.imglib2.labkit.panel.LabelToolsPanel;
 import net.miginfocom.swing.MigLayout;
@@ -94,8 +93,8 @@ public class BasicLabelingComponent implements AutoCloseable {
 
 	private JPanel initBrushLayer() {
 		final LabelBrushController brushController = new LabelBrushController(
-			bdvHandle.getViewerPanel(), new BitmapModel(model), actionsAndBehaviours,
-			model.isTimeSeries());
+			bdvHandle.getViewerPanel(), model, actionsAndBehaviours, model
+				.isTimeSeries());
 		final FloodFillController floodFillController = new FloodFillController(
 			bdvHandle.getViewerPanel(), model, actionsAndBehaviours, model
 				.isTimeSeries());

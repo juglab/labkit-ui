@@ -11,7 +11,8 @@ import net.imglib2.algorithm.neighborhood.Neighborhood;
 import net.imglib2.img.array.ArrayImgs;
 import net.imglib2.labkit.ActionsAndBehaviours;
 import net.imglib2.labkit.brush.neighborhood.TransformedSphere;
-import net.imglib2.labkit.models.BitmapModel;
+import net.imglib2.labkit.labeling.Label;
+import net.imglib2.labkit.models.LabelingModel;
 import net.imglib2.realtransform.AffineTransform3D;
 import net.imglib2.type.logic.BitType;
 import net.imglib2.ui.TransformEventHandler;
@@ -36,29 +37,32 @@ import java.util.stream.IntStream;
  */
 public class LabelBrushController {
 
-	final private ViewerPanel viewer;
+	private final ViewerPanel viewer;
 
-	private final BitmapModel model;
+	private final LabelingModel model;
 
-	final private BrushOverlay brushOverlay;
+	private final BrushOverlay brushOverlay;
 
-	private MoveBrush moveBrushBehaviour = new MoveBrush();
+	private final MoveBrush moveBrushBehaviour = new MoveBrush();
+
 	private final PaintBehavior paintBehavior = new PaintBehavior(true);
+
 	private final PaintBehavior eraseBehavior = new PaintBehavior(false);
+
 	private double brushRadius = 1;
 
-	boolean sliceTime;
+	private boolean override = false;
 
-	final ActionsAndBehaviours behaviors;
+	private final boolean sliceTime;
 
-	public LabelBrushController(final ViewerPanel viewer, final BitmapModel model,
-		final ActionsAndBehaviours behaviors, final boolean sliceTime)
+	public LabelBrushController(final ViewerPanel viewer,
+		final LabelingModel model, final ActionsAndBehaviours behaviors,
+		final boolean sliceTime)
 	{
 		this.viewer = viewer;
 		this.brushOverlay = new BrushOverlay(viewer, model);
 		this.sliceTime = sliceTime;
 		this.model = model;
-		this.behaviors = behaviors;
 		brushOverlay.setRadius((int) getTransformedBrushRadius());
 		viewer.getDisplay().addOverlayRenderer(brushOverlay);
 		installDefaultBehaviors(behaviors);
@@ -138,7 +142,7 @@ public class LabelBrushController {
 
 		private AffineTransform3D displayToImageTransformation() {
 			AffineTransform3D m = new AffineTransform3D();
-			m.concatenate(model.transformation().inverse());
+			m.concatenate(model.labelTransformation().inverse());
 			m.concatenate(viewerTransformation().inverse());
 			return m;
 		}
@@ -178,7 +182,7 @@ public class LabelBrushController {
 
 		@Override
 		public void init(final int x, final int y) {
-			model.makeVisible();
+			makeLabelVisible();
 			RealPoint coords = new RealPoint(x, y);
 			this.before = coords;
 			paint(coords);
@@ -198,8 +202,16 @@ public class LabelBrushController {
 		public void end(final int x, final int y) {}
 	}
 
+	private void makeLabelVisible() {
+		Label label = model.selectedLabel().get();
+		if (label == null) return;
+		label.setVisible(true);
+		model.labelingVisibility().set(true);
+		model.labeling().notifier().notifyListeners();
+	}
+
 	private double getTransformedBrushRadius() {
-		return brushRadius * getScale(model.transformation());
+		return brushRadius * getScale(model.labelTransformation());
 	}
 
 	// TODO: find a good place
@@ -209,15 +221,17 @@ public class LabelBrushController {
 	}
 
 	private RandomAccessibleInterval<BitType> bitmap() {
-		if (!model.isValid()) return ArrayImgs.bits(1, 1, 1);
-		RandomAccessibleInterval<BitType> label = model.bitmap();
-		if (sliceTime) return Views.hyperSlice(label, label.numDimensions() - 1,
+		Label label = model.selectedLabel().get();
+		if (label == null) return ArrayImgs.bits(1, 1, 1);
+		RandomAccessibleInterval<BitType> bitmap = model.labeling().get().getRegion(
+			label);
+		if (sliceTime) return Views.hyperSlice(bitmap, bitmap.numDimensions() - 1,
 			viewer.getState().getCurrentTimepoint());
-		return label;
+		return bitmap;
 	}
 
 	private void fireBitmapChanged() {
-		model.fireBitmapChanged();
+		model.dataChangedNotifier().notifyListeners();
 	}
 
 	private class ChangeBrushRadius implements ScrollBehaviour {
