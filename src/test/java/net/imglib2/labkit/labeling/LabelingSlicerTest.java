@@ -4,6 +4,7 @@ package net.imglib2.labkit.labeling;
 import net.imglib2.Interval;
 import net.imglib2.RandomAccess;
 import net.imglib2.RandomAccessibleInterval;
+import net.imglib2.roi.labeling.LabelingType;
 import net.imglib2.util.Intervals;
 import net.imglib2.view.Views;
 import org.junit.Test;
@@ -29,7 +30,7 @@ public class LabelingSlicerTest {
 		long[] position = { 4, 3 };
 		Labeling labeling = Labelings.singleton(interval, labels, position);
 		// -- check label --
-		RandomAccess<Set<Label>> ra = labeling.randomAccess();
+		RandomAccess<LabelingType<Label>> ra = labeling.randomAccess();
 		ra.setPosition(position);
 		assertTrue(ra.get().stream().anyMatch(l -> l.name().equals(labels)));
 		// -- count entries --
@@ -41,17 +42,18 @@ public class LabelingSlicerTest {
 
 	@Test
 	public void testSlice() {
-		List<RandomAccessibleInterval<Set<Label>>> slices = Arrays.asList(Labelings
-			.singleton(interval, "red", 5, 8), Labelings.singleton(interval, "green",
-				1, 1), Labelings.singleton(interval, "blue", 3, 3));
+		List<RandomAccessibleInterval<LabelingType<Label>>> slices = Arrays.asList(
+			Labelings.singleton(interval, "red", 5, 8), Labelings.singleton(interval,
+				"green", 1, 1), Labelings.singleton(interval, "blue", 3, 3));
 		Labeling labeling = wrapLabeling(Views.stack(slices));
 		List<Labeling> result = Labelings.slices(labeling);
 		assertEquals(3, result.size());
 		assertImageEquals(slices.get(1), result.get(1));
 	}
 
-	private <T> void assertImageEquals(RandomAccessibleInterval<Set<T>> expected,
-		RandomAccessibleInterval<Set<T>> actual)
+	private <T> void assertImageEquals(
+		RandomAccessibleInterval<LabelingType<T>> expected,
+		RandomAccessibleInterval<LabelingType<T>> actual)
 	{
 		assertTrue(Intervals.equals(expected, actual));
 		Views.interval(Views.pair(expected, actual), expected).forEach(
@@ -63,7 +65,9 @@ public class LabelingSlicerTest {
 		assertTrue(actual.containsAll(expected));
 	}
 
-	private Labeling wrapLabeling(RandomAccessibleInterval<Set<Label>> stack) {
+	private Labeling wrapLabeling(
+		RandomAccessibleInterval<LabelingType<Label>> stack)
+	{
 		List<Label> labels = getLabels(stack);
 		Labeling joined = Labeling.createEmpty(labels.stream().map(Label::name)
 			.collect(Collectors.toList()), stack);
@@ -71,8 +75,8 @@ public class LabelingSlicerTest {
 		return joined;
 	}
 
-	private <T> void copy(RandomAccessibleInterval<Set<T>> source,
-		RandomAccessibleInterval<Set<T>> target)
+	private <T> void copy(RandomAccessibleInterval<LabelingType<T>> source,
+		RandomAccessibleInterval<LabelingType<T>> target)
 	{
 		Views.interval(Views.pair(source, target), target).forEach(p -> {
 			Set<T> b = p.getB();
@@ -81,7 +85,9 @@ public class LabelingSlicerTest {
 		});
 	}
 
-	private <T> List<T> getLabels(RandomAccessibleInterval<Set<T>> stack) {
+	private <T> List<T> getLabels(
+		RandomAccessibleInterval<LabelingType<T>> stack)
+	{
 		Set<T> set = new HashSet<>();
 		Views.iterable(stack).forEach(set::addAll);
 		return new ArrayList<>(set);

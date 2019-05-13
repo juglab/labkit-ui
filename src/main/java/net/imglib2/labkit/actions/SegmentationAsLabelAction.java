@@ -15,6 +15,7 @@ import net.imglib2.labkit.models.SegmentationItem;
 import net.imglib2.labkit.models.SegmentationModel;
 import net.imglib2.labkit.models.SegmentationResultsModel;
 import net.imglib2.labkit.models.SegmenterListModel;
+import net.imglib2.roi.labeling.LabelingType;
 import net.imglib2.type.logic.BitType;
 import net.imglib2.type.numeric.integer.ShortType;
 import net.imglib2.view.Views;
@@ -77,7 +78,7 @@ public class SegmentationAsLabelAction {
 	{
 		Cursor<BitType> cursor = Views.iterable(mask).cursor();
 		Label label = labeling.addLabel(name);
-		RandomAccess<Set<Label>> ra = labeling.randomAccess();
+		RandomAccess<LabelingType<Label>> ra = labeling.randomAccess();
 		while (cursor.hasNext()) {
 			boolean value = cursor.next().get();
 			if (value) {

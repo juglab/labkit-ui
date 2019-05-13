@@ -34,7 +34,7 @@ import java.util.stream.IntStream;
  */
 @JsonAdapter(LabelingSerializer.Adapter.class)
 public class Labeling extends AbstractWrappedInterval<Interval> implements
-	RandomAccessibleInterval<Set<Label>>
+	RandomAccessibleInterval<LabelingType<Label>>
 {
 
 	private final ImgLabeling<Label, ?> imgLabeling;
@@ -232,7 +232,7 @@ public class Labeling extends AbstractWrappedInterval<Interval> implements
 
 	public void clearLabel(Label label) {
 		Cursor<?> cursor = sparsityCursor();
-		RandomAccess<Set<Label>> ra = randomAccess();
+		RandomAccess<LabelingType<Label>> ra = randomAccess();
 		while (cursor.hasNext()) {
 			cursor.fwd();
 			ra.setPosition(cursor);
@@ -283,12 +283,12 @@ public class Labeling extends AbstractWrappedInterval<Interval> implements
 	}
 
 	@Override
-	public RandomAccess<Set<Label>> randomAccess() {
+	public RandomAccess<LabelingType<Label>> randomAccess() {
 		return LabkitUtils.uncheckedCast(imgLabeling.randomAccess());
 	}
 
 	@Override
-	public RandomAccess<Set<Label>> randomAccess(Interval interval) {
+	public RandomAccess<LabelingType<Label>> randomAccess(Interval interval) {
 		return LabkitUtils.uncheckedCast(imgLabeling.randomAccess(interval));
 	}
 }

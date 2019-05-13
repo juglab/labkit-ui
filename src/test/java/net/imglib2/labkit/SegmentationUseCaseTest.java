@@ -20,6 +20,7 @@ import net.imglib2.labkit.models.DefaultSegmentationModel;
 import net.imglib2.labkit.models.ImageLabelingModel;
 import net.imglib2.labkit.models.SegmentationItem;
 import net.imglib2.labkit.segmentation.PredictionLayer;
+import net.imglib2.roi.labeling.LabelingType;
 import net.imglib2.type.numeric.integer.ShortType;
 import net.imglib2.type.numeric.integer.UnsignedByteType;
 import net.imglib2.util.Intervals;
@@ -60,7 +61,7 @@ public class SegmentationUseCaseTest {
 
 	private void addLabels(ImageLabelingModel imageLabelingModel) {
 		Labeling labeling = imageLabelingModel.labeling().get();
-		RandomAccess<Set<Label>> ra = labeling.randomAccess();
+		RandomAccess<LabelingType<Label>> ra = labeling.randomAccess();
 		ra.setPosition(new long[] { 0, 0 });
 		ra.get().add(labeling.getLabel("foreground"));
 		ra.setPosition(new long[] { 0, 1 });
@@ -100,7 +101,7 @@ public class SegmentationUseCaseTest {
 		List<String> labels = Arrays.asList("f", "b");
 		Interval interval = new FinalInterval(2, 2);
 		Labeling labeling = Labeling.createEmpty(labels, interval);
-		RandomAccess<Set<Label>> ra = labeling.randomAccess();
+		RandomAccess<LabelingType<Label>> ra = labeling.randomAccess();
 		ra.setPosition(new long[] { 0, 0 });
 		ra.get().add(labeling.getLabel("f"));
 		ra.setPosition(new long[] { 1, 0 });
