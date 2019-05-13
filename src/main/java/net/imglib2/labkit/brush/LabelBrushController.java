@@ -14,7 +14,6 @@ import net.imglib2.labkit.labeling.Label;
 import net.imglib2.labkit.models.LabelingModel;
 import net.imglib2.realtransform.AffineTransform3D;
 import net.imglib2.roi.labeling.LabelingType;
-import net.imglib2.type.logic.BitType;
 import net.imglib2.ui.TransformEventHandler;
 import net.imglib2.util.LinAlgHelpers;
 import net.imglib2.util.Util;
@@ -26,8 +25,6 @@ import org.scijava.ui.behaviour.util.RunnableAction;
 
 import javax.swing.*;
 import java.awt.*;
-import java.util.Collections;
-import java.util.Set;
 import java.util.function.Consumer;
 import java.util.stream.IntStream;
 
@@ -108,6 +105,10 @@ public class LabelBrushController {
 		return brushRadius;
 	}
 
+	public void setOverride(boolean override) {
+		this.override = override;
+	}
+
 	private class PaintBehavior implements DragBehaviour {
 
 		private boolean value;
@@ -138,11 +139,11 @@ public class LabelBrushController {
 		private Consumer<LabelingType<Label>> pixelOperation() {
 			Label label = model.selectedLabel().get();
 			if (value && label != null) {
-				if (override) return pixel -> pixel.add(label);
-				return pixel -> {
+				if (override) return pixel -> {
 					pixel.clear();
 					pixel.add(label);
 				};
+				return pixel -> pixel.add(label);
 			}
 			else {
 				if (override || label == null) return pixel -> pixel.clear();

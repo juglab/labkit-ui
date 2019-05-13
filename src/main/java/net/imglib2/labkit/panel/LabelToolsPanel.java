@@ -29,7 +29,7 @@ public class LabelToolsPanel extends JPanel {
 	private final FloodFillController floodFillController;
 	private final LabelBrushController brushController;
 
-	private JPanel brushSizeOptions;
+	private JPanel brushOptionsPanel;
 	private final JPanel optionPane;
 	private final MouseAdapter brushMotionDrawer;
 	private final ViewerPanel bdvPanel;
@@ -84,7 +84,7 @@ public class LabelToolsPanel extends JPanel {
 
 	private void setVisibility(Mode mode) {
 		boolean brushVisible = BRUSH_MODES.contains(mode);
-		brushSizeOptions.setVisible(brushVisible);
+		brushOptionsPanel.setVisible(brushVisible);
 		if (brushVisible) showLabelCursor();
 		else hideLabelCursor();
 	}
@@ -127,11 +127,26 @@ public class LabelToolsPanel extends JPanel {
 	}
 
 	private void addBrushSizeOption(JPanel panel) {
-		JSlider brushSize = initBrushSizeSlider();
-		JLabel valLabel = initSliderValueLabel(brushSize);
-		JLabel label = initBrushSizeLabel();
-		initBrushSizeOptionPanel(brushSize, valLabel, label);
-		panel.add(brushSizeOptions, "al left");
+		brushOptionsPanel = new JPanel();
+		brushOptionsPanel.setLayout(new MigLayout("insets 4pt, gap 2pt, wmax 300"));
+		brushOptionsPanel.add(new JLabel("Brush size:"), "grow");
+		JSlider brushSizeSlider = initBrushSizeSlider();
+		brushOptionsPanel.add(brushSizeSlider, "grow");
+		brushOptionsPanel.add(initSliderValueLabel(brushSizeSlider), "right");
+		brushOptionsPanel.setBackground(OPTIONS_BACKGROUND);
+		brushOptionsPanel.setBorder(BorderFactory.createLineBorder(OPTIONS_BORDER));
+		brushOptionsPanel.add(initOverrideCheckBox());
+		panel.add(brushOptionsPanel, "al left");
+	}
+
+	private JCheckBox initOverrideCheckBox() {
+		JCheckBox checkBox = new JCheckBox("override");
+		checkBox.setOpaque(false);
+		checkBox.addItemListener(action -> {
+			brushController.setOverride(action
+				.getStateChange() == ItemEvent.SELECTED);
+		});
+		return checkBox;
 	}
 
 	private JSlider initBrushSizeSlider() {
@@ -151,32 +166,6 @@ public class LabelToolsPanel extends JPanel {
 			valLabel.setText(String.valueOf(brushSize.getValue()));
 		});
 		return valLabel;
-	}
-
-	private JLabel initBrushSizeLabel() {
-		JLabel label = new JLabel("Brush size:");
-		label.setOpaque(true);
-		label.setBackground(OPTIONS_BACKGROUND);
-		return label;
-	}
-
-	private void initBrushSizeOptionPanel(JSlider brushSize, JLabel valLabel,
-		JLabel label)
-	{
-		brushSizeOptions = new JPanel();
-		brushSizeOptions.setLayout(new MigLayout("insets 4pt, gap 2pt, wmax 200"));
-		brushSizeOptions.add(label, "grow");
-		brushSizeOptions.add(brushSize, "grow");
-		brushSizeOptions.add(valLabel, "right");
-		brushSizeOptions.setBackground(OPTIONS_BACKGROUND);
-		brushSizeOptions.setBorder(BorderFactory.createLineBorder(OPTIONS_BORDER));
-	}
-
-	private JRadioButton createRadioButton(String name, String toolTip) {
-		JRadioButton button = new JRadioButton(name);
-		button.setToolTipText(toolTip);
-		button.setMargin(new Insets(0, 0, 0, 0));
-		return button;
 	}
 
 	private void showLabelCursor() {
