@@ -3,6 +3,7 @@ package net.imglib2.labkit.labeling;
 
 import net.imglib2.FinalInterval;
 import net.imglib2.RandomAccess;
+import net.imglib2.roi.labeling.LabelingType;
 import net.imglib2.util.Intervals;
 import org.junit.Test;
 
@@ -42,13 +43,13 @@ public class LabelingTest {
 	}
 
 	private void addPixelLabel(Labeling labeling, Label value, long... position) {
-		RandomAccess<? extends Set<Label>> randomAccess = labeling.randomAccess();
+		RandomAccess<LabelingType<Label>> randomAccess = labeling.randomAccess();
 		randomAccess.setPosition(position);
 		randomAccess.get().add(value);
 	}
 
 	private Set<Label> getPixelLabels(Labeling labeling, long... position) {
-		RandomAccess<? extends Set<Label>> randomAccess = labeling.randomAccess();
+		RandomAccess<LabelingType<Label>> randomAccess = labeling.randomAccess();
 		randomAccess.setPosition(position);
 		return randomAccess.get();
 	}

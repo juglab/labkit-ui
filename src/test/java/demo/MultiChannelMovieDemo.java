@@ -23,6 +23,7 @@ import net.imglib2.labkit.labeling.Labeling;
 import net.imglib2.labkit.models.DefaultSegmentationModel;
 import net.imglib2.labkit.models.SegmentationItem;
 import net.imglib2.loops.LoopBuilder;
+import net.imglib2.roi.labeling.LabelingType;
 import net.imglib2.type.numeric.integer.ShortType;
 import net.imglib2.type.numeric.integer.UnsignedByteType;
 import net.imglib2.util.Localizables;
@@ -106,7 +107,7 @@ public class MultiChannelMovieDemo {
 	private Labeling labeling5d() {
 		Labeling labeling = Labeling.createEmpty(Arrays.asList("background",
 			"foreground"), new FinalInterval(20, 10, 10, 20));
-		RandomAccess<Set<Label>> ra = labeling.randomAccess();
+		RandomAccess<LabelingType<Label>> ra = labeling.randomAccess();
 		ra.setPosition(new long[] { 1, 0, 0, 1 });
 		ra.get().add(labeling.getLabel("foreground"));
 		ra.setPosition(new long[] { 4, 0, 0, 1 });

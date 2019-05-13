@@ -8,6 +8,7 @@ import net.imglib2.RandomAccessibleInterval;
 import net.imglib2.roi.labeling.ImgLabeling;
 import net.imglib2.roi.labeling.LabelingMapping;
 import net.imglib2.labkit.utils.DimensionUtils;
+import net.imglib2.roi.labeling.LabelingType;
 import net.imglib2.view.Views;
 
 import java.util.ArrayList;
@@ -33,11 +34,11 @@ public class Labelings {
 	}
 
 	private static void sparseCopy(Labeling labeling,
-		RandomAccessibleInterval<Set<Label>> target)
+		RandomAccessibleInterval<LabelingType<Label>> target)
 	{
 		Cursor<?> cursor = labeling.sparsityCursor();
-		RandomAccess<Set<Label>> out = target.randomAccess();
-		RandomAccess<Set<Label>> in = labeling.randomAccess();
+		RandomAccess<LabelingType<Label>> out = target.randomAccess();
+		RandomAccess<LabelingType<Label>> in = labeling.randomAccess();
 		while (cursor.hasNext()) {
 			cursor.fwd();
 			in.setPosition(cursor);
@@ -57,7 +58,7 @@ public class Labelings {
 		Labeling labeling = Labeling.createEmpty(Collections.singletonList(
 			labelName), interval);
 		Label label = labeling.getLabels().iterator().next();
-		RandomAccess<Set<Label>> ra = labeling.randomAccess();
+		RandomAccess<LabelingType<Label>> ra = labeling.randomAccess();
 		ra.setPosition(coordinates);
 		ra.get().add(label);
 		return labeling;

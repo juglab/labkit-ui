@@ -8,15 +8,16 @@ import net.imglib2.RandomAccessibleInterval;
 import net.imglib2.RealLocalizable;
 import net.imglib2.RealPoint;
 import net.imglib2.algorithm.neighborhood.Neighborhood;
-import net.imglib2.img.array.ArrayImgs;
 import net.imglib2.labkit.ActionsAndBehaviours;
 import net.imglib2.labkit.brush.neighborhood.TransformedSphere;
 import net.imglib2.labkit.labeling.Label;
 import net.imglib2.labkit.models.LabelingModel;
 import net.imglib2.realtransform.AffineTransform3D;
+import net.imglib2.roi.labeling.LabelingType;
 import net.imglib2.type.logic.BitType;
 import net.imglib2.ui.TransformEventHandler;
 import net.imglib2.util.LinAlgHelpers;
+import net.imglib2.util.Util;
 import net.imglib2.view.Views;
 import org.scijava.ui.behaviour.Behaviour;
 import org.scijava.ui.behaviour.DragBehaviour;
@@ -25,6 +26,9 @@ import org.scijava.ui.behaviour.util.RunnableAction;
 
 import javax.swing.*;
 import java.awt.*;
+import java.util.Collections;
+import java.util.Set;
+import java.util.function.Consumer;
 import java.util.stream.IntStream;
 
 /**
@@ -116,19 +120,43 @@ public class LabelBrushController {
 
 		private void paint(RealLocalizable coords) {
 			synchronized (viewer) {
-				final RandomAccessible<BitType> extended = Views.extendValue(bitmap(),
-					new BitType(false));
+				final RandomAccessible<LabelingType<Label>> extended =
+					extendLabelingType(slice());
 				double brushWidth = getTransformedBrushRadius() * getScale(
 					viewerTransformation());
 				double brushDepth = brushWidth;
 				AffineTransform3D D = brushMatrix(coords, brushWidth, brushDepth);
 				AffineTransform3D m = displayToImageTransformation();
 				m.concatenate(D);
-				Neighborhood<BitType> neighborhood = TransformedSphere.asNeighborhood(
-					new long[3], m, extended.randomAccess());
-				neighborhood.forEach(pixel -> pixel.set(value));
+				Neighborhood<LabelingType<Label>> neighborhood = TransformedSphere
+					.asNeighborhood(new long[3], m, extended.randomAccess());
+				neighborhood.forEach(pixelOperation());
 			}
 
+		}
+
+		private Consumer<LabelingType<Label>> pixelOperation() {
+			Label label = model.selectedLabel().get();
+			if (value && label != null) {
+				if (override) return pixel -> pixel.add(label);
+				return pixel -> {
+					pixel.clear();
+					pixel.add(label);
+				};
+			}
+			else {
+				if (override || label == null) return pixel -> pixel.clear();
+				return pixel -> pixel.remove(label);
+			}
+		}
+
+		private RandomAccessible<LabelingType<Label>> extendLabelingType(
+			RandomAccessibleInterval<LabelingType<Label>> slice)
+		{
+			LabelingType<Label> variable = Util.getTypeFromInterval(slice)
+				.createVariable();
+			variable.clear();
+			return Views.extendValue(slice, variable);
 		}
 
 		private AffineTransform3D brushMatrix(RealLocalizable coords,
@@ -220,14 +248,12 @@ public class LabelBrushController {
 			transformation, i)).reduce(0, Math::max);
 	}
 
-	private RandomAccessibleInterval<BitType> bitmap() {
-		Label label = model.selectedLabel().get();
-		if (label == null) return ArrayImgs.bits(1, 1, 1);
-		RandomAccessibleInterval<BitType> bitmap = model.labeling().get().getRegion(
-			label);
-		if (sliceTime) return Views.hyperSlice(bitmap, bitmap.numDimensions() - 1,
+	private RandomAccessibleInterval<LabelingType<Label>> slice() {
+		RandomAccessibleInterval<LabelingType<Label>> slice = model.labeling()
+			.get();
+		if (sliceTime) return Views.hyperSlice(slice, slice.numDimensions() - 1,
 			viewer.getState().getCurrentTimepoint());
-		return bitmap;
+		return slice;
 	}
 
 	private void fireBitmapChanged() {

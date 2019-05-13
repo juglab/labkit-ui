@@ -10,6 +10,7 @@ import net.imglib2.labkit.models.Holder;
 import net.imglib2.labkit.labeling.Labeling;
 import net.imglib2.labkit.labeling.LabelingSerializer;
 import net.imglib2.roi.IterableRegion;
+import net.imglib2.roi.labeling.LabelingType;
 import net.imglib2.type.logic.BitType;
 
 import java.io.IOException;
@@ -55,7 +56,7 @@ public class AddLabelingIoAction extends AbstractFileIoAction {
 		if (newLabelName == null) return;
 		Label newLabel = labeling.addLabel(newLabelName);
 		Cursor<Void> cursor = region.cursor();
-		RandomAccess<Set<Label>> ra = labeling.randomAccess();
+		RandomAccess<LabelingType<Label>> ra = labeling.randomAccess();
 		while (cursor.hasNext()) {
 			cursor.fwd();
 			ra.setPosition(cursor);

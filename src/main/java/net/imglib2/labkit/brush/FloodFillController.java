@@ -9,6 +9,7 @@ import net.imglib2.RealPoint;
 import net.imglib2.labkit.ActionsAndBehaviours;
 import net.imglib2.labkit.labeling.Label;
 import net.imglib2.labkit.models.LabelingModel;
+import net.imglib2.roi.labeling.LabelingType;
 import net.imglib2.view.Views;
 import org.scijava.ui.behaviour.ClickBehaviour;
 import org.scijava.ui.behaviour.util.RunnableAction;
@@ -94,7 +95,7 @@ public class FloodFillController {
 
 		protected void floodFill(final RealLocalizable coords) {
 			synchronized (viewer) {
-				RandomAccessibleInterval<Set<Label>> labeling1 = labeling();
+				RandomAccessibleInterval<LabelingType<Label>> labeling1 = labeling();
 				Point seed = roundAndReduceDimension(coords, labeling1.numDimensions());
 				FloodFill.doFloodFillOnActiveLabels(
 					(RandomAccessibleInterval) labeling1, seed, operationFactory.get());
@@ -117,8 +118,9 @@ public class FloodFillController {
 		}
 	}
 
-	private RandomAccessibleInterval<Set<Label>> labeling() {
-		RandomAccessibleInterval<Set<Label>> label = model.labeling().get();
+	private RandomAccessibleInterval<LabelingType<Label>> labeling() {
+		RandomAccessibleInterval<LabelingType<Label>> label = model.labeling()
+			.get();
 		if (sliceTime) return Views.hyperSlice(label, label.numDimensions() - 1,
 			viewer.getState().getCurrentTimepoint());
 		return label;

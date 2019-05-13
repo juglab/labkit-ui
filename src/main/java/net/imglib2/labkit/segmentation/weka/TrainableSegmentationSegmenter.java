@@ -19,6 +19,7 @@ import net.imglib2.labkit.inputimage.InputImage;
 import net.imglib2.labkit.labeling.Labeling;
 import net.imglib2.labkit.utils.CheckedExceptionUtils;
 import net.imglib2.labkit.utils.LabkitUtils;
+import net.imglib2.roi.labeling.LabelingType;
 import net.imglib2.sparse.SparseRandomAccessIntType;
 import net.imglib2.labkit.utils.DimensionUtils;
 import net.imglib2.trainable_segmention.classification.Training;
@@ -218,7 +219,7 @@ public class TrainableSegmentationSegmenter implements Segmenter {
 			label -> classes.indexOf(label.name())).filter(i -> i >= 0).min().orElse(
 				-1);
 		Cursor<?> cursor = labeling.sparsityCursor();
-		RandomAccess<Set<Label>> randomAccess = labeling.randomAccess();
+		RandomAccess<LabelingType<Label>> randomAccess = labeling.randomAccess();
 		RandomAccess<IntType> out = result.randomAccess();
 		while (cursor.hasNext()) {
 			cursor.fwd();
