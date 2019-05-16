@@ -29,8 +29,8 @@
 
 	<mailingLists>
 		<mailingList>
-			<name>ImageJ Forum</name>
-			<archive>http://image.sc/</archive>
+			<name>Image.sc Forum</name>
+			<archive>https://forum.image.sc/tags/imglib2-labkit</archive>
 		</mailingList>
 	</mailingLists>
 
