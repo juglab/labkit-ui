@@ -38,7 +38,7 @@
 		<developer>
 			<id>maarzt</id>
 			<name>Matthias Arzt</name>
-			<url>http://imagej.net/User:Maarzt</url>
+			<url>https://imagej.net/User:Maarzt</url>
 			<roles>
 				<role>lead</role>
 				<role>developer</role>
@@ -51,7 +51,7 @@
 		<developer>
 			<id>hanslovsky</id>
 			<name>Philipp Hanslovsky</name>
-			<url>http://imagej.net/User:Hanslovsky</url>
+			<url>https://imagej.net/User:Hanslovsky</url>
 			<roles>
 				<role>founder</role>
 			</roles>
