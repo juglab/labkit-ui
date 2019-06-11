@@ -96,10 +96,9 @@ public class ColoredLabelsModel {
 	public void localizeLabel(final Label label) {
 		Interval labelBox = getBoundingBox(model.labeling().get().iterableRegions()
 			.get(label));
-		if (model.isTimeSeries()) labelBox = DimensionUtils.removeLastDimension(
-			labelBox);
-		if (labelBox != null) model.transformationModel().transformToShowInterval(
-			labelBox, model.labelTransformation());
+		if (labelBox == null) return;
+		model.transformationModel().transformToShowInterval(labelBox, model
+			.labelTransformation());
 	}
 
 	private static Interval getBoundingBox(IterableRegion<BitType> region) {

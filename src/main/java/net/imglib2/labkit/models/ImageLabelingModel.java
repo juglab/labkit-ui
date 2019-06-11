@@ -31,8 +31,7 @@ public class ImageLabelingModel implements LabelingModel {
 
 	private final boolean isTimeSeries;
 
-	private final TransformationModel transformationModel =
-		new TransformationModel();
+	private final TransformationModel transformationModel;
 
 	private BdvShowable showable;
 
@@ -55,6 +54,7 @@ public class ImageLabelingModel implements LabelingModel {
 		this.selectedLabelHolder = new DefaultHolder<>(labeling.getLabels().stream()
 			.findAny().orElse(null));
 		this.isTimeSeries = isTimeSeries;
+		this.transformationModel = new TransformationModel(isTimeSeries);
 		this.defaultFileName = defaultFileName;
 	}
 

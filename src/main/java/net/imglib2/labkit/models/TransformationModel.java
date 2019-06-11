@@ -4,13 +4,20 @@ package net.imglib2.labkit.models;
 import bdv.viewer.ViewerPanel;
 import net.imglib2.Interval;
 import net.imglib2.realtransform.AffineTransform3D;
+import net.imglib2.trainable_segmention.RevampUtils;
 
 import java.util.Arrays;
 import java.util.Collections;
 
 public class TransformationModel {
 
+	private final boolean isTimeSeries;
+
 	private ViewerPanel viewerPanel;
+
+	public TransformationModel(boolean isTimeSeries) {
+		this.isTimeSeries = isTimeSeries;
+	}
 
 	public void initialize(ViewerPanel viewerPanel) {
 		this.viewerPanel = viewerPanel;
@@ -24,7 +31,7 @@ public class TransformationModel {
 		return viewerPanel == null ? 100 : viewerPanel.getHeight();
 	}
 
-	public void setTransformation(AffineTransform3D transformation) {
+	private void setTransformation(AffineTransform3D transformation) {
 		if (viewerPanel != null) viewerPanel.setCurrentViewerTransform(
 			transformation);
 	}
@@ -32,6 +39,12 @@ public class TransformationModel {
 	public void transformToShowInterval(Interval interval,
 		AffineTransform3D transformation)
 	{
+		if (isTimeSeries) {
+			int lastDim = interval.numDimensions() - 1;
+			long meanTimePoint = (interval.min(lastDim) + interval.max(lastDim)) / 2;
+			if (viewerPanel != null) viewerPanel.setTimepoint((int) meanTimePoint);
+			interval = RevampUtils.removeLastDimension(interval);
+		}
 		final double[] screenSize = { width(), height() };
 		AffineTransform3D concat = new AffineTransform3D();
 		concat.set(getTransformation(interval, screenSize));
