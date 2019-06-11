@@ -29,8 +29,6 @@ public class FloodFillController {
 
 	private final LabelingModel model;
 
-	private final boolean sliceTime;
-
 	private final FloodFillClick floodEraseBehaviour = new FloodFillClick(() -> {
 		Collection<Label> visible = visibleLabels();
 		return l -> l.removeAll(visible);
@@ -47,11 +45,9 @@ public class FloodFillController {
 	});
 
 	public FloodFillController(final ViewerPanel viewer,
-		final LabelingModel model, final ActionsAndBehaviours behaviors,
-		final boolean sliceTime)
+		final LabelingModel model, final ActionsAndBehaviours behaviors)
 	{
 		this.viewer = viewer;
-		this.sliceTime = sliceTime;
 		this.model = model;
 
 		RunnableAction nop = new RunnableAction("nop", () -> {});
@@ -121,8 +117,8 @@ public class FloodFillController {
 	private RandomAccessibleInterval<LabelingType<Label>> labeling() {
 		RandomAccessibleInterval<LabelingType<Label>> label = model.labeling()
 			.get();
-		if (sliceTime) return Views.hyperSlice(label, label.numDimensions() - 1,
-			viewer.getState().getCurrentTimepoint());
+		if (model.isTimeSeries()) return Views.hyperSlice(label, label
+			.numDimensions() - 1, viewer.getState().getCurrentTimepoint());
 		return label;
 	}
 }

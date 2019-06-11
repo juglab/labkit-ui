@@ -5,6 +5,7 @@ import bdv.util.BdvHandle;
 import bdv.viewer.ViewerPanel;
 import net.imglib2.labkit.brush.FloodFillController;
 import net.imglib2.labkit.brush.LabelBrushController;
+import net.imglib2.labkit.brush.SelectLabelController;
 import net.miginfocom.swing.MigLayout;
 import org.scijava.ui.behaviour.*;
 import org.scijava.ui.behaviour.util.TriggerBehaviourBindings;
@@ -28,6 +29,7 @@ public class LabelToolsPanel extends JPanel {
 
 	private final FloodFillController floodFillController;
 	private final LabelBrushController brushController;
+	private final SelectLabelController selectLabelController;
 
 	private JPanel brushOptionsPanel;
 	private final JPanel optionPane;
@@ -37,10 +39,12 @@ public class LabelToolsPanel extends JPanel {
 
 	public LabelToolsPanel(BdvHandle bdvHandle,
 		LabelBrushController brushController,
-		FloodFillController floodFillController)
+		FloodFillController floodFillController,
+		SelectLabelController selectLabelController)
 	{
 		this.brushController = brushController;
 		this.floodFillController = floodFillController;
+		this.selectLabelController = selectLabelController;
 		triggerBindings = bdvHandle.getTriggerbindings();
 		bdvPanel = bdvHandle.getViewerPanel();
 
@@ -78,6 +82,8 @@ public class LabelToolsPanel extends JPanel {
 				return brushController.eraseBehaviour();
 			case FLOOD_ERASE:
 				return floodFillController.floodEraseBehaviour();
+			case SELECT_LABEL:
+				return selectLabelController.behaviour();
 		}
 		throw new AssertionError();
 	}
@@ -98,6 +104,8 @@ public class LabelToolsPanel extends JPanel {
 		addActionButton("Erase (E)", Mode.ERASE, "/images/erase.png");
 		addActionButton("Remove Blob (R)", Mode.FLOOD_ERASE,
 			"/images/flooderase.png");
+		addActionButton("Select Label (Shift)", Mode.SELECT_LABEL,
+			"/images/pipette.png");
 		moveBtn.doClick();
 	}
 
@@ -196,6 +204,6 @@ public class LabelToolsPanel extends JPanel {
 	}
 
 	private enum Mode {
-			MOVE, PAINT, FLOOD_FILL, ERASE, FLOOD_ERASE
+			MOVE, PAINT, FLOOD_FILL, ERASE, SELECT_LABEL, FLOOD_ERASE
 	}
 }

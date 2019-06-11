@@ -54,15 +54,11 @@ public class LabelBrushController {
 
 	private boolean override = false;
 
-	private final boolean sliceTime;
-
 	public LabelBrushController(final ViewerPanel viewer,
-		final LabelingModel model, final ActionsAndBehaviours behaviors,
-		final boolean sliceTime)
+		final LabelingModel model, final ActionsAndBehaviours behaviors)
 	{
 		this.viewer = viewer;
 		this.brushOverlay = new BrushOverlay(viewer, model);
-		this.sliceTime = sliceTime;
 		this.model = model;
 		brushOverlay.setRadius((int) getTransformedBrushRadius());
 		viewer.getDisplay().addOverlayRenderer(brushOverlay);
@@ -252,8 +248,8 @@ public class LabelBrushController {
 	private RandomAccessibleInterval<LabelingType<Label>> slice() {
 		RandomAccessibleInterval<LabelingType<Label>> slice = model.labeling()
 			.get();
-		if (sliceTime) return Views.hyperSlice(slice, slice.numDimensions() - 1,
-			viewer.getState().getCurrentTimepoint());
+		if (this.model.isTimeSeries()) return Views.hyperSlice(slice, slice
+			.numDimensions() - 1, viewer.getState().getCurrentTimepoint());
 		return slice;
 	}
 
