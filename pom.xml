@@ -5,7 +5,7 @@
 	<parent>
 		<groupId>org.scijava</groupId>
 		<artifactId>pom-scijava</artifactId>
-		<version>23.1.1</version>
+		<version>26.0.0</version>
 	</parent>
 
 	<groupId>net.imglib2</groupId>
@@ -30,7 +30,7 @@
 	<mailingLists>
 		<mailingList>
 			<name>ImageJ Forum</name>
-			<archive>http://forum.imagej.net/</archive>
+			<archive>http://image.sc/</archive>
 		</mailingList>
 	</mailingLists>
 
@@ -70,7 +70,7 @@
 	<repositories>
 		<repository>
 			<id>imagej.public</id>
-			<url>http://maven.imagej.net/content/groups/public</url>
+			<url>https://maven.scijava.org/content/groups/public</url>
 		</repository>
 	</repositories>
 
@@ -94,7 +94,7 @@
 		<license.licenseName>bsd_2</license.licenseName>
 		<license.copyrightOwners>Matthias Arzt, Philipp Hanslovsky</license.copyrightOwners>
 		<!-- NB: Deploy releases to the ImageJ Maven repository. -->
-		<releaseProfiles>deploy-to-imagej</releaseProfiles>
+		<releaseProfiles>deploy-to-scijava</releaseProfiles>
 	</properties>
 
 	<build>
