@@ -153,7 +153,7 @@ public class LabelingSerializer {
 		io.save(ds.create(imgPlus), filename);
 	}
 
-	private static class LabelsMetaData {
+	public static class LabelsMetaData {
 
 		List<Set<String>> labelSets;
 
