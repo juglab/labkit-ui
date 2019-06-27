@@ -21,6 +21,7 @@ import net.imglib2.util.ConstantUtils;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.NoSuchElementException;
 import java.util.stream.Collectors;
 
 /**
@@ -56,10 +57,19 @@ public class SegmentationResultsModel {
 			updateSegmentation(segmenter);
 			updatePrediction(segmenter);
 			this.labels = segmenter.classNames();
-			this.colors = this.labels.stream().map(name -> model.labeling().getLabel(
-				name).color()).collect(Collectors.toList());
+			this.colors = this.labels.stream().map(this::getLabelColor).collect(
+				Collectors.toList());
 			hasResults = true;
 			listeners.notifyListeners();
+		}
+	}
+
+	private ARGBType getLabelColor(String name) {
+		try {
+			return model.labeling().getLabel(name).color();
+		}
+		catch (NoSuchElementException e) {
+			return model.labeling().addLabel(name).color();
 		}
 	}
 
