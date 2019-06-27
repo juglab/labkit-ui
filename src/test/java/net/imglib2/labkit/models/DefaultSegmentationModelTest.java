@@ -6,6 +6,7 @@ import net.imglib2.labkit.inputimage.DefaultInputImage;
 import net.imglib2.labkit.labeling.Label;
 import net.imglib2.labkit.labeling.Labeling;
 import net.imglib2.type.logic.BitType;
+import net.imglib2.util.ValuePair;
 import net.imglib2.view.Views;
 import org.junit.Test;
 import org.scijava.Context;
@@ -14,6 +15,7 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.Collections;
 import java.util.List;
 
 import static junit.framework.TestCase.assertTrue;
@@ -56,7 +58,8 @@ public class DefaultSegmentationModelTest {
 		List<Label> labels = labeling.getLabels();
 		Views.iterable(labeling.getRegion(labels.get(0))).forEach(BitType::setOne);
 		SegmentationItem item = model.selectedSegmenter().get();
-		model.train(item);
+		item.train(Collections.singletonList(new ValuePair<>(image
+			.imageForSegmentation(), labeling)));
 		// save classifier
 		File tmpFile = File.createTempFile("model", ".classifier");
 		tmpFile.deleteOnExit();
