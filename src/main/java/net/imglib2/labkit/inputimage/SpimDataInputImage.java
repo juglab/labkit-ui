@@ -78,7 +78,14 @@ public class SpimDataInputImage implements InputImage {
 			.getTimePointsOrdered();
 		if (level == null) level = selectResolution(setup.getSize(), imgLoader
 			.getMipmapResolutions());
-		return combineFrames(imgLoader, timePoints, level);
+		return dropThirdDimension(combineFrames(imgLoader, timePoints, level));
+	}
+
+	private RandomAccessibleInterval<?> dropThirdDimension(
+		RandomAccessibleInterval<?> image)
+	{
+		if (image.dimension(2) == 1) return Views.hyperSlice(image, 2, 0);
+		return image;
 	}
 
 	private static int selectResolution(Dimensions dimensions,
