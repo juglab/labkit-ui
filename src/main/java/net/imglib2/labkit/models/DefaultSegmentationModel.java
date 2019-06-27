@@ -127,10 +127,6 @@ public class DefaultSegmentationModel implements SegmentationModel,
 
 	@Override
 	public void train(SegmentationItem item) {
-		ParallelUtils.runInOtherThread(() -> internTrain(item));
-	}
-
-	private void internTrain(SegmentationItem item) {
 		SwingProgressWriter progressWriter = new SwingProgressWriter(null,
 			"Training in Progress");
 		progressWriter.setVisible(true);

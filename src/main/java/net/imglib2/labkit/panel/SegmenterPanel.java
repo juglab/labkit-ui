@@ -4,6 +4,7 @@ package net.imglib2.labkit.panel;
 import net.imglib2.labkit.DefaultExtensible;
 import net.imglib2.labkit.models.SegmentationItem;
 import net.imglib2.labkit.models.SegmenterListModel;
+import net.imglib2.labkit.utils.ParallelUtils;
 import net.miginfocom.swing.MigLayout;
 import org.scijava.ui.behaviour.util.RunnableAction;
 
@@ -108,8 +109,10 @@ public class SegmenterPanel {
 		}
 
 		private void runTraining() {
-			((SegmenterListModel) segmentationModel).selectedSegmenter().set(item);
-			((SegmenterListModel) segmentationModel).train(item);
+			ParallelUtils.runInOtherThread(() -> {
+				((SegmenterListModel) segmentationModel).selectedSegmenter().set(item);
+				((SegmenterListModel) segmentationModel).train(item);
+			});
 		}
 
 	}
