@@ -1,5 +1,5 @@
 
-package bdv.export;
+package net.imglib2.hdf5;
 
 import ij.ImagePlus;
 import mpicbg.spim.data.SpimDataException;
@@ -28,9 +28,9 @@ public class HDF5SaverDemo {
 		image = Views.interval(Views.extendPeriodic(image), new FinalInterval(1000,
 			1000, 1000));
 		RandomAccessibleInterval<UnsignedShortType> result = treshold(image);
-		HDF5Saver saver = new HDF5Saver();
+		HDF5Saver saver = new HDF5Saver(result, outputFilename);
 		saver.setProgressWriter(new SwingProgressWriter(null, "Save Huge Image"));
-		saver.save(outputFilename, result);
+		saver.writeAll();
 	}
 
 	public static RandomAccessibleInterval<UnsignedShortType> treshold(

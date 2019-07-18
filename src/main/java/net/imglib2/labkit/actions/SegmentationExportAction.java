@@ -1,7 +1,7 @@
 
 package net.imglib2.labkit.actions;
 
-import bdv.export.HDF5Saver;
+import net.imglib2.hdf5.HDF5Saver;
 import io.scif.img.ImgSaver;
 import net.imglib2.RandomAccessibleInterval;
 import net.imglib2.img.ImgView;
@@ -73,10 +73,10 @@ public class SegmentationExportAction extends AbstractFileIoAction {
 		RandomAccessibleInterval<T> image)
 	{
 		if (filename.endsWith(".h5") || filename.endsWith(".xml")) {
-			final HDF5Saver saver = new HDF5Saver();
+			final HDF5Saver saver = new HDF5Saver(image, filename);
 			saver.setProgressWriter(new SwingProgressWriter(extensible.dialogParent(),
 				"Save Image"));
-			saver.save(filename, image);
+			saver.writeAll();
 		}
 		else {
 			try {

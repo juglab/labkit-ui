@@ -1,7 +1,14 @@
 
-package bdv.export;
+package net.imglib2.hdf5;
 
+import bdv.export.ExportMipmapInfo;
+import bdv.export.ProgressWriter;
+import bdv.export.ProgressWriterConsole;
+import bdv.export.ProposeMipmaps;
+import bdv.export.SubTaskProgressWriter;
+import bdv.export.WriteSequenceToHdf5;
 import bdv.img.hdf5.Hdf5ImageLoader;
+import bdv.img.hdf5.Partition;
 import bdv.spimdata.SequenceDescriptionMinimal;
 import bdv.spimdata.SpimDataMinimal;
 import bdv.spimdata.XmlIoSpimDataMinimal;
@@ -30,6 +37,7 @@ import net.imglib2.util.Util;
 import net.imglib2.view.Views;
 
 import java.io.File;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -38,24 +46,74 @@ import java.util.stream.IntStream;
 
 public class HDF5Saver {
 
-	private ProgressWriter progressWriter = new ProgressWriterConsole();
+	private ProgressWriter progressWriter = new DummyProgressWriter();
+	private final File hdf5;
+	private final File xml;
+	private final SpimDataMinimal data;
+	private ArrayList<Partition> partitions = null;
+	private Map<Integer, ExportMipmapInfo> mipmapInfo;
+
+	public HDF5Saver(RandomAccessibleInterval<?> image, String filename) {
+		final File file = new File(filename);
+		hdf5 = replaceExtension(file, "h5");
+		xml = replaceExtension(file, "xml");
+		data = wrapAsSpimData(image, xml.getParentFile());
+		mipmapInfo = ProposeMipmaps.proposeMipmaps(data.getSequenceDescription());
+	}
+
+	public void setPartitions(int timepointsPerPartition, int setupsPerPartion) {
+		List<TimePoint> timePoints = data.getSequenceDescription().getTimePoints()
+			.getTimePointsOrdered();
+		List<BasicViewSetup> setups = data.getSequenceDescription()
+			.getViewSetupsOrdered();
+		String basename = removeExtension(hdf5.getAbsolutePath(), "h5");
+		partitions = Partition.split(timePoints, setups, timepointsPerPartition,
+			setupsPerPartion, basename);
+	}
 
 	public void setProgressWriter(ProgressWriter progressWriter) {
 		this.progressWriter = progressWriter;
 	}
 
-	public void save(String filename, RandomAccessibleInterval<?> image) {
-		final String nameWithoutExtension = removeExtension(new File(filename)
-			.getName(), "h5", "xml");
-		final File basePath = new File(filename).getParentFile();
-		final File hdf5 = new File(basePath, nameWithoutExtension + ".h5");
-		final File xml = new File(basePath, nameWithoutExtension + ".xml");
-		image = toUnsignedShortType(image);
-		SpimDataMinimal data = oneImageSpimData(sliceTime(ensure3d(image)),
+	public void writeAll() {
+		writeAllPartitions();
+		writeXmlAndHdf5();
+	}
+
+	public void writeXmlAndHdf5() {
+		writeHdf5();
+		writeXml();
+	}
+
+	private void writeHdf5() {
+		if (partitions == null) writeHDF5Block();
+		else writeHDF5Partitioned();
+	}
+
+	private void writeXml() {
+		try {
+			BasicImgLoader imgLoader = new Hdf5ImageLoader(hdf5, partitions, data
+				.getSequenceDescription());
+			SpimDataMinimal spimData = new SpimDataMinimal(data, imgLoader);
+			new XmlIoSpimDataMinimal().save(spimData, xml.getAbsolutePath());
+		}
+		catch (SpimDataException e) {
+			throw new RuntimeException(e);
+		}
+	}
+
+	private File replaceExtension(File file, String newExtension) {
+		final String nameWithoutExtension = removeExtension(file.getName(), "h5",
+			"xml");
+		return new File(file.getParentFile(), nameWithoutExtension + "." +
+			newExtension);
+	}
+
+	private SpimDataMinimal wrapAsSpimData(RandomAccessibleInterval<?> image,
+		File basePath)
+	{
+		return oneImageSpimData(sliceTime(ensure3d(toUnsignedShortType(image))),
 			basePath);
-		writeHDF5(hdf5, data);
-		setHDF5ImgLoader(hdf5, data);
-		writeXML(xml, data);
 	}
 
 	private <T> RandomAccessibleInterval<T> ensure3d(
@@ -99,26 +157,43 @@ public class HDF5Saver {
 		throw new UnsupportedOperationException();
 	}
 
-	public static void writeXML(File xml, SpimDataMinimal data) {
-		try {
-			new XmlIoSpimDataMinimal().save(data, xml.getAbsolutePath());
-		}
-		catch (SpimDataException e) {
-			throw new RuntimeException(e);
-		}
-	}
-
-	public static void setHDF5ImgLoader(File hdf5, SpimDataMinimal data) {
-		BasicImgLoader imgLoader = new Hdf5ImageLoader(hdf5, null, data
-			.getSequenceDescription());
-		data.getSequenceDescription().setImgLoader(imgLoader);
-	}
-
-	public void writeHDF5(File hdf5, SpimDataMinimal data) {
+	private void writeHDF5Block() {
 		Map<Integer, ExportMipmapInfo> mipmapInfo = ProposeMipmaps.proposeMipmaps(
 			data.getSequenceDescription());
 		WriteSequenceToHdf5.writeHdf5File(data.getSequenceDescription(), mipmapInfo,
 			true, hdf5, null, null, 8, progressWriter);
+	}
+
+	private void writeHDF5Partitioned() {
+		SequenceDescriptionMinimal sequenceDescription = data
+			.getSequenceDescription();
+		WriteSequenceToHdf5.writeHdf5PartitionLinkFile(sequenceDescription,
+			mipmapInfo, partitions, hdf5);
+	}
+
+	public void writeAllPartitions() {
+		if (partitions == null) return;
+		int size = numberOfPartitions();
+		for (int i = 0; i < size; ++i) {
+			double start = 0.95 * i / size;
+			double end = 0.95 * (i + 1) / size;
+			final ProgressWriter p = new SubTaskProgressWriter(progressWriter, start,
+				end);
+			writePartition(i, p);
+		}
+	}
+
+	public int numberOfPartitions() {
+		return partitions == null ? 0 : partitions.size();
+	}
+
+	public void writePartition(int index) {
+		writePartition(index, progressWriter);
+	}
+
+	private void writePartition(int index, ProgressWriter progressWriter) {
+		WriteSequenceToHdf5.writeHdf5PartitionFile(data.getSequenceDescription(),
+			mipmapInfo, true, partitions.get(index), null, null, 8, progressWriter);
 	}
 
 	private static String removeExtension(String filename, String... extensions) {
