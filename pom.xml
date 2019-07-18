@@ -5,7 +5,7 @@
 	<parent>
 		<groupId>org.scijava</groupId>
 		<artifactId>pom-scijava</artifactId>
-		<version>26.0.0</version>
+		<version>27.0.1</version>
 	</parent>
 
 	<groupId>net.imglib2</groupId>
@@ -95,20 +95,9 @@
 		<license.copyrightOwners>Matthias Arzt, Philipp Hanslovsky</license.copyrightOwners>
 		<!-- NB: Deploy releases to the ImageJ Maven repository. -->
 		<releaseProfiles>deploy-to-scijava</releaseProfiles>
+		<scijava-coding-style.version>2.0.0</scijava-coding-style.version>
+		<scijava.coding-style>scijava</scijava.coding-style>
 	</properties>
-
-	<build>
-		<plugins>
-			<plugin>
-				<groupId>net.revelc.code.formatter</groupId>
-				<artifactId>formatter-maven-plugin</artifactId>
-				<version>2.7.3</version>
-				<configuration>
-					<configFile>${project.basedir}/.formatter/java-imagej-coding-style.xml</configFile>
-				</configuration>
-			</plugin>
-		</plugins>
-	</build>
 
 	<dependencies>
 		<dependency>
