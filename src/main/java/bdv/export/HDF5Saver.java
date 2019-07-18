@@ -117,8 +117,8 @@ public class HDF5Saver {
 	public void writeHDF5(File hdf5, SpimDataMinimal data) {
 		Map<Integer, ExportMipmapInfo> mipmapInfo = ProposeMipmaps.proposeMipmaps(
 			data.getSequenceDescription());
-		WriteSequenceToHdf5v2.writeHdf5File(data.getSequenceDescription(),
-			mipmapInfo, true, hdf5, null, null, 8, progressWriter);
+		WriteSequenceToHdf5.writeHdf5File(data.getSequenceDescription(), mipmapInfo,
+			true, hdf5, null, null, 8, progressWriter);
 	}
 
 	private static String removeExtension(String filename, String... extensions) {
