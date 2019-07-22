@@ -211,6 +211,8 @@ public class LabelBrushController {
 			RealPoint coords = new RealPoint(x, y);
 			this.before = coords;
 			paint(coords);
+			brushOverlay.setPosition(x, y);
+			brushOverlay.setFontVisible(false);
 			fireBitmapChanged();
 		}
 
@@ -224,7 +226,9 @@ public class LabelBrushController {
 		}
 
 		@Override
-		public void end(final int x, final int y) {}
+		public void end(final int x, final int y) {
+			brushOverlay.setFontVisible(true);
+		}
 	}
 
 	private void makeLabelVisible() {

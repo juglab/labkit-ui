@@ -12,7 +12,6 @@ import net.imglib2.realtransform.AffineTransform3D;
 import net.imglib2.ui.OverlayRenderer;
 
 import java.awt.*;
-import java.awt.geom.Rectangle2D;
 
 /**
  * @author Stephan Saalfeld &lt;saalfelds@janelia.hhmi.org&gt;
@@ -20,11 +19,10 @@ import java.awt.geom.Rectangle2D;
 public class BrushOverlay implements OverlayRenderer {
 
 	private final ViewerPanel viewer;
-
 	private final LabelingModel model;
-
 	private int x, y, radius = 5;
 	private boolean visible = false;
+	private boolean fontVisible = true;
 	final AffineTransform3D viewerTransform = new AffineTransform3D();
 
 	public BrushOverlay(ViewerPanel viewer, LabelingModel model) {
@@ -45,6 +43,10 @@ public class BrushOverlay implements OverlayRenderer {
 		this.visible = visible;
 	}
 
+	public void setFontVisible(final boolean visible) {
+		this.fontVisible = visible;
+	}
+
 	public void requestRepaint() {
 		viewer.getDisplay().repaint();
 	}
@@ -61,7 +63,7 @@ public class BrushOverlay implements OverlayRenderer {
 			if (label != null) {
 				Color color = new Color(label.color().get());
 				String title = label.name();
-				drawTitle(g2d, color, title, roundScaledRadius);
+				if (fontVisible) drawTitle(g2d, color, title, roundScaledRadius);
 				drawCircle(g2d, color, roundScaledRadius);
 			}
 		}
@@ -89,12 +91,8 @@ public class BrushOverlay implements OverlayRenderer {
 	private void drawTitle(Graphics2D g2d, Color color, String title,
 		int roundScaledRadius)
 	{
-		final FontMetrics fm = g2d.getFontMetrics();
-		final Rectangle2D rect = fm.getStringBounds(title, g2d);
-		g2d.setColor(Color.WHITE);
-		g2d.fillRect(x + roundScaledRadius, y + roundScaledRadius - fm.getAscent(),
-			(int) rect.getWidth(), (int) rect.getHeight());
 		g2d.setColor(color);
-		g2d.drawString(title, x + roundScaledRadius, y + roundScaledRadius);
+		g2d.drawString(title, x + roundScaledRadius + 20, y + roundScaledRadius +
+			20);
 	}
 }

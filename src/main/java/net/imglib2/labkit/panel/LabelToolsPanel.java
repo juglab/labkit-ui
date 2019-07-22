@@ -67,7 +67,7 @@ public class LabelToolsPanel extends JPanel {
 	private void setBindings(Mode mode) {
 		removeBindings();
 		if (mode == Mode.MOVE) return;
-		addBindings(getBehaviourId(mode), "button1");
+		addBindings(getBehaviourId(mode));
 	}
 
 	private Behaviour getBehaviourId(Mode mode) {
@@ -186,13 +186,13 @@ public class LabelToolsPanel extends JPanel {
 		bdvPanel.getDisplay().removeMouseMotionListener(brushMotionDrawer);
 	}
 
-	private void addBindings(Behaviour behaviour, String trigger) {
+	private void addBindings(Behaviour behaviour) {
 		final BehaviourMap behaviourMap = new BehaviourMap();
 		behaviourMap.put("label tool button1", behaviour);
 		behaviourMap.put("drag rotate", new Behaviour() {});
 		behaviourMap.put("2d drag rotate", new Behaviour() {});
 		final InputTriggerMap inputTriggerMap = new InputTriggerMap();
-		inputTriggerMap.put(InputTrigger.getFromString(trigger),
+		inputTriggerMap.put(InputTrigger.getFromString("button1"),
 			"label tool button1");
 		triggerBindings.addInputTriggerMap(BUTTON_BEHAVIOUR_ID, inputTriggerMap);
 		triggerBindings.addBehaviourMap(BUTTON_BEHAVIOUR_ID, behaviourMap);
