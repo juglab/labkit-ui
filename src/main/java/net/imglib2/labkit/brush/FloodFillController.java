@@ -123,7 +123,7 @@ public class FloodFillController {
 		@Override
 		public void click(int x, int y) {
 			floodFill(displayToImageCoordinates(x, y));
-			model.dataChangedNotifier().notifyListeners();
+			model.dataChangedNotifier().notifyListeners(null);
 		}
 	}
 

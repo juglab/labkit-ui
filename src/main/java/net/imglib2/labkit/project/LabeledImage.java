@@ -21,6 +21,7 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
 import java.util.Arrays;
+import java.util.function.Consumer;
 
 /**
  * Represents an {@link ImageLabelingModel} that is save to disk.
@@ -44,6 +45,8 @@ public class LabeledImage {
 	private final Holder<Boolean> modified;
 
 	private final Runnable onLabelingChanged = this::onLabelingChanged;
+
+	private final Consumer<Interval> onLabelingChangedConsumer = interval -> onLabelingChanged();
 
 	public LabeledImage(Context context, String imageFile) {
 		this(context, FilenameUtils.getName(imageFile), imageFile, imageFile + ".labeling");
@@ -93,7 +96,7 @@ public class LabeledImage {
 	 */
 	public ImageLabelingModel open() {
 		this.imageLabelingModel = snapshot();
-		imageLabelingModel.dataChangedNotifier().addListener(onLabelingChanged);
+		imageLabelingModel.dataChangedNotifier().addListener(onLabelingChangedConsumer);
 		imageLabelingModel.labeling().notifier().addListener(onLabelingChanged);
 		return imageLabelingModel;
 	}
@@ -105,7 +108,7 @@ public class LabeledImage {
 	public void close() {
 		if (imageLabelingModel == null)
 			return;
-		imageLabelingModel.dataChangedNotifier().removeListener(onLabelingChanged);
+		imageLabelingModel.dataChangedNotifier().removeListener(onLabelingChangedConsumer);
 		imageLabelingModel.labeling().notifier().removeListener(onLabelingChanged);
 		if (storedIn.get() == null) {
 			try {

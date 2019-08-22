@@ -3,6 +3,7 @@ package net.imglib2.labkit.labeling;
 
 import gnu.trove.map.TIntObjectMap;
 import gnu.trove.map.hash.TIntObjectHashMap;
+import net.imglib2.Interval;
 import net.imglib2.RandomAccessibleInterval;
 import net.imglib2.converter.Converters;
 import net.imglib2.labkit.bdv.BdvLayer;
@@ -11,7 +12,7 @@ import net.imglib2.labkit.models.DefaultHolder;
 import net.imglib2.labkit.models.Holder;
 import net.imglib2.labkit.models.LabelingModel;
 import net.imglib2.labkit.utils.ARGBVector;
-import net.imglib2.labkit.utils.Notifier;
+import net.imglib2.labkit.utils.ParametricNotifier;
 import net.imglib2.type.numeric.ARGBType;
 
 import java.util.List;
@@ -27,7 +28,8 @@ public class LabelsLayer implements BdvLayer {
 
 	private final Holder<BdvShowable> showable;
 
-	private final Notifier listeners = new Notifier();
+	private final ParametricNotifier<Interval> listeners =
+		new ParametricNotifier<>();
 
 	private final ARGBType BLACK = new ARGBType(0);
 
@@ -35,12 +37,12 @@ public class LabelsLayer implements BdvLayer {
 		this.model = model;
 		this.showable = new DefaultHolder<>(BdvShowable.wrap(colorView(), model.labelTransformation()));
 		model.labeling().notifier().addListener(this::updateView);
-		model.dataChangedNotifier().addListener(() -> listeners.notifyListeners());
+		model.dataChangedNotifier().addListener(interval -> listeners.notifyListeners(interval));
 	}
 
 	private void updateView() {
 		showable.set(BdvShowable.wrap(colorView(), model.labelTransformation()));
-		listeners.notifyListeners();
+		listeners.notifyListeners(null);
 	}
 
 	private RandomAccessibleInterval<ARGBType> colorView() {
@@ -77,7 +79,7 @@ public class LabelsLayer implements BdvLayer {
 	}
 
 	@Override
-	public Notifier listeners() {
+	public ParametricNotifier<Interval> listeners() {
 		return listeners;
 	}
 

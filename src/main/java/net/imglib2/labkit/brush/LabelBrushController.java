@@ -4,6 +4,7 @@ package net.imglib2.labkit.brush;
 import bdv.TransformEventHandler;
 import bdv.util.Affine3DHelpers;
 import bdv.viewer.ViewerPanel;
+import net.imglib2.FinalInterval;
 import net.imglib2.RandomAccessible;
 import net.imglib2.RandomAccessibleInterval;
 import net.imglib2.RealLocalizable;
@@ -119,8 +120,7 @@ public class LabelBrushController {
 			synchronized (viewer) {
 				final RandomAccessible<LabelingType<Label>> extended =
 					extendLabelingType(slice());
-				double brushWidth = getTransformedBrushRadius() * getScale(
-					viewerTransformation());
+				double brushWidth = brushSizeInScreenPixel();
 				double brushDepth = brushWidth;
 				AffineTransform3D D = brushMatrix(coords, brushWidth, brushDepth);
 				AffineTransform3D m = displayToImageTransformation();
@@ -130,6 +130,10 @@ public class LabelBrushController {
 				neighborhood.forEach(pixelOperation());
 			}
 
+		}
+
+		private double brushSizeInScreenPixel() {
+			return getTransformedBrushRadius() * getScale(viewerTransformation());
 		}
 
 		private Consumer<LabelingType<Label>> pixelOperation() {
@@ -213,16 +217,16 @@ public class LabelBrushController {
 			paint(coords);
 			brushOverlay.setPosition(x, y);
 			brushOverlay.setFontVisible(false);
-			fireBitmapChanged();
+			fireBitmapChanged(coords, coords, brushSizeInScreenPixel());
 		}
 
 		@Override
 		public void drag(final int x, final int y) {
 			RealPoint coords = new RealPoint(x, y);
 			paint(before, coords);
+			fireBitmapChanged(before, coords, brushSizeInScreenPixel());
 			this.before = coords;
 			brushOverlay.setPosition(x, y);
-			fireBitmapChanged();
 		}
 
 		@Override
@@ -234,6 +238,7 @@ public class LabelBrushController {
 	private void makeLabelVisible() {
 		Label label = model.selectedLabel().get();
 		if (label == null) return;
+		if (label.isVisible() && model.labelingVisibility().get()) return;
 		label.setVisible(true);
 		model.labelingVisibility().set(true);
 		model.labeling().notifier().notifyListeners();
@@ -257,8 +262,16 @@ public class LabelBrushController {
 		return slice;
 	}
 
-	private void fireBitmapChanged() {
-		model.dataChangedNotifier().notifyListeners();
+	private void fireBitmapChanged(RealPoint a, RealPoint b, double radius) {
+		long[] min = new long[2];
+		long[] max = new long[2];
+		for (int d = 0; d < 2; d++) {
+			min[d] = (long) (Math.min(a.getDoublePosition(d), b.getDoublePosition(
+				d)) - radius);
+			max[d] = (long) (Math.ceil(Math.max(a.getDoublePosition(d), b
+				.getDoublePosition(d))) + radius);
+		}
+		model.dataChangedNotifier().notifyListeners(new FinalInterval(min, max));
 	}
 
 	private class ChangeBrushRadius implements ScrollBehaviour {

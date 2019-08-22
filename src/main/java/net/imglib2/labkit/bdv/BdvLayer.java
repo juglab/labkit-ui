@@ -1,8 +1,9 @@
 
 package net.imglib2.labkit.bdv;
 
+import net.imglib2.Interval;
 import net.imglib2.labkit.models.Holder;
-import net.imglib2.labkit.utils.Notifier;
+import net.imglib2.labkit.utils.ParametricNotifier;
 
 /**
  * Objects that implement {@link BdvLayer}, can easily be made visible in
@@ -12,7 +13,7 @@ public interface BdvLayer {
 
 	Holder<BdvShowable> image();
 
-	Notifier listeners();
+	ParametricNotifier<Interval> listeners();
 
 	Holder<Boolean> visibility();
 
@@ -22,7 +23,8 @@ public interface BdvLayer {
 
 		private final Holder<BdvShowable> image;
 		private final String title;
-		private final Notifier listeners = new Notifier();
+		private final ParametricNotifier<Interval> listeners =
+			new ParametricNotifier<>();
 		private final Holder<Boolean> visibility;
 
 		public FinalLayer(Holder<BdvShowable> image, String title,
@@ -39,7 +41,7 @@ public interface BdvLayer {
 		}
 
 		@Override
-		public Notifier listeners() {
+		public ParametricNotifier<Interval> listeners() {
 			return listeners;
 		}
 

@@ -6,8 +6,11 @@ import bdv.util.BdvOptions;
 import bdv.util.BdvStackSource;
 import bdv.viewer.SynchronizedViewerState;
 import bdv.viewer.ViewerStateChange;
+import net.imglib2.Interval;
 import net.imglib2.labkit.models.Holder;
 import net.imglib2.labkit.utils.Notifier;
+
+import java.util.function.Consumer;
 
 /**
  * BdvLayerLink links a {@link BdvLayer} to a Big Data Viewer
@@ -35,7 +38,7 @@ public class BdvLayerLink implements Holder<BdvStackSource<?>> {
 
 	private final Runnable onVisibilityChanged = this::onVisibilityChanged;
 
-	private final Runnable onRequestRepaint = this::requestRepaint;
+	private final Consumer<Interval> onRequestRepaint = this::onRequestRepaint;
 
 	private BdvStackSource<?> bdvSource;
 
@@ -70,8 +73,11 @@ public class BdvLayerLink implements Holder<BdvStackSource<?>> {
 		notifier.notifyListeners();
 	}
 
-	private void requestRepaint() {
-		handle.getViewerPanel().requestRepaint();
+	private void onRequestRepaint(Interval interval) {
+		if (interval == null)
+			handle.getViewerPanel().requestRepaint();
+		else
+			handle.getViewerPanel().requestRepaint(interval);
 	}
 
 	private void onBdvSourceChanged() {

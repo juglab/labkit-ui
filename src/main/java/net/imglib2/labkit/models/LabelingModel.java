@@ -1,9 +1,10 @@
 
 package net.imglib2.labkit.models;
 
+import net.imglib2.Interval;
 import net.imglib2.labkit.labeling.Label;
-import net.imglib2.labkit.utils.Notifier;
 import net.imglib2.labkit.labeling.Labeling;
+import net.imglib2.labkit.utils.ParametricNotifier;
 import net.imglib2.realtransform.AffineTransform3D;
 
 public interface LabelingModel {
@@ -12,7 +13,7 @@ public interface LabelingModel {
 
 	Holder<Labeling> labeling();
 
-	Notifier dataChangedNotifier();
+	ParametricNotifier<Interval> dataChangedNotifier();
 
 	boolean isTimeSeries();
 
