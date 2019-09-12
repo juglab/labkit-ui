@@ -2,11 +2,15 @@
 package net.imglib2.labkit.bdv;
 
 import bdv.util.BdvSource;
+import bdv.viewer.Source;
 import bdv.viewer.ViewerPanel;
 import net.imglib2.Cursor;
 import net.imglib2.RandomAccessibleInterval;
+import net.imglib2.labkit.utils.Casts;
+import net.imglib2.type.numeric.ARGBType;
 import net.imglib2.type.numeric.RealType;
 import net.imglib2.util.Intervals;
+import net.imglib2.util.Util;
 import net.imglib2.util.ValuePair;
 import net.imglib2.view.Views;
 
@@ -15,18 +19,25 @@ import java.util.Random;
 public class BdvAutoContrast {
 
 	public static void autoContrast(BdvSource bdvSource) {
-		ViewerPanel viewer = bdvSource.getBdvHandle().getViewerPanel();
-		bdvSource.setCurrent();
-		RandomAccessibleInterval<?> source = viewer.getState().getSources().get(
-			viewer.getState().getCurrentSource()).getSpimSource().getSource(viewer
-				.getState().getCurrentTimepoint(), 0);
-		ValuePair<Double, Double> minMax = getMinMax(
-			(RandomAccessibleInterval<? extends RealType<?>>) source);
+		ValuePair<Double, Double> minMax = getMinMax(bdvSource);
 		bdvSource.setDisplayRangeBounds(minMax.getA(), minMax.getB());
 		bdvSource.setDisplayRange(minMax.getA(), minMax.getB());
 	}
 
-	private static ValuePair<Double, Double> getMinMax(
+	private static ValuePair<Double, Double> getMinMax(BdvSource bdvSource) {
+		ViewerPanel viewer = bdvSource.getBdvHandle().getViewerPanel();
+		bdvSource.setCurrent();
+		Source<?> spimSource = viewer.getState().getSources().get(viewer.getState()
+			.getCurrentSource()).getSpimSource();
+		int level = spimSource.getNumMipmapLevels() - 1;
+		RandomAccessibleInterval<?> source = spimSource.getSource(viewer.getState()
+			.getCurrentTimepoint(), level);
+		if (Util.getTypeFromInterval(source) instanceof RealType)
+			return getMinMaxForRealType(Casts.unchecked(source));
+		return new ValuePair<>(0.0, 255.0);
+	}
+
+	private static ValuePair<Double, Double> getMinMaxForRealType(
 		RandomAccessibleInterval<? extends RealType<?>> source)
 	{
 		Cursor<? extends RealType<?>> cursor = Views.iterable(source).cursor();
