@@ -29,8 +29,8 @@
 
 	<mailingLists>
 		<mailingList>
-			<name>ImageJ Forum</name>
-			<archive>http://image.sc/</archive>
+			<name>Image.sc Forum</name>
+			<archive>https://forum.image.sc/tags/imglib2-labkit</archive>
 		</mailingList>
 	</mailingLists>
 
@@ -38,7 +38,7 @@
 		<developer>
 			<id>maarzt</id>
 			<name>Matthias Arzt</name>
-			<url>http://imagej.net/User:Maarzt</url>
+			<url>https://imagej.net/User:Maarzt</url>
 			<roles>
 				<role>lead</role>
 				<role>developer</role>
@@ -51,7 +51,7 @@
 		<developer>
 			<id>hanslovsky</id>
 			<name>Philipp Hanslovsky</name>
-			<url>http://imagej.net/User:Hanslovsky</url>
+			<url>https://imagej.net/User:Hanslovsky</url>
 			<roles>
 				<role>founder</role>
 			</roles>
@@ -69,7 +69,7 @@
 
 	<repositories>
 		<repository>
-			<id>imagej.public</id>
+			<id>scijava.public</id>
 			<url>https://maven.scijava.org/content/groups/public</url>
 		</repository>
 	</repositories>
@@ -93,8 +93,9 @@
 		<package-name>net.imglib2.labkit</package-name>
 		<license.licenseName>bsd_2</license.licenseName>
 		<license.copyrightOwners>Matthias Arzt, Philipp Hanslovsky</license.copyrightOwners>
-		<!-- NB: Deploy releases to the ImageJ Maven repository. -->
+		<!-- NB: Deploy releases to the SciJava Maven repository. -->
 		<releaseProfiles>deploy-to-scijava</releaseProfiles>
+
 		<bigdataviewer-core>7.0.0</bigdataviewer-core>
 		<scijava-coding-style.version>2.0.0</scijava-coding-style.version>
 		<scijava.coding-style>scijava</scijava.coding-style>
