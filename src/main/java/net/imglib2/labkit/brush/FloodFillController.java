@@ -34,6 +34,8 @@ public class FloodFillController {
 		return l -> l.removeAll(visible);
 	});
 
+	private boolean override = false;
+
 	private Collection<Label> visibleLabels() {
 		return model.labeling().get().getLabels().stream().filter(Label::isVisible)
 			.collect(Collectors.toList());
@@ -41,6 +43,13 @@ public class FloodFillController {
 
 	private final FloodFillClick floodFillBehaviour = new FloodFillClick(() -> {
 		Label selected = selectedLabel();
+		if (override) {
+			Collection<Label> visible = visibleLabels();
+			return l -> {
+				l.removeAll(visible);
+				l.add(selected);
+			};
+		}
 		return l -> l.add(selected);
 	});
 
@@ -79,6 +88,10 @@ public class FloodFillController {
 		model.labelTransformation().applyInverse(labelLocation, labelLocation);
 		labelLocation.move(PIXEL_CENTER_OFFSET);
 		return labelLocation;
+	}
+
+	public void setOverride(boolean override) {
+		this.override = override;
 	}
 
 	private class FloodFillClick implements ClickBehaviour {

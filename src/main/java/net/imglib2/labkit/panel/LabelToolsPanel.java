@@ -109,9 +109,11 @@ public class LabelToolsPanel extends JPanel {
 
 	private JPanel initOptionPanel() {
 		JPanel optionPane = new JPanel();
-		optionPane.setLayout(new BoxLayout(optionPane, BoxLayout.LINE_AXIS));
-		optionPane.add(Box.createRigidArea(new Dimension(5, 0)));
+		optionPane.setLayout(new MigLayout("insets 0"));
+		optionPane.add(initOverrideCheckBox());
 		optionPane.add(initBrushOptionPanel(), "al left");
+		optionPane.setBackground(OPTIONS_BACKGROUND);
+		optionPane.setBorder(BorderFactory.createLineBorder(OPTIONS_BORDER));
 		return optionPane;
 	}
 
@@ -135,13 +137,11 @@ public class LabelToolsPanel extends JPanel {
 	private JPanel initBrushOptionPanel() {
 		brushOptionsPanel = new JPanel();
 		brushOptionsPanel.setLayout(new MigLayout("insets 4pt, gap 2pt, wmax 300"));
+		brushOptionsPanel.setOpaque(false);
 		brushOptionsPanel.add(new JLabel("Brush size:"), "grow");
 		JSlider brushSizeSlider = initBrushSizeSlider();
 		brushOptionsPanel.add(brushSizeSlider, "grow");
 		brushOptionsPanel.add(initSliderValueLabel(brushSizeSlider), "right");
-		brushOptionsPanel.setBackground(OPTIONS_BACKGROUND);
-		brushOptionsPanel.setBorder(BorderFactory.createLineBorder(OPTIONS_BORDER));
-		brushOptionsPanel.add(initOverrideCheckBox());
 		return brushOptionsPanel;
 	}
 
@@ -149,8 +149,9 @@ public class LabelToolsPanel extends JPanel {
 		JCheckBox checkBox = new JCheckBox("override");
 		checkBox.setOpaque(false);
 		checkBox.addItemListener(action -> {
-			brushController.setOverride(action
-				.getStateChange() == ItemEvent.SELECTED);
+			boolean override = action.getStateChange() == ItemEvent.SELECTED;
+			brushController.setOverride(override);
+			floodFillController.setOverride(override);
 		});
 		return checkBox;
 	}
