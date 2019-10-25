@@ -58,7 +58,9 @@ public class LabelsLayer implements BdvLayer {
 			ARGBType c = colors.get(i);
 			if (c == null) {
 				c = getColor(labelSets.get(i));
-				colors.put(i, c);
+				synchronized (colors) {
+					colors.put(i, c);
+				}
 			}
 			out.set(c);
 		}, new ARGBType());
