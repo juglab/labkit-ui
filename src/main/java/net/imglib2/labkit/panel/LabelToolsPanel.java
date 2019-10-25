@@ -32,7 +32,6 @@ public class LabelToolsPanel extends JPanel {
 	private final SelectLabelController selectLabelController;
 
 	private JPanel brushOptionsPanel;
-	private final JPanel optionPane;
 	private final MouseAdapter brushMotionDrawer;
 	private final ViewerPanel bdvPanel;
 	private final ButtonGroup group = new ButtonGroup();
@@ -51,9 +50,8 @@ public class LabelToolsPanel extends JPanel {
 		setLayout(new MigLayout("flowy, insets 0, gap 4pt, top", "[][][][][]",
 			"[]push"));
 		setBorder(BorderFactory.createEmptyBorder(0, 0, 4, 0));
-		optionPane = initOptionPane();
 		initActionButtons();
-		add(optionPane, "wrap, growy");
+		add(initOptionPanel(), "wrap, growy");
 		brushMotionDrawer = GuiUtils.toMouseListener(brushController
 			.drawBrushBehaviour());
 		setMode(Mode.MOVE);
@@ -90,7 +88,7 @@ public class LabelToolsPanel extends JPanel {
 
 	private void setVisibility(Mode mode) {
 		boolean brushVisible = BRUSH_MODES.contains(mode);
-		brushOptionsPanel.setVisible(brushVisible);
+		if (brushOptionsPanel != null) brushOptionsPanel.setVisible(brushVisible);
 		if (brushVisible) showLabelCursor();
 		else hideLabelCursor();
 	}
@@ -109,11 +107,11 @@ public class LabelToolsPanel extends JPanel {
 		moveBtn.doClick();
 	}
 
-	private JPanel initOptionPane() {
+	private JPanel initOptionPanel() {
 		JPanel optionPane = new JPanel();
 		optionPane.setLayout(new BoxLayout(optionPane, BoxLayout.LINE_AXIS));
 		optionPane.add(Box.createRigidArea(new Dimension(5, 0)));
-		addBrushSizeOption(optionPane);
+		optionPane.add(initBrushOptionPanel(), "al left");
 		return optionPane;
 	}
 
@@ -134,7 +132,7 @@ public class LabelToolsPanel extends JPanel {
 		return button;
 	}
 
-	private void addBrushSizeOption(JPanel panel) {
+	private JPanel initBrushOptionPanel() {
 		brushOptionsPanel = new JPanel();
 		brushOptionsPanel.setLayout(new MigLayout("insets 4pt, gap 2pt, wmax 300"));
 		brushOptionsPanel.add(new JLabel("Brush size:"), "grow");
@@ -144,7 +142,7 @@ public class LabelToolsPanel extends JPanel {
 		brushOptionsPanel.setBackground(OPTIONS_BACKGROUND);
 		brushOptionsPanel.setBorder(BorderFactory.createLineBorder(OPTIONS_BORDER));
 		brushOptionsPanel.add(initOverrideCheckBox());
-		panel.add(brushOptionsPanel, "al left");
+		return brushOptionsPanel;
 	}
 
 	private JCheckBox initOverrideCheckBox() {

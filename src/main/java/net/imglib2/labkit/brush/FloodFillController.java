@@ -93,8 +93,8 @@ public class FloodFillController {
 			synchronized (viewer) {
 				RandomAccessibleInterval<LabelingType<Label>> labeling1 = labeling();
 				Point seed = roundAndReduceDimension(coords, labeling1.numDimensions());
-				FloodFill.doFloodFillOnActiveLabels(
-					(RandomAccessibleInterval) labeling1, seed, operationFactory.get());
+				FloodFill.doFloodFillOnActiveLabels(labeling1, seed, operationFactory
+					.get());
 			}
 		}
 
