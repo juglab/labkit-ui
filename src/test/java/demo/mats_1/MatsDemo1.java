@@ -7,9 +7,12 @@ import net.imglib2.RandomAccessibleInterval;
 import net.imglib2.img.display.imagej.ImageJFunctions;
 import net.imglib2.labkit.labeling.Label;
 import net.imglib2.labkit.labeling.Labeling;
+import net.imglib2.labkit.labeling.LabelingSerializer;
 import net.imglib2.type.logic.BitType;
 import net.imglib2.type.numeric.ARGBType;
+import org.scijava.Context;
 
+import java.io.IOException;
 import java.util.Arrays;
 
 /**
@@ -18,7 +21,7 @@ import java.util.Arrays;
  */
 public class MatsDemo1 {
 
-	public static void main(String... args) {
+	public static void main(String... args) throws IOException {
 
 		// open the image
 		final ImagePlus image = new ImagePlus(
@@ -47,5 +50,10 @@ public class MatsDemo1 {
 		ImagePlus backgroundImagePlus = ImageJFunctions.wrap(background,
 			"background");
 		backgroundImagePlus.show();
+
+		//// The labeling can be saved to a file and loaded:
+		// LabelingSerializer serializer = new LabelingSerializer(new Context());
+		// serializer.save(labeling, "some_file.labeling");
+		// Labeling labeling2 = serializer.open("some_file.labeling");
 	}
 }
