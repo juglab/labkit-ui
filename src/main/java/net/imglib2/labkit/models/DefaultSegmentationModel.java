@@ -141,10 +141,11 @@ public class DefaultSegmentationModel implements SegmentationModel,
 			JOptionPane.showMessageDialog(null, e.getMessage(), "Training Cancelled",
 				JOptionPane.PLAIN_MESSAGE);
 		}
-		catch (Exception e) {
+		catch (Throwable e) {
 			progressWriter.setVisible(false);
 			JOptionPane.showMessageDialog(null, e.toString(), "Training Failed",
 				JOptionPane.WARNING_MESSAGE);
+			e.printStackTrace();
 		}
 		finally {
 			progressWriter.setVisible(false);
