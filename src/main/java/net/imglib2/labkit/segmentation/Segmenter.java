@@ -24,10 +24,10 @@ public interface Segmenter {
 	/**
 	 * Train the model with the given data.
 	 * <p>
-	 * If the requirements for training are not met, and you want to give an
-	 * advice to the user, simple throw a
-	 * {@link java.util.concurrent.CancellationException} that describes what has
-	 * to be fixed.
+	 * If the requirements for training are not met, and you want to give an advice
+	 * to the user, simple throw a
+	 * {@link java.util.concurrent.CancellationException} that describes what has to
+	 * be fixed.
 	 * <p>
 	 * Blocks until training is done.
 	 */
@@ -36,14 +36,14 @@ public interface Segmenter {
 
 	/**
 	 * Segment the image and write the result into the provided output. The output
-	 * might be smaller than the image, in this case only the chunk specified by
-	 * the output's interval is segmented.
+	 * might be smaller than the image, in this case only the chunk specified by the
+	 * output's interval is segmented.
 	 * <p>
 	 * Blocks until segmentation is done.
 	 *
 	 * @param image Image to be segmented.
-	 * @param outputSegmentation Buffer to hold the result. Pixel value is the
-	 *          index of the class, as returned by {@link #classNames()}
+	 * @param outputSegmentation Buffer to hold the result. Pixel value is the index
+	 *          of the class, as returned by {@link #classNames()}
 	 */
 	void segment(RandomAccessibleInterval<?> image,
 		RandomAccessibleInterval<? extends IntegerType<?>> outputSegmentation);
