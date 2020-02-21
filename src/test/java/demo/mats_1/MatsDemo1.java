@@ -25,8 +25,9 @@ public class MatsDemo1 {
 
 		// open the image
 		final ImagePlus image = new ImagePlus(
-			"https://imagej.nih.gov/ij/images/blobs.gif");
-
+			//"https://imagej.nih.gov/ij/images/blobs.gif");
+			//"https://cgcweb.med.tu-dresden.de/cloud/index.php/s/G2ML3C6yYtnZW82/download?path=%2F&files=original1.tif");
+			"https://cgcweb.med.tu-dresden.de/cloud/index.php/s/G2ML3C6yYtnZW82/download?path=%2F&files=original2.tif");
 		// create empty labeling with a background label and the same size as the
 		// image
 		Labeling labeling = Labeling.createEmpty(Arrays.asList("background"),
@@ -48,12 +49,19 @@ public class MatsDemo1 {
 
 		// convert to ImagePlus and show
 		ImagePlus backgroundImagePlus = ImageJFunctions.wrap(background,
-			"background");
+			"segmented");
 		backgroundImagePlus.show();
 
 		//// The labeling can be saved to a file and loaded:
 		// LabelingSerializer serializer = new LabelingSerializer(new Context());
 		// serializer.save(labeling, "some_file.labeling");
 		// Labeling labeling2 = serializer.open("some_file.labeling");
+
+
+
+		/*START MATS PART HERE:
+		* I am convinced this can be done better, but I am not a professional programmer.
+		* What follows here is the an implementation in the RadFriends algorithm.
+		* Based on */
 	}
 }
