@@ -268,7 +268,8 @@ public class Optimizer_v10_img_fastPipe {
 
             " [...] We choose to stop when this quantity would no longer change the final evidence estimate by some user-defined value (we use 0.1 in log-evidence). [...] "
              */
-            if((Math.abs(Z_NS_lp)<=0.1) & (s>50)){
+            used_steps = s;
+            if((Math.abs(Z_NS_lp)<=0.1) & (s>=50-1)){
                 used_steps = s;
                 break;
             }
@@ -317,7 +318,7 @@ public class Optimizer_v10_img_fastPipe {
         ImagePlus pgi = pipe_fast.exec(input_img4, LifePoints_Positions[index]); // pipeline generated image
         input_img4.show();
         pgi.show();
-        sleep(10000);
+        //sleep(10000);
 
         IJ.run(pgi, "Merge Channels...", "c1=DUP_DUP_C1-original1.tif c4=C1-original1.tif create keep");
 
