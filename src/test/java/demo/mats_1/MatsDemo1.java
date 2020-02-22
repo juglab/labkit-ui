@@ -27,7 +27,8 @@ public class MatsDemo1 {
 		final ImagePlus image = new ImagePlus(
 			//"https://imagej.nih.gov/ij/images/blobs.gif");
 			//"https://cgcweb.med.tu-dresden.de/cloud/index.php/s/G2ML3C6yYtnZW82/download?path=%2F&files=original1.tif");
-			"https://cgcweb.med.tu-dresden.de/cloud/index.php/s/G2ML3C6yYtnZW82/download?path=%2F&files=original2.tif");
+			//"https://cgcweb.med.tu-dresden.de/cloud/index.php/s/G2ML3C6yYtnZW82/download?path=%2F&files=original2.tif");
+			"/home/mats/Dokumente/postdoc/conferences/fiji_hackathon_dd2019/project_BayesImaging/sampledata/1h+S7_und_S8_tiff+S7+S7_NaCl+/original1.tif");
 		// create empty labeling with a background label and the same size as the
 		// image
 		Labeling labeling = Labeling.createEmpty(Arrays.asList("background"),
@@ -62,6 +63,11 @@ public class MatsDemo1 {
 		/*START MATS PART HERE:
 		* I am convinced this can be done better, but I am not a professional programmer.
 		* What follows here is the an implementation in the RadFriends algorithm.
-		* Based on */
+		* Check out: Skilling J. 2006. Nested Sampling for General Bayesian Computation. Bayesian Analysis - International Society for Bayesian Analysis 1:833–860.
+		*  */
+
+		Optimizer_v10_img_fastPipe optimizer = new Optimizer_v10_img_fastPipe();
+		optimizer.run(image, backgroundImagePlus);
+
 	}
 }
