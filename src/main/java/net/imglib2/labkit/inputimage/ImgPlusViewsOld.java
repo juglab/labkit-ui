@@ -9,6 +9,7 @@ import net.imglib2.img.display.imagej.ImgPlusViews;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
@@ -17,6 +18,7 @@ import java.util.function.Predicate;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
+import java.util.stream.LongStream;
 
 // TODO: make this avaiblable in imglib2
 public class ImgPlusViewsOld {
@@ -120,10 +122,19 @@ public class ImgPlusViewsOld {
 		return n;
 	}
 
-	public static <T> ImgPlus<T> hyperSlice(ImgPlus<T> image, AxisType axes, long position) {
-		int d = image.dimensionIndex(axes);
+	public static <T> ImgPlus<T> hyperSlice(ImgPlus<T> image, AxisType axis, long position) {
+		int d = image.dimensionIndex(axis);
 		if (d < 0)
 			return image;
 		return ImgPlusViews.hyperSlice((ImgPlus) image, d, position);
 	}
+
+	public static <T> List<ImgPlus<?>> hyperSlices(ImgPlus<T> image, AxisType axis) {
+		int d = image.dimensionIndex(axis);
+		if (d < 0)
+			return Collections.singletonList(image);
+		return LongStream.rangeClosed(image.min(d), image.max(d)).mapToObj(position -> hyperSlice(image,
+			axis, position)).collect(Collectors.toList());
+	}
+
 }

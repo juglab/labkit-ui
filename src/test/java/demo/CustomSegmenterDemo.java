@@ -2,6 +2,7 @@
 package demo;
 
 import ij.ImagePlus;
+import net.imagej.ImgPlus;
 import net.imglib2.Cursor;
 import net.imglib2.RandomAccess;
 import net.imglib2.RandomAccessibleInterval;
@@ -62,9 +63,7 @@ public class CustomSegmenterDemo {
 		}
 
 		@Override
-		public void train(
-			List<Pair<? extends RandomAccessibleInterval<?>, ? extends Labeling>> data)
-		{
+		public void train(List<Pair<ImgPlus<?>, Labeling>> data) {
 			foreground = new MeanCalculator();
 			others = new MeanCalculator();
 			for (Pair<? extends RandomAccessibleInterval<?>, ? extends Labeling> imageAndLabeling : data) {
@@ -103,7 +102,7 @@ public class CustomSegmenterDemo {
 		}
 
 		@Override
-		public void segment(RandomAccessibleInterval<?> image,
+		public void segment(ImgPlus<?> image,
 			RandomAccessibleInterval<? extends IntegerType<?>> outputSegmentation)
 		{
 			RandomAccessibleInterval<? extends RealType<?>> input = Views.interval(
@@ -113,7 +112,7 @@ public class CustomSegmenterDemo {
 		}
 
 		@Override
-		public void predict(RandomAccessibleInterval<?> image,
+		public void predict(ImgPlus<?> image,
 			RandomAccessibleInterval<? extends RealType<?>> outputProbabilityMap)
 		{
 			RandomAccessibleInterval<? extends GenericComposite<? extends RealType<?>>> output =

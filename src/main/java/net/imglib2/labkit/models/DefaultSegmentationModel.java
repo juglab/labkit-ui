@@ -21,6 +21,7 @@ import net.imglib2.type.NativeType;
 import net.imglib2.type.numeric.IntegerType;
 import net.imglib2.type.numeric.NumericType;
 import net.imglib2.type.numeric.real.FloatType;
+import net.imglib2.util.Pair;
 import net.imglib2.util.ValuePair;
 import org.scijava.Context;
 
@@ -46,7 +47,7 @@ public class DefaultSegmentationModel implements SegmentationModel,
 	private final ImageLabelingModel imageLabelingModel;
 	private final Holder<SegmentationItem> selectedSegmenter;
 	private final List<SegmentationItem> segmenters = new ArrayList<>();
-	private final RandomAccessibleInterval<?> compatibleImage;
+	private final ImgPlus<?> compatibleImage;
 	private final CellGrid grid;
 	private final Holder<Boolean> segmentationVisibility = new DefaultHolder<>(
 		true);
@@ -96,7 +97,7 @@ public class DefaultSegmentationModel implements SegmentationModel,
 	}
 
 	@Override
-	public RandomAccessibleInterval<?> image() {
+	public ImgPlus<?> image() {
 		return compatibleImage;
 	}
 
@@ -137,8 +138,9 @@ public class DefaultSegmentationModel implements SegmentationModel,
 		progressWriter.setProgressBarVisible(false);
 		progressWriter.setDetailsVisible(false);
 		try {
-			item.train(Collections.singletonList(new ValuePair<>(image(),
-				labeling())));
+			List<Pair<ImgPlus<?>, Labeling>> trainingData =
+				Collections.singletonList(new ValuePair<>(image(), labeling()));
+			item.train(trainingData);
 		}
 		catch (CancellationException e) {
 			progressWriter.setVisible(false);
@@ -183,7 +185,7 @@ public class DefaultSegmentationModel implements SegmentationModel,
 	public <T extends IntegerType<T> & NativeType<T>>
 		List<RandomAccessibleInterval<T>> getSegmentations(T type)
 	{
-		RandomAccessibleInterval<?> image = image();
+		ImgPlus<?> image = image();
 		Stream<Segmenter> trainedSegmenters = getTrainedSegmenters();
 		return trainedSegmenters.map(segmenter -> {
 			RandomAccessibleInterval<T> labels = new CellImgFactory<>(type).create(
@@ -194,7 +196,7 @@ public class DefaultSegmentationModel implements SegmentationModel,
 	}
 
 	public List<RandomAccessibleInterval<FloatType>> getPredictions() {
-		RandomAccessibleInterval<?> image = image();
+		ImgPlus<?> image = image();
 		Stream<Segmenter> trainedSegmenters = getTrainedSegmenters();
 		return trainedSegmenters.map(segmenter -> {
 			int numberOfClasses = segmenter.classNames().size();

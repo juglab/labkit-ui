@@ -1,6 +1,7 @@
 
 package net.imglib2.labkit.models;
 
+import net.imagej.ImgPlus;
 import net.imglib2.RandomAccessibleInterval;
 import net.imglib2.img.cell.CellGrid;
 import net.imglib2.labkit.labeling.Labeling;
@@ -12,7 +13,7 @@ public interface SegmentationModel {
 
 	Labeling labeling();
 
-	RandomAccessibleInterval<?> image();
+	ImgPlus<?> image();
 
 	CellGrid grid();
 

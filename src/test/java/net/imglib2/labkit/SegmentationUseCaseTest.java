@@ -23,6 +23,7 @@ import net.imglib2.roi.labeling.LabelingType;
 import net.imglib2.type.numeric.integer.ShortType;
 import net.imglib2.type.numeric.integer.UnsignedByteType;
 import net.imglib2.util.Intervals;
+import net.imglib2.util.Pair;
 import net.imglib2.util.ValuePair;
 import net.imglib2.view.Views;
 import org.junit.Test;
@@ -41,7 +42,8 @@ public class SegmentationUseCaseTest {
 
 	@Test
 	public void test() {
-		Img<UnsignedByteType> image = ArrayImgs.unsignedBytes(new byte[] { 1, 1, 2, 2 }, 2, 2);
+		ImgPlus<UnsignedByteType> image = new ImgPlus<>(ArrayImgs.unsignedBytes(new byte[] { 1, 1, 2,
+			2 }, 2, 2));
 		InputImage inputImage = new DatasetInputImage(image);
 		DefaultSegmentationModel segmentationModel = new DefaultSegmentationModel(
 			inputImage, new Context());
@@ -82,7 +84,7 @@ public class SegmentationUseCaseTest {
 			.selectedSegmenter(), segmentationModel.segmentationVisibility());
 		assertEquals(2, layer.image().interval().numDimensions());
 		SegmentationItem segmenter = segmentationModel.segmenters().get(0);
-		segmenter.train(Collections.singletonList(new ValuePair<>(img,
+		segmenter.train(Collections.singletonList(new ValuePair<>(imgPlus,
 			segmentationModel.imageLabelingModel().labeling().get())));
 		RandomAccessibleInterval<ShortType> result = segmenter.results()
 			.segmentation();

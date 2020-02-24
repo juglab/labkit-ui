@@ -1,10 +1,12 @@
 
 package net.imglib2.labkit.segmentation;
 
+import net.imagej.ImgPlus;
 import net.imglib2.RandomAccessibleInterval;
 import net.imglib2.labkit.utils.Notifier;
 import net.imglib2.labkit.labeling.Labeling;
 import net.imglib2.type.numeric.IntegerType;
+import net.imglib2.type.numeric.NumericType;
 import net.imglib2.type.numeric.RealType;
 import net.imglib2.util.Pair;
 
@@ -31,8 +33,7 @@ public interface Segmenter {
 	 * <p>
 	 * Blocks until training is done.
 	 */
-	void train(
-		List<Pair<? extends RandomAccessibleInterval<?>, ? extends Labeling>> trainingData);
+	void train(List<Pair<ImgPlus<?>, Labeling>> trainingData);
 
 	/**
 	 * Segment the image and write the result into the provided output. The output
@@ -45,7 +46,7 @@ public interface Segmenter {
 	 * @param outputSegmentation Buffer to hold the result. Pixel value is the index
 	 *          of the class, as returned by {@link #classNames()}
 	 */
-	void segment(RandomAccessibleInterval<?> image,
+	void segment(ImgPlus<?> image,
 		RandomAccessibleInterval<? extends IntegerType<?>> outputSegmentation);
 
 	/**
@@ -60,7 +61,7 @@ public interface Segmenter {
 	 * @param outputProbabilityMap Buffer to hold the result. Pixel value is the
 	 *          index of the class, as returned by {@link #classNames()}
 	 */
-	void predict(RandomAccessibleInterval<?> image,
+	void predict(ImgPlus<?> image,
 		RandomAccessibleInterval<? extends RealType<?>> outputProbabilityMap);
 
 	/**

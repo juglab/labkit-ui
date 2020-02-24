@@ -1,6 +1,9 @@
 
 package net.imglib2.labkit.segmentation.weka;
 
+import net.imagej.ImgPlus;
+import net.imagej.axis.Axes;
+import net.imagej.axis.AxisType;
 import net.imglib2.RandomAccessibleInterval;
 import net.imglib2.img.Img;
 import net.imglib2.img.array.ArrayImgs;
@@ -26,7 +29,8 @@ public class TestTimeSeriesSegmenter {
 	public void testPredict() {
 		TimeSeriesSegmenter segmenter = new TimeSeriesSegmenter(
 			new SimpleSegmenter());
-		Img<?> source = ArrayImgs.floats(new float[] { 0.2f, 0.3f, 0.9f }, 1, 1, 3);
+		ImgPlus<?> source = new ImgPlus<>(ArrayImgs.floats(new float[] { 0.2f, 0.3f, 0.9f }, 1, 1, 3),
+			"input", new AxisType[] { Axes.X, Axes.Y, Axes.TIME });
 		float[] array = new float[6];
 		Img<FloatType> target = ArrayImgs.floats(array, 1, 1, 3, 2);
 		segmenter.predict(source, target);
@@ -42,21 +46,19 @@ public class TestTimeSeriesSegmenter {
 		}
 
 		@Override
-		public void train(
-			List<Pair<? extends RandomAccessibleInterval<?>, ? extends Labeling>> trainingData)
-		{
+		public void train(List<Pair<ImgPlus<?>, Labeling>> trainingData) {
 
 		}
 
 		@Override
-		public void segment(RandomAccessibleInterval<?> image,
+		public void segment(ImgPlus<?> image,
 			RandomAccessibleInterval<? extends IntegerType<?>> output)
 		{
 
 		}
 
 		@Override
-		public void predict(RandomAccessibleInterval<?> image,
+		public void predict(ImgPlus<?> image,
 			RandomAccessibleInterval<? extends RealType<?>> prediction)
 		{
 			RandomAccessibleInterval<? extends GenericComposite<? extends RealType<?>>> output =

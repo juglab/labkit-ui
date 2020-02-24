@@ -4,6 +4,7 @@ package net.imglib2.labkit.segmentation.weka;
 import hr.irb.fastRandomForest.FastRandomForest;
 import net.imagej.ImgPlus;
 import net.imagej.axis.Axes;
+import net.imagej.axis.AxisType;
 import net.imglib2.Cursor;
 import net.imglib2.Interval;
 import net.imglib2.RandomAccess;
@@ -95,7 +96,9 @@ public class TrainableSegmentationSegmenter implements Segmenter {
 		GlobalSettings globalSettings = GlobalSettings.default2d()
 			.dimensions(ImgPlusViewsOld.numberOfSpatialDimensions(inputImage.imageForSegmentation()))
 			.channels(channelSetting)
-			.sigmaRange(1.0, 8.0).build();
+			.sigmaRange(1.0, 8.0)
+			.pixelSize(getPixelSize(inputImage.imageForSegmentation()))
+			.build();
 		this.context = context;
 		this.useGpu = false;
 		this.featureSettings = new FeatureSettings(globalSettings,
@@ -119,23 +122,21 @@ public class TrainableSegmentationSegmenter implements Segmenter {
 	}
 
 	@Override
-	public void segment(RandomAccessibleInterval<?> image,
+	public void segment(ImgPlus<?> image,
 		RandomAccessibleInterval<? extends IntegerType<?>> labels)
 	{
 		segmenter.segment(labels, Views.extendBorder(image));
 	}
 
 	@Override
-	public void predict(RandomAccessibleInterval<?> image,
+	public void predict(ImgPlus<?> image,
 		RandomAccessibleInterval<? extends RealType<?>> prediction)
 	{
 		segmenter.predict(prediction, Views.extendBorder(image));
 	}
 
 	@Override
-	public void train(
-		List<Pair<? extends RandomAccessibleInterval<?>, ? extends Labeling>> trainingData)
-	{
+	public void train(List<Pair<ImgPlus<?>, Labeling>> trainingData) {
 		try {
 			List<String> classes = collectLabels(trainingData.stream().map(Pair::getB)
 				.collect(Collectors.toList()));
@@ -262,4 +263,25 @@ public class TrainableSegmentationSegmenter implements Segmenter {
 			.fromJson(context, GsonUtils.read(path));
 		featureSettings = segmenter.features().settings();
 	}
+
+	// -- Helper methods --
+
+	private static List<Double> getPixelSize(ImgPlus<?> image) {
+		List<Double> pixelSize = new ArrayList<>();
+		double x = getPixelSize(image, Axes.X);
+		double y = getPixelSize(image, Axes.Y);
+		pixelSize.add(1.0);
+		pixelSize.add(y / x);
+		if (ImgPlusViewsOld.hasAxis(image, Axes.Z)) {
+			double z = getPixelSize(image, Axes.Z);
+			pixelSize.add(z / x);
+		}
+		return pixelSize;
+	}
+
+	private static double getPixelSize(ImgPlus<?> image, AxisType axis) {
+		double scale = image.averageScale(image.dimensionIndex(axis));
+		return Double.isNaN(scale) || scale == 0 ? 1.0 : scale;
+	}
+
 }
