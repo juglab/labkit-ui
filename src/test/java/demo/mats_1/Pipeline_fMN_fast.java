@@ -40,6 +40,10 @@ public class Pipeline_fMN_fast {
         IJ.run(imp, "Invert", "");
         IJ.run(imp, "Analyze Particles...", "size="+String.valueOf(minParticle_black)+"-Infinity show=Masks in_situ");
         */
+        IJ.run(imp, "Analyze Particles...", "size="+String.valueOf(minParticle_white)+"-Infinity show=Masks in_situ");
+        IJ.run(imp, "Invert", "");
+        //IJ.saveAs(imp, "Tiff", "/home/mats/Dokumente/postdoc/conferences/fiji_hackathon_dd2019/new_edge_detection-py/test.tif");
+        IJ.run(imp, "Analyze Particles...", "size="+String.valueOf(minParticle_black)+"-Infinity show=Masks in_situ");
 
 
         //imp.show();

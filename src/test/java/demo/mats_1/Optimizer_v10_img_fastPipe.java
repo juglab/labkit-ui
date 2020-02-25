@@ -31,13 +31,58 @@ public class Optimizer_v10_img_fastPipe {
     int Nparams =   5;  // number of parameters
     int NLifePoints = 10; // number of life points
 
+    /*
+    #################################################
+     int max_steps = 4000; // max steps of iteration
+     int NLifePoints = 100; // number of life points
+
+     ****************************************************************************************
+    ** Finished!
+    Total Time [sec]:	3540.321
+    Acceptance Rate:	0.08577230079820754
+    Replacments:		1225
+    Total Samples:	14282
+    ****************************************************************************************
+    ** Parameters:
+    18.03981	 41.68622	 9.493754	 0.2040106	 9.6441
+
+    #################################################
+     int max_steps = 100; // max steps of iteration
+     int NLifePoints = 20; // number of life points
+
+    ****************************************************************************************
+    ** Finished!
+    Total Time [sec]:	29.942
+    Acceptance Rate:	0.5
+    Replacments:		99
+    Total Samples:	198
+    ****************************************************************************************
+    ** Parameters:
+    27.086956	 42.14374	 1.3973367	 1.6266418	 18.899311
+
+    #################################################
+     int max_steps = 50; // max steps of iteration
+     int NLifePoints = 10; // number of life points
+
+    ****************************************************************************************
+    ** Finished!
+    Total Time [sec]:	15.397
+    Acceptance Rate:	0.4666666666666667
+    Replacments:		49
+    Total Samples:	105
+    ****************************************************************************************
+    ** Parameters:
+    13.898545	 39.573277	 5.02139	 7.9545164	 12.478712
+
+     */
+
     float[][] cube =  {
             //{0.1f,5},   // Cannylow
             //{0.1f,5},      // Cannyhigh
             {0,100},    // gaussian_radius
             {0,50},     // Threshold_high
-            {0,1000},   // minParticle_white
-            {0,1000},   // minParticle_black
+            {0,10},   // minParticle_white
+            {0,10},   // minParticle_black
 
             {0,40}     // sigma # error of the parameter estimation
     };
