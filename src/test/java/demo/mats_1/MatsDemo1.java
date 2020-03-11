@@ -52,7 +52,6 @@ public class MatsDemo1 {
 		// convert to ImagePlus and show
 		ImagePlus backgroundImagePlus = ImageJFunctions.wrap(background,
 			"segmented");
-		backgroundImagePlus.show();
 
 		//// The labeling can be saved to a file and loaded:
 		// LabelingSerializer serializer = new LabelingSerializer(new Context());

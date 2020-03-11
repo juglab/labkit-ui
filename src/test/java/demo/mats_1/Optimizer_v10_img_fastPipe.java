@@ -1,11 +1,17 @@
 package demo.mats_1;
 
+import bdv.util.BdvFunctions;
+import bdv.util.BdvOptions;
+import bdv.util.BdvSource;
+import bdv.util.BdvStackSource;
 import ij.IJ;
 import ij.ImagePlus;
 import ij.gui.Plot;
 import ij.plugin.ChannelSplitter;
 import net.imagej.Dataset;
 import net.imagej.ImageJ;
+import net.imglib2.img.VirtualStackAdapter;
+import net.imglib2.type.numeric.ARGBType;
 import net.imglib2.type.numeric.RealType;
 import org.apache.commons.math3.analysis.function.Gaussian;
 import org.apache.commons.math3.stat.descriptive.rank.Max;
@@ -142,7 +148,6 @@ public class Optimizer_v10_img_fastPipe {
 
         ImagePlus[] channels = ChannelSplitter.split(input_img);
         input_img = channels[0];
-        input_img.show("test");
         IJ.run(input_img, "Grays", "");
 
         // Create a test parameter set that Bayes should find.
@@ -172,7 +177,6 @@ public class Optimizer_v10_img_fastPipe {
 
 
         input_img3 = input_img.duplicate();
-        input_img3.show();
 
         // new fast:
         IJ.run(input_img3, "Smooth", "");
@@ -361,16 +365,14 @@ public class Optimizer_v10_img_fastPipe {
         input_img4 = input_img3.duplicate();
         //sleep(1000);
         ImagePlus pgi = pipe_fast.exec(input_img4, LifePoints_Positions[index]); // pipeline generated image
-        input_img4.show();
-        pgi.show();
         //sleep(10000);
 
-        IJ.run(pgi, "Merge Channels...", "c1=DUP_DUP_C1-original1.tif c4=C1-original1.tif create keep");
+        showComposite();
+    }
 
-
-
-
-        //System.exit(0);
+    private void showComposite() {
+        BdvStackSource< ? > handle = BdvFunctions.show(VirtualStackAdapter.wrap(input_img), input_img.getTitle(), BdvOptions.options().is2D());
+        BdvFunctions.show(VirtualStackAdapter.wrap(input_img4), input_img.getTitle(), BdvOptions.options().addTo(handle.getBdvHandle())).setColor(new ARGBType(0x770000));
     }
 
     private void sleep(int i) {
