@@ -30,7 +30,8 @@ public class ContourMLM {
 
     }
 
-    public float[][] getContourPixels(ImagePlus imp_c) {
+    public float[][] getContourPixels(ImagePlus msi) {
+        ImagePlus imp_c = getContourImg(msi);
         IJ.run(imp_c, "Analyze Particles...", "size=0-Infinity show=Masks add in_situ");
 
         Roi ROI_contour_PGI = imp_c.getRoi();

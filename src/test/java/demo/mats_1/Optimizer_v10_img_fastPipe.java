@@ -2,24 +2,17 @@ package demo.mats_1;
 
 import bdv.util.BdvFunctions;
 import bdv.util.BdvOptions;
-import bdv.util.BdvSource;
 import bdv.util.BdvStackSource;
 import ij.IJ;
 import ij.ImagePlus;
 import ij.gui.Plot;
 import ij.plugin.ChannelSplitter;
-import net.imagej.Dataset;
-import net.imagej.ImageJ;
 import net.imglib2.img.VirtualStackAdapter;
 import net.imglib2.type.numeric.ARGBType;
-import net.imglib2.type.numeric.RealType;
 import org.apache.commons.math3.analysis.function.Gaussian;
 import org.apache.commons.math3.stat.descriptive.rank.Max;
-import org.scijava.command.Command;
 import org.scijava.plugin.Parameter;
-import org.scijava.plugin.Plugin;
 
-import java.io.File;
 import java.util.Arrays;
 import java.util.Random;
 
@@ -38,6 +31,8 @@ public class Optimizer_v10_img_fastPipe {
     int NLifePoints = 10; // number of life points
 
     /*
+    Performance measurement results:
+
     #################################################
      int max_steps = 4000; // max steps of iteration
      int NLifePoints = 100; // number of life points
@@ -96,12 +91,9 @@ public class Optimizer_v10_img_fastPipe {
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     // Loading Images etc.
     @Parameter
-    private ImagePlus input_img;
-    private ImagePlus input_img_msi;
-    private ImagePlus input_img3;
-    private ImagePlus input_img4;
-
-
+    private ImagePlus input_image;
+    private ImagePlus manual_segmented_image; // msi
+    private ImagePlus preprocessed_image;
 
 
     //
@@ -111,7 +103,7 @@ public class Optimizer_v10_img_fastPipe {
     //Pipeline_fMN_sobel pipe = new Pipeline_fMN_sobel();
     Pipeline_fMN_fast pipe_fast = new Pipeline_fMN_fast();
 
-    float[][] XY_msi;
+    float[][] manual_segmentation_contour;
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 
@@ -122,84 +114,46 @@ public class Optimizer_v10_img_fastPipe {
     // For the Bayesian post_equal_weights.dat
     float[][] LifePoints_Positions_Register = new float[max_steps+NLifePoints][Nparams];   // This one will be used to register the parameter values that where discarded. It is needed to calculate the post_equal_weights.dat
     double[] LifePoints_Likelyhood_Register = new double[max_steps+NLifePoints];       // This one will register the discarded likelihoods.
-    double[] p_i    = new double[max_steps+NLifePoints];                                 // This one will be used to directly caclulate the post_equal_weight.dat
 
-    /*
-    To obtain equally-weighted posterior representatives, all we need do is accept point θ i
-    with probability p i /K, where K ≥ max j (p j ) must be large enough to avoid duplication. The
-    maximum number of representative posterior samples is given by the entropy (i.e. the Shannon
-    channel capacity) as
+    /**
+     * To obtain equally-weighted posterior representatives, all we need do is accept point θ i
+     * with probability p i /K, where K ≥ max j (p j ) must be large enough to avoid duplication. The
+     * maximum number of representative posterior samples is given by the entropy (i.e. the Shannon
+     * channel capacity) as
+	 * <p>
+	 * This one will be used to directly caclulate the post_equal_weight.dat
      */
-
-    //ImagePlus input_img_org;
-
-
+    double[] p_i    = new double[max_steps+NLifePoints];
 
 
     public void run(ImagePlus input_img_org, ImagePlus input_img_msi_org) {
          // render the input image to 8-bit once.
-        input_img=input_img_org.duplicate();
-        input_img_msi=input_img_msi_org.duplicate();
-        //ij.WindowManager.getImageTitles();
-        //input_img_msi = IJ.openImage(//"/home/mats/Dokumente/postdoc/conferences/fiji_hackathon_dd2019/project_BayesImaging/sampledata/1h+S7_und_S8_tiff+S7+S7_NaCl+/mask1.tif");
-        //        "https://cgcweb.med.tu-dresden.de/cloud/index.php/s/G2ML3C6yYtnZW82/download?path=%2F&files=original2.tif");
+        input_image =input_img_org.duplicate();
+        manual_segmented_image =input_img_msi_org.duplicate();
 
-        IJ.run(input_img, "8-bit", "");
+        IJ.run(input_image, "8-bit", "");
 
-        ImagePlus[] channels = ChannelSplitter.split(input_img);
-        input_img = channels[0];
-        IJ.run(input_img, "Grays", "");
-
-        // Create a test parameter set that Bayes should find.
-        //float[] parameterset = {0.9f, 2.5f, 21.2f, 7f, 100f, 100f};
-        //ImagePlus msi = pipe.exec(input_img, parameterset); // manual segmented image
-        /*
-        The lines above should later be replaced by the manual input of the user.
-        */
-
-        /*
-        //get contour image
-        ContourMLM pipe_contour = new ContourMLM();
-        ImagePlus pgi_c = pipe_contour.getContourImg(msi); // Pipeline Generate Image
-
-        //get pixels from contour image
-        XY_msi = pipe_contour.getContourPixels(pgi_c);
-        */
-
-
-        //pgi_c.show();
-        //IJ.log("Hallo");
-        //sleep(10000);
-        //System.exit(0);
+        ImagePlus[] channels = ChannelSplitter.split(input_image);
+        input_image = channels[0];
+        IJ.run(input_image, "Grays", "");
 
         ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
         // Prepare the image.
 
+        preprocessed_image = input_image.duplicate();
 
-        input_img3 = input_img.duplicate();
+        IJ.run(preprocessed_image, "Smooth", "");
+        IJ.run(preprocessed_image, "Enhance Contrast", "saturated=0.35");
+        IJ.run(preprocessed_image, "Apply LUT", "");
+        IJ.run(preprocessed_image, "Bandpass Filter...", "filter_large=40 filter_small=3 suppress=None tolerance=5 autoscale saturate");
+        IJ.run(preprocessed_image, "Smooth", ""); // 3x3 mean filter
+        IJ.run(preprocessed_image, "Find Edges", ""); // calculates gradient magnitude of sobel filters.
 
-        // new fast:
-        IJ.run(input_img3, "Smooth", "");
-        //IJ.run("Brightness/Contrast...");
-        IJ.run(input_img3, "Enhance Contrast", "saturated=0.35");
-        IJ.run(input_img3, "Apply LUT", "");
-        IJ.run(input_img3, "Bandpass Filter...", "filter_large=40 filter_small=3 suppress=None tolerance=5 autoscale saturate");
-        IJ.run(input_img3, "Smooth", "");
-        IJ.run(input_img3, "Find Edges", "");
-        //0.035333633	 0.18419266	 719.8436	 45.003532
-        //float[] parameterset_ini = {(float)(50), (float)(30), (float)(719.8436), (float)(45.003532)};//,p5,p6};
-        //IJ.run(input_img, "Duplicate...", " ");
-        input_img4 = input_img3.duplicate();
-
-        //ImagePlus msi = pipe_fast.exec(input_img4, parameterset_ini);
         //get contour image
         ContourMLM pipe_contour = new ContourMLM();
-        ImagePlus pgi_c = pipe_contour.getContourImg(input_img_msi); // Pipeline Generate Image
         //get pixels from contour image
-        XY_msi = pipe_contour.getContourPixels(pgi_c);
-        input_img4.close();
-        //pgi_c.show();
-        //sleep(1000000);
+        manual_segmentation_contour = pipe_contour.getContourPixels(manual_segmented_image);
+
         ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
         // Initialise Bayes.
 
@@ -301,7 +255,8 @@ public class Optimizer_v10_img_fastPipe {
                 Z_NS_lp += LifePoints_Likelyhood[i_lp] * w_NS;
             }
 
-            //p_i[s] = w_NS * LH_test; // this value has to be devided by the final value of Z
+			// TODO: @Mats @Peter
+            //  p_i[s] = w_NS * LH_test; // this value has to be devided by the final value of Z
 
 
             System.out.print("\t ");
@@ -318,8 +273,7 @@ public class Optimizer_v10_img_fastPipe {
             " [...] We choose to stop when this quantity would no longer change the final evidence estimate by some user-defined value (we use 0.1 in log-evidence). [...] "
              */
             used_steps = s;
-            if((Math.abs(Z_NS_lp)<=0.1) & (s>=50-1)){
-                used_steps = s;
+            if((Math.abs(Z_NS_lp)<=0.1) & (s>50)){
                 break;
             }
 
@@ -362,17 +316,17 @@ public class Optimizer_v10_img_fastPipe {
             System.out.print("\t ");
         }
 
-        input_img4 = input_img3.duplicate();
         //sleep(1000);
-        ImagePlus pgi = pipe_fast.exec(input_img4, LifePoints_Positions[index]); // pipeline generated image
+        ImagePlus pgi = pipe_fast.exec(preprocessed_image.duplicate(), LifePoints_Positions[index]); // pipeline generated image
         //sleep(10000);
 
-        showComposite();
+        showComposite(pgi);
     }
 
-    private void showComposite() {
-        BdvStackSource< ? > handle = BdvFunctions.show(VirtualStackAdapter.wrap(input_img), input_img.getTitle(), BdvOptions.options().is2D());
-        BdvFunctions.show(VirtualStackAdapter.wrap(input_img4), input_img.getTitle(), BdvOptions.options().addTo(handle.getBdvHandle())).setColor(new ARGBType(0x770000));
+    private void showComposite(ImagePlus pgi) {
+        BdvStackSource< ? > handle = BdvFunctions.show(VirtualStackAdapter.wrap(
+                input_image), input_image.getTitle(), BdvOptions.options().is2D());
+        BdvFunctions.show(VirtualStackAdapter.wrap(pgi), input_image.getTitle(), BdvOptions.options().addTo(handle.getBdvHandle())).setColor(new ARGBType(0x770000));
     }
 
     private void sleep(int i) {
@@ -509,34 +463,25 @@ public class Optimizer_v10_img_fastPipe {
         //float p5   = param[4];
         //float p6   = param[5];
         float sigma  = param[4];
-        float[] xx_msi=XY_msi[0];
-        float[] yy_msi=XY_msi[1];
+        float[] xx_msi= manual_segmentation_contour[0];
+        float[] yy_msi= manual_segmentation_contour[1];
 
         double logLH = 0;
         // now apply the pipeline to an image
         float[] parameterset = {p1,p2,p3,p4};//,p5,p6};
-        //IJ.run(input_img, "Duplicate...", " ");
-        input_img4 = input_img3.duplicate();
-        ImagePlus pgi = pipe_fast.exec(input_img4, parameterset); // pipeline generated image
-        //input_img4.close();
-        //input_img.close();
+        ImagePlus pgi = pipe_fast.exec(preprocessed_image.duplicate(), parameterset); // pipeline generated image
 
         // PERHAPS ONE HAS TO TURN THIS ON. NOT SURE!
         //get contour image
-        //pgi.show();
 
-        //sleep(10000);
         ContourMLM pipe_contour = new ContourMLM();
-        ImagePlus pgi_c = pipe_contour.getContourImg(pgi); // Pipeline Generate Image
 
 
         //get pixels from contour image
-        float[][] XY_pgi;
-        XY_pgi = pipe_contour.getContourPixels(pgi_c);
-        float[] xx_pgi=XY_pgi[0];
-        float[] yy_pgi=XY_pgi[1];
-        input_img4.close();
-        IJ.run(input_img, "8-bit", "");
+        float[][] pgi_contour = pipe_contour.getContourPixels(pgi);
+        float[] xx_pgi= pgi_contour[0];
+        float[] yy_pgi= pgi_contour[1];
+        IJ.run(input_image, "8-bit", "");
         // Check that the length of contour of the pipeline generate image is not zero:
         if (xx_pgi.length > 10){
 
@@ -549,121 +494,36 @@ public class Optimizer_v10_img_fastPipe {
             float[] ary2;
 
             if (xx_pgi.length >= xx_msi.length) {
-                arx1 = xx_pgi.clone();
-                ary1 = yy_pgi.clone();
-                arx2 = xx_msi.clone();
-                ary2 = yy_msi.clone();
+                arx1 = xx_pgi;
+                ary1 = yy_pgi;
+                arx2 = xx_msi;
+                ary2 = yy_msi;
             } else {
-                arx1 = xx_msi.clone();
-                ary1 = yy_msi.clone();
-                arx2 = xx_pgi.clone();
-                ary2 = yy_pgi.clone();
+                arx1 = xx_msi;
+                ary1 = yy_msi;
+                arx2 = xx_pgi;
+                ary2 = yy_pgi;
             }
 
-
-
-            /*
-            float[] _arx1;
-            float[] _ary1;
-            float[] _arx2;
-            float[] _ary2;
-
-            if (xx_pgi.length >= xx_msi.length) {
-                _arx1 = xx_pgi.clone();
-                _ary1 = yy_pgi.clone();
-                _arx2 = xx_msi.clone();
-                _ary2 = yy_msi.clone();
-            } else {
-                _arx1 = xx_msi.clone();
-                _ary1 = yy_msi.clone();
-                _arx2 = xx_pgi.clone();
-                _ary2 = yy_pgi.clone();
-            }
-
-            float[] arx1 = new float[(int)(_arx1.length/3+0.5)];
-            float[] ary1 = new float[(int)(_ary1.length/3+0.5)];
-            float[] arx2 = new float[(int)(_arx2.length/3+0.5)];
-            float[] ary2 = new float[(int)(_ary2.length/3+0.5)];
-            System.out.print(System.currentTimeMillis()-tt);
-            System.out.print("\t");
-            int counter = 0;
-
-            for (int i_ar1 = 0; counter < arx1.length; i_ar1 += 3){
-                arx1[counter] =_arx1[i_ar1];
-                ary1[counter] =_ary1[i_ar1];
-                counter+=1;
-            }
-            counter = 0;
-            for (int i_ar2 = 0; counter < arx2.length; i_ar2 += 3){
-                arx2[counter] =_arx2[i_ar2];
-                ary2[counter] =_ary2[i_ar2];
-                counter+=1;
-            }
-            */
-
-            //IJ.run(pgi_c, "RGB Color", "");
-            //ImageProcessor ip = pgi_c.getProcessor();
-
-            //IJ.setForegroundColor(255,255,255);
-            //ImagePlus imp = IJ.createImage("Untitled", "8-bit black", pgi_c.getWidth(), pgi_c.getHeight(), 1);
             KDtreeMLM kdtree = new KDtreeMLM(arx2, ary2);
 
             for (int i = 0; i < arx1.length; i = i + 1) {
                 float[] testpoint = new float[]{arx1[i], ary1[i]};
-                float[] XY_nn = kdtree.query_neighbour(testpoint[0], testpoint[1]);
-                //ip.drawLine(testpoint[0],(int) testpoint[1],(int) XY_nn[0], (int) XY_nn[1]);
-                //imp.setRoi(new Line(testpoint[0], testpoint[1],XY_nn[0],  XY_nn[1]));
-                //IJ.run(imp, "Draw", "slice");
 
                 float dist = kdtree.query_dist(testpoint[0], testpoint[1]); // this comes down to data - model
 
-                // logLH from python
-                //logLH+=np.sum(-0.5*scipy.log(2*scipy.pi*(n_sd[1:])**2)*M)+np.sum(-0.5*((n[1:])-N[1:])**2/(n_sd[1:])**2)
                 logLH += -0.5 * Math.log(2 * Math.PI * Math.pow(sigma, 2)) + -0.5 * (Math.pow(dist, 2) / Math.pow(sigma, 2));
 
-                //IJ.log(String.valueOf(testpoint[0])+" "+ String.valueOf(testpoint[1])+" "+String.valueOf(XY_nn[0])+" "+ String.valueOf(XY_nn[1]));
             }
         } else { // in case the parameters make an all black or all white image. ... so if no contours are present, just punish this very bad
             for (int i = 0; i < xx_msi.length; i = i + 1) {
-                float dist = input_img.getWidth()+input_img.getHeight(); // a distance bigger than any distance that could occur in the image.
+                float dist = input_image.getWidth()+ input_image.getHeight(); // a distance bigger than any distance that could occur in the image.
                 logLH += -0.5 * Math.log(2 * Math.PI * Math.pow(sigma, 2)) + -0.5 * (Math.pow(dist, 2) / (Math.pow(sigma, 2)));
             }
         }
-        //input_img3.changes = false;
-        //input_img3.close();
 
         return logLH;
-
-
     }
-
-    /*
-    public static void main(final String... args) throws Exception {
-        //new Optimizer_v5_img();
-
-
-    // create the ImageJ application context with all available services
-    final ImageJ ij = new ImageJ();
-    ij.ui().showUI();
-
-    // ask the user for a file to open
-    //final File file = new File("/home/mats/Dokumente/postdoc/fiji/samples/blobs.tif");  //ij.ui().chooseFile(null, "open");
-    final File file = new File("/home/mats/Dokumente/postdoc/conferences/fiji_hackathon_dd2019/project_BayesImaging/sampledata/1h+S7_und_S8_tiff+S7+S7_NaCl+/original1.tif");  //ij.ui().chooseFile(null, "open");
-
-        if (file != null) {
-        // load the dataset
-        final Dataset dataset = ij.scifio().datasetIO().open(file.getPath());
-
-        // show the image
-        ij.ui().show(dataset);
-
-
-
-        // invoke the plugin
-        ij.command().run(Optimizer_v10_img_fastPipe.class, true);
-    }
-    */
-
 }
 
 
