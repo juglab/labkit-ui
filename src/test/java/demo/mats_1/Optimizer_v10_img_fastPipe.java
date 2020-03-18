@@ -96,9 +96,7 @@ public class Optimizer_v10_img_fastPipe {
     //
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     // Initialise the imaging pipeline
-    Pipeline_fMN_fast pipe_fast;
 
-    float[][] manual_segmentation_contour;
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 
@@ -135,12 +133,8 @@ public class Optimizer_v10_img_fastPipe {
         ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
         // Prepare the image.
 
-        pipe_fast = new Pipeline_fMN_fast(input_image);
-
-        //get contour image
-        ContourUtilies pipe_contour = new ContourUtilies();
-        //get pixels from contour image
-        manual_segmentation_contour = pipe_contour.getContourPixels(manual_segmented_image);
+        Pipeline_fMN_fast pipe_fast = new Pipeline_fMN_fast(input_image);
+        Likelihood likelihood = new Likelihood(pipe_fast, manual_segmented_image);
 
         ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
         // Initialise Bayes.
@@ -160,7 +154,7 @@ public class Optimizer_v10_img_fastPipe {
                 LifePoints_Positions[i_lp][i_para] = random.nextFloat()*(cube[i_para][1]-cube[i_para][0])+cube[i_para][0] ;
             }
             // Evalutate the Likelihoods for the parameter sets of the LivePoints.
-            LifePoints_Likelyhood[i_lp] = Likelihood(LifePoints_Positions[i_lp]);
+            LifePoints_Likelyhood[i_lp] = likelihood.likelihood(LifePoints_Positions[i_lp]);
 
         }
         ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -218,7 +212,7 @@ public class Optimizer_v10_img_fastPipe {
                 }
                 // step two evaluate the likelihood.
                 N_evaluations += 1;
-                LH_test = Likelihood(test_para);
+                LH_test = likelihood.likelihood(test_para);
                 if (LH_test >= worstLikelihood) {
                     found2 = 1;
                 }
@@ -317,8 +311,7 @@ public class Optimizer_v10_img_fastPipe {
         BdvFunctions.show(VirtualStackAdapter.wrap(pgi), input_image.getTitle(), BdvOptions.options().addTo(handle.getBdvHandle())).setColor(new ARGBType(0x770000));
     }
 
-    private void sleep(int i) {
-        try {
+    private void sleep(int i) { try {
             Thread.sleep(i);
         } catch (InterruptedException e) {
             e.printStackTrace();
@@ -405,75 +398,6 @@ public class Optimizer_v10_img_fastPipe {
         return plot;
     }
 
-    private double Likelihood(float[] param) {
-        float p1   = param[0];
-        float p2   = param[1];
-        float p3   = param[2];
-        float p4   = param[3];
-        //float p5   = param[4];
-        //float p6   = param[5];
-        float sigma  = param[4];
-        float[] xx_msi= manual_segmentation_contour[0];
-        float[] yy_msi= manual_segmentation_contour[1];
-
-        double logLH = 0;
-        // now apply the pipeline to an image
-        float[] parameterset = {p1,p2,p3,p4};//,p5,p6};
-        ImagePlus pgi = pipe_fast.exec(parameterset); // pipeline generated image
-
-        // PERHAPS ONE HAS TO TURN THIS ON. NOT SURE!
-        //get contour image
-
-        ContourUtilies pipe_contour = new ContourUtilies();
-
-
-        //get pixels from contour image
-        float[][] pgi_contour = pipe_contour.getContourPixels(pgi);
-        float[] xx_pgi= pgi_contour[0];
-        float[] yy_pgi= pgi_contour[1];
-        IJ.run(input_image, "8-bit", "");
-        // Check that the length of contour of the pipeline generate image is not zero:
-        if (xx_pgi.length > 10){
-
-
-            //prepare everything for the nearest neighbour query:
-
-            float[] arx1;
-            float[] ary1;
-            float[] arx2;
-            float[] ary2;
-
-            if (xx_pgi.length >= xx_msi.length) {
-                arx1 = xx_pgi;
-                ary1 = yy_pgi;
-                arx2 = xx_msi;
-                ary2 = yy_msi;
-            } else {
-                arx1 = xx_msi;
-                ary1 = yy_msi;
-                arx2 = xx_pgi;
-                ary2 = yy_pgi;
-            }
-
-            PointSet kdtree = new PointSet(arx2, ary2);
-
-            for (int i = 0; i < arx1.length; i = i + 1) {
-                float[] testpoint = new float[]{arx1[i], ary1[i]};
-
-                float dist = kdtree.distanceTo(testpoint[0], testpoint[1]); // this comes down to data - model
-
-                logLH += -0.5 * Math.log(2 * Math.PI * Math.pow(sigma, 2)) + -0.5 * (Math.pow(dist, 2) / Math.pow(sigma, 2));
-
-            }
-        } else { // in case the parameters make an all black or all white image. ... so if no contours are present, just punish this very bad
-            for (int i = 0; i < xx_msi.length; i = i + 1) {
-                float dist = input_image.getWidth()+ input_image.getHeight(); // a distance bigger than any distance that could occur in the image.
-                logLH += -0.5 * Math.log(2 * Math.PI * Math.pow(sigma, 2)) + -0.5 * (Math.pow(dist, 2) / (Math.pow(sigma, 2)));
-            }
-        }
-
-        return logLH;
-    }
 }
 
 
