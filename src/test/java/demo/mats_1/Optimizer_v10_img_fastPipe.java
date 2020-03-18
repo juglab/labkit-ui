@@ -505,12 +505,12 @@ public class Optimizer_v10_img_fastPipe {
                 ary2 = yy_pgi;
             }
 
-            KDtreeMLM kdtree = new KDtreeMLM(arx2, ary2);
+            PointSet kdtree = new PointSet(arx2, ary2);
 
             for (int i = 0; i < arx1.length; i = i + 1) {
                 float[] testpoint = new float[]{arx1[i], ary1[i]};
 
-                float dist = kdtree.query_dist(testpoint[0], testpoint[1]); // this comes down to data - model
+                float dist = kdtree.distanceTo(testpoint[0], testpoint[1]); // this comes down to data - model
 
                 logLH += -0.5 * Math.log(2 * Math.PI * Math.pow(sigma, 2)) + -0.5 * (Math.pow(dist, 2) / Math.pow(sigma, 2));
 
