@@ -150,7 +150,7 @@ public class Optimizer_v10_img_fastPipe {
         IJ.run(preprocessed_image, "Find Edges", ""); // calculates gradient magnitude of sobel filters.
 
         //get contour image
-        ContourMLM pipe_contour = new ContourMLM();
+        ContourUtilies pipe_contour = new ContourUtilies();
         //get pixels from contour image
         manual_segmentation_contour = pipe_contour.getContourPixels(manual_segmented_image);
 
@@ -474,7 +474,7 @@ public class Optimizer_v10_img_fastPipe {
         // PERHAPS ONE HAS TO TURN THIS ON. NOT SURE!
         //get contour image
 
-        ContourMLM pipe_contour = new ContourMLM();
+        ContourUtilies pipe_contour = new ContourUtilies();
 
 
         //get pixels from contour image

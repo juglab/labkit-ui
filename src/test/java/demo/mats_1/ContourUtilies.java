@@ -7,7 +7,38 @@ import ij.plugin.frame.RoiManager;
 import ij.process.ImageProcessor;
 import org.apache.commons.lang3.ArrayUtils;
 
-public class ContourMLM {
+/**
+ * Utility class to calculate the contour of an binary image.
+ */
+public class ContourUtilies {
+
+    /**
+     * Expects a binary image as input.
+     *
+     * @return the coordinates of all the
+     * pixels at the border between black and white.
+     */
+    public float[][] getContourPixels(ImagePlus msi) {
+        ImagePlus imp_c = getContourImg(msi);
+        IJ.run(imp_c, "Analyze Particles...", "size=0-Infinity show=Masks add in_situ");
+
+        Roi ROI_contour_PGI = imp_c.getRoi();
+        RoiManager roim = RoiManager.getRoiManager();
+
+        int N_rois = roim.getCount();
+        float[] arX_conc =  new float[]{};
+        float[] arY_conc =  new float[]{};
+        for (int i = 0; i < N_rois; i++) {
+            Roi roi = roim.getRoi(i);
+            float[] xx = roi.getInterpolatedPolygon().xpoints;
+            float[] yy = roi.getInterpolatedPolygon().ypoints;
+            arX_conc = ArrayUtils.addAll(arX_conc,xx);
+            arY_conc = ArrayUtils.addAll(arY_conc,yy);
+        }
+        roim.reset();
+
+        return new float[][]{arX_conc, arY_conc};
+    }
 
     public ImagePlus getContourImg(ImagePlus imp) {
         IJ.run(imp, "Outline", "=");
@@ -26,38 +57,6 @@ public class ContourMLM {
             ip.putPixel(0, y, 0);// left and right
             ip.putPixel(width - 1, y, 0);
         }
-    return imp;
-
-    }
-
-    public float[][] getContourPixels(ImagePlus msi) {
-        ImagePlus imp_c = getContourImg(msi);
-        IJ.run(imp_c, "Analyze Particles...", "size=0-Infinity show=Masks add in_situ");
-
-        Roi ROI_contour_PGI = imp_c.getRoi();
-        RoiManager roim = RoiManager.getRoiManager();
-
-        int N_rois = roim.getCount();
-        float[] arX_conc =  new float[]{};
-        float[] arY_conc =  new float[]{};
-        for (int i = 0; i < N_rois; i++) {
-            Roi roi = roim.getRoi(i);
-            //Point[] points = roi.getContainedPoints();
-            float[] xx = roi.getInterpolatedPolygon().xpoints;
-            float[] yy = roi.getInterpolatedPolygon().ypoints;
-            arX_conc = ArrayUtils.addAll(arX_conc,xx);
-            arY_conc = ArrayUtils.addAll(arY_conc,yy);
-            int len_xx = xx.length;
-            for (int j = 0; j < len_xx; j++) {
-                int xxx = (int) Math.round(xx[j]);
-                int yyy = (int) Math.round(yy[j]);
-
-            }
-
-        }
-
-        roim.reset();
-
-        return new float[][]{arX_conc, arY_conc};
+        return imp;
     }
 }
