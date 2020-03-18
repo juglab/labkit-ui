@@ -4,9 +4,23 @@ import ij.IJ;
 import ij.ImagePlus;
 
 public class Pipeline_fMN_fast {
+
+    private final ImagePlus preprocessed_image;
+
     // This Pipeline is the same as Pipeline. Only this one should be used in the Bayesian RadFriends Optimizer (Optimizer_v5_img.java)
 
-    public ImagePlus exec(ImagePlus imp, float[] param) {
+    public Pipeline_fMN_fast(ImagePlus input_image) {
+        preprocessed_image = input_image.duplicate();
+        IJ.run(preprocessed_image, "Smooth", "");
+        IJ.run(preprocessed_image, "Enhance Contrast", "saturated=0.35");
+        IJ.run(preprocessed_image, "Apply LUT", "");
+        IJ.run(preprocessed_image, "Bandpass Filter...", "filter_large=40 filter_small=3 suppress=None tolerance=5 autoscale saturate");
+        IJ.run(preprocessed_image, "Smooth", ""); // 3x3 mean filter
+        IJ.run(preprocessed_image, "Find Edges", ""); // calculates gradient magnitude of sobel filters.
+    }
+
+    public ImagePlus exec(float[] param) {
+        ImagePlus imp = preprocessed_image.duplicate();
         //float Cannyhigh         = param[0];
         //float Cannylow          = param[1];
         float gaussian_radius   = param[0];
@@ -50,13 +64,5 @@ public class Pipeline_fMN_fast {
         //sleep(1000);
         //IJ.run(imp, "8-bit", "");
         return imp;
-    }
-
-    private void sleep(int i) {
-        try {
-            Thread.sleep(i);
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
     }
 }

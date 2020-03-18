@@ -9,7 +9,6 @@ import ij.gui.Plot;
 import ij.plugin.ChannelSplitter;
 import net.imglib2.img.VirtualStackAdapter;
 import net.imglib2.type.numeric.ARGBType;
-import org.apache.commons.math3.analysis.function.Gaussian;
 import org.apache.commons.math3.stat.descriptive.rank.Max;
 import org.scijava.plugin.Parameter;
 
@@ -93,15 +92,11 @@ public class Optimizer_v10_img_fastPipe {
     @Parameter
     private ImagePlus input_image;
     private ImagePlus manual_segmented_image; // msi
-    private ImagePlus preprocessed_image;
-
 
     //
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     // Initialise the imaging pipeline
-    Pipeline_fMN_fast pipe = new Pipeline_fMN_fast();
-    //Pipeline_fMN_sobel pipe = new Pipeline_fMN_sobel();
-    Pipeline_fMN_fast pipe_fast = new Pipeline_fMN_fast();
+    Pipeline_fMN_fast pipe_fast;
 
     float[][] manual_segmentation_contour;
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -140,14 +135,7 @@ public class Optimizer_v10_img_fastPipe {
         ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
         // Prepare the image.
 
-        preprocessed_image = input_image.duplicate();
-
-        IJ.run(preprocessed_image, "Smooth", "");
-        IJ.run(preprocessed_image, "Enhance Contrast", "saturated=0.35");
-        IJ.run(preprocessed_image, "Apply LUT", "");
-        IJ.run(preprocessed_image, "Bandpass Filter...", "filter_large=40 filter_small=3 suppress=None tolerance=5 autoscale saturate");
-        IJ.run(preprocessed_image, "Smooth", ""); // 3x3 mean filter
-        IJ.run(preprocessed_image, "Find Edges", ""); // calculates gradient magnitude of sobel filters.
+        pipe_fast = new Pipeline_fMN_fast(input_image);
 
         //get contour image
         ContourUtilies pipe_contour = new ContourUtilies();
@@ -317,7 +305,7 @@ public class Optimizer_v10_img_fastPipe {
         }
 
         //sleep(1000);
-        ImagePlus pgi = pipe_fast.exec(preprocessed_image.duplicate(), LifePoints_Positions[index]); // pipeline generated image
+        ImagePlus pgi = pipe_fast.exec(LifePoints_Positions[index]); // pipeline generated image
         //sleep(10000);
 
         showComposite(pgi);
@@ -431,7 +419,7 @@ public class Optimizer_v10_img_fastPipe {
         double logLH = 0;
         // now apply the pipeline to an image
         float[] parameterset = {p1,p2,p3,p4};//,p5,p6};
-        ImagePlus pgi = pipe_fast.exec(preprocessed_image.duplicate(), parameterset); // pipeline generated image
+        ImagePlus pgi = pipe_fast.exec(parameterset); // pipeline generated image
 
         // PERHAPS ONE HAS TO TURN THIS ON. NOT SURE!
         //get contour image
