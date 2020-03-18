@@ -5,7 +5,6 @@ import bdv.util.BdvOptions;
 import bdv.util.BdvStackSource;
 import ij.IJ;
 import ij.ImagePlus;
-import ij.gui.Plot;
 import ij.plugin.ChannelSplitter;
 import net.imglib2.img.VirtualStackAdapter;
 import net.imglib2.type.numeric.ARGBType;
@@ -14,8 +13,6 @@ import org.scijava.plugin.Parameter;
 
 import java.util.Arrays;
 import java.util.Random;
-
-//import net.imglib2.neighborsearch.
 
 public class Optimizer_v10_img_fastPipe {
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -298,9 +295,7 @@ public class Optimizer_v10_img_fastPipe {
             System.out.print("\t ");
         }
 
-        //sleep(1000);
         ImagePlus pgi = pipe_fast.exec(LifePoints_Positions[index]); // pipeline generated image
-        //sleep(10000);
 
         showComposite(pgi);
     }
@@ -309,21 +304,6 @@ public class Optimizer_v10_img_fastPipe {
         BdvStackSource< ? > handle = BdvFunctions.show(VirtualStackAdapter.wrap(
                 input_image), input_image.getTitle(), BdvOptions.options().is2D());
         BdvFunctions.show(VirtualStackAdapter.wrap(pgi), input_image.getTitle(), BdvOptions.options().addTo(handle.getBdvHandle())).setColor(new ARGBType(0x770000));
-    }
-
-    private void sleep(int i) { try {
-            Thread.sleep(i);
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
-    }
-
-    private double[] inArray(double[] values, int[] indices) {
-        double[] result = new double[indices.length];
-        for (int i = 0; i < result.length; i++) {
-            result[i] = values[indices[i]];
-        }
-        return result;
     }
 
     private int argMin(double[] array) {
@@ -351,8 +331,6 @@ public class Optimizer_v10_img_fastPipe {
     }
 
     private int checkR4para(int i_para, float R, float test_para,  float[][] lifePointPositions) {
-        int[] positions = new int[lifePointPositions.length];
-
         int check=0;
         for (int i_lp = 0; i_lp < lifePointPositions.length; i_lp++) {
             float dist = Math.abs(lifePointPositions[i_lp][i_para] - test_para);
@@ -389,13 +367,6 @@ public class Optimizer_v10_img_fastPipe {
             Rdist[i_para] = (float)(r);
         }
         return Rdist;
-    }
-
-    private Plot plot(double[] xAxis, double[] yAxis) {
-        Plot plot = new Plot("title", "xaxis", "yaxis");
-        plot.add("curve", xAxis, yAxis);
-        //plot.show();
-        return plot;
     }
 
 }
