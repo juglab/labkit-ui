@@ -25,7 +25,7 @@ public class BiisSegmenter {
 		Pipeline_fMN_fast pipe_fast = new Pipeline_fMN_fast(input_image);
 		Likelihood likelihood = new Likelihood(pipe_fast,
 				manual_segmented_image);
-		float[] result = new Optimizer_v10_img_fastPipe().optimise(likelihood);
+		float[] result = new BayesOptimizer(likelihood).run();
 
 		ImagePlus pgi = pipe_fast.exec(result); // pipeline generated image
 

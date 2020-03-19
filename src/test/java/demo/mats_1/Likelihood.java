@@ -14,6 +14,23 @@ public class Likelihood {
 		this.manual_segmentation_contour = pipe_contour.getContourPixels(manual_segmented_image);
 	}
 
+	public int numberOfParameters() {
+		return 5;
+	}
+
+	public float[][] parameterBounds() {
+		return new float[][] {
+				//{0.1f,5},   // Cannylow
+				//{0.1f,5},	  // Cannyhigh
+				{0,100},	// gaussian_radius
+				{0,50},	 // Threshold_high
+				{0,10},   // minParticle_white
+				{0,10},   // minParticle_black
+
+				{0,40}	 // sigma # error of the parameter estimation
+		};
+	}
+
 	public double likelihood(float[] param) {
 		float sigma  = param[4];
 		float[] xx_msi= manual_segmentation_contour[0];
