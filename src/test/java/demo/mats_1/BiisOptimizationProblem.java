@@ -2,22 +2,24 @@ package demo.mats_1;
 
 import ij.ImagePlus;
 
-public class Likelihood {
+public class BiisOptimizationProblem implements OptimizationProblem {
 
 	private final Pipeline_fMN_fast pipe_fast;
 
 	private final float[][] manual_segmentation_contour;
 
-	public Likelihood(Pipeline_fMN_fast pipe_fast, ImagePlus manual_segmented_image) {
+	public BiisOptimizationProblem(Pipeline_fMN_fast pipe_fast, ImagePlus manual_segmented_image) {
 		this.pipe_fast = pipe_fast;
 		ContourUtilies pipe_contour = new ContourUtilies();
 		this.manual_segmentation_contour = pipe_contour.getContourPixels(manual_segmented_image);
 	}
 
+	@Override
 	public int numberOfParameters() {
 		return 5;
 	}
 
+	@Override
 	public float[][] parameterBounds() {
 		return new float[][] {
 				//{0.1f,5},   // Cannylow
@@ -31,6 +33,7 @@ public class Likelihood {
 		};
 	}
 
+	@Override
 	public double likelihood(float[] param) {
 		float sigma  = param[4];
 		float[] xx_msi= manual_segmentation_contour[0];

@@ -7,17 +7,17 @@ import java.util.Random;
 
 public class BayesOptimizer {
 
-	private final Likelihood likelihood;
+	private final OptimizationProblem optimizationProgram;
 	private final int Nparams;  // number of parameters
 	private final float[][] cube;
 
 	private int max_steps = 50; // max steps of iteration
 	private int NLifePoints = 10; // number of life points
 
-	public BayesOptimizer(Likelihood likelihood) {
-		this.likelihood = likelihood;
-		this.Nparams = likelihood.numberOfParameters();
-		this.cube = likelihood.parameterBounds();
+	public BayesOptimizer(OptimizationProblem optimizationProblem) {
+		this.optimizationProgram = optimizationProblem;
+		this.Nparams = optimizationProblem.numberOfParameters();
+		this.cube = optimizationProblem.parameterBounds();
 	}
 
 	public void setNumberOfSteps(int value) {
@@ -123,7 +123,7 @@ public class BayesOptimizer {
 				LifePoints_Positions[i_lp][i_para] = random.nextFloat()*(cube[i_para][1]-cube[i_para][0])+cube[i_para][0] ;
 			}
 			// Evalutate the Likelihoods for the parameter sets of the LivePoints.
-			LifePoints_Likelyhood[i_lp] = likelihood.likelihood(LifePoints_Positions[i_lp]);
+			LifePoints_Likelyhood[i_lp] = optimizationProgram.likelihood(LifePoints_Positions[i_lp]);
 
 		}
 		////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -180,7 +180,7 @@ public class BayesOptimizer {
 				}
 				// step two evaluate the likelihood.
 				N_evaluations += 1;
-				LH_test = likelihood.likelihood(test_para);
+				LH_test = optimizationProgram.likelihood(test_para);
 				if (LH_test >= worstLikelihood) {
 					found2 = 1;
 				}

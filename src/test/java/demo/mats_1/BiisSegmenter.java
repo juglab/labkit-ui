@@ -23,7 +23,7 @@ public class BiisSegmenter {
 		IJ.run(input_image, "Grays", "");
 
 		Pipeline_fMN_fast pipe_fast = new Pipeline_fMN_fast(input_image);
-		Likelihood likelihood = new Likelihood(pipe_fast,
+		BiisOptimizationProblem likelihood = new BiisOptimizationProblem(pipe_fast,
 				manual_segmented_image);
 		float[] result = new BayesOptimizer(likelihood).run();
 
