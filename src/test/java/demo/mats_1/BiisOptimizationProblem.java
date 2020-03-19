@@ -10,8 +10,7 @@ public class BiisOptimizationProblem implements OptimizationProblem {
 
 	public BiisOptimizationProblem(Pipeline_fMN_fast pipe_fast, ImagePlus manual_segmented_image) {
 		this.pipe_fast = pipe_fast;
-		ContourUtilies pipe_contour = new ContourUtilies();
-		this.manual_segmentation_contour = pipe_contour.getContourPixels(manual_segmented_image);
+		this.manual_segmentation_contour = ContourUtilies.getContourPixels(manual_segmented_image);
 	}
 
 	@Override
@@ -46,11 +45,8 @@ public class BiisOptimizationProblem implements OptimizationProblem {
 		// PERHAPS ONE HAS TO TURN THIS ON. NOT SURE!
 		//get contour image
 
-		ContourUtilies pipe_contour = new ContourUtilies();
-
-
 		//get pixels from contour image
-		float[][] pgi_contour = pipe_contour.getContourPixels(pgi);
+		float[][] pgi_contour = ContourUtilies.getContourPixels(pgi);
 		float[] xx_pgi= pgi_contour[0];
 		float[] yy_pgi= pgi_contour[1];
 		// Check that the length of contour of the pipeline generate image is not zero:

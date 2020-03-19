@@ -18,7 +18,7 @@ public class ContourUtilies {
      * @return the coordinates of all the
      * pixels at the border between black and white.
      */
-    public float[][] getContourPixels(ImagePlus msi) {
+    public static float[][] getContourPixels(ImagePlus msi) {
         ImagePlus imp_c = getContourImg(msi);
         IJ.run(imp_c, "Analyze Particles...", "size=0-Infinity show=Masks add in_situ");
 
@@ -40,7 +40,7 @@ public class ContourUtilies {
         return new float[][]{arX_conc, arY_conc};
     }
 
-    public ImagePlus getContourImg(ImagePlus imp) {
+    public static ImagePlus getContourImg(ImagePlus imp) {
         IJ.run(imp, "Outline", "=");
         int width = imp.getWidth();
         int height = imp.getHeight();
