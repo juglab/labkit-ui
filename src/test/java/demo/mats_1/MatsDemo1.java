@@ -7,10 +7,8 @@ import net.imglib2.RandomAccessibleInterval;
 import net.imglib2.img.display.imagej.ImageJFunctions;
 import net.imglib2.labkit.labeling.Label;
 import net.imglib2.labkit.labeling.Labeling;
-import net.imglib2.labkit.labeling.LabelingSerializer;
 import net.imglib2.type.logic.BitType;
 import net.imglib2.type.numeric.ARGBType;
-import org.scijava.Context;
 
 import java.io.IOException;
 import java.util.Arrays;
@@ -28,7 +26,8 @@ public class MatsDemo1 {
 			//"https://imagej.nih.gov/ij/images/blobs.gif");
 			//"https://cgcweb.med.tu-dresden.de/cloud/index.php/s/G2ML3C6yYtnZW82/download?path=%2F&files=original1.tif");
 			//"https://cgcweb.med.tu-dresden.de/cloud/index.php/s/G2ML3C6yYtnZW82/download?path=%2F&files=original2.tif");
-			"/home/mats/Dokumente/postdoc/conferences/fiji_hackathon_dd2019/project_BayesImaging/sampledata/1h+S7_und_S8_tiff+S7+S7_NaCl+/original1.tif");
+				"/home/arzt/Desktop/original1.tif");
+			//"/home/mats/Dokumente/postdoc/conferences/fiji_hackathon_dd2019/project_BayesImaging/sampledata/1h+S7_und_S8_tiff+S7+S7_NaCl+/original1.tif");
 			//"https://cgcweb.med.tu-dresden.de/cloud/index.php/s/G2ML3C6yYtnZW82/download?path=%2Fbsp3&files=nativ.tif");
 		// create empty labeling with a background label and the same size as the
 		// image
@@ -66,8 +65,8 @@ public class MatsDemo1 {
 		* Check out: Skilling J. 2006. Nested Sampling for General Bayesian Computation. Bayesian Analysis - International Society for Bayesian Analysis 1:833–860.
 		*  */
 
-		Optimizer_v10_img_fastPipe optimizer = new Optimizer_v10_img_fastPipe();
-		optimizer.run(image, backgroundImagePlus);
+		BiisSegmenter segmenter = new BiisSegmenter();
+		segmenter.run(image, backgroundImagePlus);
 
 	}
 }

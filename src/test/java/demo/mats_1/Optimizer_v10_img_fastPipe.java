@@ -1,15 +1,6 @@
 package demo.mats_1;
 
-import bdv.util.BdvFunctions;
-import bdv.util.BdvOptions;
-import bdv.util.BdvStackSource;
-import ij.IJ;
-import ij.ImagePlus;
-import ij.plugin.ChannelSplitter;
-import net.imglib2.img.VirtualStackAdapter;
-import net.imglib2.type.numeric.ARGBType;
 import org.apache.commons.math3.stat.descriptive.rank.Max;
-import org.scijava.plugin.Parameter;
 
 import java.util.Arrays;
 import java.util.Random;
@@ -73,7 +64,7 @@ public class Optimizer_v10_img_fastPipe {
 
      */
 
-    float[][] cube =  {
+    private float[][] cube =  {
             //{0.1f,5},   // Cannylow
             //{0.1f,5},      // Cannyhigh
             {0,100},    // gaussian_radius
@@ -84,12 +75,6 @@ public class Optimizer_v10_img_fastPipe {
             {0,40}     // sigma # error of the parameter estimation
     };
 
-    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-    // Loading Images etc.
-    @Parameter
-    private ImagePlus input_image;
-    private ImagePlus manual_segmented_image; // msi
-
     //
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     // Initialise the imaging pipeline
@@ -97,13 +82,13 @@ public class Optimizer_v10_img_fastPipe {
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 
-    float[][] LifePoints_Positions = new float[NLifePoints][Nparams];   // array of parameter sets
-    double[] LifePoints_Likelyhood = new double[NLifePoints];       // corresponding Likelihoods to the array of parameter sets
+    private float[][] LifePoints_Positions = new float[NLifePoints][Nparams];   // array of parameter sets
+    private double[] LifePoints_Likelyhood = new double[NLifePoints];       // corresponding Likelihoods to the array of parameter sets
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     // For the Bayesian post_equal_weights.dat
-    float[][] LifePoints_Positions_Register = new float[max_steps+NLifePoints][Nparams];   // This one will be used to register the parameter values that where discarded. It is needed to calculate the post_equal_weights.dat
-    double[] LifePoints_Likelyhood_Register = new double[max_steps+NLifePoints];       // This one will register the discarded likelihoods.
+    private float[][] LifePoints_Positions_Register = new float[max_steps+NLifePoints][Nparams];   // This one will be used to register the parameter values that where discarded. It is needed to calculate the post_equal_weights.dat
+    private double[] LifePoints_Likelyhood_Register = new double[max_steps+NLifePoints];       // This one will register the discarded likelihoods.
 
     /**
      * To obtain equally-weighted posterior representatives, all we need do is accept point θ i
@@ -113,26 +98,9 @@ public class Optimizer_v10_img_fastPipe {
 	 * <p>
 	 * This one will be used to directly caclulate the post_equal_weight.dat
      */
-    double[] p_i    = new double[max_steps+NLifePoints];
+    //private double[] p_i    = new double[max_steps+NLifePoints];
 
-
-    public void run(ImagePlus input_img_org, ImagePlus input_img_msi_org) {
-         // render the input image to 8-bit once.
-        input_image =input_img_org.duplicate();
-        manual_segmented_image =input_img_msi_org.duplicate();
-
-        IJ.run(input_image, "8-bit", "");
-
-        ImagePlus[] channels = ChannelSplitter.split(input_image);
-        input_image = channels[0];
-        IJ.run(input_image, "Grays", "");
-
-        ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-        // Prepare the image.
-
-        Pipeline_fMN_fast pipe_fast = new Pipeline_fMN_fast(input_image);
-        Likelihood likelihood = new Likelihood(pipe_fast, manual_segmented_image);
-
+    public float[] optimise(Likelihood likelihood) {
         ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
         // Initialise Bayes.
 
@@ -295,18 +263,10 @@ public class Optimizer_v10_img_fastPipe {
             System.out.print("\t ");
         }
 
-        ImagePlus pgi = pipe_fast.exec(LifePoints_Positions[index]); // pipeline generated image
-
-        showComposite(pgi);
+        return LifePoints_Positions[index];
     }
 
-    private void showComposite(ImagePlus pgi) {
-        BdvStackSource< ? > handle = BdvFunctions.show(VirtualStackAdapter.wrap(
-                input_image), input_image.getTitle(), BdvOptions.options().is2D());
-        BdvFunctions.show(VirtualStackAdapter.wrap(pgi), input_image.getTitle(), BdvOptions.options().addTo(handle.getBdvHandle())).setColor(new ARGBType(0x770000));
-    }
-
-    private int argMin(double[] array) {
+    private static int argMin(double[] array) {
         double minimum = 0;
         int argmin = 0;
         for (int i = 0; i < array.length; i++) {
@@ -318,7 +278,7 @@ public class Optimizer_v10_img_fastPipe {
         return argmin;
     }
 
-    private int argMax(double[] array) {
+    private static int argMax(double[] array) {
         double maximum = 0;
         int argmax = 0;
         for (int i = 0; i < array.length; i++) {
@@ -330,7 +290,7 @@ public class Optimizer_v10_img_fastPipe {
         return argmax;
     }
 
-    private int checkR4para(int i_para, float R, float test_para,  float[][] lifePointPositions) {
+    private static int checkR4para(int i_para, float R, float test_para,  float[][] lifePointPositions) {
         int check=0;
         for (int i_lp = 0; i_lp < lifePointPositions.length; i_lp++) {
             float dist = Math.abs(lifePointPositions[i_lp][i_para] - test_para);
