@@ -1,9 +1,13 @@
 
 package demo.mats_1;
 
+import bdv.util.BdvFunctions;
+import bdv.util.BdvOptions;
+import bdv.util.BdvStackSource;
 import ij.ImagePlus;
 import net.imglib2.FinalInterval;
 import net.imglib2.RandomAccessibleInterval;
+import net.imglib2.img.VirtualStackAdapter;
 import net.imglib2.img.display.imagej.ImageJFunctions;
 import net.imglib2.labkit.labeling.Label;
 import net.imglib2.labkit.labeling.Labeling;
@@ -49,7 +53,7 @@ public class MatsDemo1 {
 			backgroundLabel);
 
 		// convert to ImagePlus and show
-		ImagePlus backgroundImagePlus = ImageJFunctions.wrap(background,
+		ImagePlus manual_segmented_image = ImageJFunctions.wrap(background,
 			"segmented");
 
 		//// The labeling can be saved to a file and loaded:
@@ -66,7 +70,11 @@ public class MatsDemo1 {
 		*  */
 
 		BiisSegmenter segmenter = new BiisSegmenter();
-		segmenter.run(image, backgroundImagePlus);
+		ImagePlus pgi = segmenter.run(image, manual_segmented_image);
 
+		BdvStackSource< ? > handle = BdvFunctions.show(VirtualStackAdapter.wrap(
+				image), image.getTitle(), BdvOptions.options().is2D());
+		BdvFunctions.show(VirtualStackAdapter.wrap(pgi), image.getTitle(),
+				BdvOptions.options().addTo(handle.getBdvHandle())).setColor(new ARGBType(0x770000));
 	}
 }
