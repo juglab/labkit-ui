@@ -6,7 +6,6 @@ import net.imglib2.img.Img;
 import net.imglib2.img.array.ArrayImgs;
 import net.imglib2.labkit.labeling.Labeling;
 import net.imglib2.labkit.segmentation.Segmenter;
-import net.imglib2.labkit.utils.Notifier;
 import net.imglib2.loops.LoopBuilder;
 import net.imglib2.type.numeric.IntegerType;
 import net.imglib2.type.numeric.RealType;
@@ -18,7 +17,6 @@ import org.junit.Test;
 
 import javax.swing.*;
 import java.util.List;
-import java.util.function.Consumer;
 
 import static org.junit.Assert.assertArrayEquals;
 

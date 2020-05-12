@@ -125,10 +125,18 @@ public class SpimDataToImgPlus {
 		List<CalibratedAxis> list = new ArrayList<>();
 		list.add(new DefaultLinearAxis(Axes.X, voxelSize.unit(), voxelSize.dimension(0)));
 		list.add(new DefaultLinearAxis(Axes.Y, voxelSize.unit(), voxelSize.dimension(1)));
-		list.add(new DefaultLinearAxis(Axes.Z, voxelSize.unit(), voxelSize.dimension(2)));
-		if (isMultiChannel(spimData)) list.add(new IdentityAxis(Axes.CHANNEL));
-		if (isTimeSeries(spimData)) list.add(new DefaultLinearAxis(Axes.TIME));
+		if (is3d(spimData))
+			list.add(new DefaultLinearAxis(Axes.Z, voxelSize.unit(), voxelSize.dimension(2)));
+		if (isMultiChannel(spimData))
+			list.add(new IdentityAxis(Axes.CHANNEL));
+		if (isTimeSeries(spimData))
+			list.add(new DefaultLinearAxis(Axes.TIME));
 		return list.toArray(new CalibratedAxis[0]);
+	}
+
+	private static boolean is3d(AbstractSpimData<?> spimData) {
+		return spimData.getSequenceDescription().getViewSetupsOrdered().get(0).getSize().dimension(
+			2) > 1;
 	}
 
 	private static boolean isTimeSeries(AbstractSpimData<?> spimData) {

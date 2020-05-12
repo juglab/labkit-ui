@@ -2,7 +2,10 @@
 package net.imglib2.labkit.segmentation.weka;
 
 import hr.irb.fastRandomForest.FastRandomForest;
+import net.imagej.ImgPlus;
+import net.imagej.axis.Axes;
 import net.imglib2.Cursor;
+import net.imglib2.Interval;
 import net.imglib2.RandomAccess;
 import net.imglib2.RandomAccessible;
 import net.imglib2.RandomAccessibleInterval;
@@ -11,6 +14,7 @@ import net.imglib2.cache.img.DiskCachedCellImgFactory;
 import net.imglib2.cache.img.DiskCachedCellImgOptions;
 import net.imglib2.img.Img;
 import net.imglib2.img.cell.CellGrid;
+import net.imglib2.labkit.inputimage.ImgPlusViewsOld;
 import net.imglib2.labkit.labeling.Label;
 import net.imglib2.labkit.segmentation.Segmenter;
 import net.imglib2.labkit.inputimage.InputImage;
@@ -31,6 +35,7 @@ import net.imglib2.type.numeric.IntegerType;
 import net.imglib2.type.numeric.RealType;
 import net.imglib2.type.numeric.integer.IntType;
 import net.imglib2.type.numeric.real.FloatType;
+import net.imglib2.util.Intervals;
 import net.imglib2.util.Pair;
 import net.imglib2.view.Views;
 import net.imglib2.view.composite.Composite;
@@ -77,11 +82,10 @@ public class TrainableSegmentationSegmenter implements Segmenter {
 	}
 
 	public static ChannelSetting getChannelSetting(InputImage inputImage) {
-		RandomAccessibleInterval<?> image = inputImage.imageForSegmentation();
-		if (inputImage.isMultiChannel()) return ChannelSetting.multiple((int) image
-			.dimension(image.numDimensions() - (inputImage.isTimeSeries() ? 2 : 1)));
-		return image.randomAccess().get() instanceof ARGBType ? ChannelSetting.RGB
-			: ChannelSetting.SINGLE;
+		ImgPlus<?> image = inputImage.imageForSegmentation();
+		if (ImgPlusViewsOld.hasAxis(image, Axes.CHANNEL))
+			return ChannelSetting.multiple((int) ImgPlusViewsOld.getDimension(image, Axes.CHANNEL));
+		return image.firstElement() instanceof ARGBType ? ChannelSetting.RGB : ChannelSetting.SINGLE;
 	}
 
 	public TrainableSegmentationSegmenter(Context context,
@@ -89,8 +93,9 @@ public class TrainableSegmentationSegmenter implements Segmenter {
 	{
 		final ChannelSetting channelSetting = getChannelSetting(inputImage);
 		GlobalSettings globalSettings = GlobalSettings.default2d()
-			.dimensions(inputImage.getSpatialDimensions())
-			.channels(channelSetting).sigmaRange(1.0, 8.0).build();
+			.dimensions(ImgPlusViewsOld.numberOfSpatialDimensions(inputImage.imageForSegmentation()))
+			.channels(channelSetting)
+			.sigmaRange(1.0, 8.0).build();
 		this.context = context;
 		this.useGpu = false;
 		this.featureSettings = new FeatureSettings(globalSettings,
@@ -174,8 +179,15 @@ public class TrainableSegmentationSegmenter implements Segmenter {
 	private static Img<FloatType> cachedFeatureBlock(FeatureCalculator feature,
 		RandomAccessibleInterval<?> image)
 	{
-		return cachedFeatureBlock(feature, Views.extendBorder(image), LabkitUtils
-			.suggestGrid(feature.outputIntervalFromInput(image), false));
+		return cachedFeatureBlock(feature, Views.extendBorder(image),
+			suggestGrid(feature.outputIntervalFromInput(image)));
+	}
+
+	private static CellGrid suggestGrid(Interval interval) {
+		long[] imageDimensions = Intervals.dimensionsAsLongArray(interval);
+		int[] cellDimensions = interval.numDimensions() == 2 ? new int[] { 128, 128 } : new int[] { 64,
+			64, 64 };
+		return new CellGrid(imageDimensions, cellDimensions);
 	}
 
 	private static Img<FloatType> cachedFeatureBlock(FeatureCalculator feature,

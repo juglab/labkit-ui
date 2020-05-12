@@ -1,14 +1,18 @@
 
 package net.imglib2.labkit;
 
+import net.imagej.ImgPlus;
+import net.imagej.axis.Axes;
 import net.imagej.axis.CalibratedAxis;
 import net.imagej.axis.DefaultLinearAxis;
 import net.imglib2.FinalInterval;
 import net.imglib2.Interval;
+import net.imglib2.labkit.inputimage.ImgPlusViewsOld;
 import net.imglib2.labkit.inputimage.InputImage;
 import net.imglib2.labkit.labeling.Labeling;
 import net.imglib2.labkit.labeling.LabelingSerializer;
 import net.imglib2.labkit.models.DefaultSegmentationModel;
+import net.imglib2.type.numeric.NumericType;
 import net.imglib2.util.Intervals;
 import org.scijava.Context;
 
@@ -51,12 +55,19 @@ public class InitialLabeling {
 	private static Labeling defaultLabeling(InputImage inputImage,
 		List<String> defaultLabels)
 	{
-		Interval interval = inputImage.interval();
-		Labeling labeling = Labeling.createEmpty(defaultLabels, askShrinkInterval(
-			interval));
-		labeling.setAxes(scaledAxes(getIntegerScale(labeling.interval(), interval)
-			.getAsInt(), inputImage.axes()));
+		ImgPlus<?> image = inputImage.imageForSegmentation();
+		Interval bigInterval = new FinalInterval(ImgPlusViewsOld.hyperSlice(image, Axes.CHANNEL, 0));
+		Interval smallInterval = askShrinkInterval(bigInterval);
+		int scaling = getIntegerScale(smallInterval, bigInterval).getAsInt();
+		Labeling labeling = Labeling.createEmpty(defaultLabels, smallInterval);
+		labeling.setAxes(scaledAxes(scaling, filterChannelAxis(ImgPlusViewsOld.getCalibratedAxes(
+			image))));
 		return labeling;
+	}
+
+	private static List<CalibratedAxis> filterChannelAxis(List<CalibratedAxis> calibratedAxes) {
+		return calibratedAxes.stream().filter(axis -> axis.type() != Axes.CHANNEL).collect(Collectors
+			.toList());
 	}
 
 	private static Labeling openLabeling(InputImage inputImage, Context context,
@@ -68,10 +79,11 @@ public class InitialLabeling {
 	}
 
 	private static void fixAxes(Labeling labeling, InputImage image) {
-		if (!image.getName().endsWith(".czi")) return;
+		ImgPlus<? extends NumericType<?>> imgPlus = image.imageForSegmentation();
+		if (!imgPlus.getName().endsWith(".czi")) return;
 		List<CalibratedAxis> labelingAxes = labeling.axes();
-		List<CalibratedAxis> imageAxes = image.axes();
-		Interval imageInterval = image.interval();
+		List<CalibratedAxis> imageAxes = filterChannelAxis(ImgPlusViewsOld.getCalibratedAxes(imgPlus));
+		Interval imageInterval = imgPlus;
 		Interval labelingInterval = labeling.interval();
 		OptionalDouble optionalDouble = getScale(labelingInterval, imageInterval);
 		if (!optionalDouble.isPresent()) {

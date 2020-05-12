@@ -2,7 +2,7 @@
 package net.imglib2.labkit.models;
 
 import net.imglib2.img.array.ArrayImgs;
-import net.imglib2.labkit.inputimage.DefaultInputImage;
+import net.imglib2.labkit.inputimage.DatasetInputImage;
 import net.imglib2.labkit.labeling.Label;
 import net.imglib2.labkit.labeling.Labeling;
 import net.imglib2.type.logic.BitType;
@@ -13,8 +13,6 @@ import org.scijava.Context;
 
 import java.io.File;
 import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
 import java.util.Collections;
 import java.util.List;
 
@@ -28,7 +26,7 @@ public class DefaultSegmentationModelTest {
 	public void testListener() {
 		BitType flag = new BitType(false);
 		DefaultSegmentationModel model = new DefaultSegmentationModel(
-			new DefaultInputImage(ArrayImgs.unsignedBytes(100, 100)), new Context());
+			new DatasetInputImage(ArrayImgs.unsignedBytes(100, 100)), new Context());
 		model.listChangeListeners().add(flag::setOne);
 		assertFalse(flag.get());
 		assertEquals(1, model.segmenters().size());
@@ -49,8 +47,7 @@ public class DefaultSegmentationModelTest {
 		// doesn't appear in the current labeling.
 
 		// create model
-		DefaultInputImage image = new DefaultInputImage(ArrayImgs.unsignedBytes(1,
-			1));
+		DatasetInputImage image = new DatasetInputImage(ArrayImgs.unsignedBytes(1, 1));
 		DefaultSegmentationModel model = new DefaultSegmentationModel(image,
 			new Context());
 		// train classifier
