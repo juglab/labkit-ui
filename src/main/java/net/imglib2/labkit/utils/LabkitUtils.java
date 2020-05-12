@@ -2,7 +2,8 @@
 package net.imglib2.labkit.utils;
 
 import bdv.export.ProgressWriter;
-import net.imglib2.Interval;
+import net.imagej.ImgPlus;
+import net.imagej.axis.Axes;
 import net.imglib2.RandomAccess;
 import net.imglib2.RandomAccessible;
 import net.imglib2.RandomAccessibleInterval;
@@ -11,6 +12,8 @@ import net.imglib2.img.cell.CellGrid;
 import net.imglib2.converter.Converters;
 import net.imglib2.img.Img;
 import net.imglib2.img.array.ArrayImgs;
+import net.imglib2.labkit.inputimage.ImgPlusViewsOld;
+import net.imglib2.trainable_segmention.RevampUtils;
 import net.imglib2.type.NativeType;
 import net.imglib2.type.numeric.ARGBType;
 import net.imglib2.type.numeric.IntegerType;
@@ -29,7 +32,6 @@ import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.function.Consumer;
-import java.util.stream.IntStream;
 
 /*
  * @author Matthias Arzt
@@ -149,31 +151,14 @@ public class LabkitUtils {
 		}
 	}
 
-	public static CellGrid suggestGrid(Interval interval, boolean isTimeSeries) {
-		int[] cellDimension = initCellDimension(interval.numDimensions(),
-			isTimeSeries);
-		return new CellGrid(Intervals.dimensionsAsLongArray(interval),
-			cellDimension);
-	}
-
-	private static int[] initCellDimension(int n, boolean isTimeSeries) {
-		return isTimeSeries ? DimensionUtils.extend(initCellDimension(n - 1), 1)
-			: initCellDimension(n);
-	}
-
-	private static int[] initCellDimension(int n) {
-		int size = cellLength(n);
-		return IntStream.range(0, n).map(x -> size).toArray();
-	}
-
-	private static int cellLength(int n) {
-		switch (n) {
-			case 2:
-				return 128;
-			case 3:
-				return 32;
-			default:
-				return (int) Math.round(Math.pow(128. * 128., 1. / n) + 0.5);
-		}
+	public static CellGrid suggestGrid(ImgPlus<?> interval) {
+		if (ImgPlusViewsOld.hasAxis(interval, Axes.CHANNEL))
+			interval = ImgPlusViewsOld.hyperSlice(interval, Axes.CHANNEL, 0);
+		int spacialDimensions = ImgPlusViewsOld.numberOfSpatialDimensions(interval);
+		int[] cellDimension = (spacialDimensions == 2) ? new int[] { 128, 128 } : new int[] { 32, 32,
+			32 };
+		if (ImgPlusViewsOld.hasAxis(interval, Axes.TIME))
+			cellDimension = RevampUtils.extend(cellDimension, 1);
+		return new CellGrid(Intervals.dimensionsAsLongArray(interval), cellDimension);
 	}
 }

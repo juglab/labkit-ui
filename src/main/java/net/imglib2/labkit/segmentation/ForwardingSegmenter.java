@@ -1,6 +1,7 @@
 
 package net.imglib2.labkit.segmentation;
 
+import net.imagej.ImgPlus;
 import net.imglib2.RandomAccessibleInterval;
 import net.imglib2.labkit.labeling.Labeling;
 import net.imglib2.type.numeric.IntegerType;
@@ -24,21 +25,19 @@ public class ForwardingSegmenter implements Segmenter {
 	}
 
 	@Override
-	public void train(
-		List<Pair<? extends RandomAccessibleInterval<?>, ? extends Labeling>> trainingData)
-	{
+	public void train(List<Pair<ImgPlus<?>, Labeling>> trainingData) {
 		source.train(trainingData);
 	}
 
 	@Override
-	public void segment(RandomAccessibleInterval<?> image,
+	public void segment(ImgPlus<?> image,
 		RandomAccessibleInterval<? extends IntegerType<?>> outputSegmentation)
 	{
 		source.segment(image, outputSegmentation);
 	}
 
 	@Override
-	public void predict(RandomAccessibleInterval<?> image,
+	public void predict(ImgPlus<?> image,
 		RandomAccessibleInterval<? extends RealType<?>> outputProbabilityMap)
 	{
 		source.predict(image, outputProbabilityMap);

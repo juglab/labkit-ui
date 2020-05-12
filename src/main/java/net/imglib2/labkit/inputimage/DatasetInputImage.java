@@ -8,6 +8,7 @@ import net.imagej.axis.AxisType;
 import net.imagej.axis.CalibratedAxis;
 import net.imglib2.Interval;
 import net.imglib2.RandomAccessibleInterval;
+import net.imglib2.img.Img;
 import net.imglib2.img.display.imagej.ImgPlusViews;
 import net.imglib2.labkit.bdv.BdvShowable;
 import net.imglib2.labkit.utils.DimensionUtils;
@@ -15,6 +16,7 @@ import net.imglib2.type.numeric.ARGBType;
 import net.imglib2.type.numeric.NumericType;
 import net.imglib2.type.numeric.RealType;
 import net.imglib2.type.numeric.integer.UnsignedByteType;
+import net.imglib2.util.Cast;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -27,18 +29,18 @@ public class DatasetInputImage extends AbstractInputImage {
 
 	private final ImgPlus<? extends NumericType<?>> image;
 	private final BdvShowable showable;
-	private boolean isTimeSeries;
-	private String labelingName;
-	private boolean isMultiChannel = false;
+	private String defaultLabelingFilename;
 
 	public DatasetInputImage(ImgPlus<? extends NumericType<?>> image,
 		BdvShowable showable)
 	{
 		this.showable = showable;
 		this.image = prepareImage(image);
-		this.isMultiChannel = this.image.dimensionIndex(Axes.CHANNEL) >= 0;
-		this.isTimeSeries = this.image.dimensionIndex(Axes.TIME) >= 0;
-		this.labelingName = image.getSource() + ".labeling";
+		this.defaultLabelingFilename = image.getSource() + ".labeling";
+	}
+
+	public DatasetInputImage(Img<?> image) {
+		this(ImgPlus.wrap(image));
 	}
 
 	private static ImgPlus<? extends NumericType<?>> prepareImage(
@@ -60,8 +62,8 @@ public class DatasetInputImage extends AbstractInputImage {
 			Axes.CHANNEL, Axes.TIME));
 	}
 
-	public DatasetInputImage(ImgPlus<? extends NumericType<?>> image) {
-		this(image, initializeShowable(image));
+	public DatasetInputImage(ImgPlus<?> image) {
+		this(Cast.unchecked(image), initializeShowable(Cast.unchecked(image)));
 	}
 
 	public static BdvShowable initializeShowable(
@@ -76,13 +78,6 @@ public class DatasetInputImage extends AbstractInputImage {
 
 	public DatasetInputImage(Dataset image) {
 		this(image.getImgPlus());
-	}
-
-	@Override
-	public Interval interval() {
-		int colorAxis = image.numDimensions() - 1 - (isTimeSeries() ? 1 : 0);
-		return isMultiChannel ? DimensionUtils.intervalRemoveDimension(image,
-			colorAxis) : image;
 	}
 
 	private static ImgPlus<? extends NumericType<?>> tryFuseColor(
@@ -102,56 +97,17 @@ public class DatasetInputImage extends AbstractInputImage {
 	}
 
 	@Override
-	public RandomAccessibleInterval<? extends NumericType<?>>
-		imageForSegmentation()
-	{
+	public ImgPlus<? extends NumericType<?>> imageForSegmentation() {
 		return image;
 	}
 
-	@Override
-	public int getSpatialDimensions() {
-		return image.numDimensions() - (isTimeSeries() ? 1 : 0) - (isMultiChannel()
-			? 1 : 0);
-	}
-
-	public void setDefaultLabelingFilename(String filename) {
-		this.labelingName = filename;
+	public void setDefaultLabelingFilename(String defaultLabelingFilename) {
+		this.defaultLabelingFilename = defaultLabelingFilename;
 	}
 
 	@Override
 	public String getDefaultLabelingFilename() {
-		return labelingName;
+		return defaultLabelingFilename;
 	}
 
-	@Override
-	public String getName() {
-		return image.getName();
-	}
-
-	@Override
-	public List<CalibratedAxis> axes() {
-		List<CalibratedAxis> allAxes = IntStream.range(0, image.numDimensions())
-			.mapToObj(image::axis).collect(Collectors.toList());
-		if (isMultiChannel()) {
-			int channelAxis = getSpatialDimensions();
-			return removeElement(allAxes, channelAxis);
-		}
-		return allAxes;
-	}
-
-	private <T> List<T> removeElement(List<T> list, int index) {
-		List<T> result = new ArrayList<>(list);
-		result.remove(index);
-		return result;
-	}
-
-	@Override
-	public boolean isTimeSeries() {
-		return isTimeSeries;
-	}
-
-	@Override
-	public boolean isMultiChannel() {
-		return isMultiChannel;
-	}
 }

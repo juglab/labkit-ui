@@ -2,7 +2,7 @@
 package net.imglib2.labkit.panel;
 
 import net.imglib2.img.array.ArrayImgs;
-import net.imglib2.labkit.inputimage.DefaultInputImage;
+import net.imglib2.labkit.inputimage.DatasetInputImage;
 import net.imglib2.labkit.models.DefaultSegmentationModel;
 import net.imglib2.labkit.models.SegmentationItem;
 import net.imglib2.labkit.models.SegmenterListModel;
@@ -19,7 +19,7 @@ public class SegmenterPanelDemo {
 		frame.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
 		frame.setSize(400, 400);
 		SegmenterListModel<? extends SegmentationItem> model =
-			new DefaultSegmentationModel(new DefaultInputImage(ArrayImgs
+			new DefaultSegmentationModel(new DatasetInputImage(ArrayImgs
 				.unsignedBytes(10, 10)), new Context());
 		final SegmenterPanel segmenterPanel = new SegmenterPanel(model,
 			item -> newMenu(item, model));

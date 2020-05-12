@@ -82,6 +82,7 @@ public class CziOpener {
 			new ARGBType(), "source");
 		BdvShowable showable = BdvShowable.wrap(source);
 		ImgPlus<? extends NumericType<?>> imageForSegmentation = pyramid.get(2);
+		imageForSegmentation.setSource(filename);
 		DatasetInputImage result = new DatasetInputImage(imageForSegmentation,
 			showable);
 		result.setDefaultLabelingFilename(labelingFilename);

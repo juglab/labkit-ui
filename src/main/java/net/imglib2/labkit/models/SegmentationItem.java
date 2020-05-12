@@ -1,6 +1,7 @@
 
 package net.imglib2.labkit.models;
 
+import net.imagej.ImgPlus;
 import net.imglib2.RandomAccessibleInterval;
 import net.imglib2.labkit.labeling.Labeling;
 import net.imglib2.labkit.menu.MenuKey;
@@ -51,9 +52,7 @@ public class SegmentationItem extends ForwardingSegmenter {
 	}
 
 	@Override
-	public void train(
-		List<Pair<? extends RandomAccessibleInterval<?>, ? extends Labeling>> data)
-	{
+	public void train(List<Pair<ImgPlus<?>, Labeling>> data) {
 		results.clear();
 		super.train(data);
 		results.update();
