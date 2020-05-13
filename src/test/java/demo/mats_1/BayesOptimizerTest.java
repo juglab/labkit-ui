@@ -1,3 +1,4 @@
+
 package demo.mats_1;
 
 import org.apache.commons.math3.analysis.function.Gaussian;
@@ -9,17 +10,17 @@ public class BayesOptimizerTest {
 	@Test
 	public void testOneDimensionalProblem() {
 		OptimizationProblem optimizationProblem = new OneDimensionalProblem();
-		BayesOptimizer optimizer = new BayesOptimizer( optimizationProblem);
+		BayesOptimizer optimizer = new BayesOptimizer(optimizationProblem);
 		float[] result = optimizer.run();
-		assertArrayEquals(new float[]{75}, result, 20);
+		assertArrayEquals(new float[] { 75 }, result, 20);
 	}
 
 	@Test
 	public void testTwoDimensionalProblem() {
 		OptimizationProblem optimizationProblem = new TwoDimensionalProblem();
-		BayesOptimizer optimizer = new BayesOptimizer( optimizationProblem);
+		BayesOptimizer optimizer = new BayesOptimizer(optimizationProblem);
 		float[] result = optimizer.run();
-		assertArrayEquals(new float[]{75, 30}, result, 20);
+		assertArrayEquals(new float[] { 75, 30 }, result, 20);
 	}
 
 	@Test
@@ -74,7 +75,7 @@ class TwoDimensionalProblem implements OptimizationProblem {
 	@Override
 	public double likelihood(float[] param) {
 		return gaussian1.value((int) param[0]) * gaussian2.value((int) param[1]) +
-				gaussian3.value((int) param[0]) * gaussian4.value((int) param[1]);
+			gaussian3.value((int) param[0]) * gaussian4.value((int) param[1]);
 	}
 }
 
@@ -95,14 +96,14 @@ class SixGaussians implements OptimizationProblem {
 	@Override
 	public float[][] parameterBounds() {
 		return new float[][] { { 0, 100 }, { 0, 100 }, { 0, 100 }, { 0, 100 },
-				{ 0, 100 }, { 0, 100 } };
+			{ 0, 100 }, { 0, 100 } };
 	}
 
 	@Override
 	public double likelihood(float[] param) {
 
 		return gaussian1.value(param[0]) * gaussian2.value(param[1]) *
-				gaussian3.value(param[2]) * gaussian4.value(param[3]) *
-				gaussian5.value(param[4]) * gaussian6.value(param[5]);
+			gaussian3.value(param[2]) * gaussian4.value(param[3]) *
+			gaussian5.value(param[4]) * gaussian6.value(param[5]);
 	}
 }

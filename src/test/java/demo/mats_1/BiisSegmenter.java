@@ -1,3 +1,4 @@
+
 package demo.mats_1;
 
 import ij.IJ;
@@ -19,7 +20,7 @@ public class BiisSegmenter {
 
 		Pipeline_fMN_fast pipe_fast = new Pipeline_fMN_fast(input_image);
 		BiisOptimizationProblem likelihood = new BiisOptimizationProblem(pipe_fast,
-				manual_segmented_image);
+			manual_segmented_image);
 		float[] result = new BayesOptimizer(likelihood).run();
 
 		return pipe_fast.exec(result); // pipeline generated image

@@ -1,3 +1,4 @@
+
 package demo.mats_1;
 
 import weka.core.*;
@@ -6,8 +7,8 @@ import weka.core.neighboursearch.KDTree;
 import java.util.ArrayList;
 
 /**
- * Set of points, that may be asked for the shortest distances between a
- * given point and a point of the set.
+ * Set of points, that may be asked for the shortest distances between a given
+ * point and a point of the set.
  */
 public class PointSet {
 
@@ -35,7 +36,7 @@ public class PointSet {
 	 * @param x X-coordinate
 	 * @param y Y-coordinate
 	 * @return Shortest distance between the point given by the coordinates (x, y)
-	 * and a point in the point set.
+	 *         and a point in the point set.
 	 */
 	public float distanceTo(final float x, final float y) {
 		try {
@@ -66,14 +67,14 @@ public class PointSet {
 	 *
 	 * @param pointsx - List of x-coordinates of 2D Points
 	 * @param pointsy - List of y-coordinates of 2D Points
-	 * @param name    - Instance name
+	 * @param name - Instance name
 	 * @return Instances containing all 3D points
 	 */
 	private Instances insertIntoWeka(final float[] pointsx,
-			final float[] pointsy, final String name)
+		final float[] pointsy, final String name)
 	{
 		// Create numeric attributes "x" and "y"
-		ArrayList< Attribute > attributes = new ArrayList<>(2);
+		ArrayList<Attribute> attributes = new ArrayList<>(2);
 		attributes.add(new Attribute("x"));
 		attributes.add(new Attribute("y"));
 
@@ -87,15 +88,17 @@ public class PointSet {
 	}
 
 	/**
-	 * Create an Instance of the same type as the Instances object you are searching in.
+	 * Create an Instance of the same type as the Instances object you are searching
+	 * in.
 	 *
-	 * @param pointx  - List of x-coordinates of 2D Points
-	 * @param pointy  - List of y-coordinates of 2D Points
-	 * @param dataset - the dataset you are searching in, which was used to build the KDTree
+	 * @param pointx - List of x-coordinates of 2D Points
+	 * @param pointy - List of y-coordinates of 2D Points
+	 * @param dataset - the dataset you are searching in, which was used to build
+	 *          the KDTree
 	 * @return an Instance that the nearest neighbor can be found for
 	 */
 	private Instance createInstance(final float pointx, final float pointy,
-			final Instances dataset)
+		final Instances dataset)
 	{
 		Instance inst = new DenseInstance(2);
 		inst.setValue(0, pointx);

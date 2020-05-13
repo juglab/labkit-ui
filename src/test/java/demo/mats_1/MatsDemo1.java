@@ -27,12 +27,12 @@ public class MatsDemo1 {
 
 		// open the image
 		final ImagePlus image = new ImagePlus(
-			//"https://imagej.nih.gov/ij/images/blobs.gif");
-			//"https://cgcweb.med.tu-dresden.de/cloud/index.php/s/G2ML3C6yYtnZW82/download?path=%2F&files=original1.tif");
-			//"https://cgcweb.med.tu-dresden.de/cloud/index.php/s/G2ML3C6yYtnZW82/download?path=%2F&files=original2.tif");
-				"/home/arzt/Desktop/original1.tif");
-			//"/home/mats/Dokumente/postdoc/conferences/fiji_hackathon_dd2019/project_BayesImaging/sampledata/1h+S7_und_S8_tiff+S7+S7_NaCl+/original1.tif");
-			//"https://cgcweb.med.tu-dresden.de/cloud/index.php/s/G2ML3C6yYtnZW82/download?path=%2Fbsp3&files=nativ.tif");
+			// "https://imagej.nih.gov/ij/images/blobs.gif");
+			// "https://cgcweb.med.tu-dresden.de/cloud/index.php/s/G2ML3C6yYtnZW82/download?path=%2F&files=original1.tif");
+			// "https://cgcweb.med.tu-dresden.de/cloud/index.php/s/G2ML3C6yYtnZW82/download?path=%2F&files=original2.tif");
+			"/home/arzt/Desktop/original1.tif");
+		// "/home/mats/Dokumente/postdoc/conferences/fiji_hackathon_dd2019/project_BayesImaging/sampledata/1h+S7_und_S8_tiff+S7+S7_NaCl+/original1.tif");
+		// "https://cgcweb.med.tu-dresden.de/cloud/index.php/s/G2ML3C6yYtnZW82/download?path=%2Fbsp3&files=nativ.tif");
 		// create empty labeling with a background label and the same size as the
 		// image
 		Labeling labeling = Labeling.createEmpty(Arrays.asList("background"),
@@ -61,8 +61,6 @@ public class MatsDemo1 {
 		// serializer.save(labeling, "some_file.labeling");
 		// Labeling labeling2 = serializer.open("some_file.labeling");
 
-
-
 		/*START MATS PART HERE:
 		* I am convinced this can be done better, but I am not a professional programmer.
 		* What follows here is the an implementation in the RadFriends algorithm.
@@ -72,9 +70,9 @@ public class MatsDemo1 {
 		BiisSegmenter segmenter = new BiisSegmenter();
 		ImagePlus pgi = segmenter.run(image, manual_segmented_image);
 
-		BdvStackSource< ? > handle = BdvFunctions.show(VirtualStackAdapter.wrap(
-				image), image.getTitle(), BdvOptions.options().is2D());
+		BdvStackSource<?> handle = BdvFunctions.show(VirtualStackAdapter.wrap(
+			image), image.getTitle(), BdvOptions.options().is2D());
 		BdvFunctions.show(VirtualStackAdapter.wrap(pgi), image.getTitle(),
-				BdvOptions.options().addTo(handle.getBdvHandle())).setColor(new ARGBType(0x770000));
+			BdvOptions.options().addTo(handle.getBdvHandle())).setColor(new ARGBType(0x770000));
 	}
 }

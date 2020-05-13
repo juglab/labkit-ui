@@ -1,3 +1,4 @@
+
 package demo.mats_1;
 
 public interface OptimizationProblem {
