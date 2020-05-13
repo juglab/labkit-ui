@@ -1,10 +1,10 @@
 
 package net.imglib2.labkit.segmentation.weka;
 
-import net.imglib2.trainable_segmention.gui.FeatureSettingsGui;
-import net.imglib2.trainable_segmention.pixel_feature.filter.GroupedFeatures;
-import net.imglib2.trainable_segmention.pixel_feature.settings.FeatureSettings;
-import net.imglib2.trainable_segmention.pixel_feature.settings.GlobalSettings;
+import net.imglib2.trainable_segmentation.gui.FeatureSettingsUI;
+import net.imglib2.trainable_segmentation.pixel_feature.filter.GroupedFeatures;
+import net.imglib2.trainable_segmentation.pixel_feature.settings.FeatureSettings;
+import net.imglib2.trainable_segmentation.pixel_feature.settings.GlobalSettings;
 import net.miginfocom.swing.MigLayout;
 import org.scijava.Context;
 
@@ -63,17 +63,18 @@ class TrainableSegmentationSettingsDialog {
 		JPanel dialogContent = new JPanel();
 		dialogContent.setLayout(new MigLayout("insets 0, gap 0", "[grow]", "[][grow]"));
 		JCheckBox gpuCheckBox = initUseGpuCheckBox(dialogContent);
-		dialogContent.add(new FeatureSettingsGui(context, featureSettings).getComponent(), "grow");
+		FeatureSettingsUI featureSettingsUI = new FeatureSettingsUI(context, featureSettings);
+		dialogContent.add(featureSettingsUI, "grow");
 		okClicked = showResizeableOkCancelDialog("Weka Trainable Segmentation Settings", dialogContent);
 		if (okClicked) {
-			featureSettings = new FeatureSettingsGui(context, featureSettings).get();
+			featureSettings = featureSettingsUI.get();
 			useGpu = gpuCheckBox.isSelected();
 		}
 	}
 
 	private JCheckBox initUseGpuCheckBox(JPanel dialogContent) {
 		JCheckBox gpuCheckBox = new JCheckBox(
-			"(experimental, should run on NVIDIA GPUs with 2 GB memory)");
+			"(experimental, requires CLIJ2 and NVIDIA GPU)");
 		JPanel topPanel = new JPanel();
 		topPanel.setLayout(new MigLayout("insets 0 0 10px 0", "[]20px[grow]"));
 		topPanel.add(new JLabel("Use GPU acceleration:"));

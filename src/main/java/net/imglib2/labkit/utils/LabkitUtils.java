@@ -13,7 +13,7 @@ import net.imglib2.converter.Converters;
 import net.imglib2.img.Img;
 import net.imglib2.img.array.ArrayImgs;
 import net.imglib2.labkit.inputimage.ImgPlusViewsOld;
-import net.imglib2.trainable_segmention.RevampUtils;
+import net.imglib2.trainable_segmentation.RevampUtils;
 import net.imglib2.type.NativeType;
 import net.imglib2.type.numeric.ARGBType;
 import net.imglib2.type.numeric.IntegerType;

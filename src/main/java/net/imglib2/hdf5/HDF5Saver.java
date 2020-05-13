@@ -3,7 +3,6 @@ package net.imglib2.hdf5;
 
 import bdv.export.ExportMipmapInfo;
 import bdv.export.ProgressWriter;
-import bdv.export.ProgressWriterConsole;
 import bdv.export.ProposeMipmaps;
 import bdv.export.SubTaskProgressWriter;
 import bdv.export.WriteSequenceToHdf5;
@@ -27,7 +26,7 @@ import net.imglib2.Dimensions;
 import net.imglib2.RandomAccessibleInterval;
 import net.imglib2.converter.Converter;
 import net.imglib2.converter.Converters;
-import net.imglib2.trainable_segmention.RevampUtils;
+import net.imglib2.trainable_segmentation.RevampUtils;
 import net.imglib2.type.numeric.IntegerType;
 import net.imglib2.type.numeric.RealType;
 import net.imglib2.type.numeric.integer.UnsignedShortType;

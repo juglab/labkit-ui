@@ -116,11 +116,6 @@
 
 	<dependencies>
 		<dependency>
-			<groupId>com.miglayout</groupId>
-			<artifactId>miglayout</artifactId>
-			<classifier>swing</classifier>
-		</dependency>
-		<dependency>
 			<groupId>net.imagej</groupId>
 			<artifactId>imagej</artifactId>
 		</dependency>
@@ -139,7 +134,7 @@
 		<dependency>
 			<groupId>net.imglib2</groupId>
 			<artifactId>imglib2-trainable-segmentation</artifactId>
-			<version>0.1.3</version>
+			<version>0.1.4</version>
 		</dependency>
 		<dependency>
 			<groupId>net.imagej</groupId>
