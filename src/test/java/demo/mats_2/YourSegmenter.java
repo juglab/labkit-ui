@@ -1,6 +1,7 @@
 
 package demo.mats_2;
 
+import net.imagej.ImgPlus;
 import net.imglib2.Cursor;
 import net.imglib2.RandomAccessibleInterval;
 import net.imglib2.labkit.inputimage.InputImage;
@@ -38,13 +39,12 @@ class YourSegmenter implements Segmenter {
 	 * This method is called, when the user click on train (the little play button
 	 * like triangle)
 	 *
-	 * @param data A list of pairs. Each pair, is a combination of: 1. An image to
-	 *          be used for training together. 2. The "drawing" made by the user.
+	 * @param trainingData A list of pairs. Each pair, is a combination of: 1. An
+	 *          image to be used for training together. 2. The "drawing" made by the
+	 *          user.
 	 */
 	@Override
-	public void train(
-		List<Pair<? extends RandomAccessibleInterval<?>, ? extends Labeling>> data)
-	{
+	public void train(List<Pair<ImgPlus<?>, Labeling>> trainingData) {
 		System.out.println("MySegmenter.train(...) was called.");
 
 		//// The following lines will show the training data, (if you uncomment
@@ -68,11 +68,12 @@ class YourSegmenter implements Segmenter {
 	 * This method is supposed to calculate the automatic segmentation.
 	 *
 	 * @param image The image to be segmented.
-	 * @param outputSegmentation The segmentation result needs to be written to
-	 *          this image.
+	 * @param outputSegmentation The segmentation result needs to be written to this
+	 *          image.
 	 */
+
 	@Override
-	public void segment(RandomAccessibleInterval<?> image,
+	public void segment(ImgPlus<?> image,
 		RandomAccessibleInterval<? extends IntegerType<?>> outputSegmentation)
 	{
 		System.out.println("MySegmenter.segment(...) was called.");
@@ -105,7 +106,7 @@ class YourSegmenter implements Segmenter {
 	}
 
 	@Override
-	public void predict(RandomAccessibleInterval<?> image,
+	public void predict(ImgPlus<?> image,
 		RandomAccessibleInterval<? extends RealType<?>> outputProbabilityMap)
 	{
 		// not needed
