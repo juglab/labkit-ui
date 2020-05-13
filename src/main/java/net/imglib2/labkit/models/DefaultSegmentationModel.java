@@ -1,9 +1,12 @@
 
 package net.imglib2.labkit.models;
 
+import net.imagej.ImgPlus;
+import net.imagej.axis.Axes;
 import net.imglib2.RandomAccessibleInterval;
 import net.imglib2.img.cell.CellGrid;
 import net.imglib2.img.cell.CellImgFactory;
+import net.imglib2.labkit.inputimage.ImgPlusViewsOld;
 import net.imglib2.labkit.inputimage.InputImage;
 import net.imglib2.labkit.labeling.Labeling;
 import net.imglib2.labkit.segmentation.Segmenter;
@@ -11,13 +14,14 @@ import net.imglib2.labkit.segmentation.weka.TimeSeriesSegmenter;
 import net.imglib2.labkit.segmentation.weka.TrainableSegmentationSegmenter;
 import net.imglib2.labkit.utils.LabkitUtils;
 import net.imglib2.labkit.utils.Notifier;
-import net.imglib2.labkit.utils.ParallelUtils;
 import net.imglib2.labkit.utils.progress.SwingProgressWriter;
 import net.imglib2.realtransform.AffineTransform3D;
 import net.imglib2.labkit.utils.DimensionUtils;
 import net.imglib2.type.NativeType;
 import net.imglib2.type.numeric.IntegerType;
+import net.imglib2.type.numeric.NumericType;
 import net.imglib2.type.numeric.real.FloatType;
+import net.imglib2.util.Pair;
 import net.imglib2.util.ValuePair;
 import org.scijava.Context;
 
@@ -43,7 +47,7 @@ public class DefaultSegmentationModel implements SegmentationModel,
 	private final ImageLabelingModel imageLabelingModel;
 	private final Holder<SegmentationItem> selectedSegmenter;
 	private final List<SegmentationItem> segmenters = new ArrayList<>();
-	private final RandomAccessibleInterval<?> compatibleImage;
+	private final ImgPlus<?> compatibleImage;
 	private final CellGrid grid;
 	private final Holder<Boolean> segmentationVisibility = new DefaultHolder<>(
 		true);
@@ -60,21 +64,22 @@ public class DefaultSegmentationModel implements SegmentationModel,
 		this.context = context;
 		this.inputImage = inputImage;
 		this.segmenterFactory = segmenterFactory;
+		ImgPlus<? extends NumericType<?>> image = inputImage.imageForSegmentation();
+		ImgPlus<? extends NumericType<?>> intervalWithoutChannels = ImgPlusViewsOld.hyperSlice(image,
+			Axes.CHANNEL, 0);
 		Labeling labeling = Labeling.createEmpty(Arrays.asList("background",
-			"foreground"), inputImage.interval());
+			"foreground"), intervalWithoutChannels);
 		this.imageLabelingModel = new ImageLabelingModel(inputImage.showable(),
-			labeling, inputImage.isTimeSeries(), inputImage
-				.getDefaultLabelingFilename());
-		this.compatibleImage = inputImage.imageForSegmentation();
-		this.grid = LabkitUtils.suggestGrid(inputImage.interval(),
-			imageLabelingModel.isTimeSeries());
+			labeling, ImgPlusViewsOld.hasAxis(image, Axes.TIME), inputImage.getDefaultLabelingFilename());
+		this.compatibleImage = image;
+		this.grid = LabkitUtils.suggestGrid(image);
 		this.selectedSegmenter = new DefaultHolder<>(addSegmenter());
 	}
 
 	private Segmenter initClassifier() {
 		Segmenter segmenter = segmenterFactory.apply(context, inputImage);
-		return inputImage.isTimeSeries() ? new TimeSeriesSegmenter(segmenter)
-			: segmenter;
+		return ImgPlusViewsOld.hasAxis(inputImage.imageForSegmentation(), Axes.TIME)
+			? new TimeSeriesSegmenter(segmenter) : segmenter;
 	}
 
 	public Context context() {
@@ -92,7 +97,7 @@ public class DefaultSegmentationModel implements SegmentationModel,
 	}
 
 	@Override
-	public RandomAccessibleInterval<?> image() {
+	public ImgPlus<?> image() {
 		return compatibleImage;
 	}
 
@@ -133,18 +138,20 @@ public class DefaultSegmentationModel implements SegmentationModel,
 		progressWriter.setProgressBarVisible(false);
 		progressWriter.setDetailsVisible(false);
 		try {
-			item.train(Collections.singletonList(new ValuePair<>(image(),
-				labeling())));
+			List<Pair<ImgPlus<?>, Labeling>> trainingData =
+				Collections.singletonList(new ValuePair<>(image(), labeling()));
+			item.train(trainingData);
 		}
 		catch (CancellationException e) {
 			progressWriter.setVisible(false);
 			JOptionPane.showMessageDialog(null, e.getMessage(), "Training Cancelled",
 				JOptionPane.PLAIN_MESSAGE);
 		}
-		catch (Exception e) {
+		catch (Throwable e) {
 			progressWriter.setVisible(false);
 			JOptionPane.showMessageDialog(null, e.toString(), "Training Failed",
 				JOptionPane.WARNING_MESSAGE);
+			e.printStackTrace();
 		}
 		finally {
 			progressWriter.setVisible(false);
@@ -178,7 +185,7 @@ public class DefaultSegmentationModel implements SegmentationModel,
 	public <T extends IntegerType<T> & NativeType<T>>
 		List<RandomAccessibleInterval<T>> getSegmentations(T type)
 	{
-		RandomAccessibleInterval<?> image = image();
+		ImgPlus<?> image = image();
 		Stream<Segmenter> trainedSegmenters = getTrainedSegmenters();
 		return trainedSegmenters.map(segmenter -> {
 			RandomAccessibleInterval<T> labels = new CellImgFactory<>(type).create(
@@ -189,7 +196,7 @@ public class DefaultSegmentationModel implements SegmentationModel,
 	}
 
 	public List<RandomAccessibleInterval<FloatType>> getPredictions() {
-		RandomAccessibleInterval<?> image = image();
+		ImgPlus<?> image = image();
 		Stream<Segmenter> trainedSegmenters = getTrainedSegmenters();
 		return trainedSegmenters.map(segmenter -> {
 			int numberOfClasses = segmenter.classNames().size();

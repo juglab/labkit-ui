@@ -2,9 +2,11 @@
 package net.imglib2.labkit.segmentation.weka;
 
 import hr.irb.fastRandomForest.FastRandomForest;
-import net.imagej.ops.OpEnvironment;
-import net.imagej.ops.OpService;
+import net.imagej.ImgPlus;
+import net.imagej.axis.Axes;
+import net.imagej.axis.AxisType;
 import net.imglib2.Cursor;
+import net.imglib2.Interval;
 import net.imglib2.RandomAccess;
 import net.imglib2.RandomAccessible;
 import net.imglib2.RandomAccessibleInterval;
@@ -13,33 +15,32 @@ import net.imglib2.cache.img.DiskCachedCellImgFactory;
 import net.imglib2.cache.img.DiskCachedCellImgOptions;
 import net.imglib2.img.Img;
 import net.imglib2.img.cell.CellGrid;
+import net.imglib2.labkit.inputimage.ImgPlusViewsOld;
 import net.imglib2.labkit.labeling.Label;
 import net.imglib2.labkit.segmentation.Segmenter;
 import net.imglib2.labkit.inputimage.InputImage;
 import net.imglib2.labkit.labeling.Labeling;
-import net.imglib2.labkit.utils.CheckedExceptionUtils;
 import net.imglib2.labkit.utils.LabkitUtils;
 import net.imglib2.roi.labeling.LabelingType;
 import net.imglib2.sparse.SparseRandomAccessIntType;
-import net.imglib2.labkit.utils.DimensionUtils;
-import net.imglib2.trainable_segmention.classification.Training;
-import net.imglib2.trainable_segmention.gson.GsonUtils;
-import net.imglib2.trainable_segmention.pixel_feature.calculator.FeatureCalculator;
-import net.imglib2.trainable_segmention.pixel_feature.filter.GroupedFeatures;
-import net.imglib2.trainable_segmention.pixel_feature.filter.SingleFeatures;
-import net.imglib2.trainable_segmention.pixel_feature.settings.ChannelSetting;
-import net.imglib2.trainable_segmention.pixel_feature.settings.FeatureSettings;
-import net.imglib2.trainable_segmention.pixel_feature.settings.GlobalSettings;
+import net.imglib2.trainable_segmentation.classification.Training;
+import net.imglib2.trainable_segmentation.gson.GsonUtils;
+import net.imglib2.trainable_segmentation.pixel_feature.calculator.FeatureCalculator;
+import net.imglib2.trainable_segmentation.pixel_feature.filter.GroupedFeatures;
+import net.imglib2.trainable_segmentation.pixel_feature.filter.SingleFeatures;
+import net.imglib2.trainable_segmentation.pixel_feature.settings.ChannelSetting;
+import net.imglib2.trainable_segmentation.pixel_feature.settings.FeatureSettings;
+import net.imglib2.trainable_segmentation.pixel_feature.settings.GlobalSettings;
 import net.imglib2.type.numeric.ARGBType;
 import net.imglib2.type.numeric.IntegerType;
 import net.imglib2.type.numeric.RealType;
 import net.imglib2.type.numeric.integer.IntType;
 import net.imglib2.type.numeric.real.FloatType;
+import net.imglib2.util.Intervals;
 import net.imglib2.util.Pair;
 import net.imglib2.view.Views;
 import net.imglib2.view.composite.Composite;
 import org.scijava.Context;
-import weka.classifiers.AbstractClassifier;
 import weka.core.WekaException;
 
 import javax.swing.*;
@@ -56,11 +57,11 @@ public class TrainableSegmentationSegmenter implements Segmenter {
 
 	private final Context context;
 
-	private weka.classifiers.Classifier initialWekaClassifier;
+	private boolean useGpu;
 
 	private FeatureSettings featureSettings;
 
-	private net.imglib2.trainable_segmention.classification.Segmenter segmenter;
+	private net.imglib2.trainable_segmentation.classification.Segmenter segmenter;
 
 	@Override
 	public List<String> classNames() {
@@ -71,75 +72,81 @@ public class TrainableSegmentationSegmenter implements Segmenter {
 	public void editSettings(JFrame dialogParent) {
 		TrainableSegmentationSettingsDialog dialog =
 			new TrainableSegmentationSettingsDialog(context, dialogParent,
-				initialWekaClassifier, featureSettings);
+				useGpu, featureSettings);
 		dialog.show();
 		if (dialog.okClicked()) {
 			featureSettings = dialog.featureSettings();
-			initialWekaClassifier = dialog.wekaClassifier();
+			useGpu = dialog.useGpu();
+			if (segmenter != null)
+				segmenter.setUseGpu(useGpu);
 		}
 	}
 
 	public static ChannelSetting getChannelSetting(InputImage inputImage) {
-		RandomAccessibleInterval<?> image = inputImage.imageForSegmentation();
-		if (inputImage.isMultiChannel()) return ChannelSetting.multiple((int) image
-			.dimension(image.numDimensions() - 1));
-		return image.randomAccess().get() instanceof ARGBType ? ChannelSetting.RGB
-			: ChannelSetting.SINGLE;
+		ImgPlus<?> image = inputImage.imageForSegmentation();
+		if (ImgPlusViewsOld.hasAxis(image, Axes.CHANNEL))
+			return ChannelSetting.multiple((int) ImgPlusViewsOld.getDimension(image, Axes.CHANNEL));
+		return image.firstElement() instanceof ARGBType ? ChannelSetting.RGB : ChannelSetting.SINGLE;
 	}
 
 	public TrainableSegmentationSegmenter(Context context,
 		InputImage inputImage)
 	{
 		final ChannelSetting channelSetting = getChannelSetting(inputImage);
-		GlobalSettings globalSettings = new GlobalSettings(channelSetting,
-			inputImage.getSpatialDimensions(), 1.0, 8.0, 1.0);
+		GlobalSettings globalSettings = GlobalSettings.default2d()
+			.dimensions(ImgPlusViewsOld.numberOfSpatialDimensions(inputImage.imageForSegmentation()))
+			.channels(channelSetting)
+			.sigmaRange(1.0, 8.0)
+			.pixelSize(getPixelSize(inputImage.imageForSegmentation()))
+			.build();
 		this.context = context;
-		this.initialWekaClassifier = new FastRandomForest();
-		this.featureSettings = new FeatureSettings(globalSettings, SingleFeatures
-			.identity(), GroupedFeatures.differenceOfGaussians());
+		this.useGpu = false;
+		this.featureSettings = new FeatureSettings(globalSettings,
+			SingleFeatures.identity(),
+			GroupedFeatures.gauss(),
+			GroupedFeatures.differenceOfGaussians(),
+			GroupedFeatures.gradient(),
+			GroupedFeatures.laplacian(),
+			GroupedFeatures.hessian(),
+			GroupedFeatures.structureTensor());
 		this.segmenter = null;
 	}
 
 	public TrainableSegmentationSegmenter(Context context) {
-		GlobalSettings globalSettings = GlobalSettings.default3dSettings();
+		GlobalSettings globalSettings = GlobalSettings.default3d().build();
 		this.context = context;
-		this.initialWekaClassifier = new FastRandomForest();
+		this.useGpu = false;
 		this.featureSettings = new FeatureSettings(globalSettings, SingleFeatures
 			.identity());
 		this.segmenter = null;
 	}
 
 	@Override
-	public void segment(RandomAccessibleInterval<?> image,
+	public void segment(ImgPlus<?> image,
 		RandomAccessibleInterval<? extends IntegerType<?>> labels)
 	{
 		segmenter.segment(labels, Views.extendBorder(image));
 	}
 
 	@Override
-	public void predict(RandomAccessibleInterval<?> image,
+	public void predict(ImgPlus<?> image,
 		RandomAccessibleInterval<? extends RealType<?>> prediction)
 	{
-		segmenter.predict(Views.collapse(prediction), Views.extendBorder(image));
+		segmenter.predict(prediction, Views.extendBorder(image));
 	}
 
 	@Override
-	public void train(
-		List<Pair<? extends RandomAccessibleInterval<?>, ? extends Labeling>> trainingData)
-	{
+	public void train(List<Pair<ImgPlus<?>, Labeling>> trainingData) {
 		try {
 			List<String> classes = collectLabels(trainingData.stream().map(Pair::getB)
 				.collect(Collectors.toList()));
-			weka.classifiers.Classifier wekaClassifier = CheckedExceptionUtils.run(
-				() -> AbstractClassifier.makeCopy(this.initialWekaClassifier));
-			OpEnvironment ops = context.service(OpService.class);
-			net.imglib2.trainable_segmention.classification.Segmenter segmenter =
-				new net.imglib2.trainable_segmention.classification.Segmenter(ops,
-					classes, featureSettings, wekaClassifier);
+			net.imglib2.trainable_segmentation.classification.Segmenter segmenter =
+				new net.imglib2.trainable_segmentation.classification.Segmenter(context,
+					classes, featureSettings, new FastRandomForest());
+			segmenter.setUseGpu(useGpu);
 			Training training = segmenter.training();
 			for (Pair<? extends RandomAccessibleInterval<?>, ? extends Labeling> pair : trainingData)
-				train(training, classes, pair.getB(), pair.getA(), segmenter
-					.features());
+				train(training, classes, pair.getB(), pair.getA(), segmenter.features());
 			training.train();
 			this.segmenter = segmenter;
 		}
@@ -173,8 +180,15 @@ public class TrainableSegmentationSegmenter implements Segmenter {
 	private static Img<FloatType> cachedFeatureBlock(FeatureCalculator feature,
 		RandomAccessibleInterval<?> image)
 	{
-		return cachedFeatureBlock(feature, Views.extendBorder(image), LabkitUtils
-			.suggestGrid(feature.outputIntervalFromInput(image), false));
+		return cachedFeatureBlock(feature, Views.extendBorder(image),
+			suggestGrid(feature.outputIntervalFromInput(image)));
+	}
+
+	private static CellGrid suggestGrid(Interval interval) {
+		long[] imageDimensions = Intervals.dimensionsAsLongArray(interval);
+		int[] cellDimensions = interval.numDimensions() == 2 ? new int[] { 128, 128 } : new int[] { 64,
+			64, 64 };
+		return new CellGrid(imageDimensions, cellDimensions);
 	}
 
 	private static Img<FloatType> cachedFeatureBlock(FeatureCalculator feature,
@@ -191,7 +205,7 @@ public class TrainableSegmentationSegmenter implements Segmenter {
 		final DiskCachedCellImgFactory<FloatType> featureFactory =
 			new DiskCachedCellImgFactory<>(new FloatType(), featureOpts);
 		CellLoader<FloatType> loader = target -> feature.apply(extendedOriginal,
-			DimensionUtils.slices(target));
+			target);
 		return featureFactory.create(dimensions, loader);
 	}
 
@@ -245,8 +259,29 @@ public class TrainableSegmentationSegmenter implements Segmenter {
 
 	@Override
 	public void openModel(final String path) {
-		segmenter = net.imglib2.trainable_segmention.classification.Segmenter
-			.fromJson(context.service(OpService.class), GsonUtils.read(path));
+		segmenter = net.imglib2.trainable_segmentation.classification.Segmenter
+			.fromJson(context, GsonUtils.read(path));
 		featureSettings = segmenter.features().settings();
 	}
+
+	// -- Helper methods --
+
+	private static List<Double> getPixelSize(ImgPlus<?> image) {
+		List<Double> pixelSize = new ArrayList<>();
+		double x = getPixelSize(image, Axes.X);
+		double y = getPixelSize(image, Axes.Y);
+		pixelSize.add(1.0);
+		pixelSize.add(y / x);
+		if (ImgPlusViewsOld.hasAxis(image, Axes.Z)) {
+			double z = getPixelSize(image, Axes.Z);
+			pixelSize.add(z / x);
+		}
+		return pixelSize;
+	}
+
+	private static double getPixelSize(ImgPlus<?> image, AxisType axis) {
+		double scale = image.averageScale(image.dimensionIndex(axis));
+		return Double.isNaN(scale) || scale == 0 ? 1.0 : scale;
+	}
+
 }

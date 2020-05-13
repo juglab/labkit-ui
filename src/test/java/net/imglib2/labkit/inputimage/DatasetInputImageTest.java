@@ -11,6 +11,7 @@ import net.imglib2.RandomAccessibleInterval;
 import net.imglib2.img.Img;
 import net.imglib2.img.array.ArrayImgs;
 import net.imglib2.labkit.bdv.BdvShowable;
+import net.imglib2.test.ImgLib2Assert;
 import net.imglib2.type.numeric.RealType;
 import net.imglib2.type.numeric.integer.UnsignedByteType;
 import net.imglib2.util.Intervals;
@@ -29,12 +30,6 @@ public class DatasetInputImageTest {
 	DatasetInputImage inputImage = inputImage5d();
 
 	@Test
-	public void testInterval() {
-		Interval result = inputImage.interval();
-		assertTrue(Intervals.equals(new FinalInterval(4, 5, 2, 6), result));
-	}
-
-	@Test
 	public void testImageForSegmentation() {
 		RandomAccessibleInterval<?> result = inputImage.imageForSegmentation();
 		assertTrue(Util.getTypeFromInterval(result) instanceof RealType);
@@ -43,32 +38,14 @@ public class DatasetInputImageTest {
 
 	@Test
 	public void testAxes() {
-		List<CalibratedAxis> result = inputImage.axes();
+		List<CalibratedAxis> result = ImgPlusViewsOld.getCalibratedAxes(inputImage
+			.imageForSegmentation());
 		assertEquals(Axes.X, result.get(0).type());
 		assertEquals(Axes.Y, result.get(1).type());
 		assertEquals(Axes.Z, result.get(2).type());
-		assertEquals(Axes.TIME, result.get(3).type());
-		assertEquals(4, result.size());
-	}
-
-	@Test
-	public void testIsTimeSeries() {
-		assertTrue(inputImage.isTimeSeries());
-		DatasetInputImage input2d = new DatasetInputImage(new ImgPlus<>(ArrayImgs
-			.unsignedBytes(2, 2)));
-		assertFalse(input2d.isTimeSeries());
-	}
-
-	@Test
-	public void testIsMultiChannel() {
-		assertTrue(inputImage.isMultiChannel());
-		DatasetInputImage input2d = new DatasetInputImage(new ImgPlus<>(ArrayImgs
-			.unsignedBytes(2, 2)));
-		assertFalse(input2d.isMultiChannel());
-		DatasetInputImage color = new DatasetInputImage(new ImgPlus<>(ArrayImgs
-			.unsignedBytes(2, 2, 3), "", new AxisType[] { Axes.X, Axes.Y,
-				Axes.CHANNEL }));
-		assertFalse(color.isMultiChannel());
+		assertEquals(Axes.CHANNEL, result.get(3).type());
+		assertEquals(Axes.TIME, result.get(4).type());
+		assertEquals(5, result.size());
 	}
 
 	private static DatasetInputImage inputImage5d() {

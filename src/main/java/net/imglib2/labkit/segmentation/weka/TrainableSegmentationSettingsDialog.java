@@ -1,15 +1,12 @@
 
 package net.imglib2.labkit.segmentation.weka;
 
-import hr.irb.fastRandomForest.FastRandomForest;
-import net.imglib2.trainable_segmention.gui.FeatureSettingsGui;
-import net.imglib2.trainable_segmention.pixel_feature.filter.GroupedFeatures;
-import net.imglib2.trainable_segmention.pixel_feature.settings.FeatureSettings;
-import net.imglib2.trainable_segmention.pixel_feature.settings.GlobalSettings;
+import net.imglib2.trainable_segmentation.gui.FeatureSettingsUI;
+import net.imglib2.trainable_segmentation.pixel_feature.filter.GroupedFeatures;
+import net.imglib2.trainable_segmentation.pixel_feature.settings.FeatureSettings;
+import net.imglib2.trainable_segmentation.pixel_feature.settings.GlobalSettings;
 import net.miginfocom.swing.MigLayout;
 import org.scijava.Context;
-import weka.classifiers.Classifier;
-import weka.gui.GenericObjectEditor;
 
 import javax.swing.*;
 import java.awt.*;
@@ -20,39 +17,38 @@ class TrainableSegmentationSettingsDialog {
 
 	private final JFrame dialogParent;
 
-	private Classifier wekaClassifier;
+	private boolean useGpu;
 
 	private FeatureSettings featureSettings;
 
-	boolean okClicked = false;
+	private boolean okClicked = false;
 
 	public TrainableSegmentationSettingsDialog(Context context,
-		JFrame dialogParent, Classifier defaultWekaClassifier,
+		JFrame dialogParent, boolean useGpu,
 		FeatureSettings defaultFeatureSettings)
 	{
 		this.context = context;
 		this.dialogParent = dialogParent;
-		this.wekaClassifier = defaultWekaClassifier;
+		this.useGpu = useGpu;
 		this.featureSettings = defaultFeatureSettings;
 	}
 
 	public static void main(String... args) {
-		Classifier defaultWekaClassifier = new FastRandomForest();
 		FeatureSettings defaultFeatureSettings = new FeatureSettings(GlobalSettings
-			.default2dSettings(), GroupedFeatures.gauss());
+			.default2d().build(), GroupedFeatures.gauss());
 		TrainableSegmentationSettingsDialog dialog =
 			new TrainableSegmentationSettingsDialog(new Context(), null,
-				defaultWekaClassifier, defaultFeatureSettings);
+				true, defaultFeatureSettings);
 		dialog.show();
 		if (dialog.okClicked()) {
 			dialog.featureSettings().features().forEach(setting -> System.out.println(
 				setting.getName()));
-			System.out.println(dialog.wekaClassifier());
+			System.out.println("Use Gpu: " + dialog.useGpu());
 		}
 	}
 
-	public Classifier wekaClassifier() {
-		return wekaClassifier;
+	public boolean useGpu() {
+		return useGpu;
 	}
 
 	public FeatureSettings featureSettings() {
@@ -64,25 +60,28 @@ class TrainableSegmentationSettingsDialog {
 	}
 
 	public void show() {
-		WekaClassifierPanel wekaPanel = new WekaClassifierPanel(wekaClassifier);
-		FeatureSettingsGui featurePanel = new FeatureSettingsGui(context,
-			featureSettings);
-		JTabbedPane tabs = new JTabbedPane();
-		tabs.addTab("Classification Algorithm", wekaPanel.getComponent());
-		tabs.addTab("Features", addFrame("", featurePanel.getComponent()));
-		okClicked = showResizeableOkCancelDialog(
-			"Weka Trainable Segmentation Settings", addFrame("insets 0", tabs));
+		JPanel dialogContent = new JPanel();
+		dialogContent.setLayout(new MigLayout("insets 0, gap 0", "[grow]", "[][grow]"));
+		JCheckBox gpuCheckBox = initUseGpuCheckBox(dialogContent);
+		FeatureSettingsUI featureSettingsUI = new FeatureSettingsUI(context, featureSettings);
+		dialogContent.add(featureSettingsUI, "grow");
+		okClicked = showResizeableOkCancelDialog("Weka Trainable Segmentation Settings", dialogContent);
 		if (okClicked) {
-			featureSettings = featurePanel.get();
-			wekaClassifier = wekaPanel.get();
+			featureSettings = featureSettingsUI.get();
+			useGpu = gpuCheckBox.isSelected();
 		}
 	}
 
-	private JComponent addFrame(String contraints, JComponent component) {
-		JPanel panel = new JPanel();
-		panel.setLayout(new MigLayout(contraints, "[grow]", "[grow]"));
-		panel.add(component, "grow");
-		return panel;
+	private JCheckBox initUseGpuCheckBox(JPanel dialogContent) {
+		JCheckBox gpuCheckBox = new JCheckBox(
+			"(experimental, requires CLIJ2 and NVIDIA GPU)");
+		JPanel topPanel = new JPanel();
+		topPanel.setLayout(new MigLayout("insets 0 0 10px 0", "[]20px[grow]"));
+		topPanel.add(new JLabel("Use GPU acceleration:"));
+		topPanel.add(gpuCheckBox);
+		gpuCheckBox.setSelected(useGpu);
+		dialogContent.add(topPanel, "grow, wrap");
+		return gpuCheckBox;
 	}
 
 	private boolean showResizeableOkCancelDialog(String title,
@@ -103,34 +102,4 @@ class TrainableSegmentationSettingsDialog {
 		dialog.setVisible(true);
 		return optionPane.getValue().equals(JOptionPane.OK_OPTION);
 	}
-
-	private static class WekaClassifierPanel {
-
-		private final JPanel panel = new JPanel();
-
-		private final JCheckBox checkBox;
-
-		private final GenericObjectEditor editor;
-
-		WekaClassifierPanel(Classifier initialValue) {
-			checkBox = new JCheckBox("FastRandomForest");
-			editor = new GenericObjectEditor();
-			editor.setClassType(Classifier.class);
-			if (initialValue instanceof FastRandomForest) checkBox.setSelected(true);
-			else editor.setValue(initialValue);
-			panel.setLayout(new MigLayout());
-			panel.add(checkBox, "wrap");
-			panel.add(editor.getCustomPanel());
-		}
-
-		public JComponent getComponent() {
-			return panel;
-		}
-
-		public Classifier get() {
-			return checkBox.isSelected() ? new FastRandomForest()
-				: (Classifier) editor.getValue();
-		}
-	}
-
 }

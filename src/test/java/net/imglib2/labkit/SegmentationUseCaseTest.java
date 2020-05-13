@@ -12,7 +12,6 @@ import net.imglib2.img.Img;
 import net.imglib2.img.array.ArrayImgs;
 import net.imglib2.labkit.bdv.BdvShowable;
 import net.imglib2.labkit.inputimage.DatasetInputImage;
-import net.imglib2.labkit.inputimage.DefaultInputImage;
 import net.imglib2.labkit.inputimage.InputImage;
 import net.imglib2.labkit.labeling.Label;
 import net.imglib2.labkit.labeling.Labeling;
@@ -24,6 +23,7 @@ import net.imglib2.roi.labeling.LabelingType;
 import net.imglib2.type.numeric.integer.ShortType;
 import net.imglib2.type.numeric.integer.UnsignedByteType;
 import net.imglib2.util.Intervals;
+import net.imglib2.util.Pair;
 import net.imglib2.util.ValuePair;
 import net.imglib2.view.Views;
 import org.junit.Test;
@@ -34,7 +34,6 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Set;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
@@ -43,9 +42,9 @@ public class SegmentationUseCaseTest {
 
 	@Test
 	public void test() {
-		Img<UnsignedByteType> image = ArrayImgs.unsignedBytes(new byte[] { 1, 1, 2,
-			2 }, 2, 2);
-		InputImage inputImage = new DefaultInputImage(image);
+		ImgPlus<UnsignedByteType> image = new ImgPlus<>(ArrayImgs.unsignedBytes(new byte[] { 1, 1, 2,
+			2 }, 2, 2));
+		InputImage inputImage = new DatasetInputImage(image);
 		DefaultSegmentationModel segmentationModel = new DefaultSegmentationModel(
 			inputImage, new Context());
 		addLabels(segmentationModel.imageLabelingModel());
@@ -85,7 +84,7 @@ public class SegmentationUseCaseTest {
 			.selectedSegmenter(), segmentationModel.segmentationVisibility());
 		assertEquals(2, layer.image().interval().numDimensions());
 		SegmentationItem segmenter = segmentationModel.segmenters().get(0);
-		segmenter.train(Collections.singletonList(new ValuePair<>(img,
+		segmenter.train(Collections.singletonList(new ValuePair<>(imgPlus,
 			segmentationModel.imageLabelingModel().labeling().get())));
 		RandomAccessibleInterval<ShortType> result = segmenter.results()
 			.segmentation();

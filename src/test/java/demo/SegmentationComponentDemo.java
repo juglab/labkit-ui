@@ -2,11 +2,13 @@
 package demo;
 
 import ij.ImagePlus;
+import net.imagej.ImgPlus;
 import net.imglib2.RandomAccessibleInterval;
 import net.imglib2.img.Img;
+import net.imglib2.img.VirtualStackAdapter;
 import net.imglib2.img.display.imagej.ImageJFunctions;
 import net.imglib2.labkit.SegmentationComponent;
-import net.imglib2.labkit.inputimage.DefaultInputImage;
+import net.imglib2.labkit.inputimage.DatasetInputImage;
 import net.imglib2.labkit.models.DefaultSegmentationModel;
 import net.imglib2.type.numeric.NumericType;
 import net.imglib2.type.numeric.integer.UnsignedByteType;
@@ -29,11 +31,10 @@ public class SegmentationComponentDemo {
 
 	private SegmentationComponentDemo() {
 		JFrame frame = setupFrame();
-		Img<? extends NumericType<?>> image = ImageJFunctions.wrap(new ImagePlus(
+		ImgPlus<?> image = VirtualStackAdapter.wrap(new ImagePlus(
 			"https://imagej.nih.gov/ij/images/FluorescentCells.jpg"));
 		Context context = new Context();
-		segmentationModel = new DefaultSegmentationModel(new DefaultInputImage(
-			image), context);
+		segmentationModel = new DefaultSegmentationModel(new DatasetInputImage(image), context);
 		segmenter = new SegmentationComponent(frame, segmentationModel, false);
 		frame.add(segmenter.getComponent());
 		frame.add(getBottomPanel(), BorderLayout.PAGE_END);

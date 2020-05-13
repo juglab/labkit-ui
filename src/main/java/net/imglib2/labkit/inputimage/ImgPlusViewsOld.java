@@ -8,6 +8,8 @@ import net.imagej.axis.CalibratedAxis;
 import net.imglib2.img.display.imagej.ImgPlusViews;
 
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
@@ -16,6 +18,7 @@ import java.util.function.Predicate;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
+import java.util.stream.LongStream;
 
 // TODO: make this avaiblable in imglib2
 public class ImgPlusViewsOld {
@@ -74,7 +77,7 @@ public class ImgPlusViewsOld {
 	}
 
 	// NB: Package-private to allow tests.
-	static List<AxisType> getAxes(final ImgPlus<?> in) {
+	public static List<AxisType> getAxes(final ImgPlus<?> in) {
 		return IntStream.range(0, in.numDimensions()).mapToObj(in::axis).map(
 			CalibratedAxis::type).collect(Collectors.toList());
 	}
@@ -96,4 +99,42 @@ public class ImgPlusViewsOld {
 		return in.stream().map(value -> predicate.test(value) ? replacements.get()
 			: value).collect(Collectors.toList());
 	}
+
+	public static boolean hasAxis(ImgPlus<?> image, AxisType axes) {
+		return image.dimensionIndex(axes) >= 0;
+	}
+
+	public static List<CalibratedAxis> getCalibratedAxes(ImgPlus<?> image) {
+		CalibratedAxis[] axes = new CalibratedAxis[image.numDimensions()];
+		image.axes(axes);
+		return Arrays.asList(axes);
+	}
+
+	public static long getDimension(ImgPlus<?> image, AxisType axis) {
+		return image.dimension(image.dimensionIndex(axis));
+	}
+
+	public static int numberOfSpatialDimensions(ImgPlus<?> imgPlus) {
+		int n = 0;
+		for (AxisType axes : getAxes(imgPlus))
+			if (axes.isSpatial())
+				n++;
+		return n;
+	}
+
+	public static <T> ImgPlus<T> hyperSlice(ImgPlus<T> image, AxisType axis, long position) {
+		int d = image.dimensionIndex(axis);
+		if (d < 0)
+			return image;
+		return ImgPlusViews.hyperSlice((ImgPlus) image, d, position);
+	}
+
+	public static <T> List<ImgPlus<?>> hyperSlices(ImgPlus<T> image, AxisType axis) {
+		int d = image.dimensionIndex(axis);
+		if (d < 0)
+			return Collections.singletonList(image);
+		return LongStream.rangeClosed(image.min(d), image.max(d)).mapToObj(position -> hyperSlice(image,
+			axis, position)).collect(Collectors.toList());
+	}
+
 }
