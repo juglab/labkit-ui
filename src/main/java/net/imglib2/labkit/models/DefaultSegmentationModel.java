@@ -48,7 +48,6 @@ public class DefaultSegmentationModel implements SegmentationModel,
 	private final Holder<SegmentationItem> selectedSegmenter;
 	private final List<SegmentationItem> segmenters = new ArrayList<>();
 	private final ImgPlus<?> compatibleImage;
-	private final CellGrid grid;
 	private final Holder<Boolean> segmentationVisibility = new DefaultHolder<>(
 		true);
 	private final Notifier listeners = new Notifier();
@@ -72,7 +71,6 @@ public class DefaultSegmentationModel implements SegmentationModel,
 		this.imageLabelingModel = new ImageLabelingModel(inputImage.showable(),
 			labeling, ImgPlusViewsOld.hasAxis(image, Axes.TIME), inputImage.getDefaultLabelingFilename());
 		this.compatibleImage = image;
-		this.grid = LabkitUtils.suggestGrid(image);
 		this.selectedSegmenter = new DefaultHolder<>(addSegmenter());
 	}
 
@@ -99,11 +97,6 @@ public class DefaultSegmentationModel implements SegmentationModel,
 	@Override
 	public ImgPlus<?> image() {
 		return compatibleImage;
-	}
-
-	@Override
-	public CellGrid grid() {
-		return grid;
 	}
 
 	@Override

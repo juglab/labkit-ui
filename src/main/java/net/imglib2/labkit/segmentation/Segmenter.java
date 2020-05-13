@@ -3,10 +3,8 @@ package net.imglib2.labkit.segmentation;
 
 import net.imagej.ImgPlus;
 import net.imglib2.RandomAccessibleInterval;
-import net.imglib2.labkit.utils.Notifier;
 import net.imglib2.labkit.labeling.Labeling;
 import net.imglib2.type.numeric.IntegerType;
-import net.imglib2.type.numeric.NumericType;
 import net.imglib2.type.numeric.RealType;
 import net.imglib2.util.Pair;
 
@@ -84,4 +82,6 @@ public interface Segmenter {
 	 * "foreground"]
 	 */
 	List<String> classNames();
+
+	int[] suggestCellSize(ImgPlus<?> image);
 }
