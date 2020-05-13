@@ -90,6 +90,11 @@ public class TestTimeSeriesSegmenter {
 		public List<String> classNames() {
 			return null;
 		}
+
+		@Override
+		public int[] suggestCellSize(ImgPlus<?> image) {
+			return new int[] { 255, 255 };
+		}
 	}
 
 }

@@ -45,6 +45,7 @@ import weka.core.WekaException;
 
 import javax.swing.*;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -264,6 +265,19 @@ public class TrainableSegmentationSegmenter implements Segmenter {
 		featureSettings = segmenter.features().settings();
 	}
 
+	@Override
+	public int[] suggestCellSize(ImgPlus<?> image) {
+		if (ImgPlusViewsOld.hasAxis(image, Axes.CHANNEL))
+			image = ImgPlusViewsOld.hyperSlice(image, Axes.CHANNEL, 0);
+		int spacialDimensions = ImgPlusViewsOld.numberOfSpatialDimensions(image);
+		int cellSize = spacialDimensions <= 2 ? 128 : 32;
+		if (useGpu)
+			cellSize *= 2;
+		int[] cellDimension = new int[spacialDimensions];
+		Arrays.fill(cellDimension, cellSize);
+		return cellDimension;
+	}
+
 	// -- Helper methods --
 
 	private static List<Double> getPixelSize(ImgPlus<?> image) {
@@ -283,5 +297,4 @@ public class TrainableSegmentationSegmenter implements Segmenter {
 		double scale = image.averageScale(image.dimensionIndex(axis));
 		return Double.isNaN(scale) || scale == 0 ? 1.0 : scale;
 	}
-
 }

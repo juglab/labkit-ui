@@ -131,4 +131,9 @@ class YourSegmenter implements Segmenter {
 	public List<String> classNames() {
 		return Arrays.asList("background", "foreground");
 	}
+
+	@Override
+	public int[] suggestCellSize(ImgPlus<?> image) {
+		return new int[] { Integer.MAX_VALUE, Integer.MAX_VALUE };
+	}
 }

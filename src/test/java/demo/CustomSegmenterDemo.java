@@ -145,6 +145,11 @@ public class CustomSegmenterDemo {
 		public List<String> classNames() {
 			return Arrays.asList("background", "foreground");
 		}
+
+		@Override
+		public int[] suggestCellSize(ImgPlus<?> image) {
+			return new int[] { 255, 255 };
+		}
 	}
 
 	private static class MeanCalculator {

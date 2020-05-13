@@ -15,8 +15,6 @@ public interface SegmentationModel {
 
 	ImgPlus<?> image();
 
-	CellGrid grid();
-
 	AffineTransform3D labelTransformation();
 
 	void trainSegmenter();
