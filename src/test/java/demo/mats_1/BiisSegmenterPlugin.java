@@ -1,17 +1,20 @@
 
-package demo.mats_2;
+package demo.mats_1;
 
+import ij.ImagePlus;
 import net.imagej.ImgPlus;
-import net.imglib2.Cursor;
 import net.imglib2.RandomAccessibleInterval;
+import net.imglib2.img.Img;
+import net.imglib2.img.display.imagej.ImageJFunctions;
 import net.imglib2.labkit.inputimage.InputImage;
 import net.imglib2.labkit.labeling.Labeling;
 import net.imglib2.labkit.segmentation.Segmenter;
+import net.imglib2.labkit.utils.Casts;
 import net.imglib2.type.numeric.IntegerType;
 import net.imglib2.type.numeric.RealType;
 import net.imglib2.util.Pair;
-import net.imglib2.view.Views;
 import org.scijava.Context;
+import preview.net.imglib2.loops.LoopBuilder;
 
 import javax.swing.*;
 import java.util.Arrays;
@@ -19,14 +22,15 @@ import java.util.List;
 
 /**
  * This class is supposed to show YOU how to implement a segmentation algorithm
- * such that it can be used within the Labkit UI. See {@link MatsDemo2} to run
+ * such that it can be used within the Labkit UI. See {@link BiisExample} to run
  * the demo.
  */
-class YourSegmenter implements Segmenter {
+class BiisSegmenterPlugin implements Segmenter {
 
+	private final BiisSegmenter biisSegmenter = new BiisSegmenter();
 	private boolean isTrained = false;
 
-	public YourSegmenter(final Context context, final InputImage inputImage) {
+	public BiisSegmenterPlugin(final Context context, final InputImage inputImage) {
 
 	}
 
@@ -45,22 +49,12 @@ class YourSegmenter implements Segmenter {
 	 */
 	@Override
 	public void train(List<Pair<ImgPlus<?>, Labeling>> trainingData) {
-		System.out.println("MySegmenter.train(...) was called.");
-
-		//// The following lines will show the training data, (if you uncomment
-		//// them)
-
-		// for(Pair<? extends RandomAccessibleInterval<?>, ? extends Labeling> pair
-		// : data) {
-		// ImagePlus originalImage =
-		// ImageJFunctions.wrap(Casts.unchecked(pair.getA()), "original image");
-		// originalImage.show();
-		// ImagePlus drawings =
-		// ImageJFunctions.wrap(Casts.unchecked(pair.getB().getIndexImg()),
-		// "drawings");
-		// drawings.show();
-		// }
-
+		Pair<? extends RandomAccessibleInterval<?>, ? extends Labeling> pair = trainingData.get(0);
+		ImagePlus originalImage = ImageJFunctions.wrap(Casts.unchecked(pair.getA()), "original image");
+		Labeling b = pair.getB();
+		ImagePlus drawings = ImageJFunctions.wrap(b.getRegion(b.getLabel("background")), "drawings");
+		drawings.setDisplayRange(0, 1);
+		biisSegmenter.train(originalImage, drawings);
 		isTrained = true;
 	}
 
@@ -76,33 +70,11 @@ class YourSegmenter implements Segmenter {
 	public void segment(ImgPlus<?> image,
 		RandomAccessibleInterval<? extends IntegerType<?>> outputSegmentation)
 	{
-		System.out.println("MySegmenter.segment(...) was called.");
-
-		//// The following lines will show the image if you uncomment them
-
-		// ImagePlus originalImage = ImageJFunctions.wrap(Casts.unchecked(image),
-		// "Method segment image parameter");
-		// originalImage.show();
-
-		drawCircle(outputSegmentation);
-	}
-
-	private void drawCircle(
-		RandomAccessibleInterval<? extends IntegerType<?>> outputSegmentation)
-	{
-		Cursor<? extends IntegerType<?>> cursor = Views.iterable(outputSegmentation)
-			.cursor();
-		while (cursor.hasNext()) {
-			cursor.fwd();
-			long x = cursor.getLongPosition(0);
-			long y = cursor.getLongPosition(1);
-			long radius = square(x - 100) + square(y - 100);
-			cursor.get().setInteger(radius < square(50) ? 1 : 0);
-		}
-	}
-
-	private static long square(long value) {
-		return value * value;
+		ImagePlus originalImage = ImageJFunctions.wrap(Casts.unchecked(image), "original image");
+		ImagePlus segmentation = biisSegmenter.apply(originalImage);
+		Img<? extends RealType<?>> result = ImageJFunctions.wrapReal(segmentation);
+		LoopBuilder.setImages(result, outputSegmentation).forEachPixel((i, o) -> o.setInteger(i
+			.getRealDouble() < 1 ? 0 : 1));
 	}
 
 	@Override
