@@ -48,8 +48,11 @@ public class SegmentationComponent implements AutoCloseable {
 		this.segmentationModel = segmentationModel;
 		labelingComponent = new BasicLabelingComponent(dialogBoxOwner,
 			segmentationModel.imageLabelingModel());
-		labelingComponent.addBdvLayer(new PredictionLayer(segmentationModel
-			.selectedSegmenter(), segmentationModel.segmentationVisibility()));
+		labelingComponent.addBdvLayer(new PredictionLayer(
+			segmentationModel.selectedSegmenter(),
+			segmentationModel.segmentationVisibility(),
+			segmentationModel.labelTransformation(),
+			segmentationModel.image()));
 		initActions();
 		this.panel = initPanel();
 	}

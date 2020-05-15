@@ -26,7 +26,7 @@ public class BiisExample {
 		Img<? extends NumericType<?>> image = ImageJFunctions.wrap(new ImagePlus(example2));
 		Context context = new Context();
 		DefaultSegmentationModel segmentationModel = new DefaultSegmentationModel(
-			new DatasetInputImage(image), context, BiisSegmenterPlugin::new);
+			new DatasetInputImage(image), context);
 		LabkitFrame.show(segmentationModel, "Demonstrate other Segmenter");
 	}
 }

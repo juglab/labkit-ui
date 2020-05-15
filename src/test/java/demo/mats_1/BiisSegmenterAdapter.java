@@ -25,12 +25,12 @@ import java.util.List;
  * such that it can be used within the Labkit UI. See {@link BiisExample} to run
  * the demo.
  */
-class BiisSegmenterPlugin implements Segmenter {
+class BiisSegmenterAdapter implements Segmenter {
 
 	private final BiisSegmenter biisSegmenter = new BiisSegmenter();
 	private boolean isTrained = false;
 
-	public BiisSegmenterPlugin(final Context context, final InputImage inputImage) {
+	public BiisSegmenterAdapter(final Context context, final ImgPlus<?> inputImage) {
 
 	}
 
