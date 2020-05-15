@@ -99,7 +99,8 @@ public class SegmenterPanel {
 		private EntryPanel(SegmentationItem item) {
 			this.item = item;
 			setLayout(new MigLayout("inset 4, gap 4, fillx"));
-			add(new JLabel(item.toString()), "push");
+			JLabel label = new JLabel(item.toString());
+			add(label, "push, grow, width 0:0:1000");
 			add(initPopupMenuButton());
 			add(GuiUtils.createIconButton(settingsAction));
 			add(GuiUtils.createIconButton(trainAction));
