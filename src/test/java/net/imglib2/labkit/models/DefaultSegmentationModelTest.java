@@ -5,6 +5,9 @@ import net.imglib2.img.array.ArrayImgs;
 import net.imglib2.labkit.inputimage.DatasetInputImage;
 import net.imglib2.labkit.labeling.Label;
 import net.imglib2.labkit.labeling.Labeling;
+import net.imglib2.labkit.segmentation.PixelClassificationPlugin;
+import net.imglib2.labkit.segmentation.weka.TrainableSegmentationSegmenter;
+import net.imglib2.trainable_segmentation.utils.SingletonContext;
 import net.imglib2.type.logic.BitType;
 import net.imglib2.util.ValuePair;
 import net.imglib2.view.Views;
@@ -30,7 +33,7 @@ public class DefaultSegmentationModelTest {
 		model.listChangeListeners().add(flag::setOne);
 		assertFalse(flag.get());
 		assertEquals(1, model.segmenters().size());
-		model.addSegmenter();
+		model.addSegmenter(new PixelClassificationPlugin());
 		assertTrue(flag.get());
 		assertEquals(2, model.segmenters().size());
 		flag.set(false);

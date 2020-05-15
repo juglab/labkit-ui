@@ -19,6 +19,10 @@ public class ForwardingSegmenter implements Segmenter {
 		this.source = source;
 	}
 
+	protected Segmenter getSourceSegmenter() {
+		return source;
+	}
+
 	@Override
 	public void editSettings(JFrame dialogParent) {
 		source.editSettings(dialogParent);

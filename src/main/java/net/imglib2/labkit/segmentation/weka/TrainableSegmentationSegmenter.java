@@ -83,22 +83,15 @@ public class TrainableSegmentationSegmenter implements Segmenter {
 		}
 	}
 
-	public static ChannelSetting getChannelSetting(InputImage inputImage) {
-		ImgPlus<?> image = inputImage.imageForSegmentation();
-		if (ImgPlusViewsOld.hasAxis(image, Axes.CHANNEL))
-			return ChannelSetting.multiple((int) ImgPlusViewsOld.getDimension(image, Axes.CHANNEL));
-		return image.firstElement() instanceof ARGBType ? ChannelSetting.RGB : ChannelSetting.SINGLE;
-	}
-
 	public TrainableSegmentationSegmenter(Context context,
-		InputImage inputImage)
+		ImgPlus<?> image)
 	{
-		final ChannelSetting channelSetting = getChannelSetting(inputImage);
+		final ChannelSetting channelSetting = getChannelSetting(image);
 		GlobalSettings globalSettings = GlobalSettings.default2d()
-			.dimensions(ImgPlusViewsOld.numberOfSpatialDimensions(inputImage.imageForSegmentation()))
+			.dimensions(ImgPlusViewsOld.numberOfSpatialDimensions(image))
 			.channels(channelSetting)
 			.sigmaRange(1.0, 8.0)
-			.pixelSize(getPixelSize(inputImage.imageForSegmentation()))
+			.pixelSize(getPixelSize(image))
 			.build();
 		this.context = context;
 		this.useGpu = false;
@@ -111,6 +104,12 @@ public class TrainableSegmentationSegmenter implements Segmenter {
 			GroupedFeatures.hessian(),
 			GroupedFeatures.structureTensor());
 		this.segmenter = null;
+	}
+
+	private static ChannelSetting getChannelSetting(ImgPlus<?> image) {
+		if (ImgPlusViewsOld.hasAxis(image, Axes.CHANNEL))
+			return ChannelSetting.multiple((int) ImgPlusViewsOld.getDimension(image, Axes.CHANNEL));
+		return image.firstElement() instanceof ARGBType ? ChannelSetting.RGB : ChannelSetting.SINGLE;
 	}
 
 	public TrainableSegmentationSegmenter(Context context) {
