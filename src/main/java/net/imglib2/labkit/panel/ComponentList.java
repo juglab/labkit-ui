@@ -20,7 +20,9 @@ public class ComponentList<K, C extends JComponent> {
 	private final Color BACKGROUND = UIManager.getColor("List.background");
 
 	private JPanel background = new JPanel();
-	private JComponent component = new JScrollPane(background);
+	private JComponent component = new JScrollPane(background,
+		ScrollPaneConstants.VERTICAL_SCROLLBAR_AS_NEEDED,
+		ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
 	private K selected;
 	private Map<C, K> panels = new HashMap<>();
 	private Notifier listeners = new Notifier();

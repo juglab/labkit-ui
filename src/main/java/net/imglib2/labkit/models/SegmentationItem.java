@@ -26,7 +26,7 @@ public class SegmentationItem extends ForwardingSegmenter {
 
 	public SegmentationItem(SegmentationModel model, SegmentationPlugin plugin) {
 		super(plugin.createSegmenter(model.image()));
-		this.name = plugin.getTitle() + " - #" + counter.incrementAndGet();
+		this.name = "#" + counter.incrementAndGet() + " - " + plugin.getTitle();
 		this.results = new SegmentationResultsModel(model, this.getSourceSegmenter());
 	}
 
