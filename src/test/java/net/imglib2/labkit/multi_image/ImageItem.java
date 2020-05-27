@@ -1,3 +1,4 @@
+
 package net.imglib2.labkit.multi_image;
 
 public class ImageItem {
@@ -6,7 +7,7 @@ public class ImageItem {
 
 	private String labelingFile;
 
-	public ImageItem(String imageFile)	{
+	public ImageItem(String imageFile) {
 		this.imageFile = imageFile;
 		this.labelingFile = imageFile + ".labeling";
 	}
