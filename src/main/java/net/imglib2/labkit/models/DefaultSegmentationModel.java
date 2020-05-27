@@ -4,15 +4,12 @@ package net.imglib2.labkit.models;
 import net.imagej.ImgPlus;
 import net.imagej.axis.Axes;
 import net.imglib2.RandomAccessibleInterval;
-import net.imglib2.img.cell.CellGrid;
 import net.imglib2.img.cell.CellImgFactory;
 import net.imglib2.labkit.inputimage.ImgPlusViewsOld;
 import net.imglib2.labkit.inputimage.InputImage;
 import net.imglib2.labkit.labeling.Labeling;
+import net.imglib2.labkit.segmentation.SegmentationPlugin;
 import net.imglib2.labkit.segmentation.Segmenter;
-import net.imglib2.labkit.segmentation.weka.TimeSeriesSegmenter;
-import net.imglib2.labkit.segmentation.weka.TrainableSegmentationSegmenter;
-import net.imglib2.labkit.utils.LabkitUtils;
 import net.imglib2.labkit.utils.Notifier;
 import net.imglib2.labkit.utils.progress.SwingProgressWriter;
 import net.imglib2.realtransform.AffineTransform3D;
@@ -31,7 +28,6 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.CancellationException;
-import java.util.function.BiFunction;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -43,27 +39,16 @@ public class DefaultSegmentationModel implements SegmentationModel,
 {
 
 	private final Context context;
-	private final InputImage inputImage;
 	private final ImageLabelingModel imageLabelingModel;
 	private final Holder<SegmentationItem> selectedSegmenter;
 	private final List<SegmentationItem> segmenters = new ArrayList<>();
 	private final ImgPlus<?> compatibleImage;
-	private final CellGrid grid;
 	private final Holder<Boolean> segmentationVisibility = new DefaultHolder<>(
 		true);
 	private final Notifier listeners = new Notifier();
-	private final BiFunction<Context, InputImage, Segmenter> segmenterFactory;
 
 	public DefaultSegmentationModel(InputImage inputImage, Context context) {
-		this(inputImage, context, TrainableSegmentationSegmenter::new);
-	}
-
-	public DefaultSegmentationModel(InputImage inputImage, Context context,
-		BiFunction<Context, InputImage, Segmenter> segmenterFactory)
-	{
 		this.context = context;
-		this.inputImage = inputImage;
-		this.segmenterFactory = segmenterFactory;
 		ImgPlus<? extends NumericType<?>> image = inputImage.imageForSegmentation();
 		ImgPlus<? extends NumericType<?>> intervalWithoutChannels = ImgPlusViewsOld.hyperSlice(image,
 			Axes.CHANNEL, 0);
@@ -72,14 +57,7 @@ public class DefaultSegmentationModel implements SegmentationModel,
 		this.imageLabelingModel = new ImageLabelingModel(inputImage.showable(),
 			labeling, ImgPlusViewsOld.hasAxis(image, Axes.TIME), inputImage.getDefaultLabelingFilename());
 		this.compatibleImage = image;
-		this.grid = LabkitUtils.suggestGrid(image);
-		this.selectedSegmenter = new DefaultHolder<>(addSegmenter());
-	}
-
-	private Segmenter initClassifier() {
-		Segmenter segmenter = segmenterFactory.apply(context, inputImage);
-		return ImgPlusViewsOld.hasAxis(inputImage.imageForSegmentation(), Axes.TIME)
-			? new TimeSeriesSegmenter(segmenter) : segmenter;
+		this.selectedSegmenter = new DefaultHolder<>(null);
 	}
 
 	public Context context() {
@@ -102,11 +80,6 @@ public class DefaultSegmentationModel implements SegmentationModel,
 	}
 
 	@Override
-	public CellGrid grid() {
-		return grid;
-	}
-
-	@Override
 	public List<SegmentationItem> segmenters() {
 		return Collections.unmodifiableList(segmenters);
 	}
@@ -122,9 +95,8 @@ public class DefaultSegmentationModel implements SegmentationModel,
 	}
 
 	@Override
-	public SegmentationItem addSegmenter() {
-		SegmentationItem segmentationItem = new SegmentationItem(this,
-			initClassifier());
+	public SegmentationItem addSegmenter(SegmentationPlugin plugin) {
+		SegmentationItem segmentationItem = new SegmentationItem(this, plugin);
 		segmenters.add(segmentationItem);
 		listeners.notifyListeners();
 		return segmentationItem;
@@ -160,10 +132,8 @@ public class DefaultSegmentationModel implements SegmentationModel,
 
 	@Override
 	public void remove(SegmentationItem item) {
-		if (segmenters.size() <= 1) return;
 		segmenters.remove(item);
-		if (!segmenters.contains(selectedSegmenter.get())) selectedSegmenter.set(
-			segmenters.get(0));
+		if (!segmenters.contains(selectedSegmenter.get())) selectedSegmenter.set(null);
 		listeners.notifyListeners();
 	}
 

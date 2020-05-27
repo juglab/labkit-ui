@@ -6,6 +6,7 @@ import net.imglib2.RandomAccessibleInterval;
 import net.imglib2.labkit.labeling.Labeling;
 import net.imglib2.labkit.menu.MenuKey;
 import net.imglib2.labkit.segmentation.ForwardingSegmenter;
+import net.imglib2.labkit.segmentation.SegmentationPlugin;
 import net.imglib2.labkit.segmentation.Segmenter;
 import net.imglib2.util.Pair;
 
@@ -19,12 +20,14 @@ public class SegmentationItem extends ForwardingSegmenter {
 
 	private static final AtomicInteger counter = new AtomicInteger();
 
-	private final String name = "Classifier-#" + counter.incrementAndGet();
+	private final String name;
+
 	private final SegmentationResultsModel results;
 
-	public SegmentationItem(SegmentationModel model, Segmenter segmenter) {
-		super(segmenter);
-		this.results = new SegmentationResultsModel(model, segmenter);
+	public SegmentationItem(SegmentationModel model, SegmentationPlugin plugin) {
+		super(plugin.createSegmenter(model.image()));
+		this.name = "#" + counter.incrementAndGet() + " - " + plugin.getTitle();
+		this.results = new SegmentationResultsModel(model, this.getSourceSegmenter());
 	}
 
 	@Deprecated

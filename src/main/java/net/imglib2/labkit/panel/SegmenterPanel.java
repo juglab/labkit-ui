@@ -2,20 +2,24 @@
 package net.imglib2.labkit.panel;
 
 import net.imglib2.labkit.DefaultExtensible;
+import net.imglib2.labkit.models.DefaultSegmentationModel;
 import net.imglib2.labkit.models.SegmentationItem;
 import net.imglib2.labkit.models.SegmenterListModel;
+import net.imglib2.labkit.segmentation.SegmentationPlugin;
+import net.imglib2.labkit.segmentation.SegmentationPluginService;
 import net.imglib2.labkit.utils.ParallelUtils;
 import net.miginfocom.swing.MigLayout;
 import org.scijava.ui.behaviour.util.RunnableAction;
 
 import javax.swing.*;
 import javax.swing.plaf.basic.BasicArrowButton;
+import java.util.List;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
 public class SegmenterPanel {
 
-	private final SegmenterListModel<? extends SegmentationItem> segmentationModel;
+	private final DefaultSegmentationModel segmentationModel;
 
 	private final JPanel panel = new JPanel();
 
@@ -23,8 +27,10 @@ public class SegmenterPanel {
 
 	private final Function<Supplier<SegmentationItem>, JPopupMenu> menuFactory;
 
+	private JButton addSegmenterButton;
+
 	public SegmenterPanel(
-		SegmenterListModel<? extends SegmentationItem> segmentationModel,
+		DefaultSegmentationModel segmentationModel,
 		Function<Supplier<SegmentationItem>, JPopupMenu> menuFactory)
 	{
 		this.segmentationModel = segmentationModel;
@@ -35,7 +41,7 @@ public class SegmenterPanel {
 	}
 
 	public static JPanel newFramedSegmeterPanel(
-		SegmenterListModel<? extends SegmentationItem> segmentationModel,
+		DefaultSegmentationModel segmentationModel,
 		DefaultExtensible extensible)
 	{
 		return GuiUtils.createCheckboxGroupedPanel(segmentationModel
@@ -53,10 +59,26 @@ public class SegmenterPanel {
 	}
 
 	private JButton initAddButton() {
-		return GuiUtils.createActionIconButton("Add classifier", new RunnableAction(
-			"Add classifier", () -> {
-				segmentationModel.addSegmenter();
-			}), "add.png");
+		addSegmenterButton = GuiUtils.createActionIconButton("Add classifier", new RunnableAction(
+			"Add classifier", this::showAddSegmenterPopupMenu), "add.png");
+		return addSegmenterButton;
+	}
+
+	private void showAddSegmenterPopupMenu() {
+		SegmentationPluginService pluginService = segmentationModel.context().service(
+			SegmentationPluginService.class);
+		List<SegmentationPlugin> plugins = pluginService.getSegmentationPlugins();
+		JPopupMenu menu = new JPopupMenu();
+		for (SegmentationPlugin plugin : plugins) {
+			JMenuItem menuItem = new JMenuItem(plugin.getTitle());
+			menuItem.addActionListener(ignore -> addSegmenter(plugin));
+			menu.add(menuItem);
+		}
+		menu.show(addSegmenterButton, 0, addSegmenterButton.getHeight());
+	}
+
+	private void addSegmenter(SegmentationPlugin plugin) {
+		segmentationModel.addSegmenter(plugin);
 	}
 
 	private void updateList() {
@@ -77,7 +99,8 @@ public class SegmenterPanel {
 		private EntryPanel(SegmentationItem item) {
 			this.item = item;
 			setLayout(new MigLayout("inset 4, gap 4, fillx"));
-			add(new JLabel(item.toString()), "push");
+			JLabel label = new JLabel(item.toString());
+			add(label, "push, grow, width 0:0:1000");
 			add(initPopupMenuButton());
 			add(GuiUtils.createIconButton(settingsAction));
 			add(GuiUtils.createIconButton(trainAction));
@@ -96,22 +119,14 @@ public class SegmenterPanel {
 			return menuFactory.apply(() -> item);
 		}
 
-		private JMenuItem removeMenuItem() {
-			final Runnable runnable = () -> {
-				((SegmenterListModel) segmentationModel).remove(item);
-			};
-			return new JMenuItem(GuiUtils.createAction("Remove", runnable,
-				"remove.png"));
-		}
-
 		private void showSettings() {
 			item.editSettings(null);
 		}
 
 		private void runTraining() {
 			ParallelUtils.runInOtherThread(() -> {
-				((SegmenterListModel) segmentationModel).selectedSegmenter().set(item);
-				((SegmenterListModel) segmentationModel).train(item);
+				segmentationModel.selectedSegmenter().set(item);
+				segmentationModel.train(item);
 			});
 		}
 

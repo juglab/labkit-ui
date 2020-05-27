@@ -19,6 +19,10 @@ public class ForwardingSegmenter implements Segmenter {
 		this.source = source;
 	}
 
+	protected Segmenter getSourceSegmenter() {
+		return source;
+	}
+
 	@Override
 	public void editSettings(JFrame dialogParent) {
 		source.editSettings(dialogParent);
@@ -61,5 +65,10 @@ public class ForwardingSegmenter implements Segmenter {
 	@Override
 	public List<String> classNames() {
 		return source.classNames();
+	}
+
+	@Override
+	public int[] suggestCellSize(ImgPlus<?> image) {
+		return source.suggestCellSize(image);
 	}
 }

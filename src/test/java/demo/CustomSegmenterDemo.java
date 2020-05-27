@@ -11,10 +11,10 @@ import net.imglib2.img.Img;
 import net.imglib2.img.display.imagej.ImageJFunctions;
 import net.imglib2.labkit.LabkitFrame;
 import net.imglib2.labkit.inputimage.DatasetInputImage;
-import net.imglib2.labkit.inputimage.InputImage;
 import net.imglib2.labkit.labeling.Label;
 import net.imglib2.labkit.labeling.Labeling;
 import net.imglib2.labkit.models.DefaultSegmentationModel;
+import net.imglib2.labkit.segmentation.SegmentationPlugin;
 import net.imglib2.labkit.segmentation.Segmenter;
 import net.imglib2.loops.LoopBuilder;
 import net.imglib2.roi.IterableRegion;
@@ -29,6 +29,7 @@ import net.imglib2.util.Util;
 import net.imglib2.view.Views;
 import net.imglib2.view.composite.GenericComposite;
 import org.scijava.Context;
+import org.scijava.plugin.Plugin;
 
 import javax.swing.*;
 import java.util.Arrays;
@@ -43,8 +44,22 @@ public class CustomSegmenterDemo {
 			"https://imagej.nih.gov/ij/images/AuPbSn40-2.jpg"));
 		Context context = new Context();
 		DefaultSegmentationModel segmentationModel = new DefaultSegmentationModel(
-			new DatasetInputImage(image), context, MySegmenter::new);
+			new DatasetInputImage(image), context);
 		LabkitFrame.show(segmentationModel, "Demonstrate other Segmenter");
+	}
+
+	@Plugin(type = SegmentationPlugin.class)
+	public static class MySegmenterPlugin implements SegmentationPlugin {
+
+		@Override
+		public String getTitle() {
+			return "Threshold";
+		}
+
+		@Override
+		public Segmenter createSegmenter(ImgPlus<?> image) {
+			return new MySegmenter();
+		}
 	}
 
 	private static class MySegmenter implements Segmenter {
@@ -52,10 +67,6 @@ public class CustomSegmenterDemo {
 		private MeanCalculator foreground;
 		private MeanCalculator others;
 		private Thresholder thresholder = null;
-
-		public MySegmenter(final Context context, final InputImage inputImage) {
-
-		}
 
 		@Override
 		public void editSettings(JFrame dialogParent) {
@@ -144,6 +155,11 @@ public class CustomSegmenterDemo {
 		@Override
 		public List<String> classNames() {
 			return Arrays.asList("background", "foreground");
+		}
+
+		@Override
+		public int[] suggestCellSize(ImgPlus<?> image) {
+			return new int[] { 255, 255 };
 		}
 	}
 

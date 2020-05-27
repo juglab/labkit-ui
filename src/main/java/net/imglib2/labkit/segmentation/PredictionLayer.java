@@ -3,6 +3,7 @@ package net.imglib2.labkit.segmentation;
 
 import bdv.util.volatiles.SharedQueue;
 import bdv.util.volatiles.VolatileViews;
+import net.imglib2.Interval;
 import net.imglib2.RandomAccessible;
 import net.imglib2.RandomAccessibleInterval;
 import net.imglib2.converter.Converter;
@@ -39,21 +40,24 @@ public class PredictionLayer implements BdvLayer {
 	private Set<SegmentationItem> alreadyRegistered = Collections.newSetFromMap(
 		new WeakHashMap<>());
 
-	public PredictionLayer(Holder<? extends SegmentationItem> model,
-		Holder<Boolean> visibility)
+	public PredictionLayer(
+		Holder<? extends SegmentationItem> model,
+		Holder<Boolean> visibility,
+		AffineTransform3D transformation,
+		Interval interval)
 	{
 		this.model = model;
-		SegmentationResultsModel selected = model.get().results();
-		this.segmentationContainer = new RandomAccessibleContainer<>(
-			getEmptyPrediction(selected));
-		this.transformation = selected.transformation();
-		this.view = Views.interval(segmentationContainer, selected.interval());
+		this.segmentationContainer = new RandomAccessibleContainer<>(getEmptyPrediction(interval
+			.numDimensions()));
+		this.transformation = transformation;
+		this.view = Views.interval(segmentationContainer, interval);
 		this.visibility = visibility;
 		model.notifier().add(() -> classifierChanged());
 		registerListener(model.get());
 	}
 
 	private void registerListener(SegmentationItem segmenter) {
+		if (segmenter == null) return;
 		if (alreadyRegistered.contains(segmenter)) return;
 		alreadyRegistered.add(segmenter);
 		segmenter.results().segmentationChangedListeners().add(
@@ -67,20 +71,16 @@ public class PredictionLayer implements BdvLayer {
 		}
 	}
 
-	private RandomAccessible<VolatileARGBType> getEmptyPrediction(
-		SegmentationResultsModel selected)
-	{
-		return ConstantUtils.constantRandomAccessible(new VolatileARGBType(0),
-			selected.interval().numDimensions());
+	private RandomAccessible<VolatileARGBType> getEmptyPrediction(int numDimensions) {
+		return ConstantUtils.constantRandomAccessible(new VolatileARGBType(0), numDimensions);
 	}
 
 	private void classifierChanged() {
 		SegmentationItem segmentationItem = model.get();
 		registerListener(segmentationItem);
-		SegmentationResultsModel selected = segmentationItem.results();
-		RandomAccessible<VolatileARGBType> source = selected.hasResults() ? Views
-			.extendValue(coloredVolatileView(selected), new VolatileARGBType(0))
-			: getEmptyPrediction(selected);
+		boolean hasResult = segmentationItem != null && segmentationItem.results().hasResults();
+		RandomAccessible<VolatileARGBType> source = hasResult ? Views.extendValue(coloredVolatileView(
+			segmentationItem.results()), new VolatileARGBType(0)) : getEmptyPrediction(2);
 		segmentationContainer.setSource(source);
 		listeners.notifyListeners();
 	}

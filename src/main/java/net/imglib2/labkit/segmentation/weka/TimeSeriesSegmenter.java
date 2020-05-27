@@ -6,11 +6,10 @@ import net.imagej.axis.Axes;
 import net.imglib2.RandomAccessibleInterval;
 import net.imglib2.img.display.imagej.ImgPlusViews;
 import net.imglib2.labkit.inputimage.ImgPlusViewsOld;
-import net.imglib2.labkit.utils.Notifier;
 import net.imglib2.labkit.segmentation.Segmenter;
 import net.imglib2.labkit.labeling.Labeling;
 import net.imglib2.labkit.labeling.Labelings;
-import net.imglib2.labkit.utils.DimensionUtils;
+import net.imglib2.trainable_segmentation.RevampUtils;
 import net.imglib2.type.numeric.IntegerType;
 import net.imglib2.type.numeric.RealType;
 import net.imglib2.util.Cast;
@@ -97,5 +96,13 @@ public class TimeSeriesSegmenter implements Segmenter {
 	@Override
 	public List<String> classNames() {
 		return segmenter.classNames();
+	}
+
+	@Override
+	public int[] suggestCellSize(ImgPlus<?> image) {
+		ImgPlus<?> frame = ImgPlusViews.hyperSlice(Cast.unchecked(image), image.dimensionIndex(
+			Axes.TIME), 0);
+		int[] cellSize = segmenter.suggestCellSize(frame);
+		return RevampUtils.extend(cellSize, 1);
 	}
 }

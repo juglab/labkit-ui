@@ -151,14 +151,4 @@ public class LabkitUtils {
 		}
 	}
 
-	public static CellGrid suggestGrid(ImgPlus<?> interval) {
-		if (ImgPlusViewsOld.hasAxis(interval, Axes.CHANNEL))
-			interval = ImgPlusViewsOld.hyperSlice(interval, Axes.CHANNEL, 0);
-		int spacialDimensions = ImgPlusViewsOld.numberOfSpatialDimensions(interval);
-		int[] cellDimension = (spacialDimensions == 2) ? new int[] { 128, 128 } : new int[] { 32, 32,
-			32 };
-		if (ImgPlusViewsOld.hasAxis(interval, Axes.TIME))
-			cellDimension = RevampUtils.extend(cellDimension, 1);
-		return new CellGrid(Intervals.dimensionsAsLongArray(interval), cellDimension);
-	}
 }
