@@ -7,6 +7,7 @@ import net.imglib2.labkit.inputimage.DatasetInputImage;
 import net.imglib2.labkit.inputimage.InputImage;
 import net.imglib2.labkit.models.DefaultSegmentationModel;
 import net.imglib2.labkit.utils.CheckedExceptionUtils;
+import net.imglib2.labkit.utils.Notifier;
 import net.imglib2.trainable_segmentation.utils.SingletonContext;
 import org.scijava.Context;
 
@@ -21,7 +22,9 @@ import java.awt.event.WindowEvent;
  */
 public class LabkitFrame {
 
-	private JFrame frame = initFrame();
+	private final JFrame frame = initFrame();
+
+	private final Notifier onCloseListeners = new Notifier();
 
 	public static LabkitFrame showForFile(final Context context,
 		final String filename)
@@ -68,6 +71,7 @@ public class LabkitFrame {
 			@Override
 			public void windowClosed(WindowEvent e) {
 				segmentationComponent.close();
+				onCloseListeners.notifyListeners();
 			}
 		});
 		return segmentationComponent;
@@ -85,4 +89,7 @@ public class LabkitFrame {
 		else frame.setTitle("Labkit - " + name);
 	}
 
+	public Notifier onCloseListeners() {
+		return onCloseListeners;
+	}
 }
