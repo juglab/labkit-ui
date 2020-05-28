@@ -17,8 +17,6 @@ public interface SegmenterListModel<T> {
 
 	T addSegmenter(SegmentationPlugin segmenter);
 
-	void train(T item);
-
 	void remove(T item);
 
 	Holder<Boolean> segmentationVisibility();

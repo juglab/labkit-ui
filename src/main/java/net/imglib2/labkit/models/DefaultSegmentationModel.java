@@ -10,7 +10,6 @@ import net.imglib2.labkit.segmentation.SegmentationPlugin;
 import net.imglib2.labkit.segmentation.Segmenter;
 import net.imglib2.labkit.utils.Notifier;
 import net.imglib2.labkit.utils.progress.SwingProgressWriter;
-import net.imglib2.realtransform.AffineTransform3D;
 import net.imglib2.labkit.utils.DimensionUtils;
 import net.imglib2.type.NativeType;
 import net.imglib2.type.numeric.IntegerType;
@@ -70,35 +69,6 @@ public class DefaultSegmentationModel implements SegmenterListModel<Segmentation
 		segmenters.add(segmentationItem);
 		listeners.notifyListeners();
 		return segmentationItem;
-	}
-
-	@Override
-	public void train(SegmentationItem item) {
-		SwingProgressWriter progressWriter = new SwingProgressWriter(null,
-			"Training in Progress");
-		progressWriter.setVisible(true);
-		progressWriter.setProgressBarVisible(false);
-		progressWriter.setDetailsVisible(false);
-		try {
-			List<Pair<ImgPlus<?>, Labeling>> trainingData =
-				Collections.singletonList(new ValuePair<>(imageLabelingModel().imageForSegmentation(),
-					imageLabelingModel().labeling().get()));
-			item.train(trainingData);
-		}
-		catch (CancellationException e) {
-			progressWriter.setVisible(false);
-			JOptionPane.showMessageDialog(null, e.getMessage(), "Training Cancelled",
-				JOptionPane.PLAIN_MESSAGE);
-		}
-		catch (Throwable e) {
-			progressWriter.setVisible(false);
-			JOptionPane.showMessageDialog(null, e.toString(), "Training Failed",
-				JOptionPane.WARNING_MESSAGE);
-			e.printStackTrace();
-		}
-		finally {
-			progressWriter.setVisible(false);
-		}
 	}
 
 	@Override

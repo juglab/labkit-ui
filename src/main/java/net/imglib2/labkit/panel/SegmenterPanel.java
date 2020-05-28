@@ -7,6 +7,7 @@ import net.imglib2.labkit.models.SegmentationItem;
 import net.imglib2.labkit.models.SegmenterListModel;
 import net.imglib2.labkit.segmentation.SegmentationPlugin;
 import net.imglib2.labkit.segmentation.SegmentationPluginService;
+import net.imglib2.labkit.segmentation.TrainClassifier;
 import net.imglib2.labkit.utils.ParallelUtils;
 import net.miginfocom.swing.MigLayout;
 import org.scijava.ui.behaviour.util.RunnableAction;
@@ -126,7 +127,7 @@ public class SegmenterPanel {
 		private void runTraining() {
 			ParallelUtils.runInOtherThread(() -> {
 				segmentationModel.selectedSegmenter().set(item);
-				segmentationModel.train(item);
+				TrainClassifier.train(segmentationModel.imageLabelingModel(), item);
 			});
 		}
 

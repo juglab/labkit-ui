@@ -21,7 +21,6 @@ import net.imglib2.view.Views;
 
 import javax.swing.*;
 import java.util.List;
-import java.util.Set;
 
 /**
  * @author Matthias Arzt
