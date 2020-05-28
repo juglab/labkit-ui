@@ -20,18 +20,18 @@ import java.util.function.Supplier;
 
 public class SegmenterPanel {
 
-	private final DefaultSegmentationModel segmentationModel;
+	private final SegmenterListModel segmentationModel;
 
 	private final JPanel panel = new JPanel();
 
-	private final ComponentList<Object, JPanel> list = new ComponentList<>();
+	private final ComponentList<SegmentationItem, JPanel> list = new ComponentList<>();
 
 	private final Function<Supplier<SegmentationItem>, JPopupMenu> menuFactory;
 
 	private JButton addSegmenterButton;
 
 	public SegmenterPanel(
-		DefaultSegmentationModel segmentationModel,
+		SegmenterListModel segmentationModel,
 		Function<Supplier<SegmentationItem>, JPopupMenu> menuFactory)
 	{
 		this.segmentationModel = segmentationModel;
@@ -42,7 +42,7 @@ public class SegmenterPanel {
 	}
 
 	public static JPanel newFramedSegmeterPanel(
-		DefaultSegmentationModel segmentationModel,
+		SegmenterListModel segmentationModel,
 		DefaultExtensible extensible)
 	{
 		return GuiUtils.createCheckboxGroupedPanel(segmentationModel
@@ -127,7 +127,7 @@ public class SegmenterPanel {
 		private void runTraining() {
 			ParallelUtils.runInOtherThread(() -> {
 				segmentationModel.selectedSegmenter().set(item);
-				TrainClassifier.train(segmentationModel.imageLabelingModel(), item);
+				segmentationModel.train(item);
 			});
 		}
 
@@ -143,9 +143,9 @@ public class SegmenterPanel {
 	}
 
 	private void userChangedSelection() {
-		Object selectedValue = list.getSelected();
-		if (selectedValue != null) ((SegmenterListModel) segmentationModel)
-			.selectedSegmenter().set(selectedValue);
+		SegmentationItem selectedValue = list.getSelected();
+		if (selectedValue != null)
+			segmentationModel.selectedSegmenter().set(selectedValue);
 	}
 
 	public JComponent getComponent() {

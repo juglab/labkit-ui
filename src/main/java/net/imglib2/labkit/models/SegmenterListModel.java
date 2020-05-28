@@ -2,24 +2,62 @@
 package net.imglib2.labkit.models;
 
 import net.imglib2.labkit.segmentation.SegmentationPlugin;
+import net.imglib2.labkit.segmentation.TrainClassifier;
 import net.imglib2.labkit.utils.Notifier;
 import org.scijava.Context;
 
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
-public interface SegmenterListModel<T> {
+public class SegmenterListModel {
 
-	Context context();
+	private final Context context;
+	private final ImageLabelingModel imageLabelingModel;
+	private final List<SegmentationItem> segmenters = new ArrayList<>();
+	protected final Holder<SegmentationItem> selectedSegmenter = new DefaultHolder<>(null);
+	private final Holder<Boolean> segmentationVisibility = new DefaultHolder<>(true);
+	private final Notifier listeners = new Notifier();
 
-	List<T> segmenters();
+	public SegmenterListModel(Context context, ImageLabelingModel imageLabelingModel) {
+		this.context = context;
+		this.imageLabelingModel = imageLabelingModel;
+	}
 
-	Holder<T> selectedSegmenter();
+	public List<SegmentationItem> segmenters() {
+		return Collections.unmodifiableList(segmenters);
+	}
 
-	T addSegmenter(SegmentationPlugin segmenter);
+	public Holder<SegmentationItem> selectedSegmenter() {
+		return selectedSegmenter;
+	}
 
-	void remove(T item);
+	public SegmentationItem addSegmenter(SegmentationPlugin plugin) {
+		SegmentationItem segmentationItem = new SegmentationItem(imageLabelingModel, plugin);
+		segmenters.add(segmentationItem);
+		listeners.notifyListeners();
+		return segmentationItem;
+	}
 
-	Holder<Boolean> segmentationVisibility();
+	public void remove(SegmentationItem item) {
+		segmenters.remove(item);
+		if (!segmenters.contains(selectedSegmenter.get())) selectedSegmenter.set(null);
+		listeners.notifyListeners();
+	}
 
-	Notifier listChangeListeners();
+	public Holder<Boolean> segmentationVisibility() {
+		return segmentationVisibility;
+	}
+
+	public Notifier listChangeListeners() {
+		return listeners;
+	}
+
+	public Context context() {
+		return context;
+	}
+
+	public void train(SegmentationItem item) {
+		TrainClassifier.train(imageLabelingModel, item);
+	}
 }
