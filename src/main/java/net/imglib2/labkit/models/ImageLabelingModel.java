@@ -1,17 +1,21 @@
 
 package net.imglib2.labkit.models;
 
+import net.imagej.ImgPlus;
+import net.imagej.axis.Axes;
 import net.imglib2.Dimensions;
 import net.imglib2.FinalDimensions;
 import net.imglib2.Interval;
-import net.imglib2.RandomAccessibleInterval;
 import net.imglib2.labkit.bdv.BdvShowable;
+import net.imglib2.labkit.inputimage.ImgPlusViewsOld;
+import net.imglib2.labkit.inputimage.InputImage;
 import net.imglib2.labkit.labeling.Label;
 import net.imglib2.labkit.utils.Notifier;
 import net.imglib2.labkit.labeling.Labeling;
 import net.imglib2.realtransform.AffineTransform3D;
 import net.imglib2.type.numeric.NumericType;
 
+import java.util.Arrays;
 import java.util.List;
 import java.util.stream.IntStream;
 
@@ -37,25 +41,24 @@ public class ImageLabelingModel implements LabelingModel {
 
 	private String defaultFileName;
 
-	public ImageLabelingModel(
-		RandomAccessibleInterval<? extends NumericType<?>> image, Labeling labeling,
-		boolean isTimeSeries)
-	{
-		this(BdvShowable.wrap(image), labeling, isTimeSeries, "");
-	}
+	private final ImgPlus<?> imageForSegmentation;
 
-	public ImageLabelingModel(BdvShowable showable, Labeling labeling,
-		boolean isTimeSeries, String defaultFileName)
-	{
-		this.showable = showable;
+	public ImageLabelingModel(InputImage inputImage) {
+		ImgPlus<? extends NumericType<?>> image = inputImage.imageForSegmentation();
+		ImgPlus<? extends NumericType<?>> intervalWithoutChannels = ImgPlusViewsOld.hyperSlice(image,
+			Axes.CHANNEL, 0);
+		Labeling labeling = Labeling.createEmpty(Arrays.asList("background", "foreground"),
+			intervalWithoutChannels);
+		this.showable = inputImage.showable();
 		this.labelingHolder = new DefaultHolder<>(labeling);
+		this.imageForSegmentation = image;
 		this.labelingHolder.notifier().add(this::labelingReplacedEvent);
 		updateLabelTransform();
-		this.selectedLabelHolder = new DefaultHolder<>(labeling.getLabels().stream()
-			.findAny().orElse(null));
-		this.isTimeSeries = isTimeSeries;
+		Label anyLabel = labeling.getLabels().stream().findAny().orElse(null);
+		this.selectedLabelHolder = new DefaultHolder<>(anyLabel);
+		this.isTimeSeries = ImgPlusViewsOld.hasAxis(image, Axes.TIME);
 		this.transformationModel = new TransformationModel(isTimeSeries);
-		this.defaultFileName = defaultFileName;
+		this.defaultFileName = inputImage.getDefaultLabelingFilename();
 	}
 
 	private void updateLabelTransform() {
@@ -129,6 +132,10 @@ public class ImageLabelingModel implements LabelingModel {
 		return transformationModel;
 	}
 
+	public ImgPlus<?> imageForSegmentation() {
+		return imageForSegmentation;
+	}
+
 	public Dimensions spatialDimensions() {
 		Interval interval = labelingHolder.get().interval();
 		int n = interval.numDimensions() - (isTimeSeries() ? 1 : 0);
@@ -158,4 +165,5 @@ public class ImageLabelingModel implements LabelingModel {
 			result[i] = 1;
 		return result;
 	}
+
 }

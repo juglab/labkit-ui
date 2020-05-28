@@ -4,6 +4,7 @@ package net.imglib2.labkit.models;
 import net.imglib2.FinalInterval;
 import net.imglib2.img.Img;
 import net.imglib2.img.array.ArrayImgs;
+import net.imglib2.labkit.inputimage.DatasetInputImage;
 import net.imglib2.labkit.labeling.Labeling;
 import net.imglib2.realtransform.AffineTransform3D;
 import net.imglib2.type.numeric.integer.UnsignedByteType;
@@ -18,8 +19,8 @@ public class ImageLabelingModelTest {
 	@Test
 	public void testChangeLabelingInterval() {
 		Img<UnsignedByteType> image = ArrayImgs.unsignedBytes(8, 8);
-		ImageLabelingModel model = new ImageLabelingModel(image, initLabeling(4, 4),
-			false);
+		ImageLabelingModel model = new ImageLabelingModel(new DatasetInputImage(image));
+		model.labeling().set(initLabeling(4, 4));
 		AffineTransform3D labelTransformation = model.labelTransformation();
 		assertArrayEquals(expectedTransform(2.0), labelTransformation
 			.getRowPackedCopy(), 0.0);

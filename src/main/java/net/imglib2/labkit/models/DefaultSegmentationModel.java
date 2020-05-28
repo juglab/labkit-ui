@@ -42,21 +42,13 @@ public class DefaultSegmentationModel implements SegmentationModel,
 	private final ImageLabelingModel imageLabelingModel;
 	private final Holder<SegmentationItem> selectedSegmenter;
 	private final List<SegmentationItem> segmenters = new ArrayList<>();
-	private final ImgPlus<?> compatibleImage;
 	private final Holder<Boolean> segmentationVisibility = new DefaultHolder<>(
 		true);
 	private final Notifier listeners = new Notifier();
 
 	public DefaultSegmentationModel(InputImage inputImage, Context context) {
 		this.context = context;
-		ImgPlus<? extends NumericType<?>> image = inputImage.imageForSegmentation();
-		ImgPlus<? extends NumericType<?>> intervalWithoutChannels = ImgPlusViewsOld.hyperSlice(image,
-			Axes.CHANNEL, 0);
-		Labeling labeling = Labeling.createEmpty(Arrays.asList("background",
-			"foreground"), intervalWithoutChannels);
-		this.imageLabelingModel = new ImageLabelingModel(inputImage.showable(),
-			labeling, ImgPlusViewsOld.hasAxis(image, Axes.TIME), inputImage.getDefaultLabelingFilename());
-		this.compatibleImage = image;
+		this.imageLabelingModel = new ImageLabelingModel(inputImage);
 		this.selectedSegmenter = new DefaultHolder<>(null);
 	}
 
@@ -76,7 +68,7 @@ public class DefaultSegmentationModel implements SegmentationModel,
 
 	@Override
 	public ImgPlus<?> image() {
-		return compatibleImage;
+		return imageLabelingModel.imageForSegmentation();
 	}
 
 	@Override
