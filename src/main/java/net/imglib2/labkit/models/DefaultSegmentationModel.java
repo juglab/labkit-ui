@@ -2,10 +2,8 @@
 package net.imglib2.labkit.models;
 
 import net.imagej.ImgPlus;
-import net.imagej.axis.Axes;
 import net.imglib2.RandomAccessibleInterval;
 import net.imglib2.img.cell.CellImgFactory;
-import net.imglib2.labkit.inputimage.ImgPlusViewsOld;
 import net.imglib2.labkit.inputimage.InputImage;
 import net.imglib2.labkit.labeling.Labeling;
 import net.imglib2.labkit.segmentation.SegmentationPlugin;
@@ -16,7 +14,6 @@ import net.imglib2.realtransform.AffineTransform3D;
 import net.imglib2.labkit.utils.DimensionUtils;
 import net.imglib2.type.NativeType;
 import net.imglib2.type.numeric.IntegerType;
-import net.imglib2.type.numeric.NumericType;
 import net.imglib2.type.numeric.real.FloatType;
 import net.imglib2.util.Pair;
 import net.imglib2.util.ValuePair;
@@ -24,7 +21,6 @@ import org.scijava.Context;
 
 import javax.swing.*;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.CancellationException;
@@ -34,9 +30,7 @@ import java.util.stream.Stream;
 /**
  * Serves as a model for PredictionLayer and TrainClassifierAction
  */
-public class DefaultSegmentationModel implements SegmentationModel,
-	SegmenterListModel<SegmentationItem>
-{
+public class DefaultSegmentationModel implements SegmenterListModel<SegmentationItem> {
 
 	private final Context context;
 	private final ImageLabelingModel imageLabelingModel;
@@ -56,19 +50,8 @@ public class DefaultSegmentationModel implements SegmentationModel,
 		return context;
 	}
 
-	@Override
 	public ImageLabelingModel imageLabelingModel() {
 		return imageLabelingModel;
-	}
-
-	@Override
-	public Labeling labeling() {
-		return imageLabelingModel.labeling().get();
-	}
-
-	@Override
-	public ImgPlus<?> image() {
-		return imageLabelingModel.imageForSegmentation();
 	}
 
 	@Override
@@ -82,13 +65,8 @@ public class DefaultSegmentationModel implements SegmentationModel,
 	}
 
 	@Override
-	public AffineTransform3D labelTransformation() {
-		return imageLabelingModel.labelTransformation();
-	}
-
-	@Override
 	public SegmentationItem addSegmenter(SegmentationPlugin plugin) {
-		SegmentationItem segmentationItem = new SegmentationItem(this, plugin);
+		SegmentationItem segmentationItem = new SegmentationItem(this.imageLabelingModel(), plugin);
 		segmenters.add(segmentationItem);
 		listeners.notifyListeners();
 		return segmentationItem;
@@ -103,7 +81,8 @@ public class DefaultSegmentationModel implements SegmentationModel,
 		progressWriter.setDetailsVisible(false);
 		try {
 			List<Pair<ImgPlus<?>, Labeling>> trainingData =
-				Collections.singletonList(new ValuePair<>(image(), labeling()));
+				Collections.singletonList(new ValuePair<>(imageLabelingModel().imageForSegmentation(),
+					imageLabelingModel().labeling().get()));
 			item.train(trainingData);
 		}
 		catch (CancellationException e) {
@@ -130,11 +109,6 @@ public class DefaultSegmentationModel implements SegmentationModel,
 	}
 
 	@Override
-	public void trainSegmenter() {
-		train(selectedSegmenter().get());
-	}
-
-	@Override
 	public Holder<Boolean> segmentationVisibility() {
 		return segmentationVisibility;
 	}
@@ -147,7 +121,7 @@ public class DefaultSegmentationModel implements SegmentationModel,
 	public <T extends IntegerType<T> & NativeType<T>>
 		List<RandomAccessibleInterval<T>> getSegmentations(T type)
 	{
-		ImgPlus<?> image = image();
+		ImgPlus<?> image = imageLabelingModel().imageForSegmentation();
 		Stream<Segmenter> trainedSegmenters = getTrainedSegmenters();
 		return trainedSegmenters.map(segmenter -> {
 			RandomAccessibleInterval<T> labels = new CellImgFactory<>(type).create(
@@ -158,7 +132,7 @@ public class DefaultSegmentationModel implements SegmentationModel,
 	}
 
 	public List<RandomAccessibleInterval<FloatType>> getPredictions() {
-		ImgPlus<?> image = image();
+		ImgPlus<?> image = imageLabelingModel().imageForSegmentation();
 		Stream<Segmenter> trainedSegmenters = getTrainedSegmenters();
 		return trainedSegmenters.map(segmenter -> {
 			int numberOfClasses = segmenter.classNames().size();

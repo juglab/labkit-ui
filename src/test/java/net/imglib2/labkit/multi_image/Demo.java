@@ -5,7 +5,6 @@ import io.scif.services.DatasetIOService;
 import net.imagej.Dataset;
 import net.imagej.ImgPlus;
 import net.imagej.patcher.LegacyInjector;
-import net.imglib2.Interval;
 import net.imglib2.labkit.LabkitFrame;
 import net.imglib2.labkit.inputimage.DatasetInputImage;
 import net.imglib2.labkit.inputimage.InputImage;
@@ -82,7 +81,8 @@ public class Demo {
 			.getName());
 		frame.onCloseListeners().add(() -> {
 			try {
-				new LabelingSerializer(context).save(model.labeling(), item.getLabelingFile());
+				new LabelingSerializer(context).save(model.imageLabelingModel().labeling().get(), item
+					.getLabelingFile());
 			}
 			catch (IOException e) {
 				e.printStackTrace();

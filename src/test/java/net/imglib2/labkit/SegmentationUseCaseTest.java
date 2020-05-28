@@ -23,7 +23,6 @@ import net.imglib2.roi.labeling.LabelingType;
 import net.imglib2.type.numeric.integer.ShortType;
 import net.imglib2.type.numeric.integer.UnsignedByteType;
 import net.imglib2.util.Intervals;
-import net.imglib2.util.Pair;
 import net.imglib2.util.ValuePair;
 import net.imglib2.view.Views;
 import org.junit.Test;
@@ -83,8 +82,8 @@ public class SegmentationUseCaseTest {
 		PredictionLayer layer = new PredictionLayer(
 			segmentationModel.selectedSegmenter(),
 			segmentationModel.segmentationVisibility(),
-			segmentationModel.labelTransformation(),
-			segmentationModel.image());
+			segmentationModel.imageLabelingModel().labelTransformation(),
+			segmentationModel.imageLabelingModel().imageForSegmentation());
 		assertEquals(2, layer.image().interval().numDimensions());
 		SegmentationItem segmenter = segmentationModel.segmenters().get(0);
 		segmenter.train(Collections.singletonList(new ValuePair<>(imgPlus,

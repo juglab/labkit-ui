@@ -2,7 +2,6 @@
 package net.imglib2.labkit.models;
 
 import net.imagej.ImgPlus;
-import net.imglib2.RandomAccessibleInterval;
 import net.imglib2.labkit.labeling.Labeling;
 import net.imglib2.labkit.menu.MenuKey;
 import net.imglib2.labkit.segmentation.ForwardingSegmenter;
@@ -24,8 +23,8 @@ public class SegmentationItem extends ForwardingSegmenter {
 
 	private final SegmentationResultsModel results;
 
-	public SegmentationItem(SegmentationModel model, SegmentationPlugin plugin) {
-		super(plugin.createSegmenter(model.image()));
+	public SegmentationItem(ImageLabelingModel model, SegmentationPlugin plugin) {
+		super(plugin.createSegmenter(model.imageForSegmentation()));
 		this.name = "#" + counter.incrementAndGet() + " - " + plugin.getTitle();
 		this.results = new SegmentationResultsModel(model, this.getSourceSegmenter());
 	}

@@ -6,8 +6,6 @@ import net.imglib2.labkit.inputimage.DatasetInputImage;
 import net.imglib2.labkit.labeling.Label;
 import net.imglib2.labkit.labeling.Labeling;
 import net.imglib2.labkit.segmentation.PixelClassificationPlugin;
-import net.imglib2.labkit.segmentation.weka.TrainableSegmentationSegmenter;
-import net.imglib2.trainable_segmentation.utils.SingletonContext;
 import net.imglib2.type.logic.BitType;
 import net.imglib2.util.ValuePair;
 import net.imglib2.view.Views;
@@ -54,7 +52,7 @@ public class DefaultSegmentationModelTest {
 		DefaultSegmentationModel model = new DefaultSegmentationModel(image,
 			new Context());
 		// train classifier
-		Labeling labeling = model.labeling();
+		Labeling labeling = model.imageLabelingModel().labeling().get();
 		List<Label> labels = labeling.getLabels();
 		Views.iterable(labeling.getRegion(labels.get(0))).forEach(BitType::setOne);
 		SegmentationItem item = model.selectedSegmenter().get();
