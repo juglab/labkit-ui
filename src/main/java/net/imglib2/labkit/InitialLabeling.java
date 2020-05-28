@@ -29,14 +29,10 @@ import java.util.stream.LongStream;
 
 public class InitialLabeling {
 
-	static void initializeLabeling(InputImage inputImage,
-		DefaultSegmentationModel segmentationModel)
-	{
-		final Context context = segmentationModel.context();
+	static Labeling initialLabeling(Context context, InputImage inputImage) {
 		Preferences preferences = new Preferences(context);
 		List<String> defaultLabels = preferences.getDefaultLabels();
-		Labeling initialLabeling = initLabeling(inputImage, context, defaultLabels);
-		segmentationModel.imageLabelingModel().labeling().set(initialLabeling);
+		return initLabeling(inputImage, context, defaultLabels);
 	}
 
 	static Labeling initLabeling(InputImage inputImage, Context context,
