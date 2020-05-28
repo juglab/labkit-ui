@@ -89,7 +89,7 @@ public class MultiChannelMovieDemo {
 		DatasetInputImage inputImage = inputImage5d();
 		DefaultSegmentationModel segmentationModel = new DefaultSegmentationModel(
 			new Context(), inputImage);
-		SegmentationItem segmenter = segmentationModel.selectedSegmenter().get();
+		SegmentationItem segmenter = segmentationModel.segmenterList().selectedSegmenter().get();
 		Labeling labeling1 = labeling5d();
 		segmentationModel.imageLabelingModel().labeling().set(labeling1);
 		segmenter.train(Collections.singletonList(new ValuePair<>(inputImage

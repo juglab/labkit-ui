@@ -13,15 +13,15 @@ import java.util.List;
 public class SegmenterListModel {
 
 	private final Context context;
-	private final ImageLabelingModel imageLabelingModel;
+	private final List<ImageLabelingModel> imageLabelingModels;
 	private final List<SegmentationItem> segmenters = new ArrayList<>();
 	protected final Holder<SegmentationItem> selectedSegmenter = new DefaultHolder<>(null);
 	private final Holder<Boolean> segmentationVisibility = new DefaultHolder<>(true);
 	private final Notifier listeners = new Notifier();
 
-	public SegmenterListModel(Context context, ImageLabelingModel imageLabelingModel) {
+	public SegmenterListModel(Context context, List<ImageLabelingModel> imageLabelingModels) {
 		this.context = context;
-		this.imageLabelingModel = imageLabelingModel;
+		this.imageLabelingModels = imageLabelingModels;
 	}
 
 	public List<SegmentationItem> segmenters() {
@@ -33,7 +33,7 @@ public class SegmenterListModel {
 	}
 
 	public SegmentationItem addSegmenter(SegmentationPlugin plugin) {
-		SegmentationItem segmentationItem = new SegmentationItem(imageLabelingModel, plugin);
+		SegmentationItem segmentationItem = new SegmentationItem(imageLabelingModels.get(0), plugin);
 		segmenters.add(segmentationItem);
 		listeners.notifyListeners();
 		return segmentationItem;
@@ -58,6 +58,6 @@ public class SegmenterListModel {
 	}
 
 	public void train(SegmentationItem item) {
-		TrainClassifier.train(imageLabelingModel, item);
+		TrainClassifier.train(imageLabelingModels, item);
 	}
 }

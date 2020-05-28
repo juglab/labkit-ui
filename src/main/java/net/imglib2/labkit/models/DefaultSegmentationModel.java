@@ -12,6 +12,7 @@ import net.imglib2.type.numeric.IntegerType;
 import net.imglib2.type.numeric.real.FloatType;
 import org.scijava.Context;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -26,10 +27,10 @@ public class DefaultSegmentationModel {
 	private final SegmenterListModel segmenterList;
 
 	public DefaultSegmentationModel(Context context, InputImage inputImage) {
-		super();
 		this.context = context;
 		this.imageLabelingModel = new ImageLabelingModel(inputImage);
-		this.segmenterList = new SegmenterListModel(context, imageLabelingModel);
+		this.segmenterList = new SegmenterListModel(context, Collections.singletonList(imageLabelingModel));
+	}
 	}
 
 	public Context context() {

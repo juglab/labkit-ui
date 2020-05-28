@@ -49,8 +49,8 @@ public class SegmentationComponent implements AutoCloseable {
 		ImageLabelingModel imageLabelingModel = segmentationModel.imageLabelingModel();
 		labelingComponent = new BasicLabelingComponent(dialogBoxOwner, imageLabelingModel);
 		labelingComponent.addBdvLayer(new PredictionLayer(
-			segmentationModel.selectedSegmenter(),
-			segmentationModel.segmentationVisibility(),
+			segmentationModel.segmenterList().selectedSegmenter(),
+			segmentationModel.segmenterList().segmentationVisibility(),
 			imageLabelingModel.labelTransformation(),
 			imageLabelingModel.imageForSegmentation()));
 		initActions();
@@ -59,10 +59,10 @@ public class SegmentationComponent implements AutoCloseable {
 
 	private void initActions() {
 		final Holder<SegmentationItem> selectedSegmenter = segmentationModel
-			.selectedSegmenter();
+			.segmenterList().selectedSegmenter();
 		final ImageLabelingModel labelingModel = segmentationModel
 			.imageLabelingModel();
-		new TrainClassifier(extensible, segmentationModel);
+		new TrainClassifier(extensible, segmentationModel.segmenterList());
 		new ClassifierSettingsAction(extensible, selectedSegmenter);
 		new ClassifierIoAction(extensible, selectedSegmenter);
 		new LabelingIoAction(extensible, labelingModel);
@@ -85,7 +85,7 @@ public class SegmentationComponent implements AutoCloseable {
 			.imageLabelingModel(), labelingComponent), "grow, wrap");
 		panel.add(LabelPanel.newFramedLabelPanel(segmentationModel
 			.imageLabelingModel(), extensible, fixedLabels), "grow, wrap");
-		panel.add(SegmenterPanel.newFramedSegmeterPanel(segmentationModel,
+		panel.add(SegmenterPanel.newFramedSegmeterPanel(segmentationModel.segmenterList(),
 			extensible), "grow");
 		panel.invalidate();
 		panel.repaint();
@@ -108,7 +108,7 @@ public class SegmentationComponent implements AutoCloseable {
 	public JMenu createMenu(MenuKey<Void> key) {
 		if (key == MenuBar.SEGMENTER_MENU) return extensible.createMenu(
 			SegmentationItem.SEGMENTER_MENU, segmentationModel
-				.selectedSegmenter()::get);
+				.segmenterList().selectedSegmenter()::get);
 		return extensible.createMenu(key, () -> null);
 	}
 

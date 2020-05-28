@@ -6,27 +6,26 @@ import net.imglib2.labkit.Extensible;
 
 import net.imglib2.labkit.MenuBar;
 import net.imglib2.labkit.labeling.Labeling;
-import net.imglib2.labkit.models.DefaultSegmentationModel;
 import net.imglib2.labkit.models.ImageLabelingModel;
 import net.imglib2.labkit.models.SegmentationItem;
 import net.imglib2.labkit.models.SegmenterListModel;
 import net.imglib2.labkit.panel.GuiUtils;
 import net.imglib2.labkit.utils.ParallelUtils;
 import net.imglib2.labkit.utils.progress.SwingProgressWriter;
-import net.imglib2.util.Pair;
 import net.imglib2.util.ValuePair;
 
 import javax.swing.*;
-import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.CancellationException;
 import java.util.function.Consumer;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 public class TrainClassifier {
 
-	private final DefaultSegmentationModel model;
+	private final SegmenterListModel model;
 
-	public TrainClassifier(Extensible extensible, DefaultSegmentationModel model) {
+	public TrainClassifier(Extensible extensible, SegmenterListModel model) {
 		this.model = model;
 		extensible.addMenuItem(MenuBar.SEGMENTER_MENU, "Train Classifier", 1,
 			ignore -> trainSelectedSegmenter(), null, "ctrl shift T");
@@ -44,20 +43,19 @@ public class TrainClassifier {
 	}
 
 	private void trainSegmenter(SegmentationItem item) {
-		train(model.imageLabelingModel(), item);
+		model.train(item);
 	}
 
-	public static void train(ImageLabelingModel imageLabelingModel, SegmentationItem item) {
+	public static void train(List<ImageLabelingModel> imageLabelingModels, SegmentationItem item) {
 		SwingProgressWriter progressWriter = new SwingProgressWriter(null,
 			"Training in Progress");
 		progressWriter.setVisible(true);
 		progressWriter.setProgressBarVisible(false);
 		progressWriter.setDetailsVisible(false);
 		try {
-			List<Pair<ImgPlus<?>, Labeling>> trainingData =
-				Collections.singletonList(new ValuePair<>(imageLabelingModel.imageForSegmentation(),
-					imageLabelingModel.labeling().get()));
-			item.train(trainingData);
+			Stream<ValuePair<ImgPlus<?>, Labeling>> stream = imageLabelingModels.stream()
+				.map(ilm -> new ValuePair<>(ilm.imageForSegmentation(), ilm.labeling().get()));
+			item.train(stream.collect(Collectors.toList()));
 		}
 		catch (CancellationException e) {
 			progressWriter.setVisible(false);

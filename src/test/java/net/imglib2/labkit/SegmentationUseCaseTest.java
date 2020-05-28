@@ -47,7 +47,7 @@ public class SegmentationUseCaseTest {
 		DefaultSegmentationModel segmentationModel = new DefaultSegmentationModel(
 			new Context(), inputImage);
 		addLabels(segmentationModel.imageLabelingModel());
-		SegmentationItem segmenter = segmentationModel.segmenters().get(0);
+		SegmentationItem segmenter = segmentationModel.segmenterList().segmenters().get(0);
 		segmenter.train(Collections.singletonList(new ValuePair<>(image,
 			segmentationModel.imageLabelingModel().labeling().get())));
 		RandomAccessibleInterval<ShortType> result = segmenter.results()
@@ -80,12 +80,12 @@ public class SegmentationUseCaseTest {
 			new Context(), inputImage);
 		segmentationModel.imageLabelingModel().labeling().set(labeling);
 		PredictionLayer layer = new PredictionLayer(
-			segmentationModel.selectedSegmenter(),
-			segmentationModel.segmentationVisibility(),
+			segmentationModel.segmenterList().selectedSegmenter(),
+			segmentationModel.segmenterList().segmentationVisibility(),
 			segmentationModel.imageLabelingModel().labelTransformation(),
 			segmentationModel.imageLabelingModel().imageForSegmentation());
 		assertEquals(2, layer.image().interval().numDimensions());
-		SegmentationItem segmenter = segmentationModel.segmenters().get(0);
+		SegmentationItem segmenter = segmentationModel.segmenterList().segmenters().get(0);
 		segmenter.train(Collections.singletonList(new ValuePair<>(imgPlus,
 			segmentationModel.imageLabelingModel().labeling().get())));
 		RandomAccessibleInterval<ShortType> result = segmenter.results()

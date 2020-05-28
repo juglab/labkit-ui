@@ -26,8 +26,8 @@ public class DefaultSegmentationModelTest {
 	@Test
 	public void testListener() {
 		BitType flag = new BitType(false);
-		DefaultSegmentationModel model = new DefaultSegmentationModel(
-			new Context(), new DatasetInputImage(ArrayImgs.unsignedBytes(100, 100)));
+		SegmenterListModel model = new DefaultSegmentationModel(
+			new Context(), new DatasetInputImage(ArrayImgs.unsignedBytes(100, 100))).segmenterList();
 		model.listChangeListeners().add(flag::setOne);
 		assertFalse(flag.get());
 		assertEquals(1, model.segmenters().size());
@@ -54,7 +54,7 @@ public class DefaultSegmentationModelTest {
 		Labeling labeling = model.imageLabelingModel().labeling().get();
 		List<Label> labels = labeling.getLabels();
 		Views.iterable(labeling.getRegion(labels.get(0))).forEach(BitType::setOne);
-		SegmentationItem item = model.selectedSegmenter().get();
+		SegmentationItem item = model.segmenterList().selectedSegmenter().get();
 		item.train(Collections.singletonList(new ValuePair<>(image
 			.imageForSegmentation(), labeling)));
 		// save classifier
