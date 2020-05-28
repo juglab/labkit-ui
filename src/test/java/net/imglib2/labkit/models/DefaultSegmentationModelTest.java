@@ -27,7 +27,7 @@ public class DefaultSegmentationModelTest {
 	public void testListener() {
 		BitType flag = new BitType(false);
 		DefaultSegmentationModel model = new DefaultSegmentationModel(
-			new DatasetInputImage(ArrayImgs.unsignedBytes(100, 100)), new Context());
+			new Context(), new DatasetInputImage(ArrayImgs.unsignedBytes(100, 100)));
 		model.listChangeListeners().add(flag::setOne);
 		assertFalse(flag.get());
 		assertEquals(1, model.segmenters().size());
@@ -49,8 +49,7 @@ public class DefaultSegmentationModelTest {
 
 		// create model
 		DatasetInputImage image = new DatasetInputImage(ArrayImgs.unsignedBytes(1, 1));
-		DefaultSegmentationModel model = new DefaultSegmentationModel(image,
-			new Context());
+		DefaultSegmentationModel model = new DefaultSegmentationModel(new Context(), image);
 		// train classifier
 		Labeling labeling = model.imageLabelingModel().labeling().get();
 		List<Label> labels = labeling.getLabels();

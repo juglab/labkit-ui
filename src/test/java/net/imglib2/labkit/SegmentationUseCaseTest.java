@@ -45,7 +45,7 @@ public class SegmentationUseCaseTest {
 			2 }, 2, 2));
 		InputImage inputImage = new DatasetInputImage(image);
 		DefaultSegmentationModel segmentationModel = new DefaultSegmentationModel(
-			inputImage, new Context());
+			new Context(), inputImage);
 		addLabels(segmentationModel.imageLabelingModel());
 		SegmentationItem segmenter = segmentationModel.segmenters().get(0);
 		segmenter.train(Collections.singletonList(new ValuePair<>(image,
@@ -77,7 +77,7 @@ public class SegmentationUseCaseTest {
 
 		Labeling labeling = getLabeling();
 		DefaultSegmentationModel segmentationModel = new DefaultSegmentationModel(
-			inputImage, new Context());
+			new Context(), inputImage);
 		segmentationModel.imageLabelingModel().labeling().set(labeling);
 		PredictionLayer layer = new PredictionLayer(
 			segmentationModel.selectedSegmenter(),

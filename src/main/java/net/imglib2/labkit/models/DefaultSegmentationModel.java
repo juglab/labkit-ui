@@ -5,24 +5,18 @@ import net.imagej.ImgPlus;
 import net.imglib2.RandomAccessibleInterval;
 import net.imglib2.img.cell.CellImgFactory;
 import net.imglib2.labkit.inputimage.InputImage;
-import net.imglib2.labkit.labeling.Labeling;
 import net.imglib2.labkit.segmentation.SegmentationPlugin;
 import net.imglib2.labkit.segmentation.Segmenter;
 import net.imglib2.labkit.utils.Notifier;
-import net.imglib2.labkit.utils.progress.SwingProgressWriter;
 import net.imglib2.labkit.utils.DimensionUtils;
 import net.imglib2.type.NativeType;
 import net.imglib2.type.numeric.IntegerType;
 import net.imglib2.type.numeric.real.FloatType;
-import net.imglib2.util.Pair;
-import net.imglib2.util.ValuePair;
 import org.scijava.Context;
 
-import javax.swing.*;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.concurrent.CancellationException;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -35,11 +29,10 @@ public class DefaultSegmentationModel implements SegmenterListModel<Segmentation
 	private final ImageLabelingModel imageLabelingModel;
 	private final Holder<SegmentationItem> selectedSegmenter;
 	private final List<SegmentationItem> segmenters = new ArrayList<>();
-	private final Holder<Boolean> segmentationVisibility = new DefaultHolder<>(
-		true);
+	private final Holder<Boolean> segmentationVisibility = new DefaultHolder<>(true);
 	private final Notifier listeners = new Notifier();
 
-	public DefaultSegmentationModel(InputImage inputImage, Context context) {
+	public DefaultSegmentationModel(Context context, InputImage inputImage) {
 		this.context = context;
 		this.imageLabelingModel = new ImageLabelingModel(inputImage);
 		this.selectedSegmenter = new DefaultHolder<>(null);
@@ -65,7 +58,8 @@ public class DefaultSegmentationModel implements SegmenterListModel<Segmentation
 
 	@Override
 	public SegmentationItem addSegmenter(SegmentationPlugin plugin) {
-		SegmentationItem segmentationItem = new SegmentationItem(this.imageLabelingModel(), plugin);
+		SegmentationItem segmentationItem = new SegmentationItem(this.imageLabelingModel(),
+			plugin);
 		segmenters.add(segmentationItem);
 		listeners.notifyListeners();
 		return segmentationItem;

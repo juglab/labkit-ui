@@ -34,7 +34,6 @@ import org.scijava.Context;
 
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.Set;
 
 import static org.junit.Assert.assertEquals;
 
@@ -89,7 +88,7 @@ public class MultiChannelMovieDemo {
 	public void testInputImageImageForSegmentation() {
 		DatasetInputImage inputImage = inputImage5d();
 		DefaultSegmentationModel segmentationModel = new DefaultSegmentationModel(
-			inputImage, new Context());
+			new Context(), inputImage);
 		SegmentationItem segmenter = segmentationModel.selectedSegmenter().get();
 		Labeling labeling1 = labeling5d();
 		segmentationModel.imageLabelingModel().labeling().set(labeling1);

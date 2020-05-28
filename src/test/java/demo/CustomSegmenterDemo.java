@@ -44,7 +44,7 @@ public class CustomSegmenterDemo {
 			"https://imagej.nih.gov/ij/images/AuPbSn40-2.jpg"));
 		Context context = new Context();
 		DefaultSegmentationModel segmentationModel = new DefaultSegmentationModel(
-			new DatasetInputImage(image), context);
+			context, new DatasetInputImage(image));
 		LabkitFrame.show(segmentationModel, "Demonstrate other Segmenter");
 	}
 

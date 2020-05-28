@@ -19,8 +19,8 @@ public class SegmenterPanelDemo {
 		frame.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
 		frame.setSize(400, 400);
 		DefaultSegmentationModel model =
-			new DefaultSegmentationModel(new DatasetInputImage(ArrayImgs
-				.unsignedBytes(10, 10)), new Context());
+			new DefaultSegmentationModel(new Context(), new DatasetInputImage(ArrayImgs
+				.unsignedBytes(10, 10)));
 		final SegmenterPanel segmenterPanel = new SegmenterPanel(model,
 			item -> newMenu(item, model));
 		frame.add(segmenterPanel.getComponent());

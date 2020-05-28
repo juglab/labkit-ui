@@ -49,7 +49,7 @@ public class GarbageCollectionTest {
 
 	private void addSegmentationComponent(JFrame frame) {
 		DefaultSegmentationModel segmentationModel = new DefaultSegmentationModel(
-			new DatasetInputImage(ArrayImgs.bytes(10, 10)), context);
+			context, new DatasetInputImage(ArrayImgs.bytes(10, 10)));
 		SegmentationComponent component = new SegmentationComponent(frame,
 			segmentationModel, false);
 		frame.add(component.getComponent());

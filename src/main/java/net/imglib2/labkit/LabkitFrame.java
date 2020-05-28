@@ -38,9 +38,8 @@ public class LabkitFrame {
 	public static LabkitFrame showForImage(final Context context,
 		final InputImage inputImage)
 	{
-		final DefaultSegmentationModel model = new DefaultSegmentationModel(
-			inputImage, context);
-		model.imageLabelingModel().labeling().set(InitialLabeling.initialLabeling(inputImage));
+		final DefaultSegmentationModel model = new DefaultSegmentationModel(context, inputImage);
+		model.imageLabelingModel().labeling().set(InitialLabeling.initialLabeling(context, inputImage));
 		return show(model, inputImage.imageForSegmentation().getName());
 	}
 

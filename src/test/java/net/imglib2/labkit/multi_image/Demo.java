@@ -75,7 +75,7 @@ public class Demo {
 		Dataset dataset = CheckedExceptionUtils.run(() -> datasetIOService.open(item.getImageFile()));
 		DatasetInputImage inputImage = new DatasetInputImage(dataset);
 		inputImage.setDefaultLabelingFilename(item.getLabelingFile());
-		final DefaultSegmentationModel model = new DefaultSegmentationModel(inputImage, context);
+		final DefaultSegmentationModel model = new DefaultSegmentationModel(context, inputImage);
 		initLabeling(model, inputImage);
 		LabkitFrame frame = LabkitFrame.show(model, ((InputImage) inputImage).imageForSegmentation()
 			.getName());
