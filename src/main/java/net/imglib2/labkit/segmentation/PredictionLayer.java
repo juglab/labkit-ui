@@ -10,8 +10,10 @@ import net.imglib2.converter.Converter;
 import net.imglib2.converter.Converters;
 import net.imglib2.labkit.bdv.BdvLayer;
 import net.imglib2.labkit.bdv.BdvShowable;
+import net.imglib2.labkit.models.DefaultSegmentationModel;
 import net.imglib2.labkit.models.Holder;
-import net.imglib2.labkit.models.SegmentationItem;
+import net.imglib2.labkit.models.ImageLabelingModel;
+import net.imglib2.labkit.models.MappedHolder;
 import net.imglib2.labkit.models.SegmentationResultsModel;
 import net.imglib2.labkit.utils.Notifier;
 import net.imglib2.labkit.utils.RandomAccessibleContainer;
@@ -29,7 +31,7 @@ import java.util.WeakHashMap;
 
 public class PredictionLayer implements BdvLayer {
 
-	private final Holder<? extends SegmentationItem> model;
+	private final Holder<SegmentationResultsModel> model;
 	private final RandomAccessibleContainer<VolatileARGBType> segmentationContainer;
 	private final SharedQueue queue = new SharedQueue(Runtime.getRuntime()
 		.availableProcessors());
@@ -37,11 +39,21 @@ public class PredictionLayer implements BdvLayer {
 	private Notifier listeners = new Notifier();
 	private RandomAccessibleInterval<? extends NumericType<?>> view;
 	private AffineTransform3D transformation;
-	private Set<SegmentationItem> alreadyRegistered = Collections.newSetFromMap(
+	private Set<SegmentationResultsModel> alreadyRegistered = Collections.newSetFromMap(
 		new WeakHashMap<>());
 
-	public PredictionLayer(
-		Holder<? extends SegmentationItem> model,
+	public static PredictionLayer createPredictionLayer(DefaultSegmentationModel segmentationModel) {
+		ImageLabelingModel imageLabelingModel = segmentationModel.imageLabelingModel();
+		return new PredictionLayer(
+			new MappedHolder<>(segmentationModel.segmenterList().selectedSegmenter(), si -> si == null
+				? null : si.results(imageLabelingModel)),
+			segmentationModel.segmenterList().segmentationVisibility(),
+			imageLabelingModel.labelTransformation(),
+			imageLabelingModel.labeling().get().interval());
+	}
+
+	private PredictionLayer(
+		Holder<SegmentationResultsModel> model,
 		Holder<Boolean> visibility,
 		AffineTransform3D transformation,
 		Interval interval)
@@ -54,17 +66,18 @@ public class PredictionLayer implements BdvLayer {
 		this.visibility = visibility;
 		model.notifier().add(() -> classifierChanged());
 		registerListener(model.get());
+		classifierChanged();
 	}
 
-	private void registerListener(SegmentationItem segmenter) {
+	private void registerListener(SegmentationResultsModel segmenter) {
 		if (segmenter == null) return;
 		if (alreadyRegistered.contains(segmenter)) return;
 		alreadyRegistered.add(segmenter);
-		segmenter.results().segmentationChangedListeners().add(
+		segmenter.segmentationChangedListeners().add(
 			() -> onTrainingCompleted(segmenter));
 	}
 
-	private void onTrainingCompleted(Segmenter segmenter) {
+	private void onTrainingCompleted(SegmentationResultsModel segmenter) {
 		if (model.get() == segmenter) {
 			classifierChanged();
 			visibility.set(true);
@@ -76,11 +89,11 @@ public class PredictionLayer implements BdvLayer {
 	}
 
 	private void classifierChanged() {
-		SegmentationItem segmentationItem = model.get();
-		registerListener(segmentationItem);
-		boolean hasResult = segmentationItem != null && segmentationItem.results().hasResults();
+		SegmentationResultsModel results = model.get();
+		registerListener(results);
+		boolean hasResult = results != null && results.hasResults();
 		RandomAccessible<VolatileARGBType> source = hasResult ? Views.extendValue(coloredVolatileView(
-			segmentationItem.results()), new VolatileARGBType(0)) : getEmptyPrediction(2);
+			results), new VolatileARGBType(0)) : getEmptyPrediction(2);
 		segmentationContainer.setSource(source);
 		listeners.notifyListeners();
 	}

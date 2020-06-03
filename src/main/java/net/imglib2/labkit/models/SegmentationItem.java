@@ -9,7 +9,9 @@ import net.imglib2.labkit.segmentation.SegmentationPlugin;
 import net.imglib2.labkit.segmentation.Segmenter;
 import net.imglib2.util.Pair;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
 
 public class SegmentationItem extends ForwardingSegmenter {
@@ -21,12 +23,12 @@ public class SegmentationItem extends ForwardingSegmenter {
 
 	private final String name;
 
-	private final SegmentationResultsModel results;
+	private final Map<ImageLabelingModel, SegmentationResultsModel> results;
 
 	public SegmentationItem(ImageLabelingModel model, SegmentationPlugin plugin) {
 		super(plugin.createSegmenter(model.imageForSegmentation()));
 		this.name = "#" + counter.incrementAndGet() + " - " + plugin.getTitle();
-		this.results = new SegmentationResultsModel(model, this.getSourceSegmenter());
+		this.results = new HashMap<>();
 	}
 
 	@Deprecated
@@ -38,8 +40,13 @@ public class SegmentationItem extends ForwardingSegmenter {
 		return name;
 	}
 
-	public SegmentationResultsModel results() {
-		return results;
+	public SegmentationResultsModel results(ImageLabelingModel imageLabeling) {
+		SegmentationResultsModel result = results.get(imageLabeling);
+		if (result == null) {
+			result = new SegmentationResultsModel(imageLabeling, getSourceSegmenter());
+			results.put(imageLabeling, result);
+		}
+		return result;
 	}
 
 	@Override
@@ -50,13 +57,13 @@ public class SegmentationItem extends ForwardingSegmenter {
 	@Override
 	public void openModel(String path) {
 		super.openModel(path);
-		results.update();
+		results.forEach((i, r) -> r.update());
 	}
 
 	@Override
 	public void train(List<Pair<ImgPlus<?>, Labeling>> data) {
-		results.clear();
+		results.forEach((i, r) -> r.clear());
 		super.train(data);
-		results.update();
+		results.forEach((i, r) -> r.update());
 	}
 }

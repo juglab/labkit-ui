@@ -17,9 +17,13 @@ import net.imglib2.labkit.labeling.Label;
 import net.imglib2.labkit.labeling.Labeling;
 import net.imglib2.labkit.models.DefaultSegmentationModel;
 import net.imglib2.labkit.models.ImageLabelingModel;
+import net.imglib2.labkit.models.MappedHolder;
 import net.imglib2.labkit.models.SegmentationItem;
+import net.imglib2.labkit.segmentation.PixelClassificationPlugin;
 import net.imglib2.labkit.segmentation.PredictionLayer;
+import net.imglib2.labkit.segmentation.SegmentationPlugin;
 import net.imglib2.roi.labeling.LabelingType;
+import net.imglib2.trainable_segmentation.utils.SingletonContext;
 import net.imglib2.type.numeric.integer.ShortType;
 import net.imglib2.type.numeric.integer.UnsignedByteType;
 import net.imglib2.util.Intervals;
@@ -47,10 +51,12 @@ public class SegmentationUseCaseTest {
 		DefaultSegmentationModel segmentationModel = new DefaultSegmentationModel(
 			new Context(), inputImage);
 		addLabels(segmentationModel.imageLabelingModel());
-		SegmentationItem segmenter = segmentationModel.segmenterList().segmenters().get(0);
+		SegmentationPlugin plugin = PixelClassificationPlugin.create();
+		SegmentationItem segmenter = segmentationModel.segmenterList().addSegmenter(plugin);
 		segmenter.train(Collections.singletonList(new ValuePair<>(image,
 			segmentationModel.imageLabelingModel().labeling().get())));
-		RandomAccessibleInterval<ShortType> result = segmenter.results()
+		RandomAccessibleInterval<ShortType> result = segmenter.results(segmentationModel
+			.imageLabelingModel())
 			.segmentation();
 		List<Integer> list = new ArrayList<>();
 		Views.iterable(result).forEach(x -> list.add(x.getInteger()));
@@ -76,19 +82,17 @@ public class SegmentationUseCaseTest {
 			.wrap(Views.hyperSlice(img, 2, 0)));
 
 		Labeling labeling = getLabeling();
-		DefaultSegmentationModel segmentationModel = new DefaultSegmentationModel(
-			new Context(), inputImage);
-		segmentationModel.imageLabelingModel().labeling().set(labeling);
-		PredictionLayer layer = new PredictionLayer(
-			segmentationModel.segmenterList().selectedSegmenter(),
-			segmentationModel.segmenterList().segmentationVisibility(),
-			segmentationModel.imageLabelingModel().labelTransformation(),
-			segmentationModel.imageLabelingModel().imageForSegmentation());
+		DefaultSegmentationModel segmentationModel = new DefaultSegmentationModel(new Context(),
+			inputImage);
+		ImageLabelingModel imageLabelingModel = segmentationModel.imageLabelingModel();
+		imageLabelingModel.labeling().set(labeling);
+		PredictionLayer layer = PredictionLayer.createPredictionLayer(segmentationModel);
 		assertEquals(2, layer.image().interval().numDimensions());
-		SegmentationItem segmenter = segmentationModel.segmenterList().segmenters().get(0);
+		SegmentationItem segmenter = segmentationModel.segmenterList().addSegmenter(
+			PixelClassificationPlugin.create());
 		segmenter.train(Collections.singletonList(new ValuePair<>(imgPlus,
-			segmentationModel.imageLabelingModel().labeling().get())));
-		RandomAccessibleInterval<ShortType> result = segmenter.results()
+			imageLabelingModel.labeling().get())));
+		RandomAccessibleInterval<ShortType> result = segmenter.results(imageLabelingModel)
 			.segmentation();
 		Iterator<ShortType> it = Views.iterable(result).iterator();
 		assertEquals(1, it.next().get());

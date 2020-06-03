@@ -2,6 +2,7 @@
 package net.imglib2.labkit.models;
 
 import net.imagej.ImgPlus;
+import net.imagej.axis.Axes;
 import net.imglib2.FinalInterval;
 import net.imglib2.Interval;
 import net.imglib2.RandomAccessibleInterval;
@@ -10,6 +11,7 @@ import net.imglib2.cache.img.DiskCachedCellImgFactory;
 import net.imglib2.cache.img.DiskCachedCellImgOptions;
 import net.imglib2.img.Img;
 import net.imglib2.img.cell.CellGrid;
+import net.imglib2.labkit.inputimage.ImgPlusViewsOld;
 import net.imglib2.labkit.labeling.Labeling;
 import net.imglib2.labkit.segmentation.Segmenter;
 import net.imglib2.labkit.utils.Notifier;
@@ -53,6 +55,10 @@ public class SegmentationResultsModel {
 		update();
 	}
 
+	public ImageLabelingModel imageLabelingModel() {
+		return model;
+	}
+
 	public void update() {
 		if (segmenter.isTrained()) {
 			updateSegmentation(segmenter);
@@ -88,8 +94,7 @@ public class SegmentationResultsModel {
 
 	private <T> RandomAccessibleInterval<T> dummy(T value) {
 		FinalInterval interval = new FinalInterval(model.imageForSegmentation());
-		return ConstantUtils.constantRandomAccessibleInterval(value, interval
-			.numDimensions(), interval);
+		return ConstantUtils.constantRandomAccessibleInterval(value, interval);
 	}
 
 	public RandomAccessibleInterval<FloatType> prediction() {
@@ -101,8 +106,9 @@ public class SegmentationResultsModel {
 		ImgPlus<?> image = model.imageForSegmentation();
 		CellLoader<FloatType> loader = target -> segmenter.predict(image, target);
 		int[] cellSize = segmenter.suggestCellSize(image);
-		CellGrid grid = addDimensionToGrid(count, new CellGrid(Intervals.dimensionsAsLongArray(image),
-			cellSize));
+		Interval interval = intervalNoChannels(image);
+		CellGrid grid = addDimensionToGrid(count, new CellGrid(Intervals.dimensionsAsLongArray(
+			interval), cellSize));
 		prediction = setupCachedImage(loader, grid, new FloatType());
 	}
 
@@ -116,8 +122,14 @@ public class SegmentationResultsModel {
 		ImgPlus<?> image = model.imageForSegmentation();
 		CellLoader<ShortType> loader = target -> segmenter.segment(image, target);
 		int[] cellSize = segmenter.suggestCellSize(image);
-		CellGrid grid = new CellGrid(Intervals.dimensionsAsLongArray(image), cellSize);
+		Interval interval = intervalNoChannels(image);
+		CellGrid grid = new CellGrid(Intervals.dimensionsAsLongArray(interval), cellSize);
 		segmentation = setupCachedImage(loader, grid, new ShortType());
+	}
+
+	private Interval intervalNoChannels(ImgPlus<?> image) {
+		return new FinalInterval(ImgPlusViewsOld.hasAxis(image, Axes.CHANNEL) ? ImgPlusViewsOld
+			.hyperSlice(image, Axes.CHANNEL, 0) : image);
 	}
 
 	private <T extends NativeType<T>> Img<T> setupCachedImage(

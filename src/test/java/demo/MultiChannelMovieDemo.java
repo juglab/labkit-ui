@@ -22,6 +22,7 @@ import net.imglib2.labkit.labeling.Label;
 import net.imglib2.labkit.labeling.Labeling;
 import net.imglib2.labkit.models.DefaultSegmentationModel;
 import net.imglib2.labkit.models.SegmentationItem;
+import net.imglib2.labkit.segmentation.PixelClassificationPlugin;
 import net.imglib2.loops.LoopBuilder;
 import net.imglib2.roi.labeling.LabelingType;
 import net.imglib2.type.numeric.integer.ShortType;
@@ -89,12 +90,14 @@ public class MultiChannelMovieDemo {
 		DatasetInputImage inputImage = inputImage5d();
 		DefaultSegmentationModel segmentationModel = new DefaultSegmentationModel(
 			new Context(), inputImage);
-		SegmentationItem segmenter = segmentationModel.segmenterList().selectedSegmenter().get();
+		SegmentationItem segmenter = segmentationModel.segmenterList().addSegmenter(
+			PixelClassificationPlugin.create());
 		Labeling labeling1 = labeling5d();
 		segmentationModel.imageLabelingModel().labeling().set(labeling1);
 		segmenter.train(Collections.singletonList(new ValuePair<>(inputImage
 			.imageForSegmentation(), labeling1)));
-		RandomAccessibleInterval<ShortType> result = segmenter.results()
+		RandomAccessibleInterval<ShortType> result = segmenter.results(segmentationModel
+			.imageLabelingModel())
 			.segmentation();
 		Labeling labeling = labeling5d();
 		LoopBuilder.setImages(labeling, result).forEachPixel((l, r) -> {

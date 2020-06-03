@@ -48,11 +48,7 @@ public class SegmentationComponent implements AutoCloseable {
 		this.segmentationModel = segmentationModel;
 		ImageLabelingModel imageLabelingModel = segmentationModel.imageLabelingModel();
 		labelingComponent = new BasicLabelingComponent(dialogBoxOwner, imageLabelingModel);
-		labelingComponent.addBdvLayer(new PredictionLayer(
-			segmentationModel.segmenterList().selectedSegmenter(),
-			segmentationModel.segmenterList().segmentationVisibility(),
-			imageLabelingModel.labelTransformation(),
-			imageLabelingModel.imageForSegmentation()));
+		labelingComponent.addBdvLayer(PredictionLayer.createPredictionLayer(segmentationModel));
 		initActions();
 		this.panel = initPanel();
 	}
@@ -67,7 +63,7 @@ public class SegmentationComponent implements AutoCloseable {
 		new ClassifierIoAction(extensible, selectedSegmenter);
 		new LabelingIoAction(extensible, labelingModel);
 		new AddLabelingIoAction(extensible, labelingModel.labeling());
-		new SegmentationExportAction(extensible);
+		new SegmentationExportAction(extensible, labelingModel);
 		new ResetViewAction(extensible, labelingModel);
 		new BatchSegmentAction(extensible, selectedSegmenter);
 		new SegmentationAsLabelAction(extensible, segmentationModel);

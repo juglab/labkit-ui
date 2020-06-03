@@ -29,8 +29,16 @@ public class DefaultSegmentationModel {
 	public DefaultSegmentationModel(Context context, InputImage inputImage) {
 		this.context = context;
 		this.imageLabelingModel = new ImageLabelingModel(inputImage);
-		this.segmenterList = new SegmenterListModel(context, Collections.singletonList(imageLabelingModel));
+		this.segmenterList = new SegmenterListModel(context, Collections.singletonList(
+			imageLabelingModel));
 	}
+
+	public DefaultSegmentationModel(Context context, ImageLabelingModel imageLabelingModel,
+		SegmenterListModel segmenterList)
+	{
+		this.context = context;
+		this.imageLabelingModel = imageLabelingModel;
+		this.segmenterList = segmenterList;
 	}
 
 	public Context context() {

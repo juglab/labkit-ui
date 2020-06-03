@@ -5,6 +5,7 @@ import net.imagej.ImgPlus;
 import net.imagej.axis.Axes;
 import net.imglib2.Dimensions;
 import net.imglib2.FinalDimensions;
+import net.imglib2.FinalInterval;
 import net.imglib2.Interval;
 import net.imglib2.labkit.bdv.BdvShowable;
 import net.imglib2.labkit.inputimage.ImgPlusViewsOld;
@@ -44,9 +45,9 @@ public class ImageLabelingModel implements LabelingModel {
 	private final ImgPlus<?> imageForSegmentation;
 
 	public ImageLabelingModel(InputImage inputImage) {
-		ImgPlus<? extends NumericType<?>> image = inputImage.imageForSegmentation();
-		ImgPlus<? extends NumericType<?>> intervalWithoutChannels = ImgPlusViewsOld.hyperSlice(image,
-			Axes.CHANNEL, 0);
+		ImgPlus<?> image = inputImage.imageForSegmentation();
+		ImgPlus<?> firstChannel = ImgPlusViewsOld.hyperSlice(image, Axes.CHANNEL, 0);
+		Interval intervalWithoutChannels = new FinalInterval(firstChannel);
 		Labeling labeling = Labeling.createEmpty(Arrays.asList("background", "foreground"),
 			intervalWithoutChannels);
 		this.showable = inputImage.showable();

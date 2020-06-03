@@ -49,6 +49,7 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.CancellationException;
 import java.util.function.Function;
@@ -93,7 +94,7 @@ public class TrainableSegmentationSegmenter implements Segmenter {
 			.sigmaRange(1.0, 8.0)
 			.pixelSize(getPixelSize(image))
 			.build();
-		this.context = context;
+		this.context = Objects.requireNonNull(context);
 		this.useGpu = false;
 		this.featureSettings = new FeatureSettings(globalSettings,
 			SingleFeatures.identity(),

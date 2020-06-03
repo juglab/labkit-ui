@@ -7,10 +7,11 @@ import net.imagej.ImgPlus;
 import net.imagej.patcher.LegacyInjector;
 import net.imglib2.labkit.LabkitFrame;
 import net.imglib2.labkit.inputimage.DatasetInputImage;
-import net.imglib2.labkit.inputimage.InputImage;
 import net.imglib2.labkit.labeling.Labeling;
 import net.imglib2.labkit.labeling.LabelingSerializer;
 import net.imglib2.labkit.models.DefaultSegmentationModel;
+import net.imglib2.labkit.models.ImageLabelingModel;
+import net.imglib2.labkit.models.MultiImageSegmentationModel;
 import net.imglib2.labkit.utils.CheckedExceptionUtils;
 import net.imglib2.trainable_segmentation.utils.SingletonContext;
 import net.imglib2.type.numeric.NumericType;
@@ -25,7 +26,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-public class Demo {
+public class MultiImageDemo {
 
 	static {
 		LegacyInjector.preinit();
@@ -42,12 +43,16 @@ public class Demo {
 		.collect(Collectors.toList());
 
 	public static void main(String... args) {
-		JList<ImageItem> list = initList();
-		JButton button = initButton(list);
+		List<ImageLabelingModel> imageLabelingModels = files.stream()
+			.map(ii -> openImageLabelingModel(ii)).collect(Collectors.toList());
+		MultiImageSegmentationModel multiImageSegmentationModel = new MultiImageSegmentationModel(
+			SingletonContext.getInstance(), imageLabelingModels);
+		JList<ImageLabelingModel> list = initList(imageLabelingModels);
+		JButton button = initButton(list, multiImageSegmentationModel);
 		showFrame(list, button);
 	}
 
-	private static void showFrame(JList<ImageItem> list, JButton button) {
+	private static void showFrame(JList<?> list, JButton button) {
 		JFrame frame = new JFrame("Labkit Project");
 		frame.setLayout(new MigLayout("", "[grow]", "[grow][]"));
 		frame.add(new JScrollPane(list), "grow, wrap");
@@ -56,43 +61,53 @@ public class Demo {
 		frame.setVisible(true);
 	}
 
-	private static JList<ImageItem> initList() {
-		return new JList<>(files.toArray(new ImageItem[0]));
+	private static JList<ImageLabelingModel> initList(List<ImageLabelingModel> imageLabelingModels) {
+		return new JList<>(imageLabelingModels.toArray(new ImageLabelingModel[0]));
 	}
 
-	private static JButton initButton(JList<ImageItem> comp) {
+	private static JButton initButton(JList<ImageLabelingModel> comp,
+		MultiImageSegmentationModel multiImageSegmentationModel)
+	{
 		JButton button = new JButton("edit");
 		button.addActionListener(l -> {
-			ImageItem selectedValue = comp.getSelectedValue();
+			ImageLabelingModel selectedValue = comp.getSelectedValue();
 			if (selectedValue != null)
-				selectionChanged(selectedValue);
+				selectionChanged(selectedValue, multiImageSegmentationModel);
 		});
 		return button;
 	}
 
-	private static void selectionChanged(ImageItem item) {
+	private static void selectionChanged(ImageLabelingModel imageLabelingModel,
+		MultiImageSegmentationModel multiImageSegmentationModel)
+	{
+		final DefaultSegmentationModel model = new DefaultSegmentationModel(context, imageLabelingModel,
+			multiImageSegmentationModel.segmenterListModel());
+		LabkitFrame frame = LabkitFrame.show(model, model.imageLabelingModel().imageForSegmentation()
+			.getName());
+		frame.onCloseListeners().add(() -> {
+			saveImageLabelingModel(model);
+		});
+	}
+
+	private static ImageLabelingModel openImageLabelingModel(ImageItem item) {
 		DatasetIOService datasetIOService = context.service(DatasetIOService.class);
 		Dataset dataset = CheckedExceptionUtils.run(() -> datasetIOService.open(item.getImageFile()));
 		DatasetInputImage inputImage = new DatasetInputImage(dataset);
 		inputImage.setDefaultLabelingFilename(item.getLabelingFile());
-		final DefaultSegmentationModel model = new DefaultSegmentationModel(context, inputImage);
-		initLabeling(model, inputImage);
-		LabkitFrame frame = LabkitFrame.show(model, ((InputImage) inputImage).imageForSegmentation()
-			.getName());
-		frame.onCloseListeners().add(() -> {
-			try {
-				new LabelingSerializer(context).save(model.imageLabelingModel().labeling().get(), item
-					.getLabelingFile());
-			}
-			catch (IOException e) {
-				e.printStackTrace();
-			}
-		});
+		ImageLabelingModel imageLabelingModel = new ImageLabelingModel(inputImage);
+		Labeling labeling = openOrEmptyLabeling(inputImage);
+		imageLabelingModel.labeling().set(labeling);
+		return imageLabelingModel;
 	}
 
-	private static void initLabeling(DefaultSegmentationModel model, DatasetInputImage inputImage) {
-		Labeling labeling = openOrEmptyLabeling(inputImage);
-		model.imageLabelingModel().labeling().set(labeling);
+	private static void saveImageLabelingModel(DefaultSegmentationModel model) {
+		try {
+			new LabelingSerializer(context).save(model.imageLabelingModel().labeling().get(),
+				model.imageLabelingModel().defaultFileName());
+		}
+		catch (IOException e) {
+			e.printStackTrace();
+		}
 	}
 
 	private static Labeling openOrEmptyLabeling(DatasetInputImage inputImage) {

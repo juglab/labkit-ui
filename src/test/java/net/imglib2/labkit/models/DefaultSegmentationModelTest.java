@@ -30,15 +30,15 @@ public class DefaultSegmentationModelTest {
 			new Context(), new DatasetInputImage(ArrayImgs.unsignedBytes(100, 100))).segmenterList();
 		model.listChangeListeners().add(flag::setOne);
 		assertFalse(flag.get());
-		assertEquals(1, model.segmenters().size());
-		model.addSegmenter(new PixelClassificationPlugin());
+		assertEquals(0, model.segmenters().size());
+		model.addSegmenter(PixelClassificationPlugin.create());
 		assertTrue(flag.get());
-		assertEquals(2, model.segmenters().size());
+		assertEquals(1, model.segmenters().size());
 		flag.set(false);
-		SegmentationItem second = model.segmenters().get(1);
-		model.remove(second);
+		SegmentationItem item = model.segmenters().get(0);
+		model.remove(item);
 		assertTrue(flag.get());
-		assertEquals(1, model.segmenters().size());
+		assertEquals(0, model.segmenters().size());
 	}
 
 	@Test
@@ -54,7 +54,7 @@ public class DefaultSegmentationModelTest {
 		Labeling labeling = model.imageLabelingModel().labeling().get();
 		List<Label> labels = labeling.getLabels();
 		Views.iterable(labeling.getRegion(labels.get(0))).forEach(BitType::setOne);
-		SegmentationItem item = model.segmenterList().selectedSegmenter().get();
+		SegmentationItem item = model.segmenterList().addSegmenter(PixelClassificationPlugin.create());
 		item.train(Collections.singletonList(new ValuePair<>(image
 			.imageForSegmentation(), labeling)));
 		// save classifier
