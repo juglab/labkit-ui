@@ -31,7 +31,7 @@ public class SegmentationComponent implements AutoCloseable {
 
 	private final JComponent panel;
 
-	private final boolean fixedLabels;
+	private final boolean unmodifiableLabels;
 
 	private final DefaultExtensible extensible;
 
@@ -40,11 +40,11 @@ public class SegmentationComponent implements AutoCloseable {
 	private DefaultSegmentationModel segmentationModel;
 
 	public SegmentationComponent(JFrame dialogBoxOwner,
-		DefaultSegmentationModel segmentationModel, boolean fixedLabels)
+		DefaultSegmentationModel segmentationModel, boolean unmodifiableLabels)
 	{
 		this.extensible = new DefaultExtensible(segmentationModel.context(),
 			dialogBoxOwner);
-		this.fixedLabels = fixedLabels;
+		this.unmodifiableLabels = unmodifiableLabels;
 		this.segmentationModel = segmentationModel;
 		ImageLabelingModel imageLabelingModel = segmentationModel.imageLabelingModel();
 		labelingComponent = new BasicLabelingComponent(dialogBoxOwner, imageLabelingModel);
@@ -68,7 +68,7 @@ public class SegmentationComponent implements AutoCloseable {
 		new BatchSegmentAction(extensible, selectedSegmenter);
 		new SegmentationAsLabelAction(extensible, segmentationModel);
 		new BitmapImportExportAction(extensible, labelingModel);
-		new LabelEditAction(extensible, fixedLabels, new ColoredLabelsModel(
+		new LabelEditAction(extensible, unmodifiableLabels, new ColoredLabelsModel(
 			labelingModel));
 		MeasureConnectedComponents.addAction(extensible, labelingModel);
 		labelingComponent.addShortcuts(extensible.getShortCuts());
@@ -80,7 +80,7 @@ public class SegmentationComponent implements AutoCloseable {
 		panel.add(ImageInfoPanel.newFramedImageInfoPanel(segmentationModel
 			.imageLabelingModel(), labelingComponent), "grow, wrap");
 		panel.add(LabelPanel.newFramedLabelPanel(segmentationModel
-			.imageLabelingModel(), extensible, fixedLabels), "grow, wrap");
+			.imageLabelingModel(), extensible, unmodifiableLabels), "grow, wrap");
 		panel.add(SegmenterPanel.newFramedSegmeterPanel(segmentationModel.segmenterList(),
 			extensible), "grow");
 		panel.invalidate();
