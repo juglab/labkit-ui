@@ -21,4 +21,6 @@ public interface LabelingModel {
 	String defaultFileName();
 
 	Holder<Boolean> labelingVisibility();
+
+	TransformationModel transformationModel();
 }
