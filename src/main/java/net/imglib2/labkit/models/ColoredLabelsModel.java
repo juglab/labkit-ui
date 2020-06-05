@@ -20,11 +20,11 @@ import java.util.stream.Collectors;
 
 public class ColoredLabelsModel {
 
-	private final ImageLabelingModel model;
+	private final LabelingModel model;
 
 	private final Notifier listeners = new Notifier();
 
-	public ColoredLabelsModel(ImageLabelingModel model) {
+	public ColoredLabelsModel(LabelingModel model) {
 		this.model = model;
 		model.labeling().notifier().add(this::notifyListeners);
 		model.selectedLabel().notifier().add(this::notifyListeners);

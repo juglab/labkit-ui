@@ -129,6 +129,7 @@ public class ImageLabelingModel implements LabelingModel {
 		return labelingVisibility;
 	}
 
+	@Override
 	public TransformationModel transformationModel() {
 		return transformationModel;
 	}
