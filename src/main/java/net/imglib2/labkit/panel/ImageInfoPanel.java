@@ -3,7 +3,6 @@ package net.imglib2.labkit.panel;
 
 import net.imglib2.Dimensions;
 import net.imglib2.labkit.BasicLabelingComponent;
-import net.imglib2.labkit.LabelingComponent;
 import net.imglib2.labkit.models.ImageLabelingModel;
 import net.imglib2.util.Intervals;
 import net.miginfocom.swing.MigLayout;
@@ -11,6 +10,7 @@ import net.miginfocom.swing.MigLayout;
 import javax.swing.*;
 import java.awt.*;
 import java.util.Arrays;
+import java.util.List;
 
 public class ImageInfoPanel {
 
@@ -19,22 +19,17 @@ public class ImageInfoPanel {
 	}
 
 	public static JPanel newFramedImageInfoPanel(
-		ImageLabelingModel imageLabelingModel)
-	{
-		return newFramedImageInfoPanel(imageLabelingModel, null);
-	}
-
-	public static JPanel newFramedImageInfoPanel(
-		ImageLabelingModel imageLabelingModel,
+		List<ImageLabelingModel> imageLabelingModels,
 		BasicLabelingComponent labelingComponent)
 	{
+		ImageLabelingModel imageLabelingModel = imageLabelingModels.get(0);
 		return GuiUtils.createCheckboxGroupedPanel(imageLabelingModel
 			.imageVisibility(), "Image", createDimensionsInfo(imageLabelingModel
-				.labeling().get(), labelingComponent));
+				.labeling().get(), imageLabelingModels, labelingComponent));
 	}
 
 	private static JComponent createDimensionsInfo(Dimensions interval,
-		BasicLabelingComponent labelingComponent)
+		List<ImageLabelingModel> imageLabelingModels, BasicLabelingComponent labelingComponent)
 	{
 		Color background = UIManager.getColor("List.background");
 		JPanel panel = new JPanel();
@@ -43,6 +38,9 @@ public class ImageInfoPanel {
 		JLabel label = new JLabel("Dimensions: " + Arrays.toString(Intervals
 			.dimensionsAsLongArray(interval)));
 		panel.add(label, "grow, span, wrap");
+		JComboBox<ImageLabelingModel> comboBox = new JComboBox<>(imageLabelingModels.toArray(
+			new ImageLabelingModel[0]));
+		panel.add(comboBox, "grow, span, wrap");
 		if (labelingComponent != null) {
 			final JButton button = new JButton("auto contrast");
 			button.addActionListener(ignore -> labelingComponent.autoContrast());

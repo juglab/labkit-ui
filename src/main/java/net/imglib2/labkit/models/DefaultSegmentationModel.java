@@ -23,20 +23,24 @@ import java.util.stream.Stream;
 public class DefaultSegmentationModel {
 
 	private final Context context;
+	private final List<ImageLabelingModel> imageLabelingModels;
 	private final ImageLabelingModel imageLabelingModel;
 	private final SegmenterListModel segmenterList;
 
 	public DefaultSegmentationModel(Context context, InputImage inputImage) {
 		this.context = context;
 		this.imageLabelingModel = new ImageLabelingModel(inputImage);
+		this.imageLabelingModels = Collections.singletonList(imageLabelingModel);
 		this.segmenterList = new SegmenterListModel(context, Collections.singletonList(
 			imageLabelingModel));
 	}
 
-	public DefaultSegmentationModel(Context context, ImageLabelingModel imageLabelingModel,
+	public DefaultSegmentationModel(Context context, List<ImageLabelingModel> images,
+		ImageLabelingModel imageLabelingModel,
 		SegmenterListModel segmenterList)
 	{
 		this.context = context;
+		this.imageLabelingModels = images;
 		this.imageLabelingModel = imageLabelingModel;
 		this.segmenterList = segmenterList;
 	}
@@ -87,4 +91,7 @@ public class DefaultSegmentationModel {
 		return segmenterList.segmenters().stream().filter(Segmenter::isTrained).map(x -> x);
 	}
 
+	public List<ImageLabelingModel> imageLabelingModels() {
+		return imageLabelingModels;
+	}
 }

@@ -9,6 +9,7 @@ import net.imglib2.labkit.panel.LabelPanel;
 import net.miginfocom.swing.MigLayout;
 
 import javax.swing.*;
+import java.util.Collections;
 
 public class LabelingComponent implements AutoCloseable {
 
@@ -20,7 +21,8 @@ public class LabelingComponent implements AutoCloseable {
 		this.labelingComponent = new BasicLabelingComponent(dialogBoxOwner, model);
 		JPanel leftPanel = new JPanel();
 		leftPanel.setLayout(new MigLayout("", "[grow]", "[][grow]"));
-		leftPanel.add(ImageInfoPanel.newFramedImageInfoPanel(model), "grow, wrap");
+		leftPanel.add(ImageInfoPanel.newFramedImageInfoPanel(Collections.singletonList(model),
+			labelingComponent), "grow, wrap");
 		DefaultExtensible extensible = new DefaultExtensible(null, dialogBoxOwner);
 		new LabelEditAction(extensible, false, new ColoredLabelsModel(model));
 		leftPanel.add(LabelPanel.newFramedLabelPanel(model, extensible, false),

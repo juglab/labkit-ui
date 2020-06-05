@@ -80,7 +80,9 @@ public class MultiImageDemo {
 	private static void selectionChanged(ImageLabelingModel imageLabelingModel,
 		MultiImageSegmentationModel multiImageSegmentationModel)
 	{
-		final DefaultSegmentationModel model = new DefaultSegmentationModel(context, imageLabelingModel,
+		final DefaultSegmentationModel model = new DefaultSegmentationModel(context,
+			multiImageSegmentationModel.imageLabelingModels(),
+			imageLabelingModel,
 			multiImageSegmentationModel.segmenterListModel());
 		LabkitFrame frame = LabkitFrame.show(model, model.imageLabelingModel().imageForSegmentation()
 			.getName());
