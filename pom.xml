@@ -147,6 +147,7 @@
 		<dependency>
 			<groupId>sc.fiji</groupId>
 			<artifactId>bigdataviewer-core</artifactId>
+			<version>9.0.5</version>
 		</dependency>
 		<dependency>
 			<groupId>sc.fiji</groupId>

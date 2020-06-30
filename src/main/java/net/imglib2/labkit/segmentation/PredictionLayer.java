@@ -10,6 +10,7 @@ import net.imglib2.converter.Converter;
 import net.imglib2.converter.Converters;
 import net.imglib2.labkit.bdv.BdvLayer;
 import net.imglib2.labkit.bdv.BdvShowable;
+import net.imglib2.labkit.models.DefaultHolder;
 import net.imglib2.labkit.models.DefaultSegmentationModel;
 import net.imglib2.labkit.models.Holder;
 import net.imglib2.labkit.models.ImageLabelingModel;
@@ -37,10 +38,9 @@ public class PredictionLayer implements BdvLayer {
 		.availableProcessors());
 	private final Holder<Boolean> visibility;
 	private Notifier listeners = new Notifier();
-	private RandomAccessibleInterval<? extends NumericType<?>> view;
-	private AffineTransform3D transformation;
 	private Set<SegmentationResultsModel> alreadyRegistered = Collections.newSetFromMap(
 		new WeakHashMap<>());
+	private DefaultHolder<BdvShowable> showable;
 
 	public static PredictionLayer createPredictionLayer(DefaultSegmentationModel segmentationModel) {
 		ImageLabelingModel imageLabelingModel = segmentationModel.imageLabelingModel();
@@ -61,8 +61,9 @@ public class PredictionLayer implements BdvLayer {
 		this.model = model;
 		this.segmentationContainer = new RandomAccessibleContainer<>(getEmptyPrediction(interval
 			.numDimensions()));
-		this.transformation = transformation;
-		this.view = Views.interval(segmentationContainer, interval);
+		RandomAccessibleInterval<? extends NumericType<?>> view = Views.interval(segmentationContainer,
+			interval);
+		this.showable = new DefaultHolder<>(BdvShowable.wrap(view, transformation));
 		this.visibility = visibility;
 		model.notifier().add(() -> classifierChanged());
 		registerListener(model.get());
@@ -120,8 +121,8 @@ public class PredictionLayer implements BdvLayer {
 	}
 
 	@Override
-	public BdvShowable image() {
-		return BdvShowable.wrap(view, transformation);
+	public Holder<BdvShowable> image() {
+		return showable;
 	}
 
 	@Override

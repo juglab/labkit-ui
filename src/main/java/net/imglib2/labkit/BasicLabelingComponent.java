@@ -9,11 +9,14 @@ import bdv.viewer.DisplayMode;
 import net.imglib2.labkit.actions.ToggleVisibility;
 import net.imglib2.labkit.bdv.BdvAutoContrast;
 import net.imglib2.labkit.bdv.BdvLayer;
+import net.imglib2.labkit.bdv.BdvShowable;
 import net.imglib2.labkit.brush.ChangeLabel;
 import net.imglib2.labkit.brush.FloodFillController;
 import net.imglib2.labkit.brush.LabelBrushController;
 import net.imglib2.labkit.brush.SelectLabelController;
 import net.imglib2.labkit.labeling.LabelsLayer;
+import net.imglib2.labkit.models.DefaultHolder;
+import net.imglib2.labkit.models.Holder;
 import net.imglib2.labkit.models.ImageLabelingModel;
 import net.imglib2.labkit.panel.LabelToolsPanel;
 import net.miginfocom.swing.MigLayout;
@@ -24,7 +27,7 @@ import java.util.Collection;
 
 public class BasicLabelingComponent implements AutoCloseable {
 
-	private final BdvSource imageSource;
+	private final Holder<BdvSource> imageSource;
 
 	private BdvHandle bdvHandle;
 
@@ -68,7 +71,7 @@ public class BasicLabelingComponent implements AutoCloseable {
 		panel.add(bdvHandle.getViewerPanel(), "grow");
 	}
 
-	private BdvSource initImageLayer() {
+	private Holder<BdvSource> initImageLayer() {
 		return addBdvLayer(new BdvLayer.FinalLayer(model.showable(), "Image", model
 			.imageVisibility()));
 	}
@@ -77,11 +80,16 @@ public class BasicLabelingComponent implements AutoCloseable {
 		addBdvLayer(new LabelsLayer(model));
 	}
 
-	public BdvSource addBdvLayer(BdvLayer layer) {
+	public Holder<BdvSource> addBdvLayer(BdvLayer layer) {
 		BdvOptions options = BdvOptions.options().addTo(bdvHandle);
-		BdvSource source = layer.image().show(layer.title(), options);
+		Holder<BdvShowable> image = layer.image();
+		Holder<BdvSource> source = new DefaultHolder<>(image.get().show(layer.title(), options));
+		image.notifier().add(() -> {
+			source.get().removeFromBdv();
+			source.set(image.get().show(layer.title(), options));
+		});
 		layer.listeners().add(this::requestRepaint);
-		ToggleVisibility action = new ToggleVisibility(layer.title(), source);
+		ToggleVisibility action = new ToggleVisibility(layer.title(), source.get());
 		actionsAndBehaviours.addAction(action);
 		layer.visibility().notifier().add(() -> action.setVisible(layer.visibility()
 			.get()));
@@ -122,7 +130,7 @@ public class BasicLabelingComponent implements AutoCloseable {
 	}
 
 	public void autoContrast() {
-		BdvAutoContrast.autoContrast(imageSource);
+		BdvAutoContrast.autoContrast(imageSource.get());
 	}
 
 }
