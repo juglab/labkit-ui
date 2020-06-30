@@ -38,7 +38,7 @@ public class ImageLabelingModel implements LabelingModel {
 
 	private final TransformationModel transformationModel;
 
-	private BdvShowable showable;
+	private Holder<BdvShowable> showable;
 
 	private String defaultFileName;
 
@@ -50,7 +50,7 @@ public class ImageLabelingModel implements LabelingModel {
 		Interval intervalWithoutChannels = new FinalInterval(firstChannel);
 		Labeling labeling = Labeling.createEmpty(Arrays.asList("background", "foreground"),
 			intervalWithoutChannels);
-		this.showable = inputImage.showable();
+		this.showable = new DefaultHolder<>(inputImage.showable());
 		this.labelingHolder = new DefaultHolder<>(labeling);
 		this.imageForSegmentation = image;
 		this.labelingHolder.notifier().add(this::labelingReplacedEvent);
@@ -63,8 +63,8 @@ public class ImageLabelingModel implements LabelingModel {
 	}
 
 	private void updateLabelTransform() {
-		labelTransformation.set(multiply(showable.transformation(), getScaling(
-			showable.interval(), labelingHolder.get().interval())));
+		labelTransformation.set(multiply(showable.get().transformation(), getScaling(
+			showable.get().interval(), labelingHolder.get().interval())));
 	}
 
 	private AffineTransform3D multiply(AffineTransform3D transformation,
@@ -84,7 +84,7 @@ public class ImageLabelingModel implements LabelingModel {
 			.isEmpty() ? null : labels.get(0));
 	}
 
-	public BdvShowable showable() {
+	public Holder<BdvShowable> showable() {
 		return showable;
 	}
 
@@ -168,4 +168,8 @@ public class ImageLabelingModel implements LabelingModel {
 		return result;
 	}
 
+	@Override
+	public String toString() {
+		return imageForSegmentation.getName();
+	}
 }
