@@ -4,9 +4,9 @@ package net.imglib2.labkit;
 import bdv.util.BdvHandle;
 import bdv.util.BdvHandlePanel;
 import bdv.util.BdvOptions;
-import bdv.util.BdvSource;
 import bdv.util.BdvStackSource;
 import bdv.viewer.DisplayMode;
+import bdv.viewer.SourceAndConverter;
 import bdv.viewer.SynchronizedViewerState;
 import bdv.viewer.ViewerStateChange;
 import net.imglib2.labkit.bdv.BdvAutoContrast;
@@ -85,26 +85,38 @@ public class BasicLabelingComponent implements AutoCloseable {
 	public Holder<BdvStackSource<?>> addBdvLayer(BdvLayer layer) {
 		BdvOptions options = BdvOptions.options().addTo(bdvHandle);
 		Holder<BdvShowable> image = layer.image();
-		Holder<BdvStackSource<?>> source = new DefaultHolder<>(image.get().show(layer.title(),
-			options));
+		BdvShowable showable1 = image.get();
+		BdvStackSource<?> bdvStackSource = showable1 != null ? showable1.show(layer.title(), options)
+			: null;
+		Holder<BdvStackSource<?>> source = new DefaultHolder<>(bdvStackSource);
 		image.notifier().add(() -> {
-			source.get().removeFromBdv();
-			source.set(image.get().show(layer.title(), options));
-			source.get().setActive(layer.visibility().get());
+			BdvStackSource<?> source1 = source.get();
+			source.set(null);
+			if (source1 != null)
+				source1.removeFromBdv();
+			BdvShowable showable = image.get();
+			if (showable != null) {
+				source.set(showable.show(layer.title(), options));
+				source.get().setActive(layer.visibility().get());
+			}
 		});
 		layer.listeners().add(this::requestRepaint);
 		layer.visibility().notifier().add(() -> {
-			try {
-				source.get().setActive(layer.visibility().get());
-			}
+			BdvStackSource<?> source1 = source.get();
+			if (source1 != null)
+				try
+				{
+					source1.setActive(layer.visibility().get());
+				}
 			catch (NullPointerException ignore) {
-				// ignore
+
 			}
 		});
 		SynchronizedViewerState viewerState = bdvHandle.getViewerPanel().state();
 		viewerState.changeListeners().add(l -> {
-			if (l == ViewerStateChange.VISIBILITY_CHANGED) {
-				boolean visible = viewerState.isSourceActive(source.get().getSources().get(0));
+			BdvStackSource<?> source1 = source.get();
+			if (source1 != null && l == ViewerStateChange.VISIBILITY_CHANGED) {
+				boolean visible = viewerState.isSourceActive(source1.getSources().get(0));
 				layer.visibility().set(visible);
 			}
 		});
