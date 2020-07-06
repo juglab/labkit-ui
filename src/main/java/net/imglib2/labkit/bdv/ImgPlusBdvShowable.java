@@ -5,6 +5,7 @@ import bdv.util.AxisOrder;
 import bdv.util.BdvFunctions;
 import bdv.util.BdvOptions;
 import bdv.util.BdvSource;
+import bdv.util.BdvStackSource;
 import net.imagej.ImgPlus;
 import net.imagej.axis.Axes;
 import net.imagej.axis.AxisType;
@@ -39,7 +40,7 @@ class ImgPlusBdvShowable implements BdvShowable {
 	}
 
 	@Override
-	public BdvSource show(String title, BdvOptions options) {
+	public BdvStackSource<?> show(String title, BdvOptions options) {
 		return BdvFunctions.show(image, image.getName(), options.axisOrder(
 			getAxisOrder()));
 	}

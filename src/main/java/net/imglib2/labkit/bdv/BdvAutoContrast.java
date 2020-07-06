@@ -2,6 +2,7 @@
 package net.imglib2.labkit.bdv;
 
 import bdv.util.BdvSource;
+import bdv.util.BdvStackSource;
 import bdv.viewer.Source;
 import bdv.viewer.ViewerPanel;
 import net.imglib2.Cursor;
@@ -26,9 +27,7 @@ public class BdvAutoContrast {
 
 	private static ValuePair<Double, Double> getMinMax(BdvSource bdvSource) {
 		ViewerPanel viewer = bdvSource.getBdvHandle().getViewerPanel();
-		bdvSource.setCurrent();
-		Source<?> spimSource = viewer.getState().getSources().get(viewer.getState()
-			.getCurrentSource()).getSpimSource();
+		Source<?> spimSource = ((BdvStackSource<?>) bdvSource).getSources().get(0).getSpimSource();
 		int level = spimSource.getNumMipmapLevels() - 1;
 		RandomAccessibleInterval<?> source = spimSource.getSource(viewer.getState()
 			.getCurrentTimepoint(), level);
