@@ -12,9 +12,7 @@ import net.imglib2.labkit.models.Holder;
 import net.imglib2.labkit.models.LabelingModel;
 import net.imglib2.labkit.utils.ARGBVector;
 import net.imglib2.labkit.utils.Notifier;
-import net.imglib2.labkit.utils.RandomAccessibleContainer;
 import net.imglib2.type.numeric.ARGBType;
-import net.imglib2.view.Views;
 
 import java.util.List;
 import java.util.Set;
@@ -24,8 +22,6 @@ import java.util.stream.Collectors;
  * @author Matthias Arzt
  */
 public class LabelsLayer implements BdvLayer {
-
-	private final RandomAccessibleContainer<ARGBType> container;
 
 	private final LabelingModel model;
 
@@ -37,16 +33,13 @@ public class LabelsLayer implements BdvLayer {
 
 	public LabelsLayer(LabelingModel model) {
 		this.model = model;
-		RandomAccessibleInterval<ARGBType> view = colorView();
-		container = new RandomAccessibleContainer<>(view);
-		this.showable = new DefaultHolder<>(BdvShowable.wrap(Views.interval(container, view), model
-			.labelTransformation()));
+		this.showable = new DefaultHolder<>(BdvShowable.wrap(colorView(), model.labelTransformation()));
 		model.labeling().notifier().add(this::updateView);
 		model.dataChangedNotifier().add(() -> listeners.notifyListeners());
 	}
 
 	private void updateView() {
-		container.setSource(colorView());
+		showable.set(BdvShowable.wrap(colorView(), model.labelTransformation()));
 		listeners.notifyListeners();
 	}
 

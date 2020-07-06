@@ -17,14 +17,11 @@ import net.imglib2.labkit.models.ImageLabelingModel;
 import net.imglib2.labkit.models.MappedHolder;
 import net.imglib2.labkit.models.SegmentationResultsModel;
 import net.imglib2.labkit.utils.Notifier;
-import net.imglib2.labkit.utils.RandomAccessibleContainer;
 import net.imglib2.realtransform.AffineTransform3D;
 import net.imglib2.type.numeric.ARGBType;
-import net.imglib2.type.numeric.NumericType;
 import net.imglib2.type.volatiles.VolatileARGBType;
 import net.imglib2.type.volatiles.VolatileShortType;
 import net.imglib2.util.ConstantUtils;
-import net.imglib2.view.Views;
 
 import java.util.Collections;
 import java.util.Set;
@@ -33,7 +30,6 @@ import java.util.WeakHashMap;
 public class PredictionLayer implements BdvLayer {
 
 	private final Holder<SegmentationResultsModel> model;
-	private final RandomAccessibleContainer<VolatileARGBType> segmentationContainer;
 	private final SharedQueue queue = new SharedQueue(Runtime.getRuntime()
 		.availableProcessors());
 	private final Holder<Boolean> visibility;
@@ -59,11 +55,7 @@ public class PredictionLayer implements BdvLayer {
 		Interval interval)
 	{
 		this.model = model;
-		this.segmentationContainer = new RandomAccessibleContainer<>(getEmptyPrediction(interval
-			.numDimensions()));
-		RandomAccessibleInterval<? extends NumericType<?>> view = Views.interval(segmentationContainer,
-			interval);
-		this.showable = new DefaultHolder<>(BdvShowable.wrap(view, transformation));
+		this.showable = new DefaultHolder<>(null);
 		this.visibility = visibility;
 		model.notifier().add(() -> classifierChanged());
 		registerListener(model.get());
@@ -93,9 +85,10 @@ public class PredictionLayer implements BdvLayer {
 		SegmentationResultsModel results = model.get();
 		registerListener(results);
 		boolean hasResult = results != null && results.hasResults();
-		RandomAccessible<VolatileARGBType> source = hasResult ? Views.extendValue(coloredVolatileView(
-			results), new VolatileARGBType(0)) : getEmptyPrediction(2);
-		segmentationContainer.setSource(source);
+		if (hasResult)
+			showable.set(BdvShowable.wrap(coloredVolatileView(results)));
+		else
+			showable.set(null);
 		listeners.notifyListeners();
 	}
 
