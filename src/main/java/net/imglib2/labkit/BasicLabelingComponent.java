@@ -5,8 +5,10 @@ import bdv.util.BdvHandle;
 import bdv.util.BdvHandlePanel;
 import bdv.util.BdvOptions;
 import bdv.util.BdvSource;
+import bdv.util.BdvStackSource;
 import bdv.viewer.DisplayMode;
-import net.imglib2.labkit.actions.ToggleVisibility;
+import bdv.viewer.SynchronizedViewerState;
+import bdv.viewer.ViewerStateChange;
 import net.imglib2.labkit.bdv.BdvAutoContrast;
 import net.imglib2.labkit.bdv.BdvLayer;
 import net.imglib2.labkit.bdv.BdvShowable;
@@ -27,7 +29,7 @@ import java.util.Collection;
 
 public class BasicLabelingComponent implements AutoCloseable {
 
-	private final Holder<BdvSource> imageSource;
+	private final Holder<BdvStackSource<?>> imageSource;
 
 	private BdvHandle bdvHandle;
 
@@ -71,7 +73,7 @@ public class BasicLabelingComponent implements AutoCloseable {
 		panel.add(bdvHandle.getViewerPanel(), "grow");
 	}
 
-	private Holder<BdvSource> initImageLayer() {
+	private Holder<BdvStackSource<?>> initImageLayer() {
 		return addBdvLayer(new BdvLayer.FinalLayer(model.showable(), "Image", model
 			.imageVisibility()));
 	}
@@ -80,22 +82,31 @@ public class BasicLabelingComponent implements AutoCloseable {
 		addBdvLayer(new LabelsLayer(model));
 	}
 
-	public Holder<BdvSource> addBdvLayer(BdvLayer layer) {
+	public Holder<BdvStackSource<?>> addBdvLayer(BdvLayer layer) {
 		BdvOptions options = BdvOptions.options().addTo(bdvHandle);
 		Holder<BdvShowable> image = layer.image();
-		Holder<BdvSource> source = new DefaultHolder<>(image.get().show(layer.title(), options));
+		Holder<BdvStackSource<?>> source = new DefaultHolder<>(image.get().show(layer.title(),
+			options));
 		image.notifier().add(() -> {
 			source.get().removeFromBdv();
 			source.set(image.get().show(layer.title(), options));
+			source.get().setActive(layer.visibility().get());
 		});
 		layer.listeners().add(this::requestRepaint);
-		ToggleVisibility action = new ToggleVisibility(layer.title(), source.get());
-		actionsAndBehaviours.addAction(action);
-		layer.visibility().notifier().add(() -> action.setVisible(layer.visibility()
-			.get()));
-		action.addPropertyChangeListener(propertyChangeEvent -> {
-			if (propertyChangeEvent.getPropertyName().equals(Action.SELECTED_KEY))
-				layer.visibility().set((Boolean) propertyChangeEvent.getNewValue());
+		layer.visibility().notifier().add(() -> {
+			try {
+				source.get().setActive(layer.visibility().get());
+			}
+			catch (NullPointerException ignore) {
+				// ignore
+			}
+		});
+		SynchronizedViewerState viewerState = bdvHandle.getViewerPanel().state();
+		viewerState.changeListeners().add(l -> {
+			if (l == ViewerStateChange.VISIBILITY_CHANGED) {
+				boolean visible = viewerState.isSourceActive(source.get().getSources().get(0));
+				layer.visibility().set(visible);
+			}
 		});
 		return source;
 	}

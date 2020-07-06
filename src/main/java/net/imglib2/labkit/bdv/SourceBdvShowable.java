@@ -1,6 +1,7 @@
 
 package net.imglib2.labkit.bdv;
 
+import bdv.util.BdvStackSource;
 import bdv.viewer.Source;
 import bdv.util.BdvFunctions;
 import bdv.util.BdvOptions;
@@ -31,7 +32,7 @@ class SourceBdvShowable implements BdvShowable {
 	}
 
 	@Override
-	public BdvSource show(String title, BdvOptions options) {
+	public BdvStackSource<?> show(String title, BdvOptions options) {
 		return BdvFunctions.show(source, options);
 	}
 }

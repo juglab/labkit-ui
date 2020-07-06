@@ -4,6 +4,7 @@ package net.imglib2.labkit.bdv;
 import bdv.util.BdvFunctions;
 import bdv.util.BdvOptions;
 import bdv.util.BdvSource;
+import bdv.util.BdvStackSource;
 import mpicbg.spim.data.generic.AbstractSpimData;
 import mpicbg.spim.data.generic.sequence.AbstractSequenceDescription;
 import mpicbg.spim.data.generic.sequence.BasicViewSetup;
@@ -50,7 +51,7 @@ class SpimBdvShowable implements BdvShowable {
 	}
 
 	@Override
-	public BdvSource show(String title, BdvOptions options) {
+	public BdvStackSource<?> show(String title, BdvOptions options) {
 		return BdvFunctions.show(spimData, options).get(0);
 	}
 
