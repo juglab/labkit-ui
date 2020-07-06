@@ -41,7 +41,8 @@ class ImgPlusBdvShowable implements BdvShowable {
 
 	@Override
 	public BdvStackSource<?> show(String title, BdvOptions options) {
-		return BdvFunctions.show(image, image.getName(), options.axisOrder(
+		String name = image.getName();
+		return BdvFunctions.show(image, name == null ? title : name, options.axisOrder(
 			getAxisOrder()));
 	}
 
