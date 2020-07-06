@@ -53,15 +53,4 @@ public class LabelingComponentDemo {
 		});
 		return labelingComponent.getComponent();
 	}
-
-	private static RandomAccessibleInterval<ARGBType> greenNoiseImage(
-		long... dim)
-	{
-		RandomAccessibleInterval<ARGBType> backgroundImage = ArrayImgs.argbs(dim);
-		final Random random = new Random(42);
-		Views.iterable(backgroundImage).forEach(pixel -> pixel.set(ARGBType.rgba(0,
-			random.nextInt(130), 0, 0)));
-		ImageJFunctions.show(backgroundImage);
-		return backgroundImage;
-	}
 }
