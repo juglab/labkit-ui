@@ -54,7 +54,7 @@ public class TrainClassifier {
 		progressWriter.setDetailsVisible(false);
 		try {
 			Stream<ValuePair<ImgPlus<?>, Labeling>> stream = imageLabelingModels.stream()
-				.map(ilm -> new ValuePair<>(ilm.imageForSegmentation(), ilm.labeling().get()));
+				.map(ilm -> new ValuePair<>(ilm.imageForSegmentation().get(), ilm.labeling().get()));
 			item.train(stream.collect(Collectors.toList()));
 		}
 		catch (CancellationException e) {

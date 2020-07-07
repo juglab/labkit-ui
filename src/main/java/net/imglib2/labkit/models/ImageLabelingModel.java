@@ -20,6 +20,9 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.stream.IntStream;
 
+/**
+ * This class serves as a model to SegmentationComponent.
+ */
 public class ImageLabelingModel implements LabelingModel {
 
 	private final AffineTransform3D labelTransformation = new AffineTransform3D();
@@ -38,11 +41,11 @@ public class ImageLabelingModel implements LabelingModel {
 
 	private final TransformationModel transformationModel;
 
-	private Holder<BdvShowable> showable;
+	private final Holder<BdvShowable> showable;
 
 	private String defaultFileName;
 
-	private final ImgPlus<?> imageForSegmentation;
+	private final Holder<ImgPlus<?>> imageForSegmentation;
 
 	public ImageLabelingModel(InputImage inputImage) {
 		ImgPlus<?> image = inputImage.imageForSegmentation();
@@ -52,7 +55,7 @@ public class ImageLabelingModel implements LabelingModel {
 			intervalWithoutChannels);
 		this.showable = new DefaultHolder<>(inputImage.showable());
 		this.labelingHolder = new DefaultHolder<>(labeling);
-		this.imageForSegmentation = image;
+		this.imageForSegmentation = new DefaultHolder<>(image);
 		this.labelingHolder.notifier().add(this::labelingReplacedEvent);
 		updateLabelTransform();
 		Label anyLabel = labeling.getLabels().stream().findAny().orElse(null);
@@ -134,7 +137,7 @@ public class ImageLabelingModel implements LabelingModel {
 		return transformationModel;
 	}
 
-	public ImgPlus<?> imageForSegmentation() {
+	public Holder<ImgPlus<?>> imageForSegmentation() {
 		return imageForSegmentation;
 	}
 
@@ -170,6 +173,6 @@ public class ImageLabelingModel implements LabelingModel {
 
 	@Override
 	public String toString() {
-		return imageForSegmentation.getName();
+		return imageForSegmentation.get().getName();
 	}
 }
