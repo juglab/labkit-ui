@@ -63,6 +63,7 @@ public class ChangingImageSegmentationComponentDemo {
 		ImgPlus<?> image = VirtualStackAdapter.wrap(imp);
 		DatasetInputImage datasetInputImage = new DatasetInputImage(image);
 		model.showable().set(datasetInputImage.showable());
+		model.imageForSegmentation().set(datasetInputImage.imageForSegmentation());
 		model.labeling().set(InitialLabeling.initialLabeling(SingletonContext.getInstance(),
 			datasetInputImage));
 	}

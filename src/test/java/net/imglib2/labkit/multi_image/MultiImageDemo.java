@@ -83,6 +83,7 @@ public class MultiImageDemo {
 		final DefaultSegmentationModel model = new DefaultSegmentationModel(context, imageLabelingModel,
 			multiImageSegmentationModel.segmenterListModel());
 		LabkitFrame frame = LabkitFrame.show(model, model.imageLabelingModel().imageForSegmentation()
+			.get()
 			.getName());
 		frame.onCloseListeners().add(() -> {
 			saveImageLabelingModel(model);

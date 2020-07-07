@@ -3,8 +3,6 @@ package net.imglib2.labkit.segmentation;
 
 import bdv.util.volatiles.SharedQueue;
 import bdv.util.volatiles.VolatileViews;
-import net.imglib2.Interval;
-import net.imglib2.RandomAccessible;
 import net.imglib2.RandomAccessibleInterval;
 import net.imglib2.converter.Converter;
 import net.imglib2.converter.Converters;
@@ -17,11 +15,9 @@ import net.imglib2.labkit.models.ImageLabelingModel;
 import net.imglib2.labkit.models.MappedHolder;
 import net.imglib2.labkit.models.SegmentationResultsModel;
 import net.imglib2.labkit.utils.Notifier;
-import net.imglib2.realtransform.AffineTransform3D;
 import net.imglib2.type.numeric.ARGBType;
 import net.imglib2.type.volatiles.VolatileARGBType;
 import net.imglib2.type.volatiles.VolatileShortType;
-import net.imglib2.util.ConstantUtils;
 
 import java.util.Collections;
 import java.util.Set;
@@ -43,16 +39,12 @@ public class PredictionLayer implements BdvLayer {
 		return new PredictionLayer(
 			new MappedHolder<>(segmentationModel.segmenterList().selectedSegmenter(), si -> si == null
 				? null : si.results(imageLabelingModel)),
-			segmentationModel.segmenterList().segmentationVisibility(),
-			imageLabelingModel.labelTransformation(),
-			imageLabelingModel.labeling().get().interval());
+			segmentationModel.segmenterList().segmentationVisibility());
 	}
 
 	private PredictionLayer(
 		Holder<SegmentationResultsModel> model,
-		Holder<Boolean> visibility,
-		AffineTransform3D transformation,
-		Interval interval)
+		Holder<Boolean> visibility)
 	{
 		this.model = model;
 		this.showable = new DefaultHolder<>(null);
@@ -75,10 +67,6 @@ public class PredictionLayer implements BdvLayer {
 			classifierChanged();
 			visibility.set(true);
 		}
-	}
-
-	private RandomAccessible<VolatileARGBType> getEmptyPrediction(int numDimensions) {
-		return ConstantUtils.constantRandomAccessible(new VolatileARGBType(0), numDimensions);
 	}
 
 	private void classifierChanged() {

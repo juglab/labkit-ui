@@ -52,6 +52,7 @@ public class SegmentationResultsModel {
 		this.segmenter = segmenter;
 		segmentation = dummy(new ShortType());
 		prediction = dummy(new FloatType());
+		model.imageForSegmentation().notifier().add(this::update);
 		update();
 	}
 
@@ -93,7 +94,7 @@ public class SegmentationResultsModel {
 	}
 
 	private <T> RandomAccessibleInterval<T> dummy(T value) {
-		FinalInterval interval = new FinalInterval(model.imageForSegmentation());
+		FinalInterval interval = new FinalInterval(model.imageForSegmentation().get());
 		return ConstantUtils.constantRandomAccessibleInterval(value, interval);
 	}
 
@@ -103,7 +104,7 @@ public class SegmentationResultsModel {
 
 	private void updatePrediction(Segmenter segmenter) {
 		int count = segmenter.classNames().size();
-		ImgPlus<?> image = model.imageForSegmentation();
+		ImgPlus<?> image = model.imageForSegmentation().get();
 		CellLoader<FloatType> loader = target -> segmenter.predict(image, target);
 		int[] cellSize = segmenter.suggestCellSize(image);
 		Interval interval = intervalNoChannels(image);
@@ -119,7 +120,7 @@ public class SegmentationResultsModel {
 	}
 
 	private void updateSegmentation(Segmenter segmenter) {
-		ImgPlus<?> image = model.imageForSegmentation();
+		ImgPlus<?> image = model.imageForSegmentation().get();
 		CellLoader<ShortType> loader = target -> segmenter.segment(image, target);
 		int[] cellSize = segmenter.suggestCellSize(image);
 		Interval interval = intervalNoChannels(image);
@@ -159,8 +160,7 @@ public class SegmentationResultsModel {
 	}
 
 	public Interval interval() {
-		return new FinalInterval(Intervals.dimensionsAsLongArray(model
-			.imageForSegmentation()));
+		return new FinalInterval(Intervals.dimensionsAsLongArray(model.imageForSegmentation().get()));
 	}
 
 	public List<ARGBType> colors() {

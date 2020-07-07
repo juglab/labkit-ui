@@ -56,7 +56,7 @@ public class DefaultSegmentationModel {
 	public <T extends IntegerType<T> & NativeType<T>>
 		List<RandomAccessibleInterval<T>> getSegmentations(T type)
 	{
-		ImgPlus<?> image = imageLabelingModel().imageForSegmentation();
+		ImgPlus<?> image = imageLabelingModel().imageForSegmentation().get();
 		Stream<Segmenter> trainedSegmenters = getTrainedSegmenters();
 		return trainedSegmenters.map(segmenter -> {
 			RandomAccessibleInterval<T> labels = new CellImgFactory<>(type).create(
@@ -67,7 +67,7 @@ public class DefaultSegmentationModel {
 	}
 
 	public List<RandomAccessibleInterval<FloatType>> getPredictions() {
-		ImgPlus<?> image = imageLabelingModel().imageForSegmentation();
+		ImgPlus<?> image = imageLabelingModel().imageForSegmentation().get();
 		Stream<Segmenter> trainedSegmenters = getTrainedSegmenters();
 		return trainedSegmenters.map(segmenter -> {
 			int numberOfClasses = segmenter.classNames().size();
