@@ -29,7 +29,7 @@ import java.util.stream.LongStream;
 
 public class InitialLabeling {
 
-	static Labeling initialLabeling(Context context, InputImage inputImage) {
+	public static Labeling initialLabeling(Context context, InputImage inputImage) {
 		Preferences preferences = new Preferences(context);
 		List<String> defaultLabels = preferences.getDefaultLabels();
 		return initLabeling(inputImage, context, defaultLabels);
