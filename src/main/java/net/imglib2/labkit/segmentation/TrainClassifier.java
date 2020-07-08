@@ -6,20 +6,17 @@ import net.imglib2.labkit.Extensible;
 
 import net.imglib2.labkit.MenuBar;
 import net.imglib2.labkit.labeling.Labeling;
-import net.imglib2.labkit.models.ImageLabelingModel;
 import net.imglib2.labkit.models.SegmentationItem;
 import net.imglib2.labkit.models.SegmenterListModel;
 import net.imglib2.labkit.panel.GuiUtils;
 import net.imglib2.labkit.utils.ParallelUtils;
 import net.imglib2.labkit.utils.progress.SwingProgressWriter;
-import net.imglib2.util.ValuePair;
+import net.imglib2.util.Pair;
 
 import javax.swing.*;
 import java.util.List;
 import java.util.concurrent.CancellationException;
 import java.util.function.Consumer;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 public class TrainClassifier {
 
@@ -46,16 +43,14 @@ public class TrainClassifier {
 		model.train(item);
 	}
 
-	public static void train(List<ImageLabelingModel> imageLabelingModels, SegmentationItem item) {
+	public static void train(List<Pair<ImgPlus<?>, Labeling>> trainingData, SegmentationItem item) {
 		SwingProgressWriter progressWriter = new SwingProgressWriter(null,
 			"Training in Progress");
 		progressWriter.setVisible(true);
 		progressWriter.setProgressBarVisible(false);
 		progressWriter.setDetailsVisible(false);
 		try {
-			Stream<ValuePair<ImgPlus<?>, Labeling>> stream = imageLabelingModels.stream()
-				.map(ilm -> new ValuePair<>(ilm.imageForSegmentation().get(), ilm.labeling().get()));
-			item.train(stream.collect(Collectors.toList()));
+			item.train(trainingData);
 		}
 		catch (CancellationException e) {
 			progressWriter.setVisible(false);

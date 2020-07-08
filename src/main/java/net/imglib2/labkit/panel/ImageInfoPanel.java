@@ -3,7 +3,6 @@ package net.imglib2.labkit.panel;
 
 import net.imglib2.Dimensions;
 import net.imglib2.labkit.BasicLabelingComponent;
-import net.imglib2.labkit.LabelingComponent;
 import net.imglib2.labkit.models.ImageLabelingModel;
 import net.imglib2.util.Intervals;
 import net.miginfocom.swing.MigLayout;
@@ -16,12 +15,6 @@ public class ImageInfoPanel {
 
 	private ImageInfoPanel() {
 		// prevent from instantiation
-	}
-
-	public static JPanel newFramedImageInfoPanel(
-		ImageLabelingModel imageLabelingModel)
-	{
-		return newFramedImageInfoPanel(imageLabelingModel, null);
 	}
 
 	public static JPanel newFramedImageInfoPanel(

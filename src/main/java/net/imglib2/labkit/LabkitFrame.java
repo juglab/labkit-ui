@@ -26,13 +26,18 @@ public class LabkitFrame {
 
 	private final Notifier onCloseListeners = new Notifier();
 
-	public static LabkitFrame showForFile(final Context context,
+	public static LabkitFrame showForFile(Context context,
 		final String filename)
 	{
-		final Context context2 = (context == null) ? SingletonContext.getInstance() : context;
-		Dataset dataset = CheckedExceptionUtils.run(() -> context2.service(
+		if (context == null)
+			context = SingletonContext.getInstance();
+		Dataset dataset = openDataset(context, filename);
+		return showForImage(context, new DatasetInputImage(dataset));
+	}
+
+	private static Dataset openDataset(Context context, String filename) {
+		return CheckedExceptionUtils.run(() -> context.service(
 			DatasetIOService.class).open(filename));
-		return showForImage(context2, new DatasetInputImage(dataset));
 	}
 
 	public static LabkitFrame showForImage(final Context context,

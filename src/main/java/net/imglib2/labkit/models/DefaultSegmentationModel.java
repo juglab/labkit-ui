@@ -12,7 +12,6 @@ import net.imglib2.type.numeric.IntegerType;
 import net.imglib2.type.numeric.real.FloatType;
 import org.scijava.Context;
 
-import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -29,11 +28,11 @@ public class DefaultSegmentationModel {
 	public DefaultSegmentationModel(Context context, InputImage inputImage) {
 		this.context = context;
 		this.imageLabelingModel = new ImageLabelingModel(inputImage);
-		this.segmenterList = new SegmenterListModel(context, Collections.singletonList(
-			imageLabelingModel));
+		this.segmenterList = new SegmenterListModel(context, imageLabelingModel);
 	}
 
-	public DefaultSegmentationModel(Context context, ImageLabelingModel imageLabelingModel,
+	public DefaultSegmentationModel(Context context,
+		ImageLabelingModel imageLabelingModel,
 		SegmenterListModel segmenterList)
 	{
 		this.context = context;
@@ -86,5 +85,4 @@ public class DefaultSegmentationModel {
 	private Stream<Segmenter> getTrainedSegmenters() {
 		return segmenterList.segmenters().stream().filter(Segmenter::isTrained).map(x -> x);
 	}
-
 }

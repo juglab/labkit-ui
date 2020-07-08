@@ -1,13 +1,15 @@
 
-package net.imglib2.labkit.multi_image;
+package net.imglib2.labkit.models;
 
-public class ImageItem {
+import java.io.File;
+
+public class LabeledImage {
 
 	private String imageFile;
 
 	private String labelingFile;
 
-	public ImageItem(String imageFile) {
+	public LabeledImage(String imageFile) {
 		this.imageFile = imageFile;
 		this.labelingFile = imageFile + ".labeling";
 	}
@@ -22,6 +24,6 @@ public class ImageItem {
 
 	@Override
 	public String toString() {
-		return "image: " + imageFile + " labeling: " + labelingFile;
+		return new File(imageFile).getName();
 	}
 }
