@@ -116,4 +116,8 @@ public class SegmentationComponent implements AutoCloseable {
 	public JMenuBar getMenuBar() {
 		return new MenuBar(this::createMenu);
 	}
+
+	public void autoContrast() {
+		labelingComponent.autoContrast();
+	}
 }
