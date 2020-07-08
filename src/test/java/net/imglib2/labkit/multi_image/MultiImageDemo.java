@@ -31,10 +31,11 @@ public class MultiImageDemo {
 		List<LabeledImage> imageFiles = files;
 		LabkitProjectModel labkitProjectModel = new LabkitProjectModel(
 			SingletonContext.getInstance(), imageFiles);
-		JList<LabeledImage> list = initList(labkitProjectModel);
 		JFrame frame = new JFrame("Labkit Project");
 		SegmentationComponent component = new SegmentationComponent(frame, labkitProjectModel
 			.segmentationModel(), false);
+		JList<LabeledImage> list = initList(labkitProjectModel, component);
+		component.autoContrast();
 		frame.setJMenuBar(component.getMenuBar());
 		frame.add(component.getComponent());
 		frame.add(new JScrollPane(list), BorderLayout.LINE_END);
@@ -42,12 +43,15 @@ public class MultiImageDemo {
 		frame.setVisible(true);
 	}
 
-	private static JList<LabeledImage> initList(LabkitProjectModel labkitProjectModel) {
+	private static JList<LabeledImage> initList(LabkitProjectModel labkitProjectModel,
+		SegmentationComponent component)
+	{
 		JList<LabeledImage> list = new JList<>(labkitProjectModel.labeledImages().toArray(
 			new LabeledImage[0]));
 		list.addListSelectionListener(event -> {
 			if (!event.getValueIsAdjusting()) {
 				labkitProjectModel.selectLabeledImage(list.getSelectedValue());
+				component.autoContrast();
 			}
 		});
 		return list;
