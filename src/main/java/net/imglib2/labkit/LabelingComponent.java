@@ -21,7 +21,7 @@ public class LabelingComponent implements AutoCloseable {
 		this.labelingComponent = new BasicLabelingComponent(dialogBoxOwner, model);
 		JPanel leftPanel = new JPanel();
 		leftPanel.setLayout(new MigLayout("", "[grow]", "[][grow]"));
-		leftPanel.add(ImageInfoPanel.newFramedImageInfoPanel(Collections.singletonList(model),
+		leftPanel.add(ImageInfoPanel.newFramedImageInfoPanel(model,
 			labelingComponent), "grow, wrap");
 		DefaultExtensible extensible = new DefaultExtensible(null, dialogBoxOwner);
 		new LabelEditAction(extensible, false, new ColoredLabelsModel(model));

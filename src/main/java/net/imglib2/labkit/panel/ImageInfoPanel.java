@@ -19,17 +19,16 @@ public class ImageInfoPanel {
 	}
 
 	public static JPanel newFramedImageInfoPanel(
-		List<ImageLabelingModel> imageLabelingModels,
+		ImageLabelingModel imageLabelingModel,
 		BasicLabelingComponent labelingComponent)
 	{
-		ImageLabelingModel imageLabelingModel = imageLabelingModels.get(0);
 		return GuiUtils.createCheckboxGroupedPanel(imageLabelingModel
 			.imageVisibility(), "Image", createDimensionsInfo(imageLabelingModel
-				.labeling().get(), imageLabelingModels, labelingComponent));
+				.labeling().get(), labelingComponent));
 	}
 
 	private static JComponent createDimensionsInfo(Dimensions interval,
-		List<ImageLabelingModel> imageLabelingModels, BasicLabelingComponent labelingComponent)
+		BasicLabelingComponent labelingComponent)
 	{
 		Color background = UIManager.getColor("List.background");
 		JPanel panel = new JPanel();
@@ -38,9 +37,6 @@ public class ImageInfoPanel {
 		JLabel label = new JLabel("Dimensions: " + Arrays.toString(Intervals
 			.dimensionsAsLongArray(interval)));
 		panel.add(label, "grow, span, wrap");
-		JComboBox<ImageLabelingModel> comboBox = new JComboBox<>(imageLabelingModels.toArray(
-			new ImageLabelingModel[0]));
-		panel.add(comboBox, "grow, span, wrap");
 		if (labelingComponent != null) {
 			final JButton button = new JButton("auto contrast");
 			button.addActionListener(ignore -> labelingComponent.autoContrast());
