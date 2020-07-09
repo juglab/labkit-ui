@@ -8,6 +8,7 @@ import net.imglib2.labkit.inputimage.DatasetInputImage;
 import net.imglib2.labkit.labeling.Labeling;
 import net.imglib2.labkit.labeling.LabelingSerializer;
 import net.imglib2.labkit.utils.CheckedExceptionUtils;
+import net.imglib2.labkit.utils.Notifier;
 import net.imglib2.type.numeric.NumericType;
 import net.imglib2.util.Pair;
 import net.imglib2.util.ValuePair;
@@ -28,6 +29,8 @@ public class LabkitProjectModel {
 	private LabeledImage selectedImageItem;
 
 	private List<LabeledImage> labeledImages;
+
+	private final Notifier changeNotifier = new Notifier();
 
 	public LabkitProjectModel(Context context,
 		List<LabeledImage> labeledImages)
@@ -100,6 +103,10 @@ public class LabkitProjectModel {
 
 	public Context context() {
 		return context;
+	}
+
+	public Notifier changeNotifier() {
+		return changeNotifier;
 	}
 
 	private class TrainingData extends AbstractList<Pair<ImgPlus<?>, Labeling>> {
