@@ -2,6 +2,7 @@
 package net.imglib2.labkit.labeling;
 
 import com.google.gson.annotations.JsonAdapter;
+import com.google.gson.internal.LinkedTreeMap;
 import net.imagej.axis.CalibratedAxis;
 import net.imagej.axis.DefaultLinearAxis;
 import net.imglib2.*;
@@ -68,9 +69,9 @@ public class Labeling extends AbstractWrappedInterval<Interval> implements
 		if (regions.isEmpty()) throw new IllegalArgumentException(
 			"Labeling.fromMap: The given map must not be empty.");
 		ColorSupplier colors = new ColorSupplier();
-		Map<Label, IterableRegion<BitType>> regions2 = regions.entrySet().stream()
-			.collect(Collectors.toMap(entry -> new Label(entry.getKey(), colors
-				.get()), Map.Entry::getValue));
+		Map<Label, IterableRegion<BitType>> regions2 = new LinkedHashMap<>();
+		for (Map.Entry<String, IterableRegion<BitType>> entry : regions.entrySet())
+			regions2.put(new Label(entry.getKey(), colors.get()), entry.getValue());
 		final ArrayList<Label> labels = new ArrayList<>(regions2.keySet());
 		final ImgLabeling<Label, ?> imgLabling = initImgLabling(regions2);
 		return new Labeling(labels, imgLabling, colors);
