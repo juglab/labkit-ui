@@ -8,7 +8,6 @@ import net.imglib2.labkit.models.LabkitProjectModel;
 import net.imglib2.trainable_segmentation.utils.SingletonContext;
 
 import javax.swing.*;
-import java.awt.*;
 import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -34,26 +33,15 @@ public class MultiImageDemo {
 		JFrame frame = new JFrame("Labkit Project");
 		SegmentationComponent component = new SegmentationComponent(frame, labkitProjectModel
 			.segmentationModel(), false);
-		JList<LabeledImage> list = initList(labkitProjectModel, component);
 		component.autoContrast();
 		frame.setJMenuBar(component.getMenuBar());
-		frame.add(component.getComponent());
-		frame.add(new JScrollPane(list), BorderLayout.LINE_END);
+		JPanel panel = new LabkitProjectView(labkitProjectModel, component);
+		JSplitPane splitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, component.getComponent(),
+			panel);
+		splitPane.setResizeWeight(1);
+		splitPane.setOneTouchExpandable(true);
+		frame.add(splitPane);
 		frame.pack();
 		frame.setVisible(true);
-	}
-
-	private static JList<LabeledImage> initList(LabkitProjectModel labkitProjectModel,
-		SegmentationComponent component)
-	{
-		JList<LabeledImage> list = new JList<>(labkitProjectModel.labeledImages().toArray(
-			new LabeledImage[0]));
-		list.addListSelectionListener(event -> {
-			if (!event.getValueIsAdjusting()) {
-				labkitProjectModel.selectLabeledImage(list.getSelectedValue());
-				component.autoContrast();
-			}
-		});
-		return list;
 	}
 }
