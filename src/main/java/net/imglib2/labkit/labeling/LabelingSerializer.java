@@ -2,6 +2,7 @@
 package net.imglib2.labkit.labeling;
 
 import com.google.gson.*;
+import com.google.gson.internal.LinkedTreeMap;
 import com.google.gson.reflect.TypeToken;
 import com.google.gson.stream.JsonReader;
 import com.google.gson.stream.JsonWriter;
@@ -23,11 +24,13 @@ import net.imglib2.roi.labeling.ImgLabeling;
 import net.imglib2.roi.labeling.LabelingMapping;
 import net.imglib2.sparse.SparseIterableRegion;
 import net.imglib2.type.logic.BitType;
+import net.imglib2.type.numeric.ARGBType;
 import net.imglib2.type.numeric.IntegerType;
 import net.imglib2.type.numeric.integer.IntType;
 import org.apache.commons.io.FilenameUtils;
 import org.scijava.Context;
 
+import java.awt.*;
 import java.io.File;
 import java.io.FileReader;
 import java.io.FileWriter;
@@ -40,12 +43,26 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.TreeMap;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
 /**
+ * {@link LabelingSerializer} allows to open and save a {@link Labeling}:
+ * 
+ * <pre>
+ * // Initialize
+ * LabelingSerializer serializer = new LabelingSerializer(context);
+ *
+ * // Open a labeling from the given filename
+ * Labeling labeling = serializer.open(filename);
+ *
+ * // Save a labeling to the given filename
+ * serializer.save(labeling, filename);
+ * </pre>
+ * 
+ * This allows to use JSON and TIF as formats.
+ *
  * @author Matthias Arzt
  */
 public class LabelingSerializer {
@@ -197,9 +214,18 @@ public class LabelingSerializer {
 				FinalInterval.class));
 			jsonLabeling.add("pixelSizes", gson.toJsonTree(getPixelSize(labeling),
 				PixelSize[].class));
-			jsonLabeling.add("labels", regionsToJson(labeling.iterableRegions(),
-				gson));
+			jsonLabeling.add("labels", regionsToJson(labeling, gson));
+			jsonLabeling.add("colors", colorsToJson(labeling.getLabels()));
 			gson.toJson(jsonLabeling, jsonWriter);
+		}
+
+		private JsonElement colorsToJson(List<Label> labels) {
+			JsonObject map = new JsonObject();
+			for (Label label : labels) {
+				String format = String.format("#%06X", label.color().get() & 0xffffff);
+				map.add(label.name(), new JsonPrimitive(format));
+			}
+			return map;
 		}
 
 		private PixelSize[] getPixelSize(Labeling labeling) {
@@ -215,11 +241,13 @@ public class LabelingSerializer {
 		}
 
 		private JsonObject regionsToJson(
-			Map<Label, ? extends IterableRegion<BitType>> regions, Gson gson)
+			Labeling labeling, Gson gson)
 		{
 			JsonObject map = new JsonObject();
-			regions.forEach((label, region) -> map.add(label.name(), regionToJson(
-				gson, region)));
+			Map<Label, IterableRegion<BitType>> iterableRegions = labeling.iterableRegions();
+			// Add the label in the same order as returned by labeling.getLabels().
+			for (Label label : labeling.getLabels())
+				map.add(label.name(), regionToJson(gson, iterableRegions.get(label)));
 			return map;
 		}
 
@@ -255,14 +283,30 @@ public class LabelingSerializer {
 					FinalInterval.class);
 				PixelSize[] axes = context.deserialize(object.get("pixelSizes"),
 					PixelSize[].class);
-				Map<String, IterableRegion<BitType>> regions = new TreeMap<>();
-				object.getAsJsonObject("labels").entrySet().forEach(entry -> regions
-					.put(entry.getKey(), regionFromJson(context, interval, entry
-						.getValue())));
+				Map<String, IterableRegion<BitType>> regions = new LinkedTreeMap<>();
+				for (Map.Entry<String, JsonElement> entry : object.getAsJsonObject("labels").entrySet()) {
+					regions.put(entry.getKey(), regionFromJson(context, interval, entry.getValue()));
+				}
 				Labeling labeling = regions.isEmpty() ? Labeling.createEmptyLabels(
 					Collections.emptyList(), interval) : Labeling.fromMap(regions);
 				labeling.setAxes(pixelSizesToAxes(axes));
+				deserializeColors(context, object, labeling);
 				return labeling;
+			}
+
+			private void deserializeColors(JsonDeserializationContext context, JsonObject object,
+				Labeling labeling)
+			{
+				if (!object.has("colors"))
+					return;
+				Map<String, String> map = context.deserialize(object.get("colors"),
+					new TypeToken<Map<String, String>>()
+					{}.getType());
+				for (Label label : labeling.getLabels()) {
+					String color = map.get(label.name());
+					if (color != null)
+						label.setColor(new ARGBType(Color.decode(color).getRGB()));
+				}
 			}
 
 			private List<CalibratedAxis> pixelSizesToAxes(PixelSize[] axes) {
