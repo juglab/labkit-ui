@@ -45,9 +45,9 @@ public class LabkitProjectView extends JPanel {
 		JButton addImageButton = new JButton("Add image");
 		addImageButton.addActionListener(ignore -> onAddImageClicked(addImageButton));
 		buttonsPanel.add(addImageButton);
-		JButton removeImageButton = new JButton("Remove image");
-		removeImageButton.addActionListener(ignore -> onRemoveImageButtonClicked());
-		buttonsPanel.add(removeImageButton);
+		JButton editProjectButton = new JButton("Edit project");
+		editProjectButton.addActionListener(ignore -> onEditProjectButtonClicked());
+		buttonsPanel.add(editProjectButton);
 		return buttonsPanel;
 	}
 
@@ -67,11 +67,8 @@ public class LabkitProjectView extends JPanel {
 		}
 	}
 
-	private void onRemoveImageButtonClicked() {
-		List<LabeledImage> selected = list.getSelectedValuesList();
-		for (LabeledImage image : selected)
-			model.labeledImages().remove(image);
-		model.changeNotifier().notifyListeners();
+	private void onEditProjectButtonClicked() {
+		LabkitProjectEditor.show(model);
 	}
 
 	private static JList<LabeledImage> initList(LabkitProjectModel labkitProjectModel,
