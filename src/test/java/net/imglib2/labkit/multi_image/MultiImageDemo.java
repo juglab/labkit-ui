@@ -3,6 +3,7 @@ package net.imglib2.labkit.multi_image;
 
 import net.imagej.patcher.LegacyInjector;
 import net.imglib2.labkit.SegmentationComponent;
+import net.imglib2.labkit.models.DefaultSegmentationModel;
 import net.imglib2.labkit.models.LabeledImage;
 import net.imglib2.labkit.models.LabkitProjectModel;
 import net.imglib2.trainable_segmentation.utils.SingletonContext;
@@ -31,11 +32,12 @@ public class MultiImageDemo {
 		LabkitProjectModel labkitProjectModel = new LabkitProjectModel(
 			SingletonContext.getInstance(), imageFiles);
 		JFrame frame = new JFrame("Labkit Project");
-		SegmentationComponent component = new SegmentationComponent(frame, labkitProjectModel
-			.segmentationModel(), false);
+		DefaultSegmentationModel segmentationModel = ProjectSegmentationModel.init(labkitProjectModel);
+		SegmentationComponent component = new SegmentationComponent(frame, segmentationModel, false);
 		component.autoContrast();
 		frame.setJMenuBar(component.getMenuBar());
-		JPanel panel = new LabkitProjectView(labkitProjectModel, component);
+		JPanel panel = new LabkitProjectView(labkitProjectModel);
+		labkitProjectModel.selectedImage().notifier().add(component::autoContrast);
 		JSplitPane splitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, component.getComponent(),
 			panel);
 		splitPane.setResizeWeight(1);
