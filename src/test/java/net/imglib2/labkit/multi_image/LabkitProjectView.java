@@ -22,11 +22,11 @@ public class LabkitProjectView extends JPanel {
 
 	private final JList<LabeledImage> list;
 
-	public LabkitProjectView(LabkitProjectModel model, SegmentationComponent component) {
+	public LabkitProjectView(LabkitProjectModel model) {
 		this.model = model;
 		model.changeNotifier().add(this::updateJList);
 		setLayout(new MigLayout("", "[grow]", "[grow]0px[]"));
-		this.list = initList(model, component);
+		this.list = initList(model);
 		list.setModel(new MyListModel());
 		add(initScrollPane(list), "grow, wrap");
 		JPanel buttonsPanel = initButtonsPanel();
@@ -71,15 +71,12 @@ public class LabkitProjectView extends JPanel {
 		LabkitProjectEditor.show(model);
 	}
 
-	private static JList<LabeledImage> initList(LabkitProjectModel labkitProjectModel,
-		SegmentationComponent component)
-	{
+	private static JList<LabeledImage> initList(LabkitProjectModel labkitProjectModel) {
 		JList<LabeledImage> list = new JList<>(labkitProjectModel.labeledImages().toArray(
 			new LabeledImage[0]));
 		list.addListSelectionListener(event -> {
 			if (!event.getValueIsAdjusting()) {
-				labkitProjectModel.selectLabeledImage(list.getSelectedValue());
-				component.autoContrast();
+				labkitProjectModel.selectedImage().set(list.getSelectedValue());
 			}
 		});
 		return list;
