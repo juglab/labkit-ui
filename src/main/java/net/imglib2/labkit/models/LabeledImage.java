@@ -41,4 +41,24 @@ public class LabeledImage {
 	public String toString() {
 		return name;
 	}
+
+	@Override
+	public boolean equals(Object o) {
+		if (this == o) return true;
+		if (o == null || getClass() != o.getClass()) return false;
+
+		LabeledImage that = (LabeledImage) o;
+
+		if (!name.equals(that.name)) return false;
+		if (!imageFile.equals(that.imageFile)) return false;
+		return labelingFile.equals(that.labelingFile);
+	}
+
+	@Override
+	public int hashCode() {
+		int result = name.hashCode();
+		result = 31 * result + imageFile.hashCode();
+		result = 31 * result + labelingFile.hashCode();
+		return result;
+	}
 }
