@@ -4,7 +4,6 @@ package net.imglib2.labkit.models;
 import net.imagej.ImgPlus;
 import net.imglib2.labkit.labeling.Labeling;
 import net.imglib2.labkit.segmentation.SegmentationPlugin;
-import net.imglib2.labkit.segmentation.TrainClassifier;
 import net.imglib2.labkit.utils.Notifier;
 import net.imglib2.util.Pair;
 import net.imglib2.util.ValuePair;
@@ -63,10 +62,6 @@ public class SegmenterListModel {
 
 	public Context context() {
 		return context;
-	}
-
-	public void train(SegmentationItem item) {
-		TrainClassifier.train(trainingData.get(), item);
 	}
 
 	public Holder<List<Pair<ImgPlus<?>, Labeling>>> trainingData() {
