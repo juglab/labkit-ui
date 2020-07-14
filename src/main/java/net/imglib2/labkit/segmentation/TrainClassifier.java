@@ -25,9 +25,9 @@ public class TrainClassifier {
 	public TrainClassifier(Extensible extensible, SegmenterListModel model) {
 		this.model = model;
 		extensible.addMenuItem(MenuBar.SEGMENTER_MENU, "Train Classifier", 1,
-			ignore -> trainSelectedSegmenter(), null, "ctrl shift T");
+			ignore -> trainSelectedSegmenter(model), null, "ctrl shift T");
 		Consumer<SegmentationItem> train = item -> ParallelUtils.runInOtherThread(
-			() -> trainSegmenter(item));
+			() -> trainSegmenter(model, item));
 		extensible.addMenuItem(SegmentationItem.SEGMENTER_MENU, "Train Classifier",
 			1, train, GuiUtils.loadIcon("run.png"), null);
 		extensible.addMenuItem(SegmentationItem.SEGMENTER_MENU, "Remove Classifier",
@@ -35,15 +35,15 @@ public class TrainClassifier {
 			GuiUtils.loadIcon("remove.png"), null);
 	}
 
-	private void trainSelectedSegmenter() {
-		trainSegmenter(model.selectedSegmenter().get());
+	public static void trainSelectedSegmenter(SegmenterListModel model) {
+		trainSegmenter(model, model.selectedSegmenter().get());
 	}
 
-	private void trainSegmenter(SegmentationItem item) {
-		model.train(item);
+	private static void trainSegmenter(SegmenterListModel model, SegmentationItem item) {
+		train(model.trainingData().get(), item);
 	}
 
-	public static void train(List<Pair<ImgPlus<?>, Labeling>> trainingData, SegmentationItem item) {
+	private static void train(List<Pair<ImgPlus<?>, Labeling>> trainingData, SegmentationItem item) {
 		SwingProgressWriter progressWriter = new SwingProgressWriter(null,
 			"Training in Progress");
 		progressWriter.setVisible(true);

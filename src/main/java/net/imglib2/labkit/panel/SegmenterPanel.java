@@ -2,7 +2,6 @@
 package net.imglib2.labkit.panel;
 
 import net.imglib2.labkit.DefaultExtensible;
-import net.imglib2.labkit.models.DefaultSegmentationModel;
 import net.imglib2.labkit.models.SegmentationItem;
 import net.imglib2.labkit.models.SegmenterListModel;
 import net.imglib2.labkit.segmentation.SegmentationPlugin;
@@ -127,7 +126,7 @@ public class SegmenterPanel {
 		private void runTraining() {
 			ParallelUtils.runInOtherThread(() -> {
 				segmentationModel.selectedSegmenter().set(item);
-				segmentationModel.train(item);
+				TrainClassifier.trainSelectedSegmenter(segmentationModel);
 			});
 		}
 
