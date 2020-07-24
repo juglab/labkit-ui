@@ -11,7 +11,6 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.Collections;
-import java.util.List;
 
 import static org.junit.Assert.assertEquals;
 
@@ -19,9 +18,7 @@ public class LabkitProjectSerializerTest {
 
 	@Test
 	public void testSave() throws IOException {
-		LabeledImage image = exampleLabeledImage();
-		LabkitProjectModel project = new LabkitProjectModel(SingletonContext.getInstance(), Collections
-			.singletonList(image));
+		LabkitProjectModel project = exampleProject();
 		File file = createTmpFile();
 		LabkitProjectSerializer.save(project, file);
 		String text = FileUtils.readFileToString(file, StandardCharsets.UTF_8);
@@ -34,8 +31,9 @@ public class LabkitProjectSerializerTest {
 		File file = createTmpFile();
 		FileUtils.writeStringToFile(file, exampleYaml(), StandardCharsets.UTF_8);
 		LabkitProjectModel project = LabkitProjectSerializer.open(SingletonContext.getInstance(), file);
-		List<LabeledImage> labeledImages = project.labeledImages();
-		assertEquals(Collections.singletonList(exampleLabeledImage()), labeledImages);
+		LabkitProjectModel expected = exampleProject();
+		assertEquals(expected.labeledImages(), project.labeledImages());
+		assertEquals(expected.segmenterFiles(), project.segmenterFiles());
 	}
 
 	private File createTmpFile() throws IOException {
@@ -44,17 +42,23 @@ public class LabkitProjectSerializerTest {
 		return tmp;
 	}
 
-	private LabeledImage exampleLabeledImage() {
-		return new LabeledImage("healthy cells", "cells.tif", "cells.labeling");
-	}
-
 	private String exampleYaml() {
 		String expected = "---\n";
 		expected += "images:\n";
 		expected += "- nick_name: \"healthy cells\"\n";
 		expected += "  image_file: \"cells.tif\"\n";
 		expected += "  labeling_file: \"cells.labeling\"\n";
+		expected += "segmentation_algorithms:\n";
+		expected += "- file: \"/Hello/World.classifier\"\n";
 		return expected;
+	}
+
+	private LabkitProjectModel exampleProject() {
+		LabeledImage image = new LabeledImage("healthy cells", "cells.tif", "cells.labeling");
+		LabkitProjectModel project = new LabkitProjectModel(SingletonContext.getInstance(), Collections
+			.singletonList(image));
+		project.segmenterFiles().add("/Hello/World.classifier");
+		return project;
 	}
 
 }
