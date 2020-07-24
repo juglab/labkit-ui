@@ -11,6 +11,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.Function;
 
 /**
  * LabkitProjectSerializer allows to save an {@link LabkitProjectModel} to file,
@@ -38,10 +39,8 @@ public class LabkitProjectSerializer {
 
 	private static PlainProjectData asPlainProjectData(LabkitProjectModel project) {
 		PlainProjectData p = new PlainProjectData();
-		p.images = new ArrayList<>();
-		for (LabeledImage labeledImage : project.labeledImages()) {
-			p.images.add(asPlainLabeledImage(labeledImage));
-		}
+		p.images = map(x -> asPlainLabeledImage(x), project.labeledImages());
+		p.segmentation_algorithms = map(x -> asPlainSegmenter(x), project.segmenterFiles());
 		return p;
 	}
 
@@ -53,17 +52,27 @@ public class LabkitProjectSerializer {
 		return e;
 	}
 
+	private static PlainSegmenter asPlainSegmenter(String file) {
+		PlainSegmenter s = new PlainSegmenter();
+		s.file = file;
+		return s;
+	}
+
+	public static <T, R> List<R> map(Function<T, R> function, List<T> list) {
+		List<R> result = new ArrayList<>(list.size());
+		for (T t : list)
+			result.add(function.apply(t));
+		return result;
+	}
+
 	// -- Helper methods for converting PlainProjectData to LabkitProjectModel --
 
 	private static LabkitProjectModel asLabkitProjectModel(Context context, PlainProjectData p) {
-		return new LabkitProjectModel(context, asLabeledImages(p.images));
-	}
-
-	private static List<LabeledImage> asLabeledImages(List<PlainLabeledImage> images) {
-		ArrayList<LabeledImage> list = new ArrayList<>();
-		for (PlainLabeledImage image : images)
-			list.add(asLabeledImage(image));
-		return list;
+		List<LabeledImage> labeledImages = map(x -> asLabeledImage(x), p.images);
+		List<String> segmenterFiles = map(x -> x.file, p.segmentation_algorithms);
+		LabkitProjectModel project = new LabkitProjectModel(context, labeledImages);
+		project.segmenterFiles().addAll(segmenterFiles);
+		return project;
 	}
 
 	private static LabeledImage asLabeledImage(PlainLabeledImage image) {
@@ -75,6 +84,8 @@ public class LabkitProjectSerializer {
 	private static class PlainProjectData {
 
 		public List<PlainLabeledImage> images;
+
+		public List<PlainSegmenter> segmentation_algorithms;
 	}
 
 	private static class PlainLabeledImage {
@@ -86,4 +97,8 @@ public class LabkitProjectSerializer {
 		public String labeling_file;
 	}
 
+	private static class PlainSegmenter {
+
+		public String file;
+	}
 }
