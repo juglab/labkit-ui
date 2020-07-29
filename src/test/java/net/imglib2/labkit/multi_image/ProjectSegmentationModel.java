@@ -11,6 +11,7 @@ import net.imglib2.labkit.models.DefaultSegmentationModel;
 import net.imglib2.labkit.models.ImageLabelingModel;
 import net.imglib2.labkit.models.LabeledImage;
 import net.imglib2.labkit.models.LabkitProjectModel;
+import net.imglib2.labkit.models.SegmentationModel;
 import net.imglib2.labkit.models.SegmenterListModel;
 import net.imglib2.labkit.utils.CheckedExceptionUtils;
 import net.imglib2.type.numeric.NumericType;
@@ -34,11 +35,11 @@ public class ProjectSegmentationModel {
 
 	private final LabkitProjectModel projectModel;
 
-	private final DefaultSegmentationModel segmentationModel;
+	private final SegmentationModel segmentationModel;
 
 	private LabeledImage lastSelectedImage;
 
-	public static DefaultSegmentationModel init(LabkitProjectModel labkitProjectModel) {
+	public static SegmentationModel init(LabkitProjectModel labkitProjectModel) {
 		return new ProjectSegmentationModel(labkitProjectModel).getSegmentationModel();
 	}
 
@@ -53,7 +54,7 @@ public class ProjectSegmentationModel {
 		return projectModel;
 	}
 
-	public DefaultSegmentationModel getSegmentationModel() {
+	public SegmentationModel getSegmentationModel() {
 		return segmentationModel;
 	}
 
@@ -81,11 +82,11 @@ public class ProjectSegmentationModel {
 		this.lastSelectedImage = image;
 	}
 
-	private DefaultSegmentationModel initSegmentationModel() {
+	private SegmentationModel initSegmentationModel() {
 		ImageLabelingModel imageLabelingModel = openImageLabelingModel(projectModel.selectedImage()
 			.get());
 		SegmenterListModel segmenterListModel = new SegmenterListModel(context, imageLabelingModel);
-		DefaultSegmentationModel model = new DefaultSegmentationModel(context, imageLabelingModel,
+		SegmentationModel model = new DefaultSegmentationModel(context, imageLabelingModel,
 			segmenterListModel);
 		model.segmenterList().trainingData().set(new TrainingData());
 		return model;

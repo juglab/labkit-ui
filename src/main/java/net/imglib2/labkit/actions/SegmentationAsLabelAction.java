@@ -10,10 +10,10 @@ import net.imglib2.labkit.Extensible;
 import net.imglib2.labkit.MenuBar;
 import net.imglib2.labkit.labeling.Label;
 import net.imglib2.labkit.labeling.Labeling;
-import net.imglib2.labkit.models.DefaultSegmentationModel;
 import net.imglib2.labkit.models.Holder;
 import net.imglib2.labkit.models.ImageLabelingModel;
 import net.imglib2.labkit.models.SegmentationItem;
+import net.imglib2.labkit.models.SegmentationModel;
 import net.imglib2.labkit.models.SegmentationResultsModel;
 import net.imglib2.roi.labeling.LabelingType;
 import net.imglib2.type.logic.BitType;
@@ -32,7 +32,7 @@ public class SegmentationAsLabelAction {
 	private final Holder<? extends SegmentationItem> selectedSegmenter;
 
 	public SegmentationAsLabelAction(
-		Extensible extensible, DefaultSegmentationModel segmenationModel)
+		Extensible extensible, SegmentationModel segmenationModel)
 	{
 		this.labelingModel = segmenationModel.imageLabelingModel();
 		this.selectedSegmenter = segmenationModel.segmenterList().selectedSegmenter();

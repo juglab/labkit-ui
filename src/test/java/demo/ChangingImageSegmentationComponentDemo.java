@@ -12,6 +12,7 @@ import net.imglib2.labkit.SegmentationComponent;
 import net.imglib2.labkit.inputimage.DatasetInputImage;
 import net.imglib2.labkit.models.DefaultSegmentationModel;
 import net.imglib2.labkit.models.ImageLabelingModel;
+import net.imglib2.labkit.models.SegmentationModel;
 import net.imglib2.trainable_segmentation.utils.SingletonContext;
 import net.imglib2.type.numeric.integer.UnsignedByteType;
 import net.imglib2.view.Views;
@@ -49,14 +50,14 @@ public class ChangingImageSegmentationComponentDemo {
 		frame.setVisible(true);
 	}
 
-	private JButton initChangeImageButton(DefaultSegmentationModel segmentationModel) {
+	private JButton initChangeImageButton(SegmentationModel segmentationModel) {
 		JButton button = new JButton("change image");
 		button.addActionListener(ignore -> ChangingImageSegmentationComponentDemo
 			.onChangeImageButtonClicked(segmentationModel));
 		return button;
 	}
 
-	private static void onChangeImageButtonClicked(DefaultSegmentationModel segmentationModel) {
+	private static void onChangeImageButtonClicked(SegmentationModel segmentationModel) {
 		final ImagePlus imp = new ImagePlus(
 			"https://imagej.nih.gov/ij/images/apple.tif");
 		ImageLabelingModel model = segmentationModel.imageLabelingModel();

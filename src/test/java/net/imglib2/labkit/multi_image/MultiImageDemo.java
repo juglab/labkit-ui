@@ -3,9 +3,9 @@ package net.imglib2.labkit.multi_image;
 
 import net.imagej.patcher.LegacyInjector;
 import net.imglib2.labkit.SegmentationComponent;
-import net.imglib2.labkit.models.DefaultSegmentationModel;
 import net.imglib2.labkit.models.LabeledImage;
 import net.imglib2.labkit.models.LabkitProjectModel;
+import net.imglib2.labkit.models.SegmentationModel;
 import net.imglib2.trainable_segmentation.utils.SingletonContext;
 import weka.gui.ExtensionFileFilter;
 
@@ -40,7 +40,7 @@ public class MultiImageDemo {
 
 	private static void openProject(LabkitProjectModel labkitProjectModel) {
 		JFrame frame = new JFrame("Labkit Project");
-		DefaultSegmentationModel segmentationModel = ProjectSegmentationModel.init(labkitProjectModel);
+		SegmentationModel segmentationModel = ProjectSegmentationModel.init(labkitProjectModel);
 		SegmentationComponent component = new SegmentationComponent(frame, segmentationModel, false);
 		component.autoContrast();
 		JMenuBar menuBar = component.getMenuBar();

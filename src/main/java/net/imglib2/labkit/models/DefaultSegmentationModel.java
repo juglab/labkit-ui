@@ -19,7 +19,7 @@ import java.util.stream.Stream;
 /**
  * Serves as a model for PredictionLayer and TrainClassifierAction
  */
-public class DefaultSegmentationModel {
+public class DefaultSegmentationModel implements SegmentationModel {
 
 	private final Context context;
 	private final ImageLabelingModel imageLabelingModel;
@@ -40,14 +40,17 @@ public class DefaultSegmentationModel {
 		this.segmenterList = segmenterList;
 	}
 
+	@Override
 	public Context context() {
 		return context;
 	}
 
+	@Override
 	public ImageLabelingModel imageLabelingModel() {
 		return imageLabelingModel;
 	}
 
+	@Override
 	public SegmenterListModel segmenterList() {
 		return segmenterList;
 	}

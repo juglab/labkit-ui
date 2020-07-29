@@ -14,6 +14,7 @@ import net.imglib2.labkit.inputimage.DatasetInputImage;
 import net.imglib2.labkit.labeling.Label;
 import net.imglib2.labkit.labeling.Labeling;
 import net.imglib2.labkit.models.DefaultSegmentationModel;
+import net.imglib2.labkit.models.SegmentationModel;
 import net.imglib2.labkit.segmentation.SegmentationPlugin;
 import net.imglib2.labkit.segmentation.Segmenter;
 import net.imglib2.loops.LoopBuilder;
@@ -43,7 +44,7 @@ public class CustomSegmenterDemo {
 		Img<? extends NumericType<?>> image = ImageJFunctions.wrap(new ImagePlus(
 			"https://imagej.nih.gov/ij/images/AuPbSn40-2.jpg"));
 		Context context = new Context();
-		DefaultSegmentationModel segmentationModel = new DefaultSegmentationModel(
+		SegmentationModel segmentationModel = new DefaultSegmentationModel(
 			context, new DatasetInputImage(image));
 		LabkitFrame.show(segmentationModel, "Demonstrate other Segmenter");
 	}

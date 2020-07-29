@@ -17,13 +17,12 @@ import net.imglib2.labkit.labeling.Label;
 import net.imglib2.labkit.labeling.Labeling;
 import net.imglib2.labkit.models.DefaultSegmentationModel;
 import net.imglib2.labkit.models.ImageLabelingModel;
-import net.imglib2.labkit.models.MappedHolder;
 import net.imglib2.labkit.models.SegmentationItem;
+import net.imglib2.labkit.models.SegmentationModel;
 import net.imglib2.labkit.segmentation.PixelClassificationPlugin;
 import net.imglib2.labkit.segmentation.PredictionLayer;
 import net.imglib2.labkit.segmentation.SegmentationPlugin;
 import net.imglib2.roi.labeling.LabelingType;
-import net.imglib2.trainable_segmentation.utils.SingletonContext;
 import net.imglib2.type.numeric.integer.ShortType;
 import net.imglib2.type.numeric.integer.UnsignedByteType;
 import net.imglib2.util.Intervals;
@@ -48,7 +47,7 @@ public class SegmentationUseCaseTest {
 		ImgPlus<UnsignedByteType> image = new ImgPlus<>(ArrayImgs.unsignedBytes(new byte[] { 1, 1, 2,
 			2 }, 2, 2));
 		InputImage inputImage = new DatasetInputImage(image);
-		DefaultSegmentationModel segmentationModel = new DefaultSegmentationModel(
+		SegmentationModel segmentationModel = new DefaultSegmentationModel(
 			new Context(), inputImage);
 		addLabels(segmentationModel.imageLabelingModel());
 		SegmentationPlugin plugin = PixelClassificationPlugin.create();
@@ -82,7 +81,7 @@ public class SegmentationUseCaseTest {
 			.wrap(Views.hyperSlice(img, 2, 0)));
 
 		Labeling labeling = getLabeling();
-		DefaultSegmentationModel segmentationModel = new DefaultSegmentationModel(new Context(),
+		SegmentationModel segmentationModel = new DefaultSegmentationModel(new Context(),
 			inputImage);
 		ImageLabelingModel imageLabelingModel = segmentationModel.imageLabelingModel();
 		imageLabelingModel.labeling().set(labeling);
