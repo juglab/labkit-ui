@@ -83,7 +83,7 @@ public class SegmenterPanel {
 
 	private void updateList() {
 		list.clear();
-		segmentationModel.segmenters().forEach(item -> list.add(item,
+		segmentationModel.segmenters().get().forEach(item -> list.add(item,
 			new EntryPanel(item)));
 		list.setSelected(segmentationModel.selectedSegmenter().get());
 	}
@@ -135,7 +135,7 @@ public class SegmenterPanel {
 	private JComponent initList() {
 		updateList();
 		list.listeners().add(this::userChangedSelection);
-		segmentationModel.listChangeListeners().add(this::updateList);
+		segmentationModel.segmenters().notifier().add(this::updateList);
 		JComponent component = list.getComponent();
 		component.setBorder(BorderFactory.createEmptyBorder());
 		return component;

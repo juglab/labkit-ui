@@ -28,17 +28,17 @@ public class DefaultSegmentationModelTest {
 		BitType flag = new BitType(false);
 		SegmenterListModel model = new DefaultSegmentationModel(
 			new Context(), new DatasetInputImage(ArrayImgs.unsignedBytes(100, 100))).segmenterList();
-		model.listChangeListeners().add(flag::setOne);
+		model.segmenters().notifier().add(flag::setOne);
 		assertFalse(flag.get());
-		assertEquals(0, model.segmenters().size());
+		assertEquals(0, model.segmenters().get().size());
 		model.addSegmenter(PixelClassificationPlugin.create());
 		assertTrue(flag.get());
-		assertEquals(1, model.segmenters().size());
+		assertEquals(1, model.segmenters().get().size());
 		flag.set(false);
-		SegmentationItem item = model.segmenters().get(0);
+		SegmentationItem item = model.segmenters().get().get(0);
 		model.remove(item);
 		assertTrue(flag.get());
-		assertEquals(0, model.segmenters().size());
+		assertEquals(0, model.segmenters().get().size());
 	}
 
 	@Test
