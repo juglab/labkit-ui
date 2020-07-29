@@ -49,7 +49,7 @@ public class DefaultSegmentationModelTest {
 
 		// create model
 		DatasetInputImage image = new DatasetInputImage(ArrayImgs.unsignedBytes(1, 1));
-		DefaultSegmentationModel model = new DefaultSegmentationModel(new Context(), image);
+		SegmentationModel model = new DefaultSegmentationModel(new Context(), image);
 		// train classifier
 		Labeling labeling = model.imageLabelingModel().labeling().get();
 		List<Label> labels = labeling.getLabels();

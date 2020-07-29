@@ -9,10 +9,10 @@ import net.imglib2.converter.Converters;
 import net.imglib2.labkit.bdv.BdvLayer;
 import net.imglib2.labkit.bdv.BdvShowable;
 import net.imglib2.labkit.models.DefaultHolder;
-import net.imglib2.labkit.models.DefaultSegmentationModel;
 import net.imglib2.labkit.models.Holder;
 import net.imglib2.labkit.models.ImageLabelingModel;
 import net.imglib2.labkit.models.MappedHolder;
+import net.imglib2.labkit.models.SegmentationModel;
 import net.imglib2.labkit.models.SegmentationResultsModel;
 import net.imglib2.labkit.utils.Notifier;
 import net.imglib2.type.numeric.ARGBType;
@@ -34,7 +34,7 @@ public class PredictionLayer implements BdvLayer {
 		new WeakHashMap<>());
 	private DefaultHolder<BdvShowable> showable;
 
-	public static PredictionLayer createPredictionLayer(DefaultSegmentationModel segmentationModel) {
+	public static PredictionLayer createPredictionLayer(SegmentationModel segmentationModel) {
 		ImageLabelingModel imageLabelingModel = segmentationModel.imageLabelingModel();
 		return new PredictionLayer(
 			new MappedHolder<>(segmentationModel.segmenterList().selectedSegmenter(), si -> si == null

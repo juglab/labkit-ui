@@ -13,10 +13,10 @@ import net.imglib2.labkit.actions.SegmentationAsLabelAction;
 import net.imglib2.labkit.actions.SegmentationExportAction;
 import net.imglib2.labkit.menu.MenuKey;
 import net.imglib2.labkit.models.ColoredLabelsModel;
-import net.imglib2.labkit.models.DefaultSegmentationModel;
 import net.imglib2.labkit.models.Holder;
 import net.imglib2.labkit.models.ImageLabelingModel;
 import net.imglib2.labkit.models.SegmentationItem;
+import net.imglib2.labkit.models.SegmentationModel;
 import net.imglib2.labkit.panel.ImageInfoPanel;
 import net.imglib2.labkit.panel.LabelPanel;
 import net.imglib2.labkit.panel.SegmenterPanel;
@@ -37,10 +37,10 @@ public class SegmentationComponent implements AutoCloseable {
 
 	private BasicLabelingComponent labelingComponent;
 
-	private DefaultSegmentationModel segmentationModel;
+	private SegmentationModel segmentationModel;
 
 	public SegmentationComponent(JFrame dialogBoxOwner,
-		DefaultSegmentationModel segmentationModel, boolean unmodifiableLabels)
+		SegmentationModel segmentationModel, boolean unmodifiableLabels)
 	{
 		this.extensible = new DefaultExtensible(segmentationModel.context(),
 			dialogBoxOwner);

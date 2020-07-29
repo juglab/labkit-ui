@@ -6,6 +6,7 @@ import net.imagej.Dataset;
 import net.imglib2.labkit.inputimage.DatasetInputImage;
 import net.imglib2.labkit.inputimage.InputImage;
 import net.imglib2.labkit.models.DefaultSegmentationModel;
+import net.imglib2.labkit.models.SegmentationModel;
 import net.imglib2.labkit.utils.CheckedExceptionUtils;
 import net.imglib2.labkit.utils.Notifier;
 import net.imglib2.trainable_segmentation.utils.SingletonContext;
@@ -43,18 +44,18 @@ public class LabkitFrame {
 	public static LabkitFrame showForImage(final Context context,
 		final InputImage inputImage)
 	{
-		final DefaultSegmentationModel model = new DefaultSegmentationModel(context, inputImage);
+		final SegmentationModel model = new DefaultSegmentationModel(context, inputImage);
 		model.imageLabelingModel().labeling().set(InitialLabeling.initialLabeling(context, inputImage));
 		return show(model, inputImage.imageForSegmentation().getName());
 	}
 
-	public static LabkitFrame show(final DefaultSegmentationModel model,
+	public static LabkitFrame show(final SegmentationModel model,
 		final String title)
 	{
 		return new LabkitFrame(model, title);
 	}
 
-	private LabkitFrame(final DefaultSegmentationModel model,
+	private LabkitFrame(final SegmentationModel model,
 		final String title)
 	{
 		SegmentationComponent segmentationComponent = initSegmentationComponent(
@@ -65,7 +66,7 @@ public class LabkitFrame {
 	}
 
 	private SegmentationComponent initSegmentationComponent(
-		DefaultSegmentationModel segmentationModel)
+		SegmentationModel segmentationModel)
 	{
 		SegmentationComponent segmentationComponent = new SegmentationComponent(
 			frame, segmentationModel, false);
