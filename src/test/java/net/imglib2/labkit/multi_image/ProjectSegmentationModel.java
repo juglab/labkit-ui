@@ -7,12 +7,13 @@ import net.imagej.ImgPlus;
 import net.imglib2.labkit.inputimage.DatasetInputImage;
 import net.imglib2.labkit.labeling.Labeling;
 import net.imglib2.labkit.labeling.LabelingSerializer;
-import net.imglib2.labkit.models.DefaultSegmentationModel;
 import net.imglib2.labkit.models.ImageLabelingModel;
 import net.imglib2.labkit.models.LabeledImage;
 import net.imglib2.labkit.models.LabkitProjectModel;
+import net.imglib2.labkit.models.SegmentationItem;
 import net.imglib2.labkit.models.SegmentationModel;
 import net.imglib2.labkit.models.SegmenterListModel;
+import net.imglib2.labkit.segmentation.PixelClassificationPlugin;
 import net.imglib2.labkit.utils.CheckedExceptionUtils;
 import net.imglib2.type.numeric.NumericType;
 import net.imglib2.util.Pair;
@@ -23,46 +24,61 @@ import java.io.File;
 import java.io.IOException;
 import java.util.AbstractList;
 import java.util.Arrays;
+import java.util.List;
 
 /**
  * ProjectSegmentationModel create a DefaultSegmentationModel that is linked to
  * a LabkitProjectModel. The DefaultSegmentationModel is updated, whenever the
  * {@link LabkitProjectModel#selectedImage()} changes.
  */
-public class ProjectSegmentationModel {
+public class ProjectSegmentationModel implements SegmentationModel {
 
 	private final Context context;
 
 	private final LabkitProjectModel projectModel;
 
-	private final SegmentationModel segmentationModel;
+	private final ImageLabelingModel imageLabelingModel;
 
 	private LabeledImage lastSelectedImage;
 
-	public static SegmentationModel init(LabkitProjectModel labkitProjectModel) {
-		return new ProjectSegmentationModel(labkitProjectModel).getSegmentationModel();
+	private SegmenterListModel segmenterList;
+
+	public static ProjectSegmentationModel create(LabkitProjectModel labkitProjectModel) {
+		return new ProjectSegmentationModel(labkitProjectModel);
 	}
 
 	public ProjectSegmentationModel(LabkitProjectModel projectModel) {
 		this.context = projectModel.context();
 		this.projectModel = projectModel;
-		this.segmentationModel = initSegmentationModel();
+		this.imageLabelingModel = openImageLabelingModel(projectModel.selectedImage().get());
+		this.segmenterList = initSegmenterListModel(projectModel.segmenterFiles());
 		this.projectModel.selectedImage().notifier().add(this::onSelectedImageChanged);
 	}
 
-	public LabkitProjectModel getProjectModel() {
-		return projectModel;
+	@Override
+	public Context context() {
+		return context;
 	}
 
-	public SegmentationModel getSegmentationModel() {
-		return segmentationModel;
+	@Override
+	public ImageLabelingModel imageLabelingModel() {
+		return imageLabelingModel;
+	}
+
+	@Override
+	public SegmenterListModel segmenterList() {
+		return segmenterList;
+	}
+
+	public LabkitProjectModel projectModel() {
+		return projectModel;
 	}
 
 	private void onSelectedImageChanged() {
 		LabeledImage image = projectModel.selectedImage().get();
 		if (image == lastSelectedImage)
 			return;
-		ImageLabelingModel imageLabelingModel = segmentationModel.imageLabelingModel();
+		ImageLabelingModel imageLabelingModel = imageLabelingModel();
 		if (lastSelectedImage != null) {
 			try {
 				new LabelingSerializer(context).save(imageLabelingModel.labeling().get(),
@@ -82,14 +98,15 @@ public class ProjectSegmentationModel {
 		this.lastSelectedImage = image;
 	}
 
-	private SegmentationModel initSegmentationModel() {
-		ImageLabelingModel imageLabelingModel = openImageLabelingModel(projectModel.selectedImage()
-			.get());
+	private SegmenterListModel initSegmenterListModel(List<String> segmenters) {
 		SegmenterListModel segmenterListModel = new SegmenterListModel(context, imageLabelingModel);
-		SegmentationModel model = new DefaultSegmentationModel(context, imageLabelingModel,
-			segmenterListModel);
-		model.segmenterList().trainingData().set(new TrainingData());
-		return model;
+		segmenterListModel.trainingData().set(new TrainingData());
+		for (String filename : segmenters) {
+			SegmentationItem segmentationItem = segmenterListModel.addSegmenter(PixelClassificationPlugin
+				.create());
+			segmentationItem.openModel(filename);
+		}
+		return segmenterListModel;
 	}
 
 	private ImageLabelingModel openImageLabelingModel(LabeledImage item) {
@@ -128,7 +145,6 @@ public class ProjectSegmentationModel {
 		public Pair<ImgPlus<?>, Labeling> get(int index) {
 			LabeledImage imageItem = projectModel.labeledImages().get(index);
 			if (imageItem == projectModel.selectedImage()) {
-				ImageLabelingModel imageLabelingModel = segmentationModel.imageLabelingModel();
 				ImgPlus<?> image = imageLabelingModel.imageForSegmentation().get();
 				Labeling labeling = imageLabelingModel.labeling().get();
 				return new ValuePair<>(image, labeling);
