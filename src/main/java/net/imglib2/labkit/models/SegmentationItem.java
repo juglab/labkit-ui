@@ -23,12 +23,18 @@ public class SegmentationItem extends ForwardingSegmenter {
 
 	private final String name;
 
+	private String filename;
+
+	private boolean modified;
+
 	private final Map<ImageLabelingModel, SegmentationResultsModel> results;
 
 	public SegmentationItem(ImageLabelingModel model, SegmentationPlugin plugin) {
 		super(plugin.createSegmenter(model.imageForSegmentation().get()));
 		this.name = "#" + counter.incrementAndGet() + " - " + plugin.getTitle();
 		this.results = new HashMap<>();
+		this.filename = null;
+		this.modified = false;
 	}
 
 	@Deprecated
@@ -57,13 +63,24 @@ public class SegmentationItem extends ForwardingSegmenter {
 	@Override
 	public void openModel(String path) {
 		super.openModel(path);
+		filename = path;
+		modified = false;
 		results.forEach((i, r) -> r.update());
 	}
 
 	@Override
 	public void train(List<Pair<ImgPlus<?>, Labeling>> data) {
 		results.forEach((i, r) -> r.clear());
+		modified = true;
 		super.train(data);
 		results.forEach((i, r) -> r.update());
+	}
+
+	public boolean isModified() {
+		return modified;
+	}
+
+	public String getFileName() {
+		return filename;
 	}
 }
