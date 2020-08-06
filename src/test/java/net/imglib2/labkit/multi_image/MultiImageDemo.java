@@ -79,51 +79,9 @@ public class MultiImageDemo {
 	}
 
 	private static void onNewProjectClicked(Component component) {
-		JFileChooser dialog = new JFileChooser();
-		dialog.setDialogTitle("New Project - Please select an empty directory!");
-		dialog.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
-		int returnValue = dialog.showOpenDialog(component);
-		if (returnValue != JFileChooser.APPROVE_OPTION)
-			return;
-		File directory = dialog.getSelectedFile();
-		if (!isEmptyDirectory(directory)) {
-			JOptionPane.showMessageDialog(component, "The selected directory needs to be empty.", "Error",
-				JOptionPane.ERROR_MESSAGE);
-			return;
-		}
-		LabkitProjectModel newProject = new LabkitProjectModel(SingletonContext.getInstance(), directory
-			.getPath(), new ArrayList<>());
-		showProjectEditor(component, newProject);
-		if (newProject.labeledImages().isEmpty()) {
-			JOptionPane.showMessageDialog(component, "Error: Project contains no images.",
-				"Create New Project", JOptionPane.ERROR_MESSAGE);
-			return;
-		}
-		newProject.selectedImage().set(newProject.labeledImages().get(0));
-		try {
-			save(newProject);
-		}
-		catch (IOException e) {
-			JOptionPane.showMessageDialog(component, "Error while saving:\n" + e.getMessage(),
-				"Create New Project", JOptionPane.ERROR_MESSAGE);
-			return;
-		}
+		LabkitProjectModel newProject = NewProjectDialog.show(component);
+		if (newProject == null) return;
 		openProject(newProject);
-	}
-
-	private static void showProjectEditor(Component component, LabkitProjectModel emptyProject) {
-		LabkitProjectEditor editor = new LabkitProjectEditor(emptyProject);
-		JDialog frame = new JDialog(SwingUtilities.getWindowAncestor(component),
-			"New Project: Add some images.");
-		frame.add(editor);
-		frame.pack();
-		frame.setModal(true);
-		frame.setResizable(true);
-		frame.setVisible(true);
-	}
-
-	private static boolean isEmptyDirectory(File file) {
-		return file.isDirectory() && file.listFiles().length == 0;
 	}
 
 	private static void onOpenProjectClicked(Component component) {
@@ -144,16 +102,13 @@ public class MultiImageDemo {
 	private static void onSaveProjectClicked(ProjectSegmentationModel model) {
 		try {
 			updateSegmenterFiles(model);
-			save(model.projectModel());
+			LabkitProjectModel project = model.projectModel();
+			LabkitProjectSerializer.save(project, new File(project.getProjectDirectory(),
+				"labkit-project.yaml"));
 		}
 		catch (IOException e) {
 			e.printStackTrace();
 		}
-	}
-
-	private static void save(LabkitProjectModel project) throws IOException {
-		LabkitProjectSerializer.save(project, new File(project.getProjectDirectory(),
-			"labkit-project.yaml"));
 	}
 
 	private static void updateSegmenterFiles(ProjectSegmentationModel model) throws IOException {
