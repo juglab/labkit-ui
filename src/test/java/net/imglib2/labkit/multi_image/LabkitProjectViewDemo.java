@@ -21,7 +21,8 @@ public class LabkitProjectViewDemo {
 			"/home/arzt/tmp/labkit-project/phase4.tif")
 			.map(LabeledImage::new)
 			.collect(Collectors.toList());
-		LabkitProjectModel model = new LabkitProjectModel(context, files);
+		LabkitProjectModel model = new LabkitProjectModel(context, "/home/arzt/tmp/labkit-project",
+			files);
 		LabkitProjectEditor.show(model);
 	}
 }

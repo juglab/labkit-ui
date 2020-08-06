@@ -32,7 +32,7 @@ public class LabkitProjectSerializer {
 	public static LabkitProjectModel open(Context context, File file) throws IOException {
 		ObjectMapper jackson = new ObjectMapper(new YAMLFactory());
 		PlainProjectData p = jackson.readValue(file, PlainProjectData.class);
-		return asLabkitProjectModel(context, p);
+		return asLabkitProjectModel(context, p, file);
 	}
 
 	// -- Helper methods for converting LabkitProjectModel to PlainProjectData --
@@ -67,10 +67,13 @@ public class LabkitProjectSerializer {
 
 	// -- Helper methods for converting PlainProjectData to LabkitProjectModel --
 
-	private static LabkitProjectModel asLabkitProjectModel(Context context, PlainProjectData p) {
+	private static LabkitProjectModel asLabkitProjectModel(Context context, PlainProjectData p,
+		File projectFile)
+	{
 		List<LabeledImage> labeledImages = map(x -> asLabeledImage(x), p.images);
 		List<String> segmenterFiles = map(x -> x.file, p.segmentation_algorithms);
-		LabkitProjectModel project = new LabkitProjectModel(context, labeledImages);
+		LabkitProjectModel project = new LabkitProjectModel(context, projectFile.getParent(),
+			labeledImages);
 		project.segmenterFiles().addAll(segmenterFiles);
 		return project;
 	}

@@ -55,8 +55,9 @@ public class LabkitProjectSerializerTest {
 
 	private LabkitProjectModel exampleProject() {
 		LabeledImage image = new LabeledImage("healthy cells", "cells.tif", "cells.labeling");
-		LabkitProjectModel project = new LabkitProjectModel(SingletonContext.getInstance(), Collections
-			.singletonList(image));
+		LabkitProjectModel project = new LabkitProjectModel(SingletonContext.getInstance(),
+			"/some/path/", Collections
+				.singletonList(image));
 		project.segmenterFiles().add("/Hello/World.classifier");
 		return project;
 	}
