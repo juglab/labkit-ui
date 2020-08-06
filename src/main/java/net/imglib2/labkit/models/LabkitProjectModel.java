@@ -11,6 +11,8 @@ public class LabkitProjectModel {
 
 	private final Context context;
 
+	private final String projectDirectory;
+
 	private Holder<LabeledImage> selectedImage;
 
 	private List<LabeledImage> labeledImages;
@@ -20,12 +22,20 @@ public class LabkitProjectModel {
 	private final Notifier changeNotifier = new Notifier();
 
 	public LabkitProjectModel(Context context,
+		String projectDirectory,
 		List<LabeledImage> labeledImages)
 	{
 		this.context = context;
-		this.selectedImage = new DefaultHolder<>(labeledImages.get(0));
+		this.projectDirectory = projectDirectory;
+		this.selectedImage = new DefaultHolder<>(labeledImages.size() == 0 ? null : labeledImages.get(
+			0));
 		this.labeledImages = labeledImages;
 		this.segmenterFiles = new ArrayList<>();
+		changeNotifier.add(this::onLabeledImagesChanged);
+	}
+
+	public String getProjectDirectory() {
+		return projectDirectory;
 	}
 
 	public List<LabeledImage> labeledImages() {
@@ -46,5 +56,14 @@ public class LabkitProjectModel {
 
 	public Holder<LabeledImage> selectedImage() {
 		return selectedImage;
+	}
+
+	private void onLabeledImagesChanged() {
+		if (labeledImages.contains(selectedImage.get()))
+			return;
+		if (!labeledImages.isEmpty())
+			selectedImage.set(labeledImages.get(0));
+		else
+			selectedImage.set(null);
 	}
 }
