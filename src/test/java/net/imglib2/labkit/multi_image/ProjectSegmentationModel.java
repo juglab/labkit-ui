@@ -7,6 +7,7 @@ import net.imagej.ImgPlus;
 import net.imglib2.labkit.inputimage.DatasetInputImage;
 import net.imglib2.labkit.labeling.Labeling;
 import net.imglib2.labkit.labeling.LabelingSerializer;
+import net.imglib2.labkit.models.DefaultSegmentationModel;
 import net.imglib2.labkit.models.ImageLabelingModel;
 import net.imglib2.labkit.models.LabeledImage;
 import net.imglib2.labkit.models.LabkitProjectModel;
@@ -37,22 +38,16 @@ public class ProjectSegmentationModel implements SegmentationModel {
 
 	private final LabkitProjectModel projectModel;
 
-	private final ImageLabelingModel imageLabelingModel;
+	private ImageLabelingModel imageLabelingModel;
+
+	private final SegmenterListModel segmenterList;
 
 	private LabeledImage lastSelectedImage;
-
-	private SegmenterListModel segmenterList;
-
-	public static ProjectSegmentationModel create(LabkitProjectModel labkitProjectModel) {
-		return new ProjectSegmentationModel(labkitProjectModel);
-	}
 
 	public ProjectSegmentationModel(LabkitProjectModel projectModel) {
 		this.context = projectModel.context();
 		this.projectModel = projectModel;
-		this.imageLabelingModel = openImageLabelingModel(projectModel.selectedImage().get());
 		this.segmenterList = initSegmenterListModel(projectModel.segmenterFiles());
-		this.projectModel.selectedImage().notifier().add(this::onSelectedImageChanged);
 	}
 
 	@Override
@@ -74,11 +69,10 @@ public class ProjectSegmentationModel implements SegmentationModel {
 		return projectModel;
 	}
 
-	private void onSelectedImageChanged() {
+	private void saveInDefaultLocation() {
 		LabeledImage image = projectModel.selectedImage().get();
 		if (image == lastSelectedImage)
 			return;
-		ImageLabelingModel imageLabelingModel = imageLabelingModel();
 		if (lastSelectedImage != null) {
 			try {
 				new LabelingSerializer(context).save(imageLabelingModel.labeling().get(),
@@ -88,17 +82,15 @@ public class ProjectSegmentationModel implements SegmentationModel {
 				e.printStackTrace();
 			}
 		}
-		DatasetInputImage ii = openInputImage(image);
-		imageLabelingModel.imageForSegmentation().set(ii.imageForSegmentation());
-		imageLabelingModel.showable().set(ii.showable());
-		imageLabelingModel.labeling().set(openOrEmptyLabeling(ii));
-		imageLabelingModel.transformationModel().transformToShowInterval(imageLabelingModel
-			.imageForSegmentation().get(),
-			imageLabelingModel.labelTransformation());
 		this.lastSelectedImage = image;
 	}
 
 	private SegmenterListModel initSegmenterListModel(List<String> segmenters) {
+		LabeledImage labeledImage = projectModel.selectedImage().get();
+		if (labeledImage == null && !projectModel.labeledImages().isEmpty())
+			labeledImage = projectModel.labeledImages().get(0);
+		ImageLabelingModel imageLabelingModel = labeledImage != null ? openImageLabelingModel(
+			labeledImage) : null;
 		SegmenterListModel segmenterListModel = new SegmenterListModel(context, imageLabelingModel);
 		segmenterListModel.trainingData().set(new TrainingData());
 		for (String filename : segmenters) {
@@ -107,6 +99,13 @@ public class ProjectSegmentationModel implements SegmentationModel {
 			segmentationItem.openModel(filename);
 		}
 		return segmenterListModel;
+	}
+
+	public void setSelectedImage(LabeledImage image) {
+		// FIXME
+		saveInDefaultLocation();
+		imageLabelingModel = openImageLabelingModel(image);
+		segmenterList.setImageLabelingModel(imageLabelingModel);
 	}
 
 	private ImageLabelingModel openImageLabelingModel(LabeledImage item) {
