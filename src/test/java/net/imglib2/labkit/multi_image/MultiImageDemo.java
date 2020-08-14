@@ -6,6 +6,7 @@ import net.imglib2.labkit.SegmentationComponent;
 import net.imglib2.labkit.models.LabeledImage;
 import net.imglib2.labkit.models.LabkitProjectModel;
 import net.imglib2.labkit.models.SegmentationItem;
+import net.imglib2.labkit.models.SegmenterListModel;
 import net.imglib2.trainable_segmentation.utils.SingletonContext;
 
 import javax.swing.*;
@@ -45,18 +46,33 @@ public class MultiImageDemo {
 
 	private static void openProject(LabkitProjectModel labkitProjectModel) {
 		JFrame frame = new JFrame("Labkit Project");
-		ProjectSegmentationModel segmentationModel = ProjectSegmentationModel.create(
-			labkitProjectModel);
-		SegmentationComponent component = new SegmentationComponent(frame, segmentationModel, false);
-		component.autoContrast();
-		JMenuBar menuBar = component.getMenuBar();
-		JMenu projectMenu = initProjectMenu(segmentationModel, frame);
-		menuBar.add(projectMenu);
-		frame.setJMenuBar(menuBar);
 		JPanel panel = new LabkitProjectView(labkitProjectModel);
-		labkitProjectModel.selectedImage().notifier().add(component::autoContrast);
-		JSplitPane splitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, component.getComponent(),
-			panel);
+		JPanel workspace = new JPanel();
+		workspace.setLayout(new BorderLayout());
+		JSplitPane splitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, workspace, panel);
+		// TODO the next line is realy hacky
+		SegmenterListModel segmenterListModel = new ProjectSegmentationModel(labkitProjectModel, null)
+			.segmenterList();
+		JMenu projectMenu = initProjectMenu(frame, labkitProjectModel, segmenterListModel);
+		labkitProjectModel.selectedImage().notifier().add(() -> {
+			workspace.removeAll();
+			frame.setJMenuBar(null);
+			LabeledImage labeledImage = labkitProjectModel.selectedImage().get();
+			if (labeledImage != null) {
+				ProjectSegmentationModel segementationModel = new ProjectSegmentationModel(
+					labkitProjectModel, segmenterListModel);
+				SegmentationComponent component = new SegmentationComponent(frame, segementationModel,
+					false);
+				component.autoContrast();
+				workspace.add(component.getComponent());
+				JMenuBar menuBar = component.getMenuBar();
+				menuBar.add(projectMenu);
+				frame.setJMenuBar(menuBar);
+				menuBar.updateUI();
+			}
+			workspace.revalidate();
+			workspace.repaint();
+		});
 		splitPane.setResizeWeight(1);
 		splitPane.setOneTouchExpandable(true);
 		frame.add(splitPane);
@@ -64,7 +80,9 @@ public class MultiImageDemo {
 		frame.setVisible(true);
 	}
 
-	private static JMenu initProjectMenu(ProjectSegmentationModel model, Component component) {
+	private static JMenu initProjectMenu(Component component, LabkitProjectModel projectModel,
+		SegmenterListModel segmenterListModel)
+	{
 		JMenu menu = new JMenu("Project");
 		JMenuItem newProjectItem = new JMenuItem("New Project...");
 		newProjectItem.addActionListener(ignore -> onNewProjectClicked(component));
@@ -73,7 +91,9 @@ public class MultiImageDemo {
 		openProjectItem.addActionListener(ignore -> onOpenProjectClicked(component));
 		menu.add(openProjectItem);
 		JMenuItem saveProjectItem = new JMenuItem("Save Project");
-		saveProjectItem.addActionListener(ignore -> onSaveProjectClicked(model));
+		saveProjectItem.addActionListener(ignore -> {
+			onSaveProjectClicked(projectModel, segmenterListModel);
+		});
 		menu.add(saveProjectItem);
 		return menu;
 	}
@@ -99,11 +119,12 @@ public class MultiImageDemo {
 		}
 	}
 
-	private static void onSaveProjectClicked(ProjectSegmentationModel model) {
+	private static void onSaveProjectClicked(LabkitProjectModel projectModel,
+		SegmenterListModel segmenterListModel)
+	{
 		try {
-			updateSegmenterFiles(model);
-			LabkitProjectModel project = model.projectModel();
-			LabkitProjectSerializer.save(project, new File(project.getProjectDirectory(),
+			updateSegmenterFiles(projectModel, segmenterListModel);
+			LabkitProjectSerializer.save(projectModel, new File(projectModel.getProjectDirectory(),
 				"labkit-project.yaml"));
 		}
 		catch (IOException e) {
@@ -111,18 +132,19 @@ public class MultiImageDemo {
 		}
 	}
 
-	private static void updateSegmenterFiles(ProjectSegmentationModel model) throws IOException {
-		File segmentersDirectory = new File(model.projectModel().getProjectDirectory(), "segmenters");
+	private static void updateSegmenterFiles(LabkitProjectModel projectModel,
+		SegmenterListModel segmenterListModel) throws IOException
+	{
+		File segmentersDirectory = new File(projectModel.getProjectDirectory(), "segmenters");
 		if (!segmentersDirectory.isDirectory())
 			Files.createDirectory(segmentersDirectory.toPath());
 		List<String> files = new ArrayList<>();
-		for (SegmentationItem segmentationItem : model.segmenterList().segmenters().get()) {
+		for (SegmentationItem segmentationItem : segmenterListModel.segmenters().get()) {
 			if (!segmentationItem.isTrained())
 				continue;
 			String result = saveSegmenter(segmentationItem, segmentersDirectory);
 			files.add(result);
 		}
-		LabkitProjectModel projectModel = model.projectModel();
 		List<String> oldFiles = projectModel.segmenterFiles();
 		removeObsoleteFiles(files, oldFiles);
 		projectModel.segmenterFiles().clear();

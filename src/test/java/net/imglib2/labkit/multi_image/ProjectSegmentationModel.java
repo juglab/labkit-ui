@@ -39,20 +39,19 @@ public class ProjectSegmentationModel implements SegmentationModel {
 
 	private final ImageLabelingModel imageLabelingModel;
 
-	private LabeledImage lastSelectedImage;
-
 	private SegmenterListModel segmenterList;
 
-	public static ProjectSegmentationModel create(LabkitProjectModel labkitProjectModel) {
-		return new ProjectSegmentationModel(labkitProjectModel);
-	}
+	private final LabeledImage labeledImage;
 
-	public ProjectSegmentationModel(LabkitProjectModel projectModel) {
+	public ProjectSegmentationModel(LabkitProjectModel projectModel,
+		SegmenterListModel segmenterListModel)
+	{
 		this.context = projectModel.context();
+		this.labeledImage = projectModel.selectedImage().get();
 		this.projectModel = projectModel;
-		this.imageLabelingModel = openImageLabelingModel(projectModel.selectedImage().get());
-		this.segmenterList = initSegmenterListModel(projectModel.segmenterFiles());
-		this.projectModel.selectedImage().notifier().add(this::onSelectedImageChanged);
+		this.imageLabelingModel = openImageLabelingModel(labeledImage);
+		this.segmenterList = segmenterListModel == null ? initSegmenterListModel(projectModel
+			.segmenterFiles()) : segmenterListModel;
 	}
 
 	@Override
@@ -74,28 +73,21 @@ public class ProjectSegmentationModel implements SegmentationModel {
 		return projectModel;
 	}
 
-	private void onSelectedImageChanged() {
-		LabeledImage image = projectModel.selectedImage().get();
-		if (image == lastSelectedImage)
-			return;
-		ImageLabelingModel imageLabelingModel = imageLabelingModel();
-		if (lastSelectedImage != null) {
-			try {
-				new LabelingSerializer(context).save(imageLabelingModel.labeling().get(),
-					lastSelectedImage.getLabelingFile());
-			}
-			catch (IOException e) {
-				e.printStackTrace();
-			}
-		}
-		DatasetInputImage ii = openInputImage(image);
-		imageLabelingModel.imageForSegmentation().set(ii.imageForSegmentation());
-		imageLabelingModel.showable().set(ii.showable());
-		imageLabelingModel.labeling().set(openOrEmptyLabeling(ii));
-		imageLabelingModel.transformationModel().transformToShowInterval(imageLabelingModel
-			.imageForSegmentation().get(),
-			imageLabelingModel.labelTransformation());
-		this.lastSelectedImage = image;
+	private void saveInDefaultLocation() {
+//		LabeledImage image = projectModel.selectedImage().get();
+//		if (image == lastSelectedImage)
+//			return;
+//		ImageLabelingModel imageLabelingModel = imageLabelingModel();
+//		if (lastSelectedImage != null) {
+//			try {
+//				new LabelingSerializer(context).save(imageLabelingModel.labeling().get(),
+//					lastSelectedImage.getLabelingFile());
+//			}
+//			catch (IOException e) {
+//				e.printStackTrace();
+//			}
+//		}
+//		this.lastSelectedImage = image;
 	}
 
 	private SegmenterListModel initSegmenterListModel(List<String> segmenters) {
