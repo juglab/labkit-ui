@@ -1,7 +1,6 @@
 
 package net.imglib2.labkit.multi_image;
 
-import net.imglib2.labkit.SegmentationComponent;
 import net.imglib2.labkit.actions.AbstractFileIoAction;
 import net.imglib2.labkit.models.LabeledImage;
 import net.imglib2.labkit.models.LabkitProjectModel;
@@ -18,16 +17,15 @@ public class LabkitProjectView extends JPanel {
 
 	private final LabkitProjectModel model;
 
-	private final List<ListDataListener> listeners = new CopyOnWriteArrayList<>();
-
 	private final JList<LabeledImage> list;
 
 	public LabkitProjectView(LabkitProjectModel model) {
 		this.model = model;
-		model.changeNotifier().add(this::updateJList);
 		setLayout(new MigLayout("", "[grow]", "[grow]0px[]"));
 		this.list = initList(model);
-		list.setModel(new MyListModel());
+		MyListModel listModel = new MyListModel();
+		list.setModel(listModel);
+		model.changeNotifier().add(listModel::triggerUpdate);
 		add(initScrollPane(list), "grow, wrap");
 		JPanel buttonsPanel = initButtonsPanel();
 		buttonsPanel.setBackground(list.getBackground());
@@ -82,13 +80,15 @@ public class LabkitProjectView extends JPanel {
 		return list;
 	}
 
-	private void updateJList() {
-		ListDataEvent e = new ListDataEvent(this, ListDataEvent.CONTENTS_CHANGED, 0, model
-			.labeledImages().size());
-		listeners.forEach(l -> l.contentsChanged(e));
-	}
-
 	private class MyListModel implements ListModel<LabeledImage> {
+
+		private final List<ListDataListener> listeners = new CopyOnWriteArrayList<>();
+
+		private void triggerUpdate() {
+			ListDataEvent e = new ListDataEvent(this, ListDataEvent.CONTENTS_CHANGED, 0, model
+				.labeledImages().size());
+			listeners.forEach(l -> l.contentsChanged(e));
+		}
 
 		@Override
 		public int getSize() {
