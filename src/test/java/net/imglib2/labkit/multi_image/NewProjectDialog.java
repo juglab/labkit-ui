@@ -4,6 +4,7 @@ package net.imglib2.labkit.multi_image;
 import net.imglib2.labkit.models.LabkitProjectModel;
 import net.imglib2.trainable_segmentation.utils.SingletonContext;
 import net.miginfocom.swing.MigLayout;
+import org.scijava.Context;
 
 import javax.swing.*;
 import java.awt.*;
@@ -20,8 +21,8 @@ public class NewProjectDialog extends JDialog {
 
 	private boolean approved = false;
 
-	private NewProjectDialog(Component component) {
-		super(component != null ? SwingUtilities.getWindowAncestor(component) : null);
+	private NewProjectDialog(Context context) {
+		super((Frame) null);
 		setTitle("New Project");
 		setLayout(new MigLayout());
 		add(new JLabel("Project folder:"));
@@ -29,7 +30,7 @@ public class NewProjectDialog extends JDialog {
 		add(textField, "growx, pushx");
 		add(newButton("...", ignore -> onSelectFolderClicked()), "wrap");
 		add(new JLabel("Add images to the project:"), "span, wrap");
-		model = new LabkitProjectModel(SingletonContext.getInstance(), null, new ArrayList<>());
+		model = new LabkitProjectModel(context, null, new ArrayList<>());
 		add(new LabkitProjectEditor(model), "grow, span, wrap");
 		add(newButton("Create Project", ignore -> onCreateProjectClicked()));
 		add(newButton("Cancel", ignore -> onCancelClicked()));
@@ -50,8 +51,8 @@ public class NewProjectDialog extends JDialog {
 		return selectFolderButton;
 	}
 
-	public static LabkitProjectModel show(Component component) {
-		NewProjectDialog dialog = new NewProjectDialog(component);
+	public static LabkitProjectModel show(Context context) {
+		NewProjectDialog dialog = new NewProjectDialog(context);
 		dialog.pack();
 		dialog.setModal(true);
 		dialog.setResizable(true);
@@ -64,8 +65,8 @@ public class NewProjectDialog extends JDialog {
 					"labkit-project.yaml"));
 			}
 			catch (IOException e) {
-				JOptionPane.showMessageDialog(component, "Error while saving:\n" + e.getMessage(),
-					"Create New Project", JOptionPane.ERROR_MESSAGE);
+				JOptionPane.showMessageDialog(null, "Error while saving:\n" + e.getMessage(),
+					"Create New Labkit Project", JOptionPane.ERROR_MESSAGE);
 				return null;
 			}
 			return newProject;
