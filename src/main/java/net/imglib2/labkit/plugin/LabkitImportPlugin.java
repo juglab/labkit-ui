@@ -19,7 +19,7 @@ import java.io.File;
  * @author Matthias Arzt
  */
 @Plugin(type = Command.class,
-	menuPath = "Plugins > Segmentation > Labkit (CZI / HDF5 / experimental)")
+	menuPath = "Plugins > Segmentation > Labkit > Open CZI / HDF5 (experimental)")
 public class LabkitImportPlugin implements Command {
 
 	@Parameter
