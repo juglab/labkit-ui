@@ -19,12 +19,16 @@ public class SegmenterListModel {
 	private final Holder<SegmentationItem> selectedSegmenter = new DefaultHolder<>(null);
 	private final Holder<Boolean> segmentationVisibility = new DefaultHolder<>(true);
 	private final Holder<List<Pair<ImgPlus<?>, Labeling>>> trainingData = new DefaultHolder<>(null);
-	private final ImageLabelingModel imageLabelingModel;
+	private ImageLabelingModel imageLabelingModel;
 
 	public SegmenterListModel(Context context, ImageLabelingModel imageLabelingModel) {
 		this.context = context;
 		this.imageLabelingModel = imageLabelingModel;
 		this.trainingData.set(new SingletonTrainingData(imageLabelingModel));
+	}
+
+	public void setImageLabelingModel(ImageLabelingModel imageLabelingModel) {
+		this.imageLabelingModel = imageLabelingModel;
 	}
 
 	public Holder<List<SegmentationItem>> segmenters() {

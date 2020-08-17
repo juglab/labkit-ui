@@ -7,6 +7,7 @@ import net.imagej.ImgPlus;
 import net.imglib2.labkit.inputimage.DatasetInputImage;
 import net.imglib2.labkit.labeling.Labeling;
 import net.imglib2.labkit.labeling.LabelingSerializer;
+import net.imglib2.labkit.models.DefaultSegmentationModel;
 import net.imglib2.labkit.models.ImageLabelingModel;
 import net.imglib2.labkit.models.LabeledImage;
 import net.imglib2.labkit.models.LabkitProjectModel;
@@ -37,21 +38,16 @@ public class ProjectSegmentationModel implements SegmentationModel {
 
 	private final LabkitProjectModel projectModel;
 
-	private final ImageLabelingModel imageLabelingModel;
+	private ImageLabelingModel imageLabelingModel;
 
-	private SegmenterListModel segmenterList;
+	private final SegmenterListModel segmenterList;
 
-	private final LabeledImage labeledImage;
+	private LabeledImage lastSelectedImage;
 
-	public ProjectSegmentationModel(LabkitProjectModel projectModel,
-		SegmenterListModel segmenterListModel)
-	{
+	public ProjectSegmentationModel(LabkitProjectModel projectModel) {
 		this.context = projectModel.context();
-		this.labeledImage = projectModel.selectedImage().get();
 		this.projectModel = projectModel;
-		this.imageLabelingModel = openImageLabelingModel(labeledImage);
-		this.segmenterList = segmenterListModel == null ? initSegmenterListModel(projectModel
-			.segmenterFiles()) : segmenterListModel;
+		this.segmenterList = initSegmenterListModel(projectModel.segmenterFiles());
 	}
 
 	@Override
@@ -74,23 +70,27 @@ public class ProjectSegmentationModel implements SegmentationModel {
 	}
 
 	private void saveInDefaultLocation() {
-//		LabeledImage image = projectModel.selectedImage().get();
-//		if (image == lastSelectedImage)
-//			return;
-//		ImageLabelingModel imageLabelingModel = imageLabelingModel();
-//		if (lastSelectedImage != null) {
-//			try {
-//				new LabelingSerializer(context).save(imageLabelingModel.labeling().get(),
-//					lastSelectedImage.getLabelingFile());
-//			}
-//			catch (IOException e) {
-//				e.printStackTrace();
-//			}
-//		}
-//		this.lastSelectedImage = image;
+		LabeledImage image = projectModel.selectedImage().get();
+		if (image == lastSelectedImage)
+			return;
+		if (lastSelectedImage != null) {
+			try {
+				new LabelingSerializer(context).save(imageLabelingModel.labeling().get(),
+					lastSelectedImage.getLabelingFile());
+			}
+			catch (IOException e) {
+				e.printStackTrace();
+			}
+		}
+		this.lastSelectedImage = image;
 	}
 
 	private SegmenterListModel initSegmenterListModel(List<String> segmenters) {
+		LabeledImage labeledImage = projectModel.selectedImage().get();
+		if (labeledImage == null && !projectModel.labeledImages().isEmpty())
+			labeledImage = projectModel.labeledImages().get(0);
+		ImageLabelingModel imageLabelingModel = labeledImage != null ? openImageLabelingModel(
+			labeledImage) : null;
 		SegmenterListModel segmenterListModel = new SegmenterListModel(context, imageLabelingModel);
 		segmenterListModel.trainingData().set(new TrainingData());
 		for (String filename : segmenters) {
@@ -99,6 +99,13 @@ public class ProjectSegmentationModel implements SegmentationModel {
 			segmentationItem.openModel(filename);
 		}
 		return segmenterListModel;
+	}
+
+	public void setSelectedImage(LabeledImage image) {
+		// FIXME
+		saveInDefaultLocation();
+		imageLabelingModel = openImageLabelingModel(image);
+		segmenterList.setImageLabelingModel(imageLabelingModel);
 	}
 
 	private ImageLabelingModel openImageLabelingModel(LabeledImage item) {

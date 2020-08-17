@@ -6,6 +6,7 @@ import net.imglib2.labkit.SegmentationComponent;
 import net.imglib2.labkit.models.LabeledImage;
 import net.imglib2.labkit.models.LabkitProjectModel;
 import net.imglib2.labkit.models.SegmentationItem;
+import net.imglib2.labkit.models.SegmentationModel;
 import net.imglib2.labkit.models.SegmenterListModel;
 import net.imglib2.trainable_segmentation.utils.SingletonContext;
 
@@ -48,36 +49,44 @@ public class MultiImageDemo {
 		JFrame frame = new JFrame("Labkit Project");
 		JPanel panel = new LabkitProjectView(labkitProjectModel);
 		JPanel workspace = new JPanel();
+		workspace.setPreferredSize(new Dimension(1000, 800));
 		workspace.setLayout(new BorderLayout());
 		JSplitPane splitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, workspace, panel);
 		// TODO the next line is realy hacky
-		SegmenterListModel segmenterListModel = new ProjectSegmentationModel(labkitProjectModel, null)
-			.segmenterList();
-		JMenu projectMenu = initProjectMenu(frame, labkitProjectModel, segmenterListModel);
+		ProjectSegmentationModel segementationModel = new ProjectSegmentationModel(labkitProjectModel);
+		JMenu projectMenu = initProjectMenu(frame, labkitProjectModel, segementationModel
+			.segmenterList());
 		labkitProjectModel.selectedImage().notifier().add(() -> {
-			workspace.removeAll();
-			frame.setJMenuBar(null);
-			LabeledImage labeledImage = labkitProjectModel.selectedImage().get();
-			if (labeledImage != null) {
-				ProjectSegmentationModel segementationModel = new ProjectSegmentationModel(
-					labkitProjectModel, segmenterListModel);
-				SegmentationComponent component = new SegmentationComponent(frame, segementationModel,
-					false);
-				component.autoContrast();
-				workspace.add(component.getComponent());
-				JMenuBar menuBar = component.getMenuBar();
-				menuBar.add(projectMenu);
-				frame.setJMenuBar(menuBar);
-				menuBar.updateUI();
-			}
-			workspace.revalidate();
-			workspace.repaint();
+			updateBdv(labkitProjectModel, frame, workspace, segementationModel, projectMenu);
 		});
+		if (labkitProjectModel.selectedImage().get() != null)
+			updateBdv(labkitProjectModel, frame, workspace, segementationModel, projectMenu);
 		splitPane.setResizeWeight(1);
 		splitPane.setOneTouchExpandable(true);
 		frame.add(splitPane);
 		frame.pack();
 		frame.setVisible(true);
+		frame.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
+	}
+
+	private static void updateBdv(LabkitProjectModel labkitProjectModel, JFrame frame,
+		JPanel workspace, ProjectSegmentationModel psm, JMenu projectMenu)
+	{
+		workspace.removeAll();
+		frame.setJMenuBar(null);
+		LabeledImage labeledImage = labkitProjectModel.selectedImage().get();
+		if (labeledImage != null) {
+			psm.setSelectedImage(labeledImage);
+			SegmentationComponent component = new SegmentationComponent(frame, psm, false);
+			component.autoContrast();
+			workspace.add(component.getComponent());
+			JMenuBar menuBar = component.getMenuBar();
+			menuBar.add(projectMenu);
+			frame.setJMenuBar(menuBar);
+			menuBar.updateUI();
+		}
+		workspace.revalidate();
+		workspace.repaint();
 	}
 
 	private static JMenu initProjectMenu(Component component, LabkitProjectModel projectModel,
