@@ -7,7 +7,6 @@ import net.imagej.ImgPlus;
 import net.imglib2.labkit.inputimage.DatasetInputImage;
 import net.imglib2.labkit.labeling.Labeling;
 import net.imglib2.labkit.labeling.LabelingSerializer;
-import net.imglib2.labkit.models.DefaultSegmentationModel;
 import net.imglib2.labkit.models.ImageLabelingModel;
 import net.imglib2.labkit.models.LabeledImage;
 import net.imglib2.labkit.models.LabkitProjectModel;
@@ -42,7 +41,7 @@ public class ProjectSegmentationModel implements SegmentationModel {
 
 	private final SegmenterListModel segmenterList;
 
-	private LabeledImage lastSelectedImage;
+	private LabeledImage selectedImage;
 
 	public ProjectSegmentationModel(LabkitProjectModel projectModel) {
 		this.context = projectModel.context();
@@ -71,18 +70,18 @@ public class ProjectSegmentationModel implements SegmentationModel {
 
 	private void saveInDefaultLocation() {
 		LabeledImage image = projectModel.selectedImage().get();
-		if (image == lastSelectedImage)
+		if (image == selectedImage)
 			return;
-		if (lastSelectedImage != null) {
+		if (selectedImage != null) {
 			try {
 				new LabelingSerializer(context).save(imageLabelingModel.labeling().get(),
-					lastSelectedImage.getLabelingFile());
+					selectedImage.getLabelingFile());
 			}
 			catch (IOException e) {
 				e.printStackTrace();
 			}
 		}
-		this.lastSelectedImage = image;
+		this.selectedImage = image;
 	}
 
 	private SegmenterListModel initSegmenterListModel(List<String> segmenters) {
@@ -102,7 +101,6 @@ public class ProjectSegmentationModel implements SegmentationModel {
 	}
 
 	public void setSelectedImage(LabeledImage image) {
-		// FIXME
 		saveInDefaultLocation();
 		imageLabelingModel = openImageLabelingModel(image);
 		segmenterList.setImageLabelingModel(imageLabelingModel);
@@ -143,7 +141,7 @@ public class ProjectSegmentationModel implements SegmentationModel {
 		@Override
 		public Pair<ImgPlus<?>, Labeling> get(int index) {
 			LabeledImage imageItem = projectModel.labeledImages().get(index);
-			if (imageItem == projectModel.selectedImage()) {
+			if (imageItem == selectedImage) {
 				ImgPlus<?> image = imageLabelingModel.imageForSegmentation().get();
 				Labeling labeling = imageLabelingModel.labeling().get();
 				return new ValuePair<>(image, labeling);
