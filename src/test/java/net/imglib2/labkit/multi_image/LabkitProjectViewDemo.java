@@ -19,7 +19,7 @@ public class LabkitProjectViewDemo {
 			"/home/arzt/tmp/labkit-project/phase2.tif",
 			"/home/arzt/tmp/labkit-project/phase3.tif",
 			"/home/arzt/tmp/labkit-project/phase4.tif")
-			.map(LabeledImage::new)
+			.map(filename -> new LabeledImage(SingletonContext.getInstance(), filename))
 			.collect(Collectors.toList());
 		LabkitProjectModel model = new LabkitProjectModel(context, "/home/arzt/tmp/labkit-project",
 			files);
