@@ -35,7 +35,9 @@ public class LabeledImage {
 
 	private ImageLabelingModel imageLabelingModel;
 
-	private String storedIn = null;
+	private final Holder<String> storedIn;
+
+	private final Holder<Boolean> modified;
 
 	private final Runnable onLabelingChanged = this::onLabelingChanged;
 
@@ -49,7 +51,8 @@ public class LabeledImage {
 		this.imageFile = imageFile;
 		this.labelingFile = labelingFile;
 		this.modifiedLabelingFile = initModifiedLabelingFile();
-		this.storedIn = labelingFile;
+		this.storedIn = new DefaultHolder<>(labelingFile);
+		this.modified = new MappedHolder<>(storedIn, value -> !labelingFile.equals(value));
 	}
 
 	public void setName(String name) {
@@ -75,6 +78,10 @@ public class LabeledImage {
 		return new File(parent, "~" + name).getAbsolutePath();
 	}
 
+	public Holder<Boolean> modified() {
+		return modified;
+	}
+
 	/**
 	 * Opens an {@link ImageLabelingModel}. Changes to the labeling will be tracked.
 	 *
@@ -96,8 +103,19 @@ public class LabeledImage {
 			return;
 		imageLabelingModel.dataChangedNotifier().remove(onLabelingChanged);
 		imageLabelingModel.labeling().notifier().remove(onLabelingChanged);
-		saveTemporarily(imageLabelingModel);
-		imageLabelingModel = null;
+		if (storedIn.get() == null) {
+			try {
+				new LabelingSerializer(context).save(imageLabelingModel.labeling().get(),
+					modifiedLabelingFile);
+				storedIn.set(modifiedLabelingFile);
+				imageLabelingModel = null;
+			}
+			catch (IOException e) {
+				e.printStackTrace();
+			}
+		}
+		else
+			imageLabelingModel = null;
 	}
 
 	/**
@@ -105,7 +123,7 @@ public class LabeledImage {
 	 * file. And reloads the labeling.
 	 */
 	public void discardChanges() {
-		if (labelingFile.equals(storedIn))
+		if (modified.get())
 			return;
 		if (imageLabelingModel != null) {
 			imageLabelingModel.labeling().set(openOrEmptyLabeling(labelingFile, imageLabelingModel
@@ -117,20 +135,20 @@ public class LabeledImage {
 		catch (IOException e) {
 			e.printStackTrace();
 		}
-		storedIn = labelingFile;
+		storedIn.set(labelingFile);
 	}
 
 	/**
 	 * Writes the labeling (if modified) to {@link #labelingFile}.
 	 */
 	public void save() {
-		if (labelingFile.equals(storedIn))
+		if (!modified.get())
 			return;
 		if (imageLabelingModel == null) {
 			try {
 				Files.move(Paths.get(modifiedLabelingFile), Paths.get(labelingFile),
 					StandardCopyOption.REPLACE_EXISTING);
-				storedIn = labelingFile;
+				storedIn.set(labelingFile);
 			}
 			catch (IOException e) {
 				e.printStackTrace();
@@ -140,8 +158,8 @@ public class LabeledImage {
 			try {
 				new LabelingSerializer(context).save(imageLabelingModel.labeling().get(),
 					labelingFile);
-				storedIn = labelingFile;
 				Files.deleteIfExists(Paths.get(modifiedLabelingFile));
+				storedIn.set(labelingFile);
 			}
 			catch (IOException e) {
 				e.printStackTrace();
@@ -150,15 +168,19 @@ public class LabeledImage {
 	}
 
 	private void onLabelingChanged() {
-		storedIn = null;
+		storedIn.set(null);
 	}
 
-	private ImageLabelingModel snapshot() {
+	/**
+	 * Returns an up to date {@link ImageLabelingModel}. But doesn't guarantee for
+	 * changes to be tracked, or to keep the reference.
+	 */
+	public ImageLabelingModel snapshot() {
 		if (imageLabelingModel != null)
 			return imageLabelingModel;
 		DatasetInputImage inputImage = openInputImage();
 		inputImage.setDefaultLabelingFilename(modifiedLabelingFile);
-		Labeling labeling = openOrEmptyLabeling(storedIn, inputImage.imageForSegmentation());
+		Labeling labeling = openOrEmptyLabeling(storedIn.get(), inputImage.imageForSegmentation());
 		ImageLabelingModel imageLabelingModel = new ImageLabelingModel(inputImage);
 		imageLabelingModel.labeling().set(labeling);
 		return imageLabelingModel;
@@ -168,20 +190,6 @@ public class LabeledImage {
 		DatasetIOService datasetIOService = context.service(DatasetIOService.class);
 		Dataset dataset = CheckedExceptionUtils.run(() -> datasetIOService.open(imageFile));
 		return new DatasetInputImage(dataset);
-	}
-
-	private void saveTemporarily(ImageLabelingModel imageLabelingModel) {
-		if (storedIn == null) {
-			String filename = modifiedLabelingFile;
-			try {
-				new LabelingSerializer(context).save(imageLabelingModel.labeling().get(),
-					filename);
-				storedIn = filename;
-			}
-			catch (IOException e) {
-				e.printStackTrace();
-			}
-		}
 	}
 
 	private Labeling openOrEmptyLabeling(String filename, Interval interval) {
