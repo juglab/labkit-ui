@@ -53,7 +53,7 @@ public class LabkitProjectEditor extends JPanel {
 			File[] files = chooser.getSelectedFiles();
 			for (File file : files) {
 				String filename = file.getPath();
-				LabeledImage newLabeledImage = new LabeledImage(filename);
+				LabeledImage newLabeledImage = new LabeledImage(model.context(), filename);
 				model.labeledImages().add(newLabeledImage);
 				model.changeNotifier().notifyListeners();
 			}
@@ -151,12 +151,14 @@ public class LabkitProjectEditor extends JPanel {
 				String name = oldLabeledImage.getName();
 				if (name.equals(FilenameUtils.getName(oldLabeledImage.getImageFile())))
 					name = FilenameUtils.getName(newImageFile);
-				return new LabeledImage(name, newImageFile, oldLabeledImage.getLabelingFile());
+				return new LabeledImage(model.context(), name, newImageFile, oldLabeledImage
+					.getLabelingFile());
 			});
 		}
 
 		private void setLabeling(int rowIndex, String newLabelingFile) {
-			modifyLabeledImage(rowIndex, oldLabeledImage -> new LabeledImage(oldLabeledImage.getName(),
+			modifyLabeledImage(rowIndex, oldLabeledImage -> new LabeledImage(model.context(),
+				oldLabeledImage.getName(),
 				oldLabeledImage.getImageFile(), newLabelingFile));
 		}
 

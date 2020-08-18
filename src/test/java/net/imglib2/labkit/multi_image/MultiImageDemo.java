@@ -7,9 +7,7 @@ import net.imglib2.labkit.SegmentationComponent;
 import net.imglib2.labkit.models.LabeledImage;
 import net.imglib2.labkit.models.LabkitProjectModel;
 import net.imglib2.labkit.models.SegmentationItem;
-import net.imglib2.labkit.models.SegmentationModel;
 import net.imglib2.labkit.models.SegmenterListModel;
-import net.imglib2.trainable_segmentation.utils.SingletonContext;
 import org.scijava.Context;
 
 import javax.swing.*;
@@ -23,8 +21,6 @@ import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 public class MultiImageDemo {
 
@@ -126,6 +122,7 @@ public class MultiImageDemo {
 			updateSegmenterFiles(projectModel, segmenterListModel);
 			LabkitProjectSerializer.save(projectModel, new File(projectModel.getProjectDirectory(),
 				"labkit-project.yaml"));
+			projectModel.labeledImages().forEach(labeledImage -> labeledImage.save());
 		}
 		catch (IOException e) {
 			e.printStackTrace();

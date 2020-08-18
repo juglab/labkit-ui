@@ -70,7 +70,7 @@ public class LabkitProjectSerializer {
 	private static LabkitProjectModel asLabkitProjectModel(Context context, PlainProjectData p,
 		File projectFile)
 	{
-		List<LabeledImage> labeledImages = map(x -> asLabeledImage(x), p.images);
+		List<LabeledImage> labeledImages = map(x -> asLabeledImage(context, x), p.images);
 		List<String> segmenterFiles = map(x -> x.file, p.segmentation_algorithms);
 		LabkitProjectModel project = new LabkitProjectModel(context, projectFile.getParent(),
 			labeledImages);
@@ -78,8 +78,8 @@ public class LabkitProjectSerializer {
 		return project;
 	}
 
-	private static LabeledImage asLabeledImage(PlainLabeledImage image) {
-		return new LabeledImage(image.nick_name, image.image_file, image.labeling_file);
+	private static LabeledImage asLabeledImage(Context context, PlainLabeledImage image) {
+		return new LabeledImage(context, image.nick_name, image.image_file, image.labeling_file);
 	}
 
 	// -- Helper classes --

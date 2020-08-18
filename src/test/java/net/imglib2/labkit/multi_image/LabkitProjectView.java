@@ -58,7 +58,7 @@ public class LabkitProjectView extends JPanel {
 			File[] files = chooser.getSelectedFiles();
 			for (File file : files) {
 				String filename = file.getPath();
-				LabeledImage newLabeledImage = new LabeledImage(filename);
+				LabeledImage newLabeledImage = new LabeledImage(model.context(), filename);
 				model.labeledImages().add(newLabeledImage);
 				model.changeNotifier().notifyListeners();
 			}
