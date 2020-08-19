@@ -1,6 +1,8 @@
 
-package net.imglib2.labkit.models;
+package net.imglib2.labkit.project;
 
+import net.imglib2.labkit.models.DefaultHolder;
+import net.imglib2.labkit.models.Holder;
 import net.imglib2.labkit.utils.Notifier;
 import org.scijava.Context;
 
@@ -15,7 +17,7 @@ public class LabkitProjectModel {
 
 	private Holder<LabeledImage> selectedImage;
 
-	private List<LabeledImage> labeledImages;
+	private List<LabeledImage> labeledImageFiles;
 
 	private List<String> segmenterFiles;
 
@@ -23,13 +25,14 @@ public class LabkitProjectModel {
 
 	public LabkitProjectModel(Context context,
 		String projectDirectory,
-		List<LabeledImage> labeledImages)
+		List<LabeledImage> labeledImageFiles)
 	{
 		this.context = context;
 		this.projectDirectory = projectDirectory;
-		this.selectedImage = new DefaultHolder<>(labeledImages.size() == 0 ? null : labeledImages.get(
-			0));
-		this.labeledImages = labeledImages;
+		this.selectedImage = new DefaultHolder<>(labeledImageFiles.size() == 0 ? null
+			: labeledImageFiles.get(
+				0));
+		this.labeledImageFiles = labeledImageFiles;
 		this.segmenterFiles = new ArrayList<>();
 		changeNotifier.add(this::onLabeledImagesChanged);
 	}
@@ -39,7 +42,7 @@ public class LabkitProjectModel {
 	}
 
 	public List<LabeledImage> labeledImages() {
-		return labeledImages;
+		return labeledImageFiles;
 	}
 
 	public List<String> segmenterFiles() {
@@ -59,10 +62,10 @@ public class LabkitProjectModel {
 	}
 
 	private void onLabeledImagesChanged() {
-		if (labeledImages.contains(selectedImage.get()))
+		if (labeledImageFiles.contains(selectedImage.get()))
 			return;
-		if (!labeledImages.isEmpty())
-			selectedImage.set(labeledImages.get(0));
+		if (!labeledImageFiles.isEmpty())
+			selectedImage.set(labeledImageFiles.get(0));
 		else
 			selectedImage.set(null);
 	}

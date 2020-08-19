@@ -1,10 +1,8 @@
 
-package net.imglib2.labkit.multi_image;
+package net.imglib2.labkit.project;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
-import net.imglib2.labkit.models.LabeledImage;
-import net.imglib2.labkit.models.LabkitProjectModel;
 import org.scijava.Context;
 
 import java.io.File;
@@ -17,9 +15,9 @@ import java.util.function.Function;
  * LabkitProjectSerializer allows to save an {@link LabkitProjectModel} to file,
  * and to open it from file.
  */
-public class LabkitProjectSerializer {
+public class LabkitProjectFileSerializer {
 
-	private LabkitProjectSerializer() {
+	private LabkitProjectFileSerializer() {
 		// prevent from initialization
 	}
 
@@ -70,10 +68,10 @@ public class LabkitProjectSerializer {
 	private static LabkitProjectModel asLabkitProjectModel(Context context, PlainProjectData p,
 		File projectFile)
 	{
-		List<LabeledImage> labeledImages = map(x -> asLabeledImage(context, x), p.images);
+		List<LabeledImage> labeledImageFiles = map(x -> asLabeledImage(context, x), p.images);
 		List<String> segmenterFiles = map(x -> x.file, p.segmentation_algorithms);
 		LabkitProjectModel project = new LabkitProjectModel(context, projectFile.getParent(),
-			labeledImages);
+			labeledImageFiles);
 		project.segmenterFiles().addAll(segmenterFiles);
 		return project;
 	}

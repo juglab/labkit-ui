@@ -1,9 +1,7 @@
 
-package net.imglib2.labkit.multi_image;
+package net.imglib2.labkit.project;
 
 import net.imglib2.labkit.actions.AbstractFileIoAction;
-import net.imglib2.labkit.models.LabeledImage;
-import net.imglib2.labkit.models.LabkitProjectModel;
 import net.miginfocom.swing.MigLayout;
 
 import javax.swing.*;
@@ -16,7 +14,11 @@ import java.util.List;
 import java.util.Set;
 import java.util.concurrent.CopyOnWriteArrayList;
 
-public class LabkitProjectView extends JPanel {
+/**
+ * A Panel the holds an list of {@link LabeledImage} in the
+ * {@link LabkitProjectModel}.
+ */
+public class LabeledImagesListPanel extends JPanel {
 
 	private final LabkitProjectModel model;
 
@@ -24,7 +26,7 @@ public class LabkitProjectView extends JPanel {
 
 	private final MyListModel listModel = new MyListModel();
 
-	public LabkitProjectView(LabkitProjectModel model) {
+	public LabeledImagesListPanel(LabkitProjectModel model) {
 		this.model = model;
 		setLayout(new MigLayout("", "[grow]", "[grow]0px[]"));
 		this.list = initList(model);

@@ -1,8 +1,6 @@
 
-package net.imglib2.labkit.multi_image;
+package net.imglib2.labkit.project;
 
-import net.imglib2.labkit.models.LabkitProjectModel;
-import net.imglib2.trainable_segmentation.utils.SingletonContext;
 import net.miginfocom.swing.MigLayout;
 import org.scijava.Context;
 
@@ -61,7 +59,7 @@ public class NewProjectDialog extends JDialog {
 		if (dialog.approved) {
 			LabkitProjectModel newProject = dialog.getModel();
 			try {
-				LabkitProjectSerializer.save(newProject, new File(newProject.getProjectDirectory(),
+				LabkitProjectFileSerializer.save(newProject, new File(newProject.getProjectDirectory(),
 					"labkit-project.yaml"));
 			}
 			catch (IOException e) {

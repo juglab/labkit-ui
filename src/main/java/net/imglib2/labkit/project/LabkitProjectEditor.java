@@ -1,9 +1,8 @@
 
-package net.imglib2.labkit.multi_image;
+package net.imglib2.labkit.project;
 
 import net.imglib2.labkit.actions.AbstractFileIoAction;
-import net.imglib2.labkit.models.LabeledImage;
-import net.imglib2.labkit.models.LabkitProjectModel;
+import net.imglib2.labkit.utils.FileChooserCellEditor;
 import net.miginfocom.swing.MigLayout;
 import org.apache.commons.io.FilenameUtils;
 

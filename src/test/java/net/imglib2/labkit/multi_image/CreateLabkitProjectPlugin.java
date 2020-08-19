@@ -15,6 +15,6 @@ public class CreateLabkitProjectPlugin implements Command {
 
 	@Override
 	public void run() {
-		MultiImageDemo.onNewProjectClicked(context);
+		LabkitProjectFrame.onNewProjectClicked(context);
 	}
 }

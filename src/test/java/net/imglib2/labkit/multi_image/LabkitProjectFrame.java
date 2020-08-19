@@ -4,10 +4,14 @@ package net.imglib2.labkit.multi_image;
 import net.imagej.ImageJ;
 import net.imagej.patcher.LegacyInjector;
 import net.imglib2.labkit.SegmentationComponent;
-import net.imglib2.labkit.models.LabeledImage;
-import net.imglib2.labkit.models.LabkitProjectModel;
+import net.imglib2.labkit.project.LabeledImage;
+import net.imglib2.labkit.project.LabeledImagesListPanel;
+import net.imglib2.labkit.project.LabkitProjectFileFilter;
+import net.imglib2.labkit.project.LabkitProjectFileSerializer;
+import net.imglib2.labkit.project.LabkitProjectModel;
 import net.imglib2.labkit.models.SegmentationItem;
 import net.imglib2.labkit.models.SegmenterListModel;
+import net.imglib2.labkit.project.NewProjectDialog;
 import org.scijava.Context;
 
 import javax.swing.*;
@@ -22,7 +26,33 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-public class MultiImageDemo {
+public class LabkitProjectFrame extends JFrame {
+
+	private final JPanel workspace;
+
+	private SegmentationComponent segmentationComponent;
+
+	private final JMenu projectMenu;
+
+	private final ProjectSegmentationModel projectSegmentationModel;
+
+	public LabkitProjectFrame(LabkitProjectModel labkitProjectModel) {
+		super("Labkit Project");
+		JPanel imagesList = new LabeledImagesListPanel(labkitProjectModel);
+		workspace = new JPanel();
+		workspace.setPreferredSize(new Dimension(1000, 800));
+		workspace.setLayout(new BorderLayout());
+		JSplitPane splitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, workspace, imagesList);
+		projectSegmentationModel = new ProjectSegmentationModel(labkitProjectModel);
+		projectMenu = initProjectMenu(projectSegmentationModel);
+		labkitProjectModel.selectedImage().notifier().add(() -> updateBdv());
+		if (labkitProjectModel.selectedImage().get() != null)
+			updateBdv();
+		splitPane.setResizeWeight(1);
+		splitPane.setOneTouchExpandable(true);
+		add(splitPane);
+		pack();
+	}
 
 	static {
 		LegacyInjector.preinit();
@@ -33,62 +63,50 @@ public class MultiImageDemo {
 	}
 
 	private static void openProject(LabkitProjectModel labkitProjectModel) {
-		JFrame frame = new JFrame("Labkit Project");
-		JPanel panel = new LabkitProjectView(labkitProjectModel);
-		JPanel workspace = new JPanel();
-		workspace.setPreferredSize(new Dimension(1000, 800));
-		workspace.setLayout(new BorderLayout());
-		JSplitPane splitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, workspace, panel);
-		// TODO the next line is realy hacky
-		ProjectSegmentationModel segementationModel = new ProjectSegmentationModel(labkitProjectModel);
-		JMenu projectMenu = initProjectMenu(frame, labkitProjectModel, segementationModel
-			.segmenterList());
-		labkitProjectModel.selectedImage().notifier().add(() -> {
-			updateBdv(labkitProjectModel, frame, workspace, segementationModel, projectMenu);
-		});
-		if (labkitProjectModel.selectedImage().get() != null)
-			updateBdv(labkitProjectModel, frame, workspace, segementationModel, projectMenu);
-		splitPane.setResizeWeight(1);
-		splitPane.setOneTouchExpandable(true);
-		frame.add(splitPane);
-		frame.pack();
+		JFrame frame = new LabkitProjectFrame(labkitProjectModel);
 		frame.setVisible(true);
 		frame.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
 	}
 
-	private static void updateBdv(LabkitProjectModel labkitProjectModel, JFrame frame,
-		JPanel workspace, ProjectSegmentationModel psm, JMenu projectMenu)
-	{
-		workspace.removeAll();
-		frame.setJMenuBar(null);
-		LabeledImage labeledImage = labkitProjectModel.selectedImage().get();
+	private void updateBdv() {
+		if (segmentationComponent != null) {
+			workspace.remove(segmentationComponent.getComponent());
+			segmentationComponent.close();
+		}
+		LabeledImage labeledImage = projectSegmentationModel.projectModel().selectedImage().get();
 		if (labeledImage != null) {
-			psm.setSelectedImage(labeledImage);
-			SegmentationComponent component = new SegmentationComponent(frame, psm, false);
+			projectSegmentationModel.setSelectedImage(labeledImage);
+			SegmentationComponent component = new SegmentationComponent(this, projectSegmentationModel,
+				false);
 			component.autoContrast();
 			workspace.add(component.getComponent());
+			segmentationComponent = component;
 			JMenuBar menuBar = component.getMenuBar();
 			menuBar.add(projectMenu);
-			frame.setJMenuBar(menuBar);
+			setJMenuBar(menuBar);
 			menuBar.updateUI();
+		}
+		else {
+			JMenuBar menuBar = new JMenuBar();
+			menuBar.add(projectMenu);
+			setJMenuBar(menuBar);
+			segmentationComponent = null;
 		}
 		workspace.revalidate();
 		workspace.repaint();
 	}
 
-	private static JMenu initProjectMenu(Component component, LabkitProjectModel projectModel,
-		SegmenterListModel segmenterListModel)
-	{
+	private static JMenu initProjectMenu(ProjectSegmentationModel psm) {
 		JMenu menu = new JMenu("Project");
 		JMenuItem newProjectItem = new JMenuItem("New Project...");
-		newProjectItem.addActionListener(ignore -> onNewProjectClicked(projectModel.context()));
+		newProjectItem.addActionListener(ignore -> onNewProjectClicked(psm.context()));
 		menu.add(newProjectItem);
 		JMenuItem openProjectItem = new JMenuItem("Open Project...");
-		openProjectItem.addActionListener(ignore -> onOpenProjectClicked(projectModel.context()));
+		openProjectItem.addActionListener(ignore -> onOpenProjectClicked(psm.context()));
 		menu.add(openProjectItem);
 		JMenuItem saveProjectItem = new JMenuItem("Save Project");
 		saveProjectItem.addActionListener(ignore -> {
-			onSaveProjectClicked(projectModel, segmenterListModel);
+			onSaveProjectClicked(psm.projectModel(), psm.segmenterList());
 		});
 		menu.add(saveProjectItem);
 		return menu;
@@ -107,7 +125,7 @@ public class MultiImageDemo {
 		if (returnValue == JFileChooser.APPROVE_OPTION) {
 			File file = dialog.getSelectedFile();
 			try {
-				openProject(LabkitProjectSerializer.open(context, file));
+				openProject(LabkitProjectFileSerializer.open(context, file));
 			}
 			catch (IOException e) {
 				e.printStackTrace();
@@ -120,7 +138,7 @@ public class MultiImageDemo {
 	{
 		try {
 			updateSegmenterFiles(projectModel, segmenterListModel);
-			LabkitProjectSerializer.save(projectModel, new File(projectModel.getProjectDirectory(),
+			LabkitProjectFileSerializer.save(projectModel, new File(projectModel.getProjectDirectory(),
 				"labkit-project.yaml"));
 			projectModel.labeledImages().forEach(labeledImage -> labeledImage.save());
 		}

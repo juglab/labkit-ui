@@ -14,6 +14,6 @@ public class OpenLabkitProjectPlugin implements Command {
 
 	@Override
 	public void run() {
-		MultiImageDemo.onOpenProjectClicked(context);
+		LabkitProjectFrame.onOpenProjectClicked(context);
 	}
 }
