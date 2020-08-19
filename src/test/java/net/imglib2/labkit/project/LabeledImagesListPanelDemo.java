@@ -1,8 +1,6 @@
 
-package net.imglib2.labkit.multi_image;
+package net.imglib2.labkit.project;
 
-import net.imglib2.labkit.models.LabeledImage;
-import net.imglib2.labkit.models.LabkitProjectModel;
 import net.imglib2.trainable_segmentation.utils.SingletonContext;
 import org.scijava.Context;
 
@@ -10,7 +8,10 @@ import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-public class LabkitProjectViewDemo {
+/**
+ * Demonstrates {@link LabeledImagesListPanel}.
+ */
+public class LabeledImagesListPanelDemo {
 
 	public static void main(String... args) {
 		Context context = SingletonContext.getInstance();

@@ -4,10 +4,14 @@ package net.imglib2.labkit.multi_image;
 import net.imagej.ImageJ;
 import net.imagej.patcher.LegacyInjector;
 import net.imglib2.labkit.SegmentationComponent;
-import net.imglib2.labkit.models.LabeledImage;
-import net.imglib2.labkit.models.LabkitProjectModel;
+import net.imglib2.labkit.project.LabeledImage;
+import net.imglib2.labkit.project.LabeledImagesListPanel;
+import net.imglib2.labkit.project.LabkitProjectFileFilter;
+import net.imglib2.labkit.project.LabkitProjectFileSerializer;
+import net.imglib2.labkit.project.LabkitProjectModel;
 import net.imglib2.labkit.models.SegmentationItem;
 import net.imglib2.labkit.models.SegmenterListModel;
+import net.imglib2.labkit.project.NewProjectDialog;
 import org.scijava.Context;
 
 import javax.swing.*;
@@ -34,7 +38,7 @@ public class MultiImageDemo {
 
 	private static void openProject(LabkitProjectModel labkitProjectModel) {
 		JFrame frame = new JFrame("Labkit Project");
-		JPanel panel = new LabkitProjectView(labkitProjectModel);
+		JPanel panel = new LabeledImagesListPanel(labkitProjectModel);
 		JPanel workspace = new JPanel();
 		workspace.setPreferredSize(new Dimension(1000, 800));
 		workspace.setLayout(new BorderLayout());
@@ -107,7 +111,7 @@ public class MultiImageDemo {
 		if (returnValue == JFileChooser.APPROVE_OPTION) {
 			File file = dialog.getSelectedFile();
 			try {
-				openProject(LabkitProjectSerializer.open(context, file));
+				openProject(LabkitProjectFileSerializer.open(context, file));
 			}
 			catch (IOException e) {
 				e.printStackTrace();
@@ -120,7 +124,7 @@ public class MultiImageDemo {
 	{
 		try {
 			updateSegmenterFiles(projectModel, segmenterListModel);
-			LabkitProjectSerializer.save(projectModel, new File(projectModel.getProjectDirectory(),
+			LabkitProjectFileSerializer.save(projectModel, new File(projectModel.getProjectDirectory(),
 				"labkit-project.yaml"));
 			projectModel.labeledImages().forEach(labeledImage -> labeledImage.save());
 		}

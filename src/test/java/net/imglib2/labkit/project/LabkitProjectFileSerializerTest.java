@@ -1,8 +1,6 @@
 
-package net.imglib2.labkit.multi_image;
+package net.imglib2.labkit.project;
 
-import net.imglib2.labkit.models.LabeledImage;
-import net.imglib2.labkit.models.LabkitProjectModel;
 import net.imglib2.trainable_segmentation.utils.SingletonContext;
 import org.apache.commons.io.FileUtils;
 import org.junit.Test;
@@ -14,13 +12,13 @@ import java.util.Collections;
 
 import static org.junit.Assert.assertEquals;
 
-public class LabkitProjectSerializerTest {
+public class LabkitProjectFileSerializerTest {
 
 	@Test
 	public void testSave() throws IOException {
 		LabkitProjectModel project = exampleProject();
 		File file = createTmpFile();
-		LabkitProjectSerializer.save(project, file);
+		LabkitProjectFileSerializer.save(project, file);
 		String text = FileUtils.readFileToString(file, StandardCharsets.UTF_8);
 		String expected = exampleYaml();
 		assertEquals(expected, text);
@@ -30,7 +28,8 @@ public class LabkitProjectSerializerTest {
 	public void testOpen() throws IOException {
 		File file = createTmpFile();
 		FileUtils.writeStringToFile(file, exampleYaml(), StandardCharsets.UTF_8);
-		LabkitProjectModel project = LabkitProjectSerializer.open(SingletonContext.getInstance(), file);
+		LabkitProjectModel project = LabkitProjectFileSerializer.open(SingletonContext.getInstance(),
+			file);
 		LabkitProjectModel expected = exampleProject();
 		assertEquals(expected.labeledImages(), project.labeledImages());
 		assertEquals(expected.segmenterFiles(), project.segmenterFiles());

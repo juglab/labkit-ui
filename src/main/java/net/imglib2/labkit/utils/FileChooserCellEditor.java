@@ -1,5 +1,5 @@
 
-package net.imglib2.labkit.multi_image;
+package net.imglib2.labkit.utils;
 
 import java.awt.Color;
 import java.awt.Component;

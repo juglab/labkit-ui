@@ -3,10 +3,9 @@ package net.imglib2.labkit.multi_image;
 
 import net.imagej.ImgPlus;
 import net.imglib2.labkit.labeling.Labeling;
-import net.imglib2.labkit.labeling.LabelingSerializer;
 import net.imglib2.labkit.models.ImageLabelingModel;
-import net.imglib2.labkit.models.LabeledImage;
-import net.imglib2.labkit.models.LabkitProjectModel;
+import net.imglib2.labkit.project.LabeledImage;
+import net.imglib2.labkit.project.LabkitProjectModel;
 import net.imglib2.labkit.models.SegmentationItem;
 import net.imglib2.labkit.models.SegmentationModel;
 import net.imglib2.labkit.models.SegmenterListModel;
@@ -15,14 +14,12 @@ import net.imglib2.util.Pair;
 import net.imglib2.util.ValuePair;
 import org.scijava.Context;
 
-import java.io.IOException;
 import java.util.AbstractList;
 import java.util.List;
 
 /**
- * ProjectSegmentationModel create a DefaultSegmentationModel that is linked to
- * a LabkitProjectModel. The DefaultSegmentationModel is updated, whenever the
- * {@link LabkitProjectModel#selectedImage()} changes.
+ * ProjectSegmentationModel is a {@link SegmentationModel}, that allows to
+ * change the {@link LabeledImage} it works with.
  */
 public class ProjectSegmentationModel implements SegmentationModel {
 
@@ -61,21 +58,11 @@ public class ProjectSegmentationModel implements SegmentationModel {
 		return projectModel;
 	}
 
-	private void saveInDefaultLocation() {
-		LabeledImage image = projectModel.selectedImage().get();
-		if (image == selectedImage)
-			return;
-		if (selectedImage != null) {
-			selectedImage.close();
-		}
-		this.selectedImage = image;
-	}
-
 	private SegmenterListModel initSegmenterListModel(List<String> segmenters) {
 		LabeledImage labeledImage = projectModel.selectedImage().get();
 		if (labeledImage == null && !projectModel.labeledImages().isEmpty())
 			labeledImage = projectModel.labeledImages().get(0);
-		ImageLabelingModel imageLabelingModel = labeledImage != null ? labeledImage.open() : null;
+		ImageLabelingModel imageLabelingModel = labeledImage != null ? labeledImage.snapshot() : null;
 		SegmenterListModel segmenterListModel = new SegmenterListModel(context, imageLabelingModel);
 		segmenterListModel.trainingData().set(new TrainingData());
 		for (String filename : segmenters) {
@@ -87,7 +74,12 @@ public class ProjectSegmentationModel implements SegmentationModel {
 	}
 
 	public void setSelectedImage(LabeledImage image) {
-		saveInDefaultLocation();
+		if (image == selectedImage)
+			return;
+		if (selectedImage != null) {
+			selectedImage.close();
+		}
+		this.selectedImage = image;
 		imageLabelingModel = image.open();
 		segmenterList.setImageLabelingModel(imageLabelingModel);
 	}

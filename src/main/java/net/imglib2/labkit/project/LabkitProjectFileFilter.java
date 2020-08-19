@@ -1,5 +1,5 @@
 
-package net.imglib2.labkit.multi_image;
+package net.imglib2.labkit.project;
 
 import java.io.File;
 
@@ -12,6 +12,6 @@ public class LabkitProjectFileFilter extends javax.swing.filechooser.FileFilter 
 
 	@Override
 	public String getDescription() {
-		return "Project (labkit-project.yaml)";
+		return "Labkit Project (labkit-project.yaml)";
 	}
 }
