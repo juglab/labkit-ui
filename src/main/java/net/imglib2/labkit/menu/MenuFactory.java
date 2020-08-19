@@ -63,14 +63,6 @@ public class MenuFactory {
 		return (int) (entry.priority / 100);
 	}
 
-	public <T> List<RunnableAction> asActions(MenuKey<T> key, Supplier<T> item) {
-		List<Entry<T>> list = getMenu(key);
-		List<RunnableAction> menu = new ArrayList<>();
-		for (Entry<T> entry : list)
-			menu.add(entry.asAction(item));
-		return menu;
-	}
-
 	private <T> List<Entry<T>> getMenu(MenuKey<T> key) {
 		return Casts.unchecked(menus.computeIfAbsent(key, k -> new ArrayList<>()));
 	}

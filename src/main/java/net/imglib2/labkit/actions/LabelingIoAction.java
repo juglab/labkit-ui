@@ -2,7 +2,7 @@
 package net.imglib2.labkit.actions;
 
 import net.imglib2.RandomAccessibleInterval;
-import net.imglib2.labkit.DefaultExtensible;
+import net.imglib2.labkit.Extensible;
 import net.imglib2.labkit.MenuBar;
 import net.imglib2.labkit.models.LabelingModel;
 import net.imglib2.labkit.utils.LabkitUtils;
@@ -11,7 +11,6 @@ import net.imglib2.labkit.labeling.LabelingSerializer;
 import net.imglib2.img.display.imagej.ImageJFunctions;
 import net.imglib2.type.numeric.IntegerType;
 
-import javax.swing.filechooser.FileNameExtensionFilter;
 import java.io.IOException;
 
 /**
@@ -22,7 +21,7 @@ public class LabelingIoAction extends AbstractFileIoAction {
 	private final LabelingModel labelingModel;
 	private final LabelingSerializer serializer;
 
-	public LabelingIoAction(DefaultExtensible extensible,
+	public LabelingIoAction(Extensible extensible,
 		LabelingModel labelingModel)
 	{
 		super(extensible, AbstractFileIoAction.LABELING_FILTER,

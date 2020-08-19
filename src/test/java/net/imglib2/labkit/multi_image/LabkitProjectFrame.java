@@ -54,10 +54,6 @@ public class LabkitProjectFrame extends JFrame {
 		pack();
 	}
 
-	static {
-		LegacyInjector.preinit();
-	}
-
 	public static void main(String... args) {
 		new ImageJ().ui().showUI();
 	}

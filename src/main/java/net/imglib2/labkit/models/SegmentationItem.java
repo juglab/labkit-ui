@@ -9,9 +9,9 @@ import net.imglib2.labkit.segmentation.SegmentationPlugin;
 import net.imglib2.labkit.segmentation.Segmenter;
 import net.imglib2.util.Pair;
 
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.WeakHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
 
 public class SegmentationItem extends ForwardingSegmenter {
@@ -32,7 +32,7 @@ public class SegmentationItem extends ForwardingSegmenter {
 	public SegmentationItem(ImageLabelingModel model, SegmentationPlugin plugin) {
 		super(plugin.createSegmenter(model.imageForSegmentation().get()));
 		this.name = "#" + counter.incrementAndGet() + " - " + plugin.getTitle();
-		this.results = new HashMap<>();
+		this.results = new WeakHashMap<>();
 		this.filename = null;
 		this.modified = false;
 	}

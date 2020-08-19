@@ -4,7 +4,6 @@ package net.imglib2.labkit.panel;
 import net.imglib2.labkit.DefaultExtensible;
 import net.imglib2.labkit.labeling.Label;
 import net.imglib2.labkit.models.ColoredLabelsModel;
-import net.imglib2.labkit.models.ImageLabelingModel;
 import net.imglib2.labkit.models.LabelingModel;
 import net.imglib2.type.numeric.ARGBType;
 import net.miginfocom.swing.MigLayout;
