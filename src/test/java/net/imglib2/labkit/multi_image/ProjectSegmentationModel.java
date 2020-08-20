@@ -59,11 +59,7 @@ public class ProjectSegmentationModel implements SegmentationModel {
 	}
 
 	private SegmenterListModel initSegmenterListModel(List<String> segmenters) {
-		LabeledImage labeledImage = projectModel.selectedImage().get();
-		if (labeledImage == null && !projectModel.labeledImages().isEmpty())
-			labeledImage = projectModel.labeledImages().get(0);
-		ImageLabelingModel imageLabelingModel = labeledImage != null ? labeledImage.snapshot() : null;
-		SegmenterListModel segmenterListModel = new SegmenterListModel(context, imageLabelingModel);
+		SegmenterListModel segmenterListModel = new SegmenterListModel(context);
 		segmenterListModel.trainingData().set(new TrainingData());
 		for (String filename : segmenters) {
 			SegmentationItem segmentationItem = segmenterListModel.addSegmenter(PixelClassificationPlugin
@@ -81,7 +77,6 @@ public class ProjectSegmentationModel implements SegmentationModel {
 		}
 		this.selectedImage = image;
 		imageLabelingModel = image.open();
-		segmenterList.setImageLabelingModel(imageLabelingModel);
 	}
 
 	private class TrainingData extends AbstractList<Pair<ImgPlus<?>, Labeling>> {

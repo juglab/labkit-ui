@@ -29,7 +29,7 @@ public class SegmentationItem extends ForwardingSegmenter {
 
 	private final Map<ImageLabelingModel, SegmentationResultsModel> results;
 
-	public SegmentationItem(ImageLabelingModel model, SegmentationPlugin plugin) {
+	public SegmentationItem(SegmentationPlugin plugin) {
 		super(plugin.createSegmenter());
 		this.name = "#" + counter.incrementAndGet() + " - " + plugin.getTitle();
 		this.results = new WeakHashMap<>();

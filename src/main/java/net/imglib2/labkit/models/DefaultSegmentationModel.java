@@ -5,13 +5,17 @@ import net.imagej.ImgPlus;
 import net.imglib2.RandomAccessibleInterval;
 import net.imglib2.img.cell.CellImgFactory;
 import net.imglib2.labkit.inputimage.InputImage;
+import net.imglib2.labkit.labeling.Labeling;
 import net.imglib2.labkit.segmentation.Segmenter;
 import net.imglib2.labkit.utils.DimensionUtils;
 import net.imglib2.type.NativeType;
 import net.imglib2.type.numeric.IntegerType;
 import net.imglib2.type.numeric.real.FloatType;
+import net.imglib2.util.Pair;
+import net.imglib2.util.ValuePair;
 import org.scijava.Context;
 
+import java.util.AbstractList;
 import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -28,16 +32,8 @@ public class DefaultSegmentationModel implements SegmentationModel {
 	public DefaultSegmentationModel(Context context, InputImage inputImage) {
 		this.context = context;
 		this.imageLabelingModel = new ImageLabelingModel(inputImage);
-		this.segmenterList = new SegmenterListModel(context, imageLabelingModel);
-	}
-
-	public DefaultSegmentationModel(Context context,
-		ImageLabelingModel imageLabelingModel,
-		SegmenterListModel segmenterList)
-	{
-		this.context = context;
-		this.imageLabelingModel = imageLabelingModel;
-		this.segmenterList = segmenterList;
+		this.segmenterList = new SegmenterListModel(context);
+		this.segmenterList().trainingData().set(new SingletonTrainingData(imageLabelingModel));
 	}
 
 	@Override
@@ -87,5 +83,26 @@ public class DefaultSegmentationModel implements SegmentationModel {
 
 	private Stream<Segmenter> getTrainedSegmenters() {
 		return segmenterList.segmenters().get().stream().filter(Segmenter::isTrained).map(x -> x);
+	}
+
+	private class SingletonTrainingData extends AbstractList<Pair<ImgPlus<?>, Labeling>> {
+
+		private final ImageLabelingModel imageLabelingModel;
+
+		public SingletonTrainingData(ImageLabelingModel imageLabelingModel) {
+			this.imageLabelingModel = imageLabelingModel;
+		}
+
+		@Override
+		public Pair<ImgPlus<?>, Labeling> get(int index) {
+			ImgPlus<?> image = imageLabelingModel.imageForSegmentation().get();
+			Labeling labeling = imageLabelingModel.labeling().get();
+			return new ValuePair<>(image, labeling);
+		}
+
+		@Override
+		public int size() {
+			return 1;
+		}
 	}
 }
