@@ -85,8 +85,6 @@ public class SegmentationUseCaseTest {
 			inputImage);
 		ImageLabelingModel imageLabelingModel = segmentationModel.imageLabelingModel();
 		imageLabelingModel.labeling().set(labeling);
-		PredictionLayer layer = PredictionLayer.createPredictionLayer(segmentationModel);
-		assertEquals(2, layer.image().get().interval().numDimensions());
 		SegmentationItem segmenter = segmentationModel.segmenterList().addSegmenter(
 			PixelClassificationPlugin.create());
 		segmenter.train(Collections.singletonList(new ValuePair<>(imgPlus,
