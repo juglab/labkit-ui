@@ -18,6 +18,7 @@ import net.imglib2.img.cell.CellGrid;
 import net.imglib2.img.display.imagej.ImgPlusViews;
 import net.imglib2.labkit.inputimage.ImgPlusViewsOld;
 import net.imglib2.labkit.labeling.Label;
+import net.imglib2.labkit.labeling.Labelings;
 import net.imglib2.labkit.segmentation.Segmenter;
 import net.imglib2.labkit.labeling.Labeling;
 import net.imglib2.labkit.utils.LabkitUtils;
@@ -39,6 +40,7 @@ import net.imglib2.type.numeric.real.FloatType;
 import net.imglib2.util.Cast;
 import net.imglib2.util.Intervals;
 import net.imglib2.util.Pair;
+import net.imglib2.util.ValuePair;
 import net.imglib2.view.Views;
 import net.imglib2.view.composite.Composite;
 import org.scijava.Context;
@@ -56,6 +58,8 @@ import java.util.concurrent.CancellationException;
 import java.util.function.BiConsumer;
 import java.util.function.Function;
 import java.util.stream.Collectors;
+import java.util.stream.IntStream;
+import java.util.stream.Stream;
 
 public class TrainableSegmentationSegmenter implements Segmenter {
 
@@ -98,14 +102,20 @@ public class TrainableSegmentationSegmenter implements Segmenter {
 	public void segment(ImgPlus<?> image,
 		RandomAccessibleInterval<? extends IntegerType<?>> labels)
 	{
-		segmenter.segment(labels, Views.extendBorder(image));
+		if (ImgPlusViewsOld.hasAxis(image, Axes.TIME))
+			applyOnSlices(segmenter::segment, image, labels, 0);
+		else
+			segmenter.segment(labels, Views.extendBorder(image));
 	}
 
 	@Override
 	public void predict(ImgPlus<?> image,
 		RandomAccessibleInterval<? extends RealType<?>> prediction)
 	{
-		segmenter.predict(prediction, Views.extendBorder(image));
+		if (ImgPlusViewsOld.hasAxis(image, Axes.TIME))
+			applyOnSlices(segmenter::predict, image, prediction, 1);
+		else
+			segmenter.predict(prediction, Views.extendBorder(image));
 	}
 
 	@Override
@@ -119,8 +129,8 @@ public class TrainableSegmentationSegmenter implements Segmenter {
 					classes, featureSettings, new FastRandomForest());
 			segmenter.setUseGpu(useGpu);
 			Training training = segmenter.training();
-			for (Pair<? extends RandomAccessibleInterval<?>, ? extends Labeling> pair : trainingData)
-				train(training, classes, pair.getB(), pair.getA(), segmenter.features());
+			for (Pair<ImgPlus<?>, Labeling> pair : trainingData)
+				trainMovie(training, classes, pair.getB(), pair.getA(), segmenter.features());
 			training.train();
 			this.segmenter = segmenter;
 		}
@@ -140,7 +150,22 @@ public class TrainableSegmentationSegmenter implements Segmenter {
 			.getLabels().stream()).map(Label::name).collect(Collectors.toSet()));
 	}
 
-	private void train(Training training, List<String> classes, Labeling labeling,
+	private void trainMovie(Training training, List<String> classes, Labeling labeling,
+		ImgPlus<?> image, FeatureCalculator featuresCalculator)
+	{
+		if (ImgPlusViewsOld.hasAxis(image, Axes.TIME)) {
+			List<ImgPlus<?>> imageSlices = ImgPlusViewsOld.hyperSlices(image, Axes.TIME);
+			List<Labeling> labelSlices = Labelings.slices(labeling);
+			for (int i = 0; i < imageSlices.size(); i++) {
+				trainFrame(training, classes, labelSlices.get(i), imageSlices.get(i), featuresCalculator);
+			}
+		}
+		else {
+			trainFrame(training, classes, labeling, image, featuresCalculator);
+		}
+	}
+
+	private void trainFrame(Training training, List<String> classes, Labeling labeling,
 		RandomAccessibleInterval<?> image, FeatureCalculator featuresCalculator)
 	{
 		SparseRandomAccessIntType classIndices = getClassIndices(labeling, classes);
@@ -246,7 +271,10 @@ public class TrainableSegmentationSegmenter implements Segmenter {
 		int cellSize = spacialDimensions <= 2 ? 128 : 32;
 		if (useGpu)
 			cellSize *= 2;
-		int[] cellDimension = new int[spacialDimensions];
+		int[] cellDimension = new int[image.numDimensions()];
+		for (int i = 0; i < cellDimension.length; i++) {
+			cellDimension[i] = image.axis(i).type().isSpatial() ? cellSize : 1;
+		}
 		Arrays.fill(cellDimension, cellSize);
 		return cellDimension;
 	}
@@ -305,7 +333,7 @@ public class TrainableSegmentationSegmenter implements Segmenter {
 	}
 
 	private <T> void applyOnSlices(
-		BiConsumer<ImgPlus<?>, RandomAccessibleInterval<T>> action,
+		BiConsumer<RandomAccessibleInterval<T>, ImgPlus<?>> action,
 		ImgPlus<?> image, RandomAccessibleInterval<T> target,
 		int offset)
 	{
@@ -316,7 +344,7 @@ public class TrainableSegmentationSegmenter implements Segmenter {
 		if (min < image.min(imageTimeAxis) || max > image.max(imageTimeAxis))
 			throw new IllegalStateException("Last dimensions must fit.");
 		for (long pos = min; pos <= max; pos++)
-			action.accept(ImgPlusViews.hyperSlice(Cast.unchecked(image), imageTimeAxis, pos), Views
-				.hyperSlice(target, targetTimeAxis, pos));
+			action.accept(Views.hyperSlice(target, targetTimeAxis, pos), ImgPlusViews.hyperSlice(Cast
+				.unchecked(image), imageTimeAxis, pos));
 	}
 }
