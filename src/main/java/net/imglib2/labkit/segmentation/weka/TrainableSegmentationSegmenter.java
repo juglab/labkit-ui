@@ -15,10 +15,10 @@ import net.imglib2.cache.img.DiskCachedCellImgFactory;
 import net.imglib2.cache.img.DiskCachedCellImgOptions;
 import net.imglib2.img.Img;
 import net.imglib2.img.cell.CellGrid;
+import net.imglib2.img.display.imagej.ImgPlusViews;
 import net.imglib2.labkit.inputimage.ImgPlusViewsOld;
 import net.imglib2.labkit.labeling.Label;
 import net.imglib2.labkit.segmentation.Segmenter;
-import net.imglib2.labkit.inputimage.InputImage;
 import net.imglib2.labkit.labeling.Labeling;
 import net.imglib2.labkit.utils.LabkitUtils;
 import net.imglib2.roi.labeling.LabelingType;
@@ -36,6 +36,7 @@ import net.imglib2.type.numeric.IntegerType;
 import net.imglib2.type.numeric.RealType;
 import net.imglib2.type.numeric.integer.IntType;
 import net.imglib2.type.numeric.real.FloatType;
+import net.imglib2.util.Cast;
 import net.imglib2.util.Intervals;
 import net.imglib2.util.Pair;
 import net.imglib2.view.Views;
@@ -52,6 +53,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.CancellationException;
+import java.util.function.BiConsumer;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -65,13 +67,21 @@ public class TrainableSegmentationSegmenter implements Segmenter {
 
 	private net.imglib2.trainable_segmentation.classification.Segmenter segmenter;
 
+	public TrainableSegmentationSegmenter(Context context) {
+		this.context = Objects.requireNonNull(context);
+		this.useGpu = false;
+		this.segmenter = null;
+		this.featureSettings = null;
+	}
+
 	@Override
 	public List<String> classNames() {
 		return segmenter.classNames();
 	}
 
 	@Override
-	public void editSettings(JFrame dialogParent) {
+	public void editSettings(JFrame dialogParent, List<Pair<ImgPlus<?>, Labeling>> trainingData) {
+		initFeatureSettings(trainingData);
 		TrainableSegmentationSettingsDialog dialog =
 			new TrainableSegmentationSettingsDialog(context, dialogParent,
 				useGpu, featureSettings);
@@ -82,44 +92,6 @@ public class TrainableSegmentationSegmenter implements Segmenter {
 			if (segmenter != null)
 				segmenter.setUseGpu(useGpu);
 		}
-	}
-
-	public TrainableSegmentationSegmenter(Context context,
-		ImgPlus<?> image)
-	{
-		final ChannelSetting channelSetting = getChannelSetting(image);
-		GlobalSettings globalSettings = GlobalSettings.default2d()
-			.dimensions(ImgPlusViewsOld.numberOfSpatialDimensions(image))
-			.channels(channelSetting)
-			.sigmaRange(1.0, 8.0)
-			.pixelSize(getPixelSize(image))
-			.build();
-		this.context = Objects.requireNonNull(context);
-		this.useGpu = false;
-		this.featureSettings = new FeatureSettings(globalSettings,
-			SingleFeatures.identity(),
-			GroupedFeatures.gauss(),
-			GroupedFeatures.differenceOfGaussians(),
-			GroupedFeatures.gradient(),
-			GroupedFeatures.laplacian(),
-			GroupedFeatures.hessian(),
-			GroupedFeatures.structureTensor());
-		this.segmenter = null;
-	}
-
-	private static ChannelSetting getChannelSetting(ImgPlus<?> image) {
-		if (ImgPlusViewsOld.hasAxis(image, Axes.CHANNEL))
-			return ChannelSetting.multiple((int) ImgPlusViewsOld.getDimension(image, Axes.CHANNEL));
-		return image.firstElement() instanceof ARGBType ? ChannelSetting.RGB : ChannelSetting.SINGLE;
-	}
-
-	public TrainableSegmentationSegmenter(Context context) {
-		GlobalSettings globalSettings = GlobalSettings.default3d().build();
-		this.context = context;
-		this.useGpu = false;
-		this.featureSettings = new FeatureSettings(globalSettings, SingleFeatures
-			.identity());
-		this.segmenter = null;
 	}
 
 	@Override
@@ -139,6 +111,7 @@ public class TrainableSegmentationSegmenter implements Segmenter {
 	@Override
 	public void train(List<Pair<ImgPlus<?>, Labeling>> trainingData) {
 		try {
+			initFeatureSettings(trainingData);
 			List<String> classes = collectLabels(trainingData.stream().map(Pair::getB)
 				.collect(Collectors.toList()));
 			net.imglib2.trainable_segmentation.classification.Segmenter segmenter =
@@ -296,5 +269,54 @@ public class TrainableSegmentationSegmenter implements Segmenter {
 	private static double getPixelSize(ImgPlus<?> image, AxisType axis) {
 		double scale = image.averageScale(image.dimensionIndex(axis));
 		return Double.isNaN(scale) || scale == 0 ? 1.0 : scale;
+	}
+
+	private void initFeatureSettings(List<Pair<ImgPlus<?>, Labeling>> trainingData) {
+		if (this.featureSettings != null)
+			return;
+		final GlobalSettings globalSettings = initGlobalSettings(trainingData);
+		this.featureSettings = new FeatureSettings(globalSettings,
+			SingleFeatures.identity(),
+			GroupedFeatures.gauss(),
+			GroupedFeatures.differenceOfGaussians(),
+			GroupedFeatures.gradient(),
+			GroupedFeatures.laplacian(),
+			GroupedFeatures.hessian(),
+			GroupedFeatures.structureTensor());
+	}
+
+	private GlobalSettings initGlobalSettings(List<Pair<ImgPlus<?>, Labeling>> trainingData) {
+		if (trainingData.isEmpty())
+			return GlobalSettings.default2d().build();
+		ImgPlus<?> image = trainingData.get(0).getA();
+		final ChannelSetting channelSetting = getChannelSetting(image);
+		return GlobalSettings.default2d()
+			.dimensions(ImgPlusViewsOld.numberOfSpatialDimensions(image))
+			.channels(channelSetting)
+			.sigmaRange(1.0, 8.0)
+			.pixelSize(getPixelSize(image))
+			.build();
+	}
+
+	private static ChannelSetting getChannelSetting(ImgPlus<?> image) {
+		if (ImgPlusViewsOld.hasAxis(image, Axes.CHANNEL))
+			return ChannelSetting.multiple((int) ImgPlusViewsOld.getDimension(image, Axes.CHANNEL));
+		return image.firstElement() instanceof ARGBType ? ChannelSetting.RGB : ChannelSetting.SINGLE;
+	}
+
+	private <T> void applyOnSlices(
+		BiConsumer<ImgPlus<?>, RandomAccessibleInterval<T>> action,
+		ImgPlus<?> image, RandomAccessibleInterval<T> target,
+		int offset)
+	{
+		int imageTimeAxis = image.dimensionIndex(Axes.TIME);
+		int targetTimeAxis = target.numDimensions() - 1 - offset;
+		long min = target.min(targetTimeAxis);
+		long max = target.max(targetTimeAxis);
+		if (min < image.min(imageTimeAxis) || max > image.max(imageTimeAxis))
+			throw new IllegalStateException("Last dimensions must fit.");
+		for (long pos = min; pos <= max; pos++)
+			action.accept(ImgPlusViews.hyperSlice(Cast.unchecked(image), imageTimeAxis, pos), Views
+				.hyperSlice(target, targetTimeAxis, pos));
 	}
 }

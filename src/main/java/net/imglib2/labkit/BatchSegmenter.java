@@ -6,7 +6,6 @@ import ij.ImagePlus;
 import io.scif.img.ImgIOException;
 import io.scif.img.ImgSaver;
 import net.imagej.ImgPlus;
-import net.imagej.ops.OpEnvironment;
 import net.imagej.ops.OpService;
 import net.imglib2.RandomAccessibleInterval;
 import net.imglib2.img.VirtualStackAdapter;
@@ -15,7 +14,6 @@ import net.imglib2.labkit.segmentation.weka.TrainableSegmentationSegmenter;
 import net.imglib2.exception.IncompatibleTypeException;
 import net.imglib2.img.Img;
 import net.imglib2.img.array.ArrayImgs;
-import net.imglib2.img.display.imagej.ImageJFunctions;
 import net.imglib2.labkit.utils.ParallelUtils;
 import bdv.export.ProgressWriter;
 import net.imglib2.type.numeric.integer.UnsignedByteType;
@@ -71,7 +69,6 @@ public class BatchSegmenter {
 	private static Segmenter openClassifier(Context context) throws IOException {
 		final String classifierPath =
 			"/home/arzt/Documents/20170804_LungImages/0006.classifier";
-		OpEnvironment ops = context.service(OpService.class);
 		Segmenter segmenter = new TrainableSegmentationSegmenter(context);
 		segmenter.openModel(classifierPath);
 		return segmenter;

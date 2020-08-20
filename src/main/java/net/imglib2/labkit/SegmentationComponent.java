@@ -59,7 +59,7 @@ public class SegmentationComponent implements AutoCloseable {
 		final ImageLabelingModel labelingModel = segmentationModel
 			.imageLabelingModel();
 		new TrainClassifier(extensible, segmentationModel.segmenterList());
-		new ClassifierSettingsAction(extensible, selectedSegmenter);
+		new ClassifierSettingsAction(extensible, segmentationModel.segmenterList());
 		new ClassifierIoAction(extensible, selectedSegmenter);
 		new LabelingIoAction(extensible, labelingModel);
 		new AddLabelingIoAction(extensible, labelingModel.labeling());

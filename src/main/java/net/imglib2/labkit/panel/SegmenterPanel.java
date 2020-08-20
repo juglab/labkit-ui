@@ -120,7 +120,7 @@ public class SegmenterPanel {
 		}
 
 		private void showSettings() {
-			item.editSettings(null);
+			item.editSettings(null, segmentationModel.trainingData().get());
 		}
 
 		private void runTraining() {

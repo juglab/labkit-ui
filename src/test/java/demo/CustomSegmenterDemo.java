@@ -58,7 +58,7 @@ public class CustomSegmenterDemo {
 		}
 
 		@Override
-		public Segmenter createSegmenter(ImgPlus<?> image) {
+		public Segmenter createSegmenter() {
 			return new MySegmenter();
 		}
 	}
@@ -70,7 +70,7 @@ public class CustomSegmenterDemo {
 		private Thresholder thresholder = null;
 
 		@Override
-		public void editSettings(JFrame dialogParent) {
+		public void editSettings(JFrame dialogParent, List<Pair<ImgPlus<?>, Labeling>> trainingData) {
 
 		}
 

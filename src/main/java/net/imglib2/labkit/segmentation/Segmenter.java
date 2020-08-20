@@ -19,7 +19,7 @@ public interface Segmenter {
 	/**
 	 * Show a GUI dialog and allow the user to edit the settings of the model.
 	 */
-	void editSettings(JFrame dialogParent);
+	void editSettings(JFrame dialogParent, List<Pair<ImgPlus<?>, Labeling>> trainingData);
 
 	/**
 	 * Train the model with the given data.

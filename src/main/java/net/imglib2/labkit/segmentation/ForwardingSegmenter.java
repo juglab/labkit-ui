@@ -24,8 +24,8 @@ public class ForwardingSegmenter implements Segmenter {
 	}
 
 	@Override
-	public void editSettings(JFrame dialogParent) {
-		source.editSettings(dialogParent);
+	public void editSettings(JFrame dialogParent, List<Pair<ImgPlus<?>, Labeling>> trainingData) {
+		source.editSettings(dialogParent, trainingData);
 	}
 
 	@Override
