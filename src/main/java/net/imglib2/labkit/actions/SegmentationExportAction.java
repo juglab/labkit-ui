@@ -7,6 +7,7 @@ import net.imglib2.RandomAccessibleInterval;
 import net.imglib2.img.ImgView;
 import net.imglib2.img.display.imagej.ImageJFunctions;
 import net.imglib2.labkit.Extensible;
+import net.imglib2.labkit.models.ImageLabelingModel;
 import net.imglib2.labkit.models.SegmentationItem;
 import net.imglib2.labkit.utils.LabkitUtils;
 import bdv.export.ProgressWriter;
@@ -26,12 +27,12 @@ public class SegmentationExportAction extends AbstractFileIoAction {
 
 	private final Extensible extensible;
 
-	public SegmentationExportAction(Extensible extensible) {
+	public SegmentationExportAction(Extensible extensible, ImageLabelingModel labelingModel) {
 		super(extensible, AbstractFileIoAction.TIFF_FILTER,
 			AbstractFileIoAction.HDF5_FILTER);
 		this.extensible = extensible;
-		addMenuItems(item -> item.results().segmentation(), "Segmentation Result");
-		addMenuItems(item -> item.results().prediction(), "Probability Map");
+		addMenuItems(item -> item.results(labelingModel).segmentation(), "Segmentation Result");
+		addMenuItems(item -> item.results(labelingModel).prediction(), "Probability Map");
 	}
 
 	private <T extends NumericType<T> & NativeType<T>> void addMenuItems(

@@ -11,10 +11,10 @@ import net.imglib2.labkit.MenuBar;
 import net.imglib2.labkit.labeling.Label;
 import net.imglib2.labkit.labeling.Labeling;
 import net.imglib2.labkit.models.Holder;
+import net.imglib2.labkit.models.ImageLabelingModel;
 import net.imglib2.labkit.models.SegmentationItem;
 import net.imglib2.labkit.models.SegmentationModel;
 import net.imglib2.labkit.models.SegmentationResultsModel;
-import net.imglib2.labkit.models.SegmenterListModel;
 import net.imglib2.roi.labeling.LabelingType;
 import net.imglib2.type.logic.BitType;
 import net.imglib2.type.numeric.integer.ShortType;
@@ -22,21 +22,20 @@ import net.imglib2.view.Views;
 
 import javax.swing.*;
 import java.util.List;
-import java.util.Set;
 
 /**
  * @author Matthias Arzt
  */
 public class SegmentationAsLabelAction {
 
-	private final Holder<Labeling> labelingHolder;
+	private final ImageLabelingModel labelingModel;
 	private final Holder<? extends SegmentationItem> selectedSegmenter;
 
-	public <T extends SegmenterListModel<? extends SegmentationItem> & SegmentationModel> SegmentationAsLabelAction(
-		Extensible extensible, T segmenationModel)
+	public SegmentationAsLabelAction(
+		Extensible extensible, SegmentationModel segmenationModel)
 	{
-		this.labelingHolder = segmenationModel.imageLabelingModel().labeling();
-		this.selectedSegmenter = segmenationModel.selectedSegmenter();
+		this.labelingModel = segmenationModel.imageLabelingModel();
+		this.selectedSegmenter = segmenationModel.segmenterList().selectedSegmenter();
 		extensible.addMenuItem(MenuBar.SEGMENTER_MENU,
 			"Create Label from Segmentation ...", 400,
 			ignore -> ((Runnable) this::addSegmentationAsLabels).run(), null, "");
@@ -50,7 +49,7 @@ public class SegmentationAsLabelAction {
 	}
 
 	private void addSegmentationAsLabel(SegmentationItem segmentationItem) {
-		SegmentationResultsModel selectedResults = segmentationItem.results();
+		SegmentationResultsModel selectedResults = segmentationItem.results(labelingModel);
 		List<String> labels = selectedResults.labels();
 		String selected = (String) JOptionPane.showInputDialog(null,
 			"Select label to be added", "Add Segmentation as Labels ...",
@@ -68,6 +67,7 @@ public class SegmentationAsLabelAction {
 			.get() == index);
 		RandomAccessibleInterval<BitType> result = Converters.convert(segmentation,
 			converter, new BitType());
+		Holder<Labeling> labelingHolder = labelingModel.labeling();
 		addLabel(labelingHolder.get(), "segmented " + selected, result);
 		labelingHolder.notifier().notifyListeners();
 	}

@@ -2,7 +2,6 @@
 package net.imglib2.labkit;
 
 import net.imglib2.labkit.menu.MenuKey;
-import bdv.export.ProgressWriter;
 import org.scijava.Context;
 
 import javax.swing.*;

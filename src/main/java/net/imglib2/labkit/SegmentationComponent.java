@@ -13,10 +13,10 @@ import net.imglib2.labkit.actions.SegmentationAsLabelAction;
 import net.imglib2.labkit.actions.SegmentationExportAction;
 import net.imglib2.labkit.menu.MenuKey;
 import net.imglib2.labkit.models.ColoredLabelsModel;
-import net.imglib2.labkit.models.DefaultSegmentationModel;
 import net.imglib2.labkit.models.Holder;
 import net.imglib2.labkit.models.ImageLabelingModel;
 import net.imglib2.labkit.models.SegmentationItem;
+import net.imglib2.labkit.models.SegmentationModel;
 import net.imglib2.labkit.panel.ImageInfoPanel;
 import net.imglib2.labkit.panel.LabelPanel;
 import net.imglib2.labkit.panel.SegmenterPanel;
@@ -31,48 +31,44 @@ public class SegmentationComponent implements AutoCloseable {
 
 	private final JComponent panel;
 
-	private final boolean fixedLabels;
+	private final boolean unmodifiableLabels;
 
 	private final DefaultExtensible extensible;
 
 	private BasicLabelingComponent labelingComponent;
 
-	private DefaultSegmentationModel segmentationModel;
+	private SegmentationModel segmentationModel;
 
 	public SegmentationComponent(JFrame dialogBoxOwner,
-		DefaultSegmentationModel segmentationModel, boolean fixedLabels)
+		SegmentationModel segmentationModel, boolean unmodifiableLabels)
 	{
 		this.extensible = new DefaultExtensible(segmentationModel.context(),
 			dialogBoxOwner);
-		this.fixedLabels = fixedLabels;
+		this.unmodifiableLabels = unmodifiableLabels;
 		this.segmentationModel = segmentationModel;
-		labelingComponent = new BasicLabelingComponent(dialogBoxOwner,
-			segmentationModel.imageLabelingModel());
-		labelingComponent.addBdvLayer(new PredictionLayer(
-			segmentationModel.selectedSegmenter(),
-			segmentationModel.segmentationVisibility(),
-			segmentationModel.labelTransformation(),
-			segmentationModel.image()));
+		ImageLabelingModel imageLabelingModel = segmentationModel.imageLabelingModel();
+		labelingComponent = new BasicLabelingComponent(dialogBoxOwner, imageLabelingModel);
+		labelingComponent.addBdvLayer(PredictionLayer.createPredictionLayer(segmentationModel));
 		initActions();
 		this.panel = initPanel();
 	}
 
 	private void initActions() {
 		final Holder<SegmentationItem> selectedSegmenter = segmentationModel
-			.selectedSegmenter();
+			.segmenterList().selectedSegmenter();
 		final ImageLabelingModel labelingModel = segmentationModel
 			.imageLabelingModel();
-		new TrainClassifier(extensible, segmentationModel);
+		new TrainClassifier(extensible, segmentationModel.segmenterList());
 		new ClassifierSettingsAction(extensible, selectedSegmenter);
 		new ClassifierIoAction(extensible, selectedSegmenter);
 		new LabelingIoAction(extensible, labelingModel);
 		new AddLabelingIoAction(extensible, labelingModel.labeling());
-		new SegmentationExportAction(extensible);
+		new SegmentationExportAction(extensible, labelingModel);
 		new ResetViewAction(extensible, labelingModel);
 		new BatchSegmentAction(extensible, selectedSegmenter);
 		new SegmentationAsLabelAction(extensible, segmentationModel);
 		new BitmapImportExportAction(extensible, labelingModel);
-		new LabelEditAction(extensible, fixedLabels, new ColoredLabelsModel(
+		new LabelEditAction(extensible, unmodifiableLabels, new ColoredLabelsModel(
 			labelingModel));
 		MeasureConnectedComponents.addAction(extensible, labelingModel);
 		labelingComponent.addShortcuts(extensible.getShortCuts());
@@ -81,11 +77,11 @@ public class SegmentationComponent implements AutoCloseable {
 	private JPanel initLeftPanel() {
 		JPanel panel = new JPanel();
 		panel.setLayout(new MigLayout("", "[grow]", "[][grow][grow]"));
-		panel.add(ImageInfoPanel.newFramedImageInfoPanel(segmentationModel
-			.imageLabelingModel(), labelingComponent), "grow, wrap");
+		panel.add(ImageInfoPanel.newFramedImageInfoPanel(segmentationModel.imageLabelingModel(),
+			labelingComponent), "grow, wrap");
 		panel.add(LabelPanel.newFramedLabelPanel(segmentationModel
-			.imageLabelingModel(), extensible, fixedLabels), "grow, wrap");
-		panel.add(SegmenterPanel.newFramedSegmeterPanel(segmentationModel,
+			.imageLabelingModel(), extensible, unmodifiableLabels), "grow, wrap");
+		panel.add(SegmenterPanel.newFramedSegmeterPanel(segmentationModel.segmenterList(),
 			extensible), "grow");
 		panel.invalidate();
 		panel.repaint();
@@ -108,7 +104,7 @@ public class SegmentationComponent implements AutoCloseable {
 	public JMenu createMenu(MenuKey<Void> key) {
 		if (key == MenuBar.SEGMENTER_MENU) return extensible.createMenu(
 			SegmentationItem.SEGMENTER_MENU, segmentationModel
-				.selectedSegmenter()::get);
+				.segmenterList().selectedSegmenter()::get);
 		return extensible.createMenu(key, () -> null);
 	}
 
@@ -117,4 +113,11 @@ public class SegmentationComponent implements AutoCloseable {
 		labelingComponent.close();
 	}
 
+	public JMenuBar getMenuBar() {
+		return new MenuBar(this::createMenu);
+	}
+
+	public void autoContrast() {
+		labelingComponent.autoContrast();
+	}
 }

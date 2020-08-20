@@ -2,6 +2,7 @@
 package net.imglib2.labkit.models;
 
 import net.imagej.ImgPlus;
+import net.imagej.axis.Axes;
 import net.imglib2.FinalInterval;
 import net.imglib2.Interval;
 import net.imglib2.RandomAccessibleInterval;
@@ -10,9 +11,10 @@ import net.imglib2.cache.img.DiskCachedCellImgFactory;
 import net.imglib2.cache.img.DiskCachedCellImgOptions;
 import net.imglib2.img.Img;
 import net.imglib2.img.cell.CellGrid;
+import net.imglib2.labkit.inputimage.ImgPlusViewsOld;
+import net.imglib2.labkit.labeling.Labeling;
 import net.imglib2.labkit.segmentation.Segmenter;
 import net.imglib2.labkit.utils.Notifier;
-import net.imglib2.realtransform.AffineTransform3D;
 import net.imglib2.labkit.utils.DimensionUtils;
 import net.imglib2.type.NativeType;
 import net.imglib2.type.numeric.ARGBType;
@@ -35,7 +37,7 @@ import java.util.stream.Collectors;
 
 public class SegmentationResultsModel {
 
-	private final SegmentationModel model;
+	private ImageLabelingModel model;
 	private final Segmenter segmenter;
 	private boolean hasResults = false;
 	private RandomAccessibleInterval<ShortType> segmentation;
@@ -45,14 +47,17 @@ public class SegmentationResultsModel {
 
 	private Notifier listeners = new Notifier();
 
-	public SegmentationResultsModel(SegmentationModel model,
-		Segmenter segmenter)
-	{
+	public SegmentationResultsModel(ImageLabelingModel model, Segmenter segmenter) {
 		this.model = model;
 		this.segmenter = segmenter;
 		segmentation = dummy(new ShortType());
 		prediction = dummy(new FloatType());
+		model.imageForSegmentation().notifier().add(this::update);
 		update();
+	}
+
+	public ImageLabelingModel imageLabelingModel() {
+		return model;
 	}
 
 	public void update() {
@@ -68,11 +73,12 @@ public class SegmentationResultsModel {
 	}
 
 	private ARGBType getLabelColor(String name) {
+		Labeling labeling = model.labeling().get();
 		try {
-			return model.labeling().getLabel(name).color();
+			return labeling.getLabel(name).color();
 		}
 		catch (NoSuchElementException e) {
-			return model.labeling().addLabel(name).color();
+			return labeling.addLabel(name).color();
 		}
 	}
 
@@ -88,9 +94,8 @@ public class SegmentationResultsModel {
 	}
 
 	private <T> RandomAccessibleInterval<T> dummy(T value) {
-		FinalInterval interval = new FinalInterval(model.image());
-		return ConstantUtils.constantRandomAccessibleInterval(value, interval
-			.numDimensions(), interval);
+		FinalInterval interval = new FinalInterval(model.imageForSegmentation().get());
+		return ConstantUtils.constantRandomAccessibleInterval(value, interval);
 	}
 
 	public RandomAccessibleInterval<FloatType> prediction() {
@@ -99,11 +104,12 @@ public class SegmentationResultsModel {
 
 	private void updatePrediction(Segmenter segmenter) {
 		int count = segmenter.classNames().size();
-		ImgPlus<?> image = model.image();
+		ImgPlus<?> image = model.imageForSegmentation().get();
 		CellLoader<FloatType> loader = target -> segmenter.predict(image, target);
 		int[] cellSize = segmenter.suggestCellSize(image);
-		CellGrid grid = addDimensionToGrid(count, new CellGrid(Intervals.dimensionsAsLongArray(image),
-			cellSize));
+		Interval interval = intervalNoChannels(image);
+		CellGrid grid = addDimensionToGrid(count, new CellGrid(Intervals.dimensionsAsLongArray(
+			interval), cellSize));
 		prediction = setupCachedImage(loader, grid, new FloatType());
 	}
 
@@ -114,11 +120,17 @@ public class SegmentationResultsModel {
 	}
 
 	private void updateSegmentation(Segmenter segmenter) {
-		ImgPlus<?> image = model.image();
+		ImgPlus<?> image = model.imageForSegmentation().get();
 		CellLoader<ShortType> loader = target -> segmenter.segment(image, target);
 		int[] cellSize = segmenter.suggestCellSize(image);
-		CellGrid grid = new CellGrid(Intervals.dimensionsAsLongArray(image), cellSize);
+		Interval interval = intervalNoChannels(image);
+		CellGrid grid = new CellGrid(Intervals.dimensionsAsLongArray(interval), cellSize);
 		segmentation = setupCachedImage(loader, grid, new ShortType());
+	}
+
+	private Interval intervalNoChannels(ImgPlus<?> image) {
+		return new FinalInterval(ImgPlusViewsOld.hasAxis(image, Axes.CHANNEL) ? ImgPlusViewsOld
+			.hyperSlice(image, Axes.CHANNEL, 0) : image);
 	}
 
 	private <T extends NativeType<T>> Img<T> setupCachedImage(
@@ -148,7 +160,7 @@ public class SegmentationResultsModel {
 	}
 
 	public Interval interval() {
-		return new FinalInterval(Intervals.dimensionsAsLongArray(model.image()));
+		return new FinalInterval(Intervals.dimensionsAsLongArray(model.imageForSegmentation().get()));
 	}
 
 	public List<ARGBType> colors() {
@@ -157,10 +169,6 @@ public class SegmentationResultsModel {
 
 	public Notifier segmentationChangedListeners() {
 		return listeners;
-	}
-
-	public AffineTransform3D transformation() {
-		return model.labelTransformation();
 	}
 
 	public boolean hasResults() {

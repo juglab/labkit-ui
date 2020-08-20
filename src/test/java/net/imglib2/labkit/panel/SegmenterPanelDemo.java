@@ -18,11 +18,10 @@ public class SegmenterPanelDemo {
 		JFrame frame = new JFrame();
 		frame.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
 		frame.setSize(400, 400);
-		DefaultSegmentationModel model =
-			new DefaultSegmentationModel(new DatasetInputImage(ArrayImgs
-				.unsignedBytes(10, 10)), new Context());
-		final SegmenterPanel segmenterPanel = new SegmenterPanel(model,
-			item -> newMenu(item, model));
+		SegmenterListModel model =
+			new DefaultSegmentationModel(new Context(), new DatasetInputImage(ArrayImgs
+				.unsignedBytes(10, 10))).segmenterList();
+		final SegmenterPanel segmenterPanel = new SegmenterPanel(model, item -> newMenu(item, model));
 		frame.add(segmenterPanel.getComponent());
 		frame.setVisible(true);
 	}

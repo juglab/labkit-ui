@@ -2,7 +2,9 @@
 package net.imglib2.labkit.panel;
 
 import net.imglib2.RandomAccessibleInterval;
+import net.imglib2.img.Img;
 import net.imglib2.img.array.ArrayImgs;
+import net.imglib2.labkit.inputimage.DatasetInputImage;
 import net.imglib2.labkit.labeling.Labeling;
 import net.imglib2.labkit.models.ColoredLabelsModel;
 import net.imglib2.labkit.models.ImageLabelingModel;
@@ -15,11 +17,8 @@ import java.util.Arrays;
 public class LabelPanelDemo {
 
 	public static void main(String... args) {
-		RandomAccessibleInterval<? extends NumericType<?>> image = ArrayImgs
-			.unsignedBytes(10, 10);
-		Labeling labeling = Labeling.createEmpty(Arrays.asList("bg", "fg"), image);
-		ImageLabelingModel imageLabeling = new ImageLabelingModel(image, labeling,
-			false);
+		Img<? extends NumericType<?>> image = ArrayImgs.unsignedBytes(10, 10);
+		ImageLabelingModel imageLabeling = new ImageLabelingModel(new DatasetInputImage(image));
 		ColoredLabelsModel model = new ColoredLabelsModel(imageLabeling);
 		LabelPanel panel = new LabelPanel(null, model, true,
 			ignore -> new JPopupMenu());

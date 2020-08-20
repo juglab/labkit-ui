@@ -1,23 +1,13 @@
 
 package net.imglib2.labkit.models;
 
-import net.imagej.ImgPlus;
-import net.imglib2.RandomAccessibleInterval;
-import net.imglib2.img.cell.CellGrid;
-import net.imglib2.labkit.labeling.Labeling;
-import net.imglib2.realtransform.AffineTransform3D;
+import org.scijava.Context;
 
 public interface SegmentationModel {
 
+	Context context();
+
 	ImageLabelingModel imageLabelingModel();
 
-	Labeling labeling();
-
-	ImgPlus<?> image();
-
-	AffineTransform3D labelTransformation();
-
-	void trainSegmenter();
-
-	Holder<Boolean> segmentationVisibility();
+	SegmenterListModel segmenterList();
 }

@@ -6,7 +6,9 @@ import net.imagej.Dataset;
 import net.imglib2.labkit.inputimage.DatasetInputImage;
 import net.imglib2.labkit.inputimage.InputImage;
 import net.imglib2.labkit.models.DefaultSegmentationModel;
+import net.imglib2.labkit.models.SegmentationModel;
 import net.imglib2.labkit.utils.CheckedExceptionUtils;
+import net.imglib2.labkit.utils.Notifier;
 import net.imglib2.trainable_segmentation.utils.SingletonContext;
 import org.scijava.Context;
 
@@ -21,33 +23,39 @@ import java.awt.event.WindowEvent;
  */
 public class LabkitFrame {
 
-	private JFrame frame = initFrame();
+	private final JFrame frame = initFrame();
 
-	public static LabkitFrame showForFile(final Context context,
+	private final Notifier onCloseListeners = new Notifier();
+
+	public static LabkitFrame showForFile(Context context,
 		final String filename)
 	{
-		final Context context2 = (context == null) ? SingletonContext.getInstance() : context;
-		Dataset dataset = CheckedExceptionUtils.run(() -> context2.service(
+		if (context == null)
+			context = SingletonContext.getInstance();
+		Dataset dataset = openDataset(context, filename);
+		return showForImage(context, new DatasetInputImage(dataset));
+	}
+
+	private static Dataset openDataset(Context context, String filename) {
+		return CheckedExceptionUtils.run(() -> context.service(
 			DatasetIOService.class).open(filename));
-		return showForImage(context2, new DatasetInputImage(dataset));
 	}
 
 	public static LabkitFrame showForImage(final Context context,
 		final InputImage inputImage)
 	{
-		final DefaultSegmentationModel model = new DefaultSegmentationModel(
-			inputImage, context);
-		InitialLabeling.initializeLabeling(inputImage, model);
+		final SegmentationModel model = new DefaultSegmentationModel(context, inputImage);
+		model.imageLabelingModel().labeling().set(InitialLabeling.initialLabeling(context, inputImage));
 		return show(model, inputImage.imageForSegmentation().getName());
 	}
 
-	public static LabkitFrame show(final DefaultSegmentationModel model,
+	public static LabkitFrame show(final SegmentationModel model,
 		final String title)
 	{
 		return new LabkitFrame(model, title);
 	}
 
-	private LabkitFrame(final DefaultSegmentationModel model,
+	private LabkitFrame(final SegmentationModel model,
 		final String title)
 	{
 		SegmentationComponent segmentationComponent = initSegmentationComponent(
@@ -58,7 +66,7 @@ public class LabkitFrame {
 	}
 
 	private SegmentationComponent initSegmentationComponent(
-		DefaultSegmentationModel segmentationModel)
+		SegmentationModel segmentationModel)
 	{
 		SegmentationComponent segmentationComponent = new SegmentationComponent(
 			frame, segmentationModel, false);
@@ -68,6 +76,7 @@ public class LabkitFrame {
 			@Override
 			public void windowClosed(WindowEvent e) {
 				segmentationComponent.close();
+				onCloseListeners.notifyListeners();
 			}
 		});
 		return segmentationComponent;
@@ -85,4 +94,7 @@ public class LabkitFrame {
 		else frame.setTitle("Labkit - " + name);
 	}
 
+	public Notifier onCloseListeners() {
+		return onCloseListeners;
+	}
 }

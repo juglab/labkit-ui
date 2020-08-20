@@ -3,6 +3,7 @@ package net.imglib2.labkit.bdv;
 
 import bdv.util.BdvOptions;
 import bdv.util.BdvSource;
+import bdv.util.BdvStackSource;
 import bdv.viewer.Source;
 import mpicbg.spim.data.generic.AbstractSpimData;
 import net.imagej.ImgPlus;
@@ -44,5 +45,5 @@ public interface BdvShowable {
 
 	AffineTransform3D transformation();
 
-	BdvSource show(String title, BdvOptions options);
+	BdvStackSource<?> show(String title, BdvOptions options);
 }

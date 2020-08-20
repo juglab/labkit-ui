@@ -6,8 +6,6 @@ import net.imglib2.labkit.inputimage.DatasetInputImage;
 import net.imglib2.labkit.labeling.Label;
 import net.imglib2.labkit.labeling.Labeling;
 import net.imglib2.labkit.segmentation.PixelClassificationPlugin;
-import net.imglib2.labkit.segmentation.weka.TrainableSegmentationSegmenter;
-import net.imglib2.trainable_segmentation.utils.SingletonContext;
 import net.imglib2.type.logic.BitType;
 import net.imglib2.util.ValuePair;
 import net.imglib2.view.Views;
@@ -28,19 +26,19 @@ public class DefaultSegmentationModelTest {
 	@Test
 	public void testListener() {
 		BitType flag = new BitType(false);
-		DefaultSegmentationModel model = new DefaultSegmentationModel(
-			new DatasetInputImage(ArrayImgs.unsignedBytes(100, 100)), new Context());
-		model.listChangeListeners().add(flag::setOne);
+		SegmenterListModel model = new DefaultSegmentationModel(
+			new Context(), new DatasetInputImage(ArrayImgs.unsignedBytes(100, 100))).segmenterList();
+		model.segmenters().notifier().add(flag::setOne);
 		assertFalse(flag.get());
-		assertEquals(1, model.segmenters().size());
-		model.addSegmenter(new PixelClassificationPlugin());
+		assertEquals(0, model.segmenters().get().size());
+		model.addSegmenter(PixelClassificationPlugin.create());
 		assertTrue(flag.get());
-		assertEquals(2, model.segmenters().size());
+		assertEquals(1, model.segmenters().get().size());
 		flag.set(false);
-		SegmentationItem second = model.segmenters().get(1);
-		model.remove(second);
+		SegmentationItem item = model.segmenters().get().get(0);
+		model.remove(item);
 		assertTrue(flag.get());
-		assertEquals(1, model.segmenters().size());
+		assertEquals(0, model.segmenters().get().size());
 	}
 
 	@Test
@@ -51,13 +49,12 @@ public class DefaultSegmentationModelTest {
 
 		// create model
 		DatasetInputImage image = new DatasetInputImage(ArrayImgs.unsignedBytes(1, 1));
-		DefaultSegmentationModel model = new DefaultSegmentationModel(image,
-			new Context());
+		SegmentationModel model = new DefaultSegmentationModel(new Context(), image);
 		// train classifier
-		Labeling labeling = model.labeling();
+		Labeling labeling = model.imageLabelingModel().labeling().get();
 		List<Label> labels = labeling.getLabels();
 		Views.iterable(labeling.getRegion(labels.get(0))).forEach(BitType::setOne);
-		SegmentationItem item = model.selectedSegmenter().get();
+		SegmentationItem item = model.segmenterList().addSegmenter(PixelClassificationPlugin.create());
 		item.train(Collections.singletonList(new ValuePair<>(image
 			.imageForSegmentation(), labeling)));
 		// save classifier

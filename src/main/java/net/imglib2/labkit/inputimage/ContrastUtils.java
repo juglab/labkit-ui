@@ -3,6 +3,7 @@ package net.imglib2.labkit.inputimage;
 
 import bdv.util.BdvOptions;
 import bdv.util.BdvSource;
+import bdv.util.BdvStackSource;
 import net.imagej.ImgPlus;
 import net.imglib2.Interval;
 import net.imglib2.labkit.bdv.BdvShowable;
@@ -47,8 +48,8 @@ class ContrastUtils {
 			}
 
 			@Override
-			public BdvSource show(String title, BdvOptions options) {
-				final BdvSource result = wrap.show(title, options);
+			public BdvStackSource<?> show(String title, BdvOptions options) {
+				final BdvStackSource<?> result = wrap.show(title, options);
 				result.setDisplayRange(min, max);
 				return result;
 			}

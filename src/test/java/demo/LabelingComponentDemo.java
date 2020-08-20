@@ -2,11 +2,14 @@
 package demo;
 
 import ij.ImagePlus;
+import net.imagej.ImgPlus;
 import net.imglib2.RandomAccessibleInterval;
 import net.imglib2.img.Img;
+import net.imglib2.img.VirtualStackAdapter;
 import net.imglib2.img.array.ArrayImgs;
 import net.imglib2.img.display.imagej.ImageJFunctions;
 import net.imglib2.labkit.LabelingComponent;
+import net.imglib2.labkit.inputimage.DatasetInputImage;
 import net.imglib2.labkit.labeling.Labeling;
 import net.imglib2.labkit.models.ImageLabelingModel;
 import net.imglib2.type.numeric.ARGBType;
@@ -33,10 +36,8 @@ public class LabelingComponentDemo {
 	private static ImageLabelingModel initModel() {
 		final ImagePlus imp = new ImagePlus(
 			"https://imagej.nih.gov/ij/images/FluorescentCells.jpg");
-		Img<? extends NumericType<?>> image = ImageJFunctions.wrap(imp);
-		Labeling labeling = Labeling.createEmpty(Arrays.asList("fg", "bg"), image);
-		boolean isTimeSeries = false;
-		return new ImageLabelingModel(image, labeling, isTimeSeries);
+		ImgPlus<?> image = VirtualStackAdapter.wrap(imp);
+		return new ImageLabelingModel(new DatasetInputImage(image));
 	}
 
 	private static JComponent initLabelingComponent(JFrame frame,
@@ -51,16 +52,5 @@ public class LabelingComponentDemo {
 			}
 		});
 		return labelingComponent.getComponent();
-	}
-
-	private static RandomAccessibleInterval<ARGBType> greenNoiseImage(
-		long... dim)
-	{
-		RandomAccessibleInterval<ARGBType> backgroundImage = ArrayImgs.argbs(dim);
-		final Random random = new Random(42);
-		Views.iterable(backgroundImage).forEach(pixel -> pixel.set(ARGBType.rgba(0,
-			random.nextInt(130), 0, 0)));
-		ImageJFunctions.show(backgroundImage);
-		return backgroundImage;
 	}
 }

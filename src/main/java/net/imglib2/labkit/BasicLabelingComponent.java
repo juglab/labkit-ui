@@ -4,16 +4,21 @@ package net.imglib2.labkit;
 import bdv.util.BdvHandle;
 import bdv.util.BdvHandlePanel;
 import bdv.util.BdvOptions;
-import bdv.util.BdvSource;
+import bdv.util.BdvStackSource;
 import bdv.viewer.DisplayMode;
-import net.imglib2.labkit.actions.ToggleVisibility;
+import bdv.viewer.SourceAndConverter;
+import bdv.viewer.SynchronizedViewerState;
+import bdv.viewer.ViewerStateChange;
 import net.imglib2.labkit.bdv.BdvAutoContrast;
 import net.imglib2.labkit.bdv.BdvLayer;
+import net.imglib2.labkit.bdv.BdvShowable;
 import net.imglib2.labkit.brush.ChangeLabel;
 import net.imglib2.labkit.brush.FloodFillController;
 import net.imglib2.labkit.brush.LabelBrushController;
 import net.imglib2.labkit.brush.SelectLabelController;
 import net.imglib2.labkit.labeling.LabelsLayer;
+import net.imglib2.labkit.models.DefaultHolder;
+import net.imglib2.labkit.models.Holder;
 import net.imglib2.labkit.models.ImageLabelingModel;
 import net.imglib2.labkit.panel.LabelToolsPanel;
 import net.miginfocom.swing.MigLayout;
@@ -24,7 +29,7 @@ import java.util.Collection;
 
 public class BasicLabelingComponent implements AutoCloseable {
 
-	private final BdvSource imageSource;
+	private final Holder<BdvStackSource<?>> imageSource;
 
 	private BdvHandle bdvHandle;
 
@@ -68,7 +73,7 @@ public class BasicLabelingComponent implements AutoCloseable {
 		panel.add(bdvHandle.getViewerPanel(), "grow");
 	}
 
-	private BdvSource initImageLayer() {
+	private Holder<BdvStackSource<?>> initImageLayer() {
 		return addBdvLayer(new BdvLayer.FinalLayer(model.showable(), "Image", model
 			.imageVisibility()));
 	}
@@ -77,17 +82,43 @@ public class BasicLabelingComponent implements AutoCloseable {
 		addBdvLayer(new LabelsLayer(model));
 	}
 
-	public BdvSource addBdvLayer(BdvLayer layer) {
+	public Holder<BdvStackSource<?>> addBdvLayer(BdvLayer layer) {
 		BdvOptions options = BdvOptions.options().addTo(bdvHandle);
-		BdvSource source = layer.image().show(layer.title(), options);
+		Holder<BdvShowable> image = layer.image();
+		BdvShowable showable1 = image.get();
+		BdvStackSource<?> bdvStackSource = showable1 != null ? showable1.show(layer.title(), options)
+			: null;
+		Holder<BdvStackSource<?>> source = new DefaultHolder<>(bdvStackSource);
+		image.notifier().add(() -> {
+			BdvStackSource<?> source1 = source.get();
+			source.set(null);
+			if (source1 != null)
+				source1.removeFromBdv();
+			BdvShowable showable = image.get();
+			if (showable != null) {
+				source.set(showable.show(layer.title(), options));
+				source.get().setActive(layer.visibility().get());
+			}
+		});
 		layer.listeners().add(this::requestRepaint);
-		ToggleVisibility action = new ToggleVisibility(layer.title(), source);
-		actionsAndBehaviours.addAction(action);
-		layer.visibility().notifier().add(() -> action.setVisible(layer.visibility()
-			.get()));
-		action.addPropertyChangeListener(propertyChangeEvent -> {
-			if (propertyChangeEvent.getPropertyName().equals(Action.SELECTED_KEY))
-				layer.visibility().set((Boolean) propertyChangeEvent.getNewValue());
+		layer.visibility().notifier().add(() -> {
+			BdvStackSource<?> source1 = source.get();
+			if (source1 != null)
+				try
+				{
+					source1.setActive(layer.visibility().get());
+				}
+			catch (NullPointerException ignore) {
+
+			}
+		});
+		SynchronizedViewerState viewerState = bdvHandle.getViewerPanel().state();
+		viewerState.changeListeners().add(l -> {
+			BdvStackSource<?> source1 = source.get();
+			if (source1 != null && l == ViewerStateChange.VISIBILITY_CHANGED) {
+				boolean visible = viewerState.isSourceActive(source1.getSources().get(0));
+				layer.visibility().set(visible);
+			}
 		});
 		return source;
 	}
@@ -122,7 +153,7 @@ public class BasicLabelingComponent implements AutoCloseable {
 	}
 
 	public void autoContrast() {
-		BdvAutoContrast.autoContrast(imageSource);
+		BdvAutoContrast.autoContrast(imageSource.get());
 	}
 
 }

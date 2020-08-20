@@ -2,11 +2,11 @@
 package net.imglib2.labkit.panel;
 
 import net.imglib2.labkit.DefaultExtensible;
-import net.imglib2.labkit.models.DefaultSegmentationModel;
 import net.imglib2.labkit.models.SegmentationItem;
 import net.imglib2.labkit.models.SegmenterListModel;
 import net.imglib2.labkit.segmentation.SegmentationPlugin;
 import net.imglib2.labkit.segmentation.SegmentationPluginService;
+import net.imglib2.labkit.segmentation.TrainClassifier;
 import net.imglib2.labkit.utils.ParallelUtils;
 import net.miginfocom.swing.MigLayout;
 import org.scijava.ui.behaviour.util.RunnableAction;
@@ -19,18 +19,18 @@ import java.util.function.Supplier;
 
 public class SegmenterPanel {
 
-	private final DefaultSegmentationModel segmentationModel;
+	private final SegmenterListModel segmentationModel;
 
 	private final JPanel panel = new JPanel();
 
-	private final ComponentList<Object, JPanel> list = new ComponentList<>();
+	private final ComponentList<SegmentationItem, JPanel> list = new ComponentList<>();
 
 	private final Function<Supplier<SegmentationItem>, JPopupMenu> menuFactory;
 
 	private JButton addSegmenterButton;
 
 	public SegmenterPanel(
-		DefaultSegmentationModel segmentationModel,
+		SegmenterListModel segmentationModel,
 		Function<Supplier<SegmentationItem>, JPopupMenu> menuFactory)
 	{
 		this.segmentationModel = segmentationModel;
@@ -41,7 +41,7 @@ public class SegmenterPanel {
 	}
 
 	public static JPanel newFramedSegmeterPanel(
-		DefaultSegmentationModel segmentationModel,
+		SegmenterListModel segmentationModel,
 		DefaultExtensible extensible)
 	{
 		return GuiUtils.createCheckboxGroupedPanel(segmentationModel
@@ -83,7 +83,7 @@ public class SegmenterPanel {
 
 	private void updateList() {
 		list.clear();
-		segmentationModel.segmenters().forEach(item -> list.add(item,
+		segmentationModel.segmenters().get().forEach(item -> list.add(item,
 			new EntryPanel(item)));
 		list.setSelected(segmentationModel.selectedSegmenter().get());
 	}
@@ -126,7 +126,7 @@ public class SegmenterPanel {
 		private void runTraining() {
 			ParallelUtils.runInOtherThread(() -> {
 				segmentationModel.selectedSegmenter().set(item);
-				segmentationModel.train(item);
+				TrainClassifier.trainSelectedSegmenter(segmentationModel);
 			});
 		}
 
@@ -135,16 +135,16 @@ public class SegmenterPanel {
 	private JComponent initList() {
 		updateList();
 		list.listeners().add(this::userChangedSelection);
-		segmentationModel.listChangeListeners().add(this::updateList);
+		segmentationModel.segmenters().notifier().add(this::updateList);
 		JComponent component = list.getComponent();
 		component.setBorder(BorderFactory.createEmptyBorder());
 		return component;
 	}
 
 	private void userChangedSelection() {
-		Object selectedValue = list.getSelected();
-		if (selectedValue != null) ((SegmenterListModel) segmentationModel)
-			.selectedSegmenter().set(selectedValue);
+		SegmentationItem selectedValue = list.getSelected();
+		if (selectedValue != null)
+			segmentationModel.selectedSegmenter().set(selectedValue);
 	}
 
 	public JComponent getComponent() {

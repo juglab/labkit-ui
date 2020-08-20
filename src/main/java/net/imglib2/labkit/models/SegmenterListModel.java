@@ -1,27 +1,88 @@
 
 package net.imglib2.labkit.models;
 
+import net.imagej.ImgPlus;
+import net.imglib2.labkit.labeling.Labeling;
 import net.imglib2.labkit.segmentation.SegmentationPlugin;
-import net.imglib2.labkit.utils.Notifier;
+import net.imglib2.util.Pair;
+import net.imglib2.util.ValuePair;
 import org.scijava.Context;
 
+import java.util.AbstractList;
+import java.util.ArrayList;
 import java.util.List;
 
-public interface SegmenterListModel<T> {
+public class SegmenterListModel {
 
-	Context context();
+	private final Context context;
+	private final Holder<List<SegmentationItem>> segmenters = new DefaultHolder<>(new ArrayList<>());
+	private final Holder<SegmentationItem> selectedSegmenter = new DefaultHolder<>(null);
+	private final Holder<Boolean> segmentationVisibility = new DefaultHolder<>(true);
+	private final Holder<List<Pair<ImgPlus<?>, Labeling>>> trainingData = new DefaultHolder<>(null);
+	private ImageLabelingModel imageLabelingModel;
 
-	List<T> segmenters();
+	public SegmenterListModel(Context context, ImageLabelingModel imageLabelingModel) {
+		this.context = context;
+		this.imageLabelingModel = imageLabelingModel;
+		this.trainingData.set(new SingletonTrainingData(imageLabelingModel));
+	}
 
-	Holder<T> selectedSegmenter();
+	public void setImageLabelingModel(ImageLabelingModel imageLabelingModel) {
+		this.imageLabelingModel = imageLabelingModel;
+	}
 
-	T addSegmenter(SegmentationPlugin segmenter);
+	public Holder<List<SegmentationItem>> segmenters() {
+		return segmenters;
+	}
 
-	void train(T item);
+	public Holder<SegmentationItem> selectedSegmenter() {
+		return selectedSegmenter;
+	}
 
-	void remove(T item);
+	public SegmentationItem addSegmenter(SegmentationPlugin plugin) {
+		// TODO: make this a controller
+		SegmentationItem segmentationItem = new SegmentationItem(imageLabelingModel, plugin);
+		segmenters.get().add(segmentationItem);
+		segmenters.notifier().notifyListeners();
+		return segmentationItem;
+	}
 
-	Holder<Boolean> segmentationVisibility();
+	public void remove(SegmentationItem item) {
+		segmenters.get().remove(item);
+		if (!segmenters.get().contains(selectedSegmenter.get())) selectedSegmenter.set(null);
+		segmenters.notifier().notifyListeners();
+	}
 
-	Notifier listChangeListeners();
+	public Holder<Boolean> segmentationVisibility() {
+		return segmentationVisibility;
+	}
+
+	public Context context() {
+		return context;
+	}
+
+	public Holder<List<Pair<ImgPlus<?>, Labeling>>> trainingData() {
+		return trainingData;
+	}
+
+	private class SingletonTrainingData extends AbstractList<Pair<ImgPlus<?>, Labeling>> {
+
+		private final ImageLabelingModel imageLabelingModel;
+
+		public SingletonTrainingData(ImageLabelingModel imageLabelingModel) {
+			this.imageLabelingModel = imageLabelingModel;
+		}
+
+		@Override
+		public Pair<ImgPlus<?>, Labeling> get(int index) {
+			ImgPlus<?> image = imageLabelingModel.imageForSegmentation().get();
+			Labeling labeling = imageLabelingModel.labeling().get();
+			return new ValuePair<>(image, labeling);
+		}
+
+		@Override
+		public int size() {
+			return 1;
+		}
+	}
 }
