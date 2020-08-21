@@ -4,6 +4,7 @@ package net.imglib2.labkit.panel;
 import net.imglib2.labkit.DefaultExtensible;
 import net.imglib2.labkit.models.SegmentationItem;
 import net.imglib2.labkit.models.SegmenterListModel;
+import net.imglib2.labkit.segmentation.AddSegmenterPanel;
 import net.imglib2.labkit.segmentation.SegmentationPlugin;
 import net.imglib2.labkit.segmentation.SegmentationPluginService;
 import net.imglib2.labkit.segmentation.TrainClassifier;
@@ -13,6 +14,7 @@ import org.scijava.ui.behaviour.util.RunnableAction;
 
 import javax.swing.*;
 import javax.swing.plaf.basic.BasicArrowButton;
+import java.awt.*;
 import java.util.List;
 import java.util.function.Function;
 import java.util.function.Supplier;
@@ -27,6 +29,10 @@ public class SegmenterPanel {
 
 	private final Function<Supplier<SegmentationItem>, JPopupMenu> menuFactory;
 
+	private final JPanel listPanel = new JPanel();
+
+	private final AddSegmenterPanel addSegmenterPanel;
+
 	private JButton addSegmenterButton;
 
 	public SegmenterPanel(
@@ -35,9 +41,12 @@ public class SegmenterPanel {
 	{
 		this.segmentationModel = segmentationModel;
 		this.menuFactory = menuFactory;
-		panel.setLayout(new MigLayout("insets 0, gap 0", "[grow]", "[grow][]"));
-		panel.add(initList(), "grow, wrap");
-		panel.add(initBottomPanel(), "grow");
+		addSegmenterPanel = new AddSegmenterPanel(segmentationModel);
+		panel.setLayout(new BorderLayout());
+		panel.add(addSegmenterPanel);
+		listPanel.setLayout(new MigLayout("insets 0, gap 0", "[grow]", "[grow][]"));
+		listPanel.add(initList(), "grow, wrap");
+		listPanel.add(initBottomPanel(), "grow");
 	}
 
 	public static JPanel newFramedSegmeterPanel(
@@ -82,10 +91,20 @@ public class SegmenterPanel {
 	}
 
 	private void updateList() {
+		List<SegmentationItem> segmenters = segmentationModel.segmenters().get();
+		updateVisiblePanel(segmenters.isEmpty());
 		list.clear();
-		segmentationModel.segmenters().get().forEach(item -> list.add(item,
-			new EntryPanel(item)));
+		segmenters.forEach(item -> list.add(item, new EntryPanel(item)));
 		list.setSelected(segmentationModel.selectedSegmenter().get());
+		panel.revalidate();
+		panel.repaint();
+	}
+
+	private void updateVisiblePanel(boolean empty) {
+		if (empty != (panel.getComponent(0) == addSegmenterPanel)) {
+			panel.removeAll();
+			panel.add(empty ? addSegmenterPanel : listPanel);
+		}
 	}
 
 	private class EntryPanel extends JPanel {
