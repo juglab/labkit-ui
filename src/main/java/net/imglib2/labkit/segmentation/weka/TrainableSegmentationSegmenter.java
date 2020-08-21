@@ -40,7 +40,6 @@ import net.imglib2.type.numeric.real.FloatType;
 import net.imglib2.util.Cast;
 import net.imglib2.util.Intervals;
 import net.imglib2.util.Pair;
-import net.imglib2.util.ValuePair;
 import net.imglib2.view.Views;
 import net.imglib2.view.composite.Composite;
 import org.scijava.Context;
@@ -58,8 +57,6 @@ import java.util.concurrent.CancellationException;
 import java.util.function.BiConsumer;
 import java.util.function.Function;
 import java.util.stream.Collectors;
-import java.util.stream.IntStream;
-import java.util.stream.Stream;
 
 public class TrainableSegmentationSegmenter implements Segmenter {
 
@@ -103,7 +100,11 @@ public class TrainableSegmentationSegmenter implements Segmenter {
 		RandomAccessibleInterval<? extends IntegerType<?>> labels)
 	{
 		if (ImgPlusViewsOld.hasAxis(image, Axes.TIME))
-			applyOnSlices(segmenter::segment, image, labels, 0);
+			applyOnSlices(this::segment, image, labels, image.dimensionIndex(Axes.TIME), labels
+				.numDimensions() - 1);
+		else if (ImgPlusViewsOld.hasAxis(image, Axes.Z))
+			applyOnSlices(this::segment, image, labels, image.dimensionIndex(Axes.Z), labels
+				.numDimensions() - 1);
 		else
 			segmenter.segment(labels, Views.extendBorder(image));
 	}
@@ -113,7 +114,11 @@ public class TrainableSegmentationSegmenter implements Segmenter {
 		RandomAccessibleInterval<? extends RealType<?>> prediction)
 	{
 		if (ImgPlusViewsOld.hasAxis(image, Axes.TIME))
-			applyOnSlices(segmenter::predict, image, prediction, 1);
+			applyOnSlices(this::predict, image, prediction, image.dimensionIndex(Axes.TIME), prediction
+				.numDimensions() - 2);
+		else if (ImgPlusViewsOld.hasAxis(image, Axes.Z))
+			applyOnSlices(this::predict, image, prediction, image.dimensionIndex(Axes.Z), prediction
+				.numDimensions() - 2);
 		else
 			segmenter.predict(prediction, Views.extendBorder(image));
 	}
@@ -130,7 +135,7 @@ public class TrainableSegmentationSegmenter implements Segmenter {
 			segmenter.setUseGpu(useGpu);
 			Training training = segmenter.training();
 			for (Pair<ImgPlus<?>, Labeling> pair : trainingData)
-				trainMovie(training, classes, pair.getB(), pair.getA(), segmenter.features());
+				trainStack(training, classes, pair.getB(), pair.getA(), segmenter.features());
 			training.train();
 			this.segmenter = segmenter;
 		}
@@ -150,14 +155,23 @@ public class TrainableSegmentationSegmenter implements Segmenter {
 			.getLabels().stream()).map(Label::name).collect(Collectors.toSet()));
 	}
 
-	private void trainMovie(Training training, List<String> classes, Labeling labeling,
+	private void trainStack(Training training, List<String> classes, Labeling labeling,
 		ImgPlus<?> image, FeatureCalculator featuresCalculator)
 	{
 		if (ImgPlusViewsOld.hasAxis(image, Axes.TIME)) {
 			List<ImgPlus<?>> imageSlices = ImgPlusViewsOld.hyperSlices(image, Axes.TIME);
 			List<Labeling> labelSlices = Labelings.slices(labeling);
 			for (int i = 0; i < imageSlices.size(); i++) {
-				trainFrame(training, classes, labelSlices.get(i), imageSlices.get(i), featuresCalculator);
+				trainStack(training, classes, labelSlices.get(i), imageSlices.get(i), featuresCalculator);
+			}
+		}
+		else if (ImgPlusViewsOld.hasAxis(image, Axes.Z) && featureSettings.globals()
+			.numDimensions() == 2)
+		{
+			List<ImgPlus<?>> imageSlices = ImgPlusViewsOld.hyperSlices(image, Axes.Z);
+			List<Labeling> labelSlices = Labelings.slices(labeling);
+			for (int i = 0; i < imageSlices.size(); i++) {
+				trainStack(training, classes, labelSlices.get(i), imageSlices.get(i), featuresCalculator);
 			}
 		}
 		else {
@@ -332,19 +346,21 @@ public class TrainableSegmentationSegmenter implements Segmenter {
 		return image.firstElement() instanceof ARGBType ? ChannelSetting.RGB : ChannelSetting.SINGLE;
 	}
 
-	private <T> void applyOnSlices(
-		BiConsumer<RandomAccessibleInterval<T>, ImgPlus<?>> action,
-		ImgPlus<?> image, RandomAccessibleInterval<T> target,
-		int offset)
+	private <T> void applyOnSlices(BiConsumer<ImgPlus<?>, RandomAccessibleInterval<T>> action,
+		ImgPlus<?> image, RandomAccessibleInterval<T> target, int imageTimeAxis, int targetTimeAxis)
 	{
-		int imageTimeAxis = image.dimensionIndex(Axes.TIME);
-		int targetTimeAxis = target.numDimensions() - 1 - offset;
 		long min = target.min(targetTimeAxis);
 		long max = target.max(targetTimeAxis);
 		if (min < image.min(imageTimeAxis) || max > image.max(imageTimeAxis))
 			throw new IllegalStateException("Last dimensions must fit.");
-		for (long pos = min; pos <= max; pos++)
-			action.accept(Views.hyperSlice(target, targetTimeAxis, pos), ImgPlusViews.hyperSlice(Cast
-				.unchecked(image), imageTimeAxis, pos));
+		for (long pos = min; pos <= max; pos++) {
+			RandomAccessibleInterval<T> targetSlize = Views.hyperSlice(target, targetTimeAxis, pos);
+			ImgPlus<?> imageSlice = ImgPlusViews.hyperSlice(Cast.unchecked(image), imageTimeAxis, pos);
+			action.accept(imageSlice, targetSlize);
+		}
+	}
+
+	public void setFeatureSettings(FeatureSettings featureSettings) {
+		this.featureSettings = featureSettings;
 	}
 }
