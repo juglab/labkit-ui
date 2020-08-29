@@ -46,7 +46,7 @@ public class SetLabelsAction {
 		textArea.setPreferredSize(new Dimension(200, 200));
 		textArea.setText(joiner.toString());
 		int result = JOptionPane.showConfirmDialog(null, new Object[] {
-			"When Labkit is started the first time for an image,\nthis labels will be available:",
+			"When Labkit is started the first time for an image,\nthese labels will be available:",
 			new JScrollPane(textArea) }, "Labels On Start Up",
 			JOptionPane.OK_CANCEL_OPTION, JOptionPane.PLAIN_MESSAGE);
 		if (result == JOptionPane.OK_OPTION) return Optional.of(Arrays.asList(

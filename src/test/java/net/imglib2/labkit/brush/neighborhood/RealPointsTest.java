@@ -53,8 +53,8 @@ public class RealPointsTest {
 	}
 
 	@Test
-	public void testSkalarProdukt() {
-		double result = RealPoints.skalarProdukt(a, b);
+	public void testDotProduct() {
+		double result = RealPoints.dotProduct(a, b);
 		assertEquals(13.0, result, 0.0);
 	}
 

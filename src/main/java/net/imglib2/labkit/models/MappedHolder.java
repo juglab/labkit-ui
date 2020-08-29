@@ -9,11 +9,11 @@ public class MappedHolder<T, R> implements Holder<R> {
 
 	private final Holder<T> source;
 
-	private final Function<T, R> opration;
+	private final Function<T, R> operation;
 
-	public MappedHolder(Holder<T> source, Function<T, R> opration) {
+	public MappedHolder(Holder<T> source, Function<T, R> operation) {
 		this.source = source;
-		this.opration = opration;
+		this.operation = operation;
 	}
 
 	@Override
@@ -23,7 +23,7 @@ public class MappedHolder<T, R> implements Holder<R> {
 
 	@Override
 	public R get() {
-		return opration.apply(source.get());
+		return operation.apply(source.get());
 	}
 
 	@Override
