@@ -24,7 +24,7 @@ public class RealPoints {
 	public static RealPoint projectVectorOnto(RealPoint vector,
 		RealPoint direction)
 	{
-		return scale(skalarProdukt(vector, direction) / squaredLength(direction),
+		return scale(dotProduct(vector, direction) / squaredLength(direction),
 			direction);
 	}
 
@@ -58,7 +58,7 @@ public class RealPoints {
 		return result;
 	}
 
-	public static double skalarProdukt(RealLocalizable a, RealLocalizable b) {
+	public static double dotProduct(RealLocalizable a, RealLocalizable b) {
 		double sumSquared = 0.0;
 		for (int i = 0; i < a.numDimensions(); i++)
 			sumSquared += a.getDoublePosition(i) * b.getDoublePosition(i);
