@@ -5,11 +5,11 @@
 package net.imglib2.labkit.brush;
 
 import bdv.util.Affine3DHelpers;
+import bdv.viewer.OverlayRenderer;
 import bdv.viewer.ViewerPanel;
 import net.imglib2.labkit.labeling.Label;
 import net.imglib2.labkit.models.LabelingModel;
 import net.imglib2.realtransform.AffineTransform3D;
-import net.imglib2.ui.OverlayRenderer;
 
 import java.awt.*;
 

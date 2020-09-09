@@ -6,7 +6,7 @@
 	<parent>
 		<groupId>org.scijava</groupId>
 		<artifactId>pom-scijava</artifactId>
-		<version>28.0.0</version>
+		<version>29.2.1</version>
 	</parent>
 
 	<groupId>net.imglib2</groupId>
@@ -99,6 +99,11 @@
 
 		<jackson-dataformat-yaml.version>2.11.1</jackson-dataformat-yaml.version>
 		<jackson-databind.version>2.11.1</jackson-databind.version>
+
+		<bigdataviewer-core.version>10.0.0</bigdataviewer-core.version>
+		<bigdataviewer-vistools.version>1.0.0-beta-22</bigdataviewer-vistools.version>
+
+		<imglib2-trainable-segmentation.version>0.1.4</imglib2-trainable-segmentation.version>
 	</properties>
 
 	<build>
@@ -140,7 +145,7 @@
 		<dependency>
 			<groupId>net.imglib2</groupId>
 			<artifactId>imglib2-trainable-segmentation</artifactId>
-			<version>0.1.4</version>
+			<version>${imglib2-trainable-segmentation.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>net.imagej</groupId>
@@ -149,7 +154,6 @@
 		<dependency>
 			<groupId>sc.fiji</groupId>
 			<artifactId>bigdataviewer-core</artifactId>
-			<version>9.0.5</version>
 		</dependency>
 		<dependency>
 			<groupId>sc.fiji</groupId>
@@ -192,13 +196,11 @@
 		<dependency>
 			<groupId>org.openjdk.jmh</groupId>
 			<artifactId>jmh-core</artifactId>
-			<version>1.19</version>
 			<scope>test</scope>
 		</dependency>
 		<dependency>
 			<groupId>org.openjdk.jmh</groupId>
 			<artifactId>jmh-generator-annprocess</artifactId>
-			<version>1.19</version>
 			<scope>test</scope>
 		</dependency>
 	</dependencies>
