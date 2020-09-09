@@ -17,7 +17,6 @@ import net.imglib2.FinalInterval;
 import net.imglib2.Interval;
 import net.imglib2.Point;
 import net.imglib2.RandomAccessibleInterval;
-import net.imglib2.labkit.utils.LabkitUtils;
 import net.imglib2.img.Img;
 import net.imglib2.roi.IterableRegion;
 import net.imglib2.roi.labeling.ImgLabeling;
@@ -27,6 +26,7 @@ import net.imglib2.type.logic.BitType;
 import net.imglib2.type.numeric.ARGBType;
 import net.imglib2.type.numeric.IntegerType;
 import net.imglib2.type.numeric.integer.IntType;
+import net.imglib2.util.Cast;
 import org.apache.commons.io.FilenameUtils;
 import org.scijava.Context;
 
@@ -110,8 +110,7 @@ public class LabelingSerializer {
 		RandomAccessibleInterval<? extends IntegerType<?>> img,
 		List<Set<L>> labelSets)
 	{
-		ImgLabeling<L, ?> result = new ImgLabeling<>(LabkitUtils.uncheckedCast(
-			img));
+		ImgLabeling<L, ?> result = new ImgLabeling<>(Cast.unchecked(img));
 		new LabelingMapping.SerialisationAccess<L>(result.getMapping()) {
 
 			public void run() {
@@ -125,7 +124,7 @@ public class LabelingSerializer {
 		throws IOException
 	{
 		DatasetIOService io = context.service(DatasetIOService.class);
-		return LabkitUtils.uncheckedCast(io.open(filename).getImgPlus().getImg());
+		return Cast.unchecked(io.open(filename).getImgPlus().getImg());
 	}
 
 	private LabelsMetaData openMetaData(String filename) throws IOException {
@@ -165,8 +164,7 @@ public class LabelingSerializer {
 		}
 		DatasetIOService io = context.service(DatasetIOService.class);
 		DatasetService ds = context.service(DatasetService.class);
-		RandomAccessibleInterval<I> imgPlus = LabkitUtils.uncheckedCast(labeling
-			.getIndexImg());
+		RandomAccessibleInterval<I> imgPlus = Cast.unchecked(labeling.getIndexImg());
 		io.save(ds.create(imgPlus), filename);
 	}
 

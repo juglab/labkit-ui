@@ -5,11 +5,11 @@ import net.imglib2.RandomAccessibleInterval;
 import net.imglib2.labkit.Extensible;
 import net.imglib2.labkit.MenuBar;
 import net.imglib2.labkit.models.LabelingModel;
-import net.imglib2.labkit.utils.LabkitUtils;
 import net.imglib2.labkit.labeling.Labeling;
 import net.imglib2.labkit.labeling.LabelingSerializer;
 import net.imglib2.img.display.imagej.ImageJFunctions;
 import net.imglib2.type.numeric.IntegerType;
+import net.imglib2.util.Cast;
 
 import java.io.IOException;
 
@@ -53,7 +53,7 @@ public class LabelingIoAction extends AbstractFileIoAction {
 	private void showLabelingInImageJ() {
 		RandomAccessibleInterval<? extends IntegerType<?>> img = labelingModel
 			.labeling().get().getIndexImg();
-		ImageJFunctions.show(LabkitUtils.uncheckedCast(img), "Labeling");
+		ImageJFunctions.show(Cast.unchecked(img), "Labeling");
 	}
 
 	private void open(Void ignore, String filename) throws IOException {

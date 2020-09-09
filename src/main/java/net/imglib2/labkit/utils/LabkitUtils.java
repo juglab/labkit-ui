@@ -2,18 +2,13 @@
 package net.imglib2.labkit.utils;
 
 import bdv.export.ProgressWriter;
-import net.imagej.ImgPlus;
-import net.imagej.axis.Axes;
 import net.imglib2.RandomAccess;
 import net.imglib2.RandomAccessible;
 import net.imglib2.RandomAccessibleInterval;
 import net.imglib2.cache.img.CachedCellImg;
-import net.imglib2.img.cell.CellGrid;
 import net.imglib2.converter.Converters;
 import net.imglib2.img.Img;
 import net.imglib2.img.array.ArrayImgs;
-import net.imglib2.labkit.inputimage.ImgPlusViewsOld;
-import net.imglib2.trainable_segmentation.RevampUtils;
 import net.imglib2.type.NativeType;
 import net.imglib2.type.numeric.ARGBType;
 import net.imglib2.type.numeric.IntegerType;
@@ -22,6 +17,7 @@ import net.imglib2.type.numeric.RealType;
 import net.imglib2.type.numeric.integer.UnsignedByteType;
 import net.imglib2.type.numeric.integer.UnsignedShortType;
 import net.imglib2.type.numeric.real.FloatType;
+import net.imglib2.util.Cast;
 import net.imglib2.util.Intervals;
 import net.imglib2.util.Pair;
 import net.imglib2.util.ValuePair;
@@ -52,12 +48,6 @@ public class LabkitUtils {
 		System.arraycopy(array, 0, result, 0, length);
 		result[length] = value;
 		return result;
-	}
-
-	public static <R, T> R uncheckedCast(T value) {
-		@SuppressWarnings("unchecked")
-		R r = (R) value;
-		return r;
 	}
 
 	public static RandomAccessibleInterval<FloatType> toFloat(
@@ -122,8 +112,7 @@ public class LabkitUtils {
 	public static <T> RandomAccessibleInterval<T> populateCachedImg(
 		RandomAccessibleInterval<T> img, ProgressWriter progressWriter)
 	{
-		if (img instanceof CachedCellImg) internPopulateCachedImg(LabkitUtils
-			.uncheckedCast(img), progressWriter);
+		if (img instanceof CachedCellImg) internPopulateCachedImg(Cast.unchecked(img), progressWriter);
 		return img;
 	}
 
