@@ -2,13 +2,11 @@
 package net.imglib2.labkit.labeling;
 
 import com.google.gson.annotations.JsonAdapter;
-import com.google.gson.internal.LinkedTreeMap;
 import net.imagej.axis.CalibratedAxis;
 import net.imagej.axis.DefaultLinearAxis;
 import net.imglib2.*;
 import net.imglib2.RandomAccess;
 import net.imglib2.labkit.utils.ColorSupplier;
-import net.imglib2.labkit.utils.LabkitUtils;
 import net.imglib2.converter.Converter;
 import net.imglib2.converter.Converters;
 import net.imglib2.loops.LoopBuilder;
@@ -22,6 +20,7 @@ import net.imglib2.type.BooleanType;
 import net.imglib2.type.logic.BitType;
 import net.imglib2.type.numeric.IntegerType;
 import net.imglib2.type.numeric.integer.IntType;
+import net.imglib2.util.Cast;
 import net.imglib2.util.ConstantUtils;
 import net.imglib2.util.Intervals;
 import net.imglib2.view.Views;
@@ -288,11 +287,11 @@ public class Labeling extends AbstractWrappedInterval<Interval> implements
 
 	@Override
 	public RandomAccess<LabelingType<Label>> randomAccess() {
-		return LabkitUtils.uncheckedCast(imgLabeling.randomAccess());
+		return Cast.unchecked(imgLabeling.randomAccess());
 	}
 
 	@Override
 	public RandomAccess<LabelingType<Label>> randomAccess(Interval interval) {
-		return LabkitUtils.uncheckedCast(imgLabeling.randomAccess(interval));
+		return Cast.unchecked(imgLabeling.randomAccess(interval));
 	}
 }
