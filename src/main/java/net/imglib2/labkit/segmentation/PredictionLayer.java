@@ -19,20 +19,18 @@ import net.imglib2.type.numeric.ARGBType;
 import net.imglib2.type.volatiles.VolatileARGBType;
 import net.imglib2.type.volatiles.VolatileShortType;
 
-import java.util.Collections;
-import java.util.Set;
-import java.util.WeakHashMap;
-
 public class PredictionLayer implements BdvLayer {
 
 	private final Holder<SegmentationResultsModel> model;
 	private final SharedQueue queue = new SharedQueue(Runtime.getRuntime()
 		.availableProcessors());
 	private final Holder<Boolean> visibility;
+	private final Runnable classifierChanged = this::classifierChanged;
 	private Notifier listeners = new Notifier();
-	private Set<SegmentationResultsModel> alreadyRegistered = Collections.newSetFromMap(
-		new WeakHashMap<>());
 	private DefaultHolder<BdvShowable> showable;
+	private final Runnable onTrainingCompleted = this::onTrainingCompleted;
+
+	private SegmentationResultsModel segmenter;
 
 	public static PredictionLayer createPredictionLayer(SegmentationModel segmentationModel) {
 		ImageLabelingModel imageLabelingModel = segmentationModel.imageLabelingModel();
@@ -49,20 +47,22 @@ public class PredictionLayer implements BdvLayer {
 		this.model = model;
 		this.showable = new DefaultHolder<>(null);
 		this.visibility = visibility;
-		model.notifier().addListener(() -> classifierChanged());
+		model.notifier().addWeakListener(classifierChanged);
 		registerListener(model.get());
 		classifierChanged();
 	}
 
 	private void registerListener(SegmentationResultsModel segmenter) {
-		if (segmenter == null) return;
-		if (alreadyRegistered.contains(segmenter)) return;
-		alreadyRegistered.add(segmenter);
-		segmenter.segmentationChangedListeners().addListener(
-			() -> onTrainingCompleted(segmenter));
+		if (segmenter == this.segmenter)
+			return;
+		if (this.segmenter != null)
+			this.segmenter.segmentationChangedListeners().removeWeakListener(onTrainingCompleted);
+		this.segmenter = segmenter;
+		if (this.segmenter != null)
+			this.segmenter.segmentationChangedListeners().addWeakListener(onTrainingCompleted);
 	}
 
-	private void onTrainingCompleted(SegmentationResultsModel segmenter) {
+	private void onTrainingCompleted() {
 		if (model.get() == segmenter) {
 			classifierChanged();
 			visibility.set(true);

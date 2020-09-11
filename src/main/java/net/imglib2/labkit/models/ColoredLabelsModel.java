@@ -22,11 +22,12 @@ public class ColoredLabelsModel {
 	private final LabelingModel model;
 
 	private final Notifier listeners = new Notifier();
+	private final Runnable notifyListeners = this::notifyListeners;
 
 	public ColoredLabelsModel(LabelingModel model) {
 		this.model = model;
-		model.labeling().notifier().addListener(this::notifyListeners);
-		model.selectedLabel().notifier().addListener(this::notifyListeners);
+		model.labeling().notifier().addWeakListener(notifyListeners);
+		model.selectedLabel().notifier().addWeakListener(notifyListeners);
 	}
 
 	private void notifyListeners() {

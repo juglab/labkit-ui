@@ -6,11 +6,10 @@ import bdv.util.BdvHandlePanel;
 import bdv.util.BdvOptions;
 import bdv.util.BdvStackSource;
 import bdv.viewer.DisplayMode;
-import bdv.viewer.SynchronizedViewerState;
-import bdv.viewer.ViewerStateChange;
 import net.imglib2.labkit.bdv.BdvAutoContrast;
 import net.imglib2.labkit.bdv.BdvLayer;
 import net.imglib2.labkit.bdv.BdvShowable;
+import net.imglib2.labkit.bdv.BdvVisibilityLink;
 import net.imglib2.labkit.brush.ChangeLabel;
 import net.imglib2.labkit.brush.FloodFillController;
 import net.imglib2.labkit.brush.LabelBrushController;
@@ -100,25 +99,7 @@ public class BasicLabelingComponent implements AutoCloseable {
 			}
 		});
 		layer.listeners().addListener(this::requestRepaint);
-		layer.visibility().notifier().addListener(() -> {
-			BdvStackSource<?> source1 = source.get();
-			if (source1 != null)
-				try
-				{
-					source1.setActive(layer.visibility().get());
-				}
-			catch (NullPointerException ignore) {
-
-			}
-		});
-		SynchronizedViewerState viewerState = bdvHandle.getViewerPanel().state();
-		viewerState.changeListeners().add(l -> {
-			BdvStackSource<?> source1 = source.get();
-			if (source1 != null && l == ViewerStateChange.VISIBILITY_CHANGED) {
-				boolean visible = viewerState.isSourceActive(source1.getSources().get(0));
-				layer.visibility().set(visible);
-			}
-		});
+		new BdvVisibilityLink(layer.visibility(), bdvHandle, source);
 		return source;
 	}
 

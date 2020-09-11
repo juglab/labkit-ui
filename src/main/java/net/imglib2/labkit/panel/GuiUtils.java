@@ -66,12 +66,30 @@ public class GuiUtils {
 	private static JCheckBox createCheckbox(Holder<Boolean> visibility,
 		String text)
 	{
-		final JCheckBox checkbox = new JCheckBox(text);
-		checkbox.setSelected(visibility.get());
-		visibility.notifier().addListener(() -> checkbox.setSelected(visibility.get()));
-		checkbox.addItemListener(itemEvent -> visibility.set(itemEvent
-			.getStateChange() == ItemEvent.SELECTED));
+		final JCheckBox checkbox = new LinkedCheckBox(text, visibility);
 		return styleCheckboxUsingEye(checkbox);
+	}
+
+	private static class LinkedCheckBox extends JCheckBox {
+
+		private final Holder<Boolean> model;
+		private final Runnable onModelChanged = this::onModelChanged;
+
+		private LinkedCheckBox(String text, Holder<Boolean> model) {
+			super(text);
+			this.model = model;
+			this.model.notifier().addWeakListener(onModelChanged);
+			setSelected(model.get());
+			addItemListener(this::onUserAction);
+		}
+
+		private void onUserAction(ItemEvent itemEvent) {
+			model.set(isSelected());
+		}
+
+		private void onModelChanged() {
+			setSelected(model.get());
+		}
 	}
 
 	public static JCheckBox styleCheckboxUsingEye(JCheckBox checkbox) {

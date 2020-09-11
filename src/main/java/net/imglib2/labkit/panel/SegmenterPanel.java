@@ -35,6 +35,8 @@ public class SegmenterPanel {
 
 	private JButton addSegmenterButton;
 
+	private final Runnable updateList = this::updateList;
+
 	public SegmenterPanel(
 		SegmenterListModel segmentationModel,
 		Function<Supplier<SegmentationItem>, JPopupMenu> menuFactory)
@@ -154,7 +156,7 @@ public class SegmenterPanel {
 	private JComponent initList() {
 		updateList();
 		list.listeners().addListener(this::userChangedSelection);
-		segmentationModel.segmenters().notifier().addListener(this::updateList);
+		segmentationModel.segmenters().notifier().addWeakListener(updateList);
 		JComponent component = list.getComponent();
 		component.setBorder(BorderFactory.createEmptyBorder());
 		return component;
