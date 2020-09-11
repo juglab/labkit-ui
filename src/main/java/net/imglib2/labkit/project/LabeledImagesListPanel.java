@@ -31,7 +31,7 @@ public class LabeledImagesListPanel extends JPanel {
 		setLayout(new MigLayout("", "[grow]", "[grow]0px[]"));
 		this.list = initList(model);
 		list.setModel(listModel);
-		model.changeNotifier().add(listModel::triggerUpdate);
+		model.changeNotifier().addListener(listModel::triggerUpdate);
 		add(initScrollPane(list), "grow, wrap");
 		JPanel buttonsPanel = initButtonsPanel();
 		buttonsPanel.setBackground(list.getBackground());
@@ -105,7 +105,7 @@ public class LabeledImagesListPanel extends JPanel {
 		private void unregisterAll() {
 			synchronized (observedElements) {
 				for (LabeledImage labeledImage : observedElements)
-					labeledImage.modified().notifier().remove(updateListener);
+					labeledImage.modified().notifier().removeListener(updateListener);
 			}
 			observedElements.clear();
 		}
@@ -115,7 +115,7 @@ public class LabeledImagesListPanel extends JPanel {
 			// unmodified and modified.
 			synchronized (observedElements) {
 				if (observedElements.add(labeledImage))
-					labeledImage.modified().notifier().add(updateListener);
+					labeledImage.modified().notifier().addListener(updateListener);
 			}
 		}
 

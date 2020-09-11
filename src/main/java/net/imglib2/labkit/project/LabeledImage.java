@@ -93,8 +93,8 @@ public class LabeledImage {
 	 */
 	public ImageLabelingModel open() {
 		this.imageLabelingModel = snapshot();
-		imageLabelingModel.dataChangedNotifier().add(onLabelingChanged);
-		imageLabelingModel.labeling().notifier().add(onLabelingChanged);
+		imageLabelingModel.dataChangedNotifier().addListener(onLabelingChanged);
+		imageLabelingModel.labeling().notifier().addListener(onLabelingChanged);
 		return imageLabelingModel;
 	}
 
@@ -105,8 +105,8 @@ public class LabeledImage {
 	public void close() {
 		if (imageLabelingModel == null)
 			return;
-		imageLabelingModel.dataChangedNotifier().remove(onLabelingChanged);
-		imageLabelingModel.labeling().notifier().remove(onLabelingChanged);
+		imageLabelingModel.dataChangedNotifier().removeListener(onLabelingChanged);
+		imageLabelingModel.labeling().notifier().removeListener(onLabelingChanged);
 		if (storedIn.get() == null) {
 			try {
 				new LabelingSerializer(context).save(imageLabelingModel.labeling().get(),

@@ -2,7 +2,6 @@
 package net.imglib2.labkit.multi_image;
 
 import net.imagej.ImageJ;
-import net.imagej.patcher.LegacyInjector;
 import net.imglib2.labkit.SegmentationComponent;
 import net.imglib2.labkit.project.LabeledImage;
 import net.imglib2.labkit.project.LabeledImagesListPanel;
@@ -45,7 +44,7 @@ public class LabkitProjectFrame extends JFrame {
 		JSplitPane splitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, workspace, imagesList);
 		projectSegmentationModel = new ProjectSegmentationModel(labkitProjectModel);
 		projectMenu = initProjectMenu(projectSegmentationModel);
-		labkitProjectModel.selectedImage().notifier().add(() -> updateBdv());
+		labkitProjectModel.selectedImage().notifier().addListener(() -> updateBdv());
 		if (labkitProjectModel.selectedImage().get() != null)
 			updateBdv();
 		splitPane.setResizeWeight(1);

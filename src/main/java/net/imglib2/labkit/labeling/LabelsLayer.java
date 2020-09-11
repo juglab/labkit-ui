@@ -34,8 +34,8 @@ public class LabelsLayer implements BdvLayer {
 	public LabelsLayer(LabelingModel model) {
 		this.model = model;
 		this.showable = new DefaultHolder<>(BdvShowable.wrap(colorView(), model.labelTransformation()));
-		model.labeling().notifier().add(this::updateView);
-		model.dataChangedNotifier().add(() -> listeners.notifyListeners());
+		model.labeling().notifier().addListener(this::updateView);
+		model.dataChangedNotifier().addListener(() -> listeners.notifyListeners());
 	}
 
 	private void updateView() {

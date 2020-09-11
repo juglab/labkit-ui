@@ -28,7 +28,7 @@ public class DefaultSegmentationModelTest {
 		BitType flag = new BitType(false);
 		SegmenterListModel model = new DefaultSegmentationModel(
 			new Context(), new DatasetInputImage(ArrayImgs.unsignedBytes(100, 100))).segmenterList();
-		model.segmenters().notifier().add(flag::setOne);
+		model.segmenters().notifier().addListener(flag::setOne);
 		assertFalse(flag.get());
 		assertEquals(0, model.segmenters().get().size());
 		model.addSegmenter(PixelClassificationPlugin.create());

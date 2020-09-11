@@ -20,7 +20,7 @@ public class SegmenterListModel {
 
 	public SegmenterListModel(Context context) {
 		this.context = context;
-		this.segmenters.notifier().add(() -> {
+		this.segmenters.notifier().addListener(() -> {
 			if (!segmenters.get().contains(selectedSegmenter.get())) selectedSegmenter.set(null);
 		});
 	}

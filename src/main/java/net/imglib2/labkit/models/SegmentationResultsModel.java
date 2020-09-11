@@ -52,7 +52,7 @@ public class SegmentationResultsModel {
 		this.segmenter = segmenter;
 		segmentation = dummy(new ShortType());
 		prediction = dummy(new FloatType());
-		model.imageForSegmentation().notifier().add(this::update);
+		model.imageForSegmentation().notifier().addListener(this::update);
 		update();
 	}
 
