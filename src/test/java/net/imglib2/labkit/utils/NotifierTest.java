@@ -42,8 +42,9 @@ public class NotifierTest {
 	public void testRemoveListener() {
 		Notifier notifier = new Notifier();
 		counter = 0;
-		notifier.addListener(this::increaseCounter);
-		notifier.removeListener(this::increaseCounter);
+		Runnable increaseCounter = this::increaseCounter;
+		notifier.addListener(increaseCounter);
+		notifier.removeListener(increaseCounter);
 		notifier.notifyListeners();
 		assertEquals(0, counter);
 	}
