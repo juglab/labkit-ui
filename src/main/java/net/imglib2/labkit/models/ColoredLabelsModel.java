@@ -8,7 +8,6 @@ import net.imglib2.labkit.labeling.Label;
 import net.imglib2.labkit.labeling.Labeling;
 import net.imglib2.labkit.utils.Notifier;
 import net.imglib2.roi.IterableRegion;
-import net.imglib2.labkit.utils.DimensionUtils;
 import net.imglib2.type.logic.BitType;
 import net.imglib2.type.numeric.ARGBType;
 
@@ -26,8 +25,8 @@ public class ColoredLabelsModel {
 
 	public ColoredLabelsModel(LabelingModel model) {
 		this.model = model;
-		model.labeling().notifier().add(this::notifyListeners);
-		model.selectedLabel().notifier().add(this::notifyListeners);
+		model.labeling().notifier().addListener(this::notifyListeners);
+		model.selectedLabel().notifier().addListener(this::notifyListeners);
 	}
 
 	private void notifyListeners() {

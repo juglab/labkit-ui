@@ -121,8 +121,8 @@ public class ReplaceImageTest {
 			this.visibility = visibility;
 			this.source = null;
 			handle.getViewerPanel().state().changeListeners().add(this::viewerStateChanged);
-			visibility.notifier().add(this::visibilityChanged);
-			image.notifier().add(this::imageChanged);
+			visibility.notifier().addListener(this::visibilityChanged);
+			image.notifier().addListener(this::imageChanged);
 			imageChanged();
 		}
 
@@ -175,7 +175,7 @@ public class ReplaceImageTest {
 			sidePanel.add(button);
 			this.checkBox = new JCheckBox("show " + title);
 			checkBox.addActionListener(this::checkBoxChanged);
-			visibility.notifier().add(this::visibilityChanged);
+			visibility.notifier().addListener(this::visibilityChanged);
 			visibilityChanged();
 			sidePanel.add(checkBox, "wrap");
 		}

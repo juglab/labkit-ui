@@ -16,11 +16,11 @@ public class Notifier {
 		listeners.forEach(Runnable::run);
 	}
 
-	public void add(Runnable listener) {
+	public void addListener(Runnable listener) {
 		listeners.add(listener);
 	}
 
-	public void remove(Runnable listener) {
+	public void removeListener(Runnable listener) {
 		listeners.remove(listener);
 	}
 }

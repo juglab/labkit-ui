@@ -153,8 +153,8 @@ public class SegmenterPanel {
 
 	private JComponent initList() {
 		updateList();
-		list.listeners().add(this::userChangedSelection);
-		segmentationModel.segmenters().notifier().add(this::updateList);
+		list.listeners().addListener(this::userChangedSelection);
+		segmentationModel.segmenters().notifier().addListener(this::updateList);
 		JComponent component = list.getComponent();
 		component.setBorder(BorderFactory.createEmptyBorder());
 		return component;

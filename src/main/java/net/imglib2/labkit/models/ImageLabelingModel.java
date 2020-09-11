@@ -14,7 +14,6 @@ import net.imglib2.labkit.labeling.Label;
 import net.imglib2.labkit.utils.Notifier;
 import net.imglib2.labkit.labeling.Labeling;
 import net.imglib2.realtransform.AffineTransform3D;
-import net.imglib2.type.numeric.NumericType;
 
 import java.util.Arrays;
 import java.util.List;
@@ -56,7 +55,7 @@ public class ImageLabelingModel implements LabelingModel {
 		this.showable = new DefaultHolder<>(inputImage.showable());
 		this.labelingHolder = new DefaultHolder<>(labeling);
 		this.imageForSegmentation = new DefaultHolder<>(image);
-		this.labelingHolder.notifier().add(this::labelingReplacedEvent);
+		this.labelingHolder.notifier().addListener(this::labelingReplacedEvent);
 		updateLabelTransform();
 		Label anyLabel = labeling.getLabels().stream().findAny().orElse(null);
 		this.selectedLabelHolder = new DefaultHolder<>(anyLabel);

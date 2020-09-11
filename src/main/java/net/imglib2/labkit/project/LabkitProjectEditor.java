@@ -40,7 +40,7 @@ public class LabkitProjectEditor extends JPanel {
 		add(new JScrollPane(table), "grow, wrap");
 		add(newButton("Add Images", this::onAddImagesClicked), "split");
 		add(newButton("Remove Selected", this::onRemoveSelectedClicked));
-		model.changeNotifier().add(tableModel::updateView);
+		model.changeNotifier().addListener(tableModel::updateView);
 	}
 
 	private void onAddImagesClicked() {

@@ -49,7 +49,7 @@ public class PredictionLayer implements BdvLayer {
 		this.model = model;
 		this.showable = new DefaultHolder<>(null);
 		this.visibility = visibility;
-		model.notifier().add(() -> classifierChanged());
+		model.notifier().addListener(() -> classifierChanged());
 		registerListener(model.get());
 		classifierChanged();
 	}
@@ -58,7 +58,7 @@ public class PredictionLayer implements BdvLayer {
 		if (segmenter == null) return;
 		if (alreadyRegistered.contains(segmenter)) return;
 		alreadyRegistered.add(segmenter);
-		segmenter.segmentationChangedListeners().add(
+		segmenter.segmentationChangedListeners().addListener(
 			() -> onTrainingCompleted(segmenter));
 	}
 

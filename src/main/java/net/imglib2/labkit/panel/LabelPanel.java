@@ -36,7 +36,7 @@ public class LabelPanel {
 		this.dialogParent = dialogParent;
 		this.panel = initPanel(fixedLabels);
 		this.menuFactory = menuFactory;
-		model.listeners().add(this::update);
+		model.listeners().addListener(this::update);
 		update();
 	}
 
@@ -67,7 +67,7 @@ public class LabelPanel {
 	private JPanel initPanel(boolean fixedLabels) {
 		JPanel panel = new JPanel();
 		panel.setLayout(new MigLayout("insets 0, gap 0", "[grow]", "[grow][]"));
-		list.listeners().add(this::changeSelectedLabel);
+		list.listeners().addListener(this::changeSelectedLabel);
 		list.getComponent().setBorder(BorderFactory.createEmptyBorder());
 		panel.add(list.getComponent(), "grow, span, push, wrap");
 		if (!fixedLabels) {

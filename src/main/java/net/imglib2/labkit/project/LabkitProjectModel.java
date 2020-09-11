@@ -34,7 +34,7 @@ public class LabkitProjectModel {
 				0));
 		this.labeledImageFiles = labeledImageFiles;
 		this.segmenterFiles = new ArrayList<>();
-		changeNotifier.add(this::onLabeledImagesChanged);
+		changeNotifier.addListener(this::onLabeledImagesChanged);
 	}
 
 	public String getProjectDirectory() {
