@@ -22,7 +22,7 @@ public class SegmenterPanelDemo {
 			new DefaultSegmentationModel(new Context(), new DatasetInputImage(ArrayImgs
 				.unsignedBytes(10, 10))).segmenterList();
 		final SegmenterPanel segmenterPanel = new SegmenterPanel(model, item -> newMenu(item, model));
-		frame.add(segmenterPanel.getComponent());
+		frame.add(segmenterPanel);
 		frame.setVisible(true);
 	}
 

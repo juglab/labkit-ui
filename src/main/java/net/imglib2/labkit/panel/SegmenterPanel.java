@@ -19,11 +19,9 @@ import java.util.List;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
-public class SegmenterPanel {
+public class SegmenterPanel extends JPanel {
 
 	private final SegmenterListModel segmentationModel;
-
-	private final JPanel panel = new JPanel();
 
 	private final ComponentList<SegmentationItem, JPanel> list = new ComponentList<>();
 
@@ -44,8 +42,8 @@ public class SegmenterPanel {
 		this.segmentationModel = segmentationModel;
 		this.menuFactory = menuFactory;
 		addSegmenterPanel = new AddSegmenterPanel(segmentationModel);
-		panel.setLayout(new BorderLayout());
-		panel.add(addSegmenterPanel);
+		setLayout(new BorderLayout());
+		add(addSegmenterPanel);
 		listPanel.setLayout(new MigLayout("insets 0, gap 0", "[grow]", "[grow][]"));
 		listPanel.add(initList(), "grow, wrap");
 		listPanel.add(initBottomPanel(), "grow");
@@ -55,10 +53,11 @@ public class SegmenterPanel {
 		SegmenterListModel segmentationModel,
 		DefaultExtensible extensible)
 	{
+		SegmenterPanel segmenterPanel = new SegmenterPanel(
+			segmentationModel, item -> extensible.createPopupMenu(
+				SegmentationItem.SEGMENTER_MENU, item));
 		return GuiUtils.createCheckboxGroupedPanel(segmentationModel
-			.segmentationVisibility(), "Segmentation", new SegmenterPanel(
-				segmentationModel, item -> extensible.createPopupMenu(
-					SegmentationItem.SEGMENTER_MENU, item)).getComponent());
+			.segmentationVisibility(), "Segmentation", segmenterPanel);
 	}
 
 	private JComponent initBottomPanel() {
@@ -98,14 +97,14 @@ public class SegmenterPanel {
 		list.clear();
 		segmenters.forEach(item -> list.add(item, new EntryPanel(item)));
 		list.setSelected(segmentationModel.selectedSegmenter().get());
-		panel.revalidate();
-		panel.repaint();
+		revalidate();
+		repaint();
 	}
 
 	private void updateVisiblePanel(boolean empty) {
-		if (empty != (panel.getComponent(0) == addSegmenterPanel)) {
-			panel.removeAll();
-			panel.add(empty ? addSegmenterPanel : listPanel);
+		if (empty != (getComponent(0) == addSegmenterPanel)) {
+			removeAll();
+			add(empty ? addSegmenterPanel : listPanel);
 		}
 	}
 
@@ -166,9 +165,5 @@ public class SegmenterPanel {
 		SegmentationItem selectedValue = list.getSelected();
 		if (selectedValue != null)
 			segmentationModel.selectedSegmenter().set(selectedValue);
-	}
-
-	public JComponent getComponent() {
-		return panel;
 	}
 }
