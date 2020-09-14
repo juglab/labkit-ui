@@ -11,6 +11,7 @@ import net.imglib2.RandomAccess;
 import net.imglib2.RandomAccessible;
 import net.imglib2.RandomAccessibleInterval;
 import net.imglib2.cache.img.CellLoader;
+import net.imglib2.cache.img.DiskCachedCellImg;
 import net.imglib2.cache.img.DiskCachedCellImgFactory;
 import net.imglib2.cache.img.DiskCachedCellImgOptions;
 import net.imglib2.img.Img;
@@ -183,14 +184,23 @@ public class TrainableSegmentationSegmenter implements Segmenter {
 		RandomAccessibleInterval<?> image, FeatureCalculator featuresCalculator)
 	{
 		SparseRandomAccessIntType classIndices = getClassIndices(labeling, classes);
-		RandomAccessible<? extends Composite<FloatType>> features = Views.collapse(
-			cachedFeatureBlock(featuresCalculator, image));
-		addSamples(training, classIndices, features);
+		if (classIndices.sparsityPattern().size() == 0)
+			return;
+		DiskCachedCellImg<FloatType, ?> cachedFeatureBlock = cachedFeatureBlock(featuresCalculator,
+			image);
+		try {
+			RandomAccessible<? extends Composite<FloatType>> features = Views.collapse(
+				cachedFeatureBlock);
+			addSamples(training, classIndices, features);
+		}
+		finally {
+			cachedFeatureBlock.shutdown();
+		}
 	}
 
 	// TODO: caching the Feature Stack while training could be part of
 	// imglib2-trainable-segmentation
-	private static Img<FloatType> cachedFeatureBlock(FeatureCalculator feature,
+	private static DiskCachedCellImg<FloatType, ?> cachedFeatureBlock(FeatureCalculator feature,
 		RandomAccessibleInterval<?> image)
 	{
 		return cachedFeatureBlock(feature, Views.extendBorder(image),
@@ -204,7 +214,7 @@ public class TrainableSegmentationSegmenter implements Segmenter {
 		return new CellGrid(imageDimensions, cellDimensions);
 	}
 
-	private static Img<FloatType> cachedFeatureBlock(FeatureCalculator feature,
+	private static DiskCachedCellImg<FloatType, ?> cachedFeatureBlock(FeatureCalculator feature,
 		RandomAccessible<?> extendedOriginal, CellGrid grid)
 	{
 		int count = feature.count();
