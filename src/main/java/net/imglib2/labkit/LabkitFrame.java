@@ -17,7 +17,10 @@ import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 
 /**
- * A component that supports labeling an image.
+ * The main Labkit window. (This window allows to segment a single image. It has
+ * to be distinguished from the LabkitProjectFrame, which allows to operation on
+ * multiple images.) The window only contains a {@link SegmentationComponent}
+ * and shows the associated main menu.
  *
  * @author Matthias Arzt
  */
@@ -70,7 +73,7 @@ public class LabkitFrame {
 	{
 		SegmentationComponent segmentationComponent = new SegmentationComponent(
 			frame, segmentationModel, false);
-		frame.add(segmentationComponent.getComponent());
+		frame.add(segmentationComponent);
 		frame.addWindowListener(new WindowAdapter() {
 
 			@Override

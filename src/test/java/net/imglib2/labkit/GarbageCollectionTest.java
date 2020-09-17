@@ -53,7 +53,7 @@ public class GarbageCollectionTest {
 			context, new DatasetInputImage(ArrayImgs.bytes(10, 10)));
 		SegmentationComponent component = new SegmentationComponent(frame,
 			segmentationModel, false);
-		frame.add(component.getComponent());
+		frame.add(component);
 		frame.addWindowListener(new WindowAdapter() {
 
 			@Override

@@ -25,6 +25,17 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+/**
+ * The Labkit main window that allows to work with multiple images.
+ * <p>
+ * The GUI consists of a Big Data Viewer panel with brush tools and two
+ * sidebars. The left side bar for show labels and segmentation algorithms and
+ * the right side bar show a list of open images.
+ * <p>
+ * The left side bar and Big Data Viewer panel are part of the
+ * {@link SegmentationComponent}. This frame only adds the right side bar. The
+ * {@link SegmentationComponent} is replaced, whenever a new image is selected.
+ */
 public class LabkitProjectFrame extends JFrame {
 
 	private final JPanel workspace;
@@ -65,7 +76,7 @@ public class LabkitProjectFrame extends JFrame {
 
 	private void updateBdv() {
 		if (segmentationComponent != null) {
-			workspace.remove(segmentationComponent.getComponent());
+			workspace.remove(segmentationComponent);
 			segmentationComponent.close();
 		}
 		LabeledImage labeledImage = projectSegmentationModel.projectModel().selectedImage().get();
@@ -74,7 +85,7 @@ public class LabkitProjectFrame extends JFrame {
 			SegmentationComponent component = new SegmentationComponent(this, projectSegmentationModel,
 				false);
 			component.autoContrast();
-			workspace.add(component.getComponent());
+			workspace.add(component);
 			segmentationComponent = component;
 			JMenuBar menuBar = component.getMenuBar();
 			menuBar.add(projectMenu);
@@ -109,7 +120,8 @@ public class LabkitProjectFrame extends JFrame {
 
 	static void onNewProjectClicked(Context context) {
 		LabkitProjectModel newProject = NewProjectDialog.show(context);
-		if (newProject == null) return;
+		if (newProject == null)
+			return;
 		openProject(newProject);
 	}
 

@@ -23,6 +23,12 @@ import javax.swing.*;
 import java.io.File;
 import java.io.IOException;
 
+/**
+ * Implements the "Import Bitmap...", and "Export Selected Label as Bitmap..."
+ * menu items. As well as the "Export as Bitmap..." and "Show as Bitmap in
+ * ImageJ..." menu item to the popup menu that is associated with the individual
+ * label.
+ */
 public class BitmapImportExportAction extends AbstractFileIoAction {
 
 	private final ImageLabelingModel model;

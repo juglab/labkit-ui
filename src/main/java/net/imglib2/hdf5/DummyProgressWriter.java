@@ -7,6 +7,9 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.io.PrintStream;
 
+/**
+ * A {@link ProgressWriter} which does nothing.
+ */
 public class DummyProgressWriter implements ProgressWriter {
 
 	public final PrintStream dummyPrintStream = new PrintStream(

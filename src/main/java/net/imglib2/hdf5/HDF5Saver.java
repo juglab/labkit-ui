@@ -43,6 +43,59 @@ import java.util.Map;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
+/**
+ * <p>
+ * HDF5Saver provides a simple API to save an {@link RandomAccessibleInterval}
+ * as Big Data Viewer HDF5 + XML format.
+ * </p>
+ * 
+ * <pre>
+ * HDF5Saver saver = new HDF5Saver(result, xml.getAbsolutePath());
+ * saver.writeAll();
+ * </pre>
+ * <p>
+ * There are two noteworthy features:
+ * </p>
+ * <p>
+ * First: It's possible to set a {@link ProgressWriter} for tracking progress:
+ * </p>
+ * 
+ * <pre>
+ * saver.setProgressWriter(new ProgressWriterConsole());
+ * </pre>
+ * <p>
+ * Second: The HDF5 file could be split into multiple partitions. This could be
+ * used to have for example one HDF5 file for each timepoint. There is one way
+ * to write all partitions, plus XML, plus a HDF5 file that contains a table of
+ * content:
+ * </p>
+ *
+ * <pre>
+ * HDF5Saver saver = new HDF5Saver(result, xml.getAbsolutePath());
+ * saver.setPartitions(1, 1);
+ * saver.writeAll();
+ * </pre>
+ * <p>
+ * And there is the option to write each partition individually. Which is useful
+ * when you want to distribute the task between multiple processes. Please note
+ * using multi threading want give you a speed up. As the underlying library for
+ * HDF5 writing doesn't support multi threading.
+ * </p>
+ * 
+ * <pre>
+ * HDF5Saver saver = new HDF5Saver(image, xml.getAbsolutePath());
+ * saver.setPartitions(1, 1);
+ *
+ * // This will write the XML and a small HDF5 file which is basically the table of content for the partitions
+ * saver.writeXmlAndHdf5();
+ *
+ * // Write the partitions one by one
+ * for (int i = 0; i < saver.numberOfPartitions(); i++)
+ * 	saver.writePartition(i);
+ * </pre>
+ *
+ * @author Matthias Arzt
+ */
 public class HDF5Saver {
 
 	private ProgressWriter progressWriter = new DummyProgressWriter();

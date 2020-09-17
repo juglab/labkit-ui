@@ -7,6 +7,8 @@ import net.imglib2.labkit.models.ImageLabelingModel;
 import net.imglib2.labkit.models.TransformationModel;
 
 /**
+ * Implements the reset view menu item.
+ *
  * @author Matthias Arzt
  */
 public class ResetViewAction {

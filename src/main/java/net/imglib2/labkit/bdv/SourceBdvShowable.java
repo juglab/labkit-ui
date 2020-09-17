@@ -11,6 +11,9 @@ import net.imglib2.Interval;
 import net.imglib2.realtransform.AffineTransform3D;
 import net.imglib2.type.numeric.NumericType;
 
+/**
+ * Implementation of {@link BdvShowable} that wraps around a {@link Source}.
+ */
 class SourceBdvShowable implements BdvShowable {
 
 	private final Source<? extends NumericType<?>> source;

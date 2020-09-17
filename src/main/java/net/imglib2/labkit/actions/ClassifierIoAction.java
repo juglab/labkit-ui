@@ -8,6 +8,8 @@ import net.imglib2.labkit.models.SegmentationItem;
 import javax.swing.filechooser.FileNameExtensionFilter;
 
 /**
+ * Implements the menu items for saving and opening the classifier.
+ *
  * @author Matthias Arzt
  */
 public class ClassifierIoAction extends AbstractFileIoAction {

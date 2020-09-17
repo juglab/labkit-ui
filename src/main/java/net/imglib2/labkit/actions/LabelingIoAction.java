@@ -14,6 +14,8 @@ import net.imglib2.type.numeric.IntegerType;
 import java.io.IOException;
 
 /**
+ * Implements the menu items for open, and saving the labeling, as well as ex
+ * 
  * @author Matthias Arzt
  */
 public class LabelingIoAction extends AbstractFileIoAction {
@@ -44,13 +46,14 @@ public class LabelingIoAction extends AbstractFileIoAction {
 			}, "ctrl S");
 		initOpenAction(MenuBar.LABELING_MENU, "Open Labeling ...", 1, this::open,
 			"ctrl O");
-		Runnable action = () -> {
-			RandomAccessibleInterval<? extends IntegerType<?>> img = labelingModel
-				.labeling().get().getIndexImg();
-			ImageJFunctions.show(LabkitUtils.uncheckedCast(img), "Labeling");
-		};
 		extensible.addMenuItem(MenuBar.LABELING_MENU, "Show Labeling in ImageJ", 3,
-			ignore -> action.run(), null, "");
+			ignore -> showLabelingInImageJ(), null, "");
+	}
+
+	private void showLabelingInImageJ() {
+		RandomAccessibleInterval<? extends IntegerType<?>> img = labelingModel
+			.labeling().get().getIndexImg();
+		ImageJFunctions.show(LabkitUtils.uncheckedCast(img), "Labeling");
 	}
 
 	private void open(Void ignore, String filename) throws IOException {

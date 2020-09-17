@@ -19,6 +19,8 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 /**
+ * Implements the "Import Labeling..." menu item.
+ *
  * @author Matthias Arzt
  */
 public class AddLabelingIoAction extends AbstractFileIoAction {

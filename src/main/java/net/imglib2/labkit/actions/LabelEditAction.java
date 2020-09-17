@@ -7,6 +7,10 @@ import net.imglib2.labkit.models.ColoredLabelsModel;
 
 import javax.swing.*;
 
+/**
+ * Implements menu items for renaming and removing individual labels. Also
+ * allows to change the order of the labels.
+ */
 public class LabelEditAction {
 
 	private final Extensible extensible;

@@ -26,10 +26,19 @@ import net.imglib2.labkit.segmentation.TrainClassifier;
 import net.miginfocom.swing.MigLayout;
 
 import javax.swing.*;
+import java.awt.*;
 
-public class SegmentationComponent implements AutoCloseable {
-
-	private final JComponent panel;
+/**
+ * {@link SegmentationComponent} is the central Labkit UI component. Provides UI
+ * to display and modify a {@link SegmentationModel}.
+ * <p>
+ * The UI consist of a Big Data Viewer panel, with brush tools and a side bar.
+ * The side bar lists panels and segmentation algorithms.
+ * <p>
+ * A main menu that contains many actions for open and saving data, can be
+ * accessed by using {@link #getMenuBar()}.
+ */
+public class SegmentationComponent extends JPanel implements AutoCloseable {
 
 	private final boolean unmodifiableLabels;
 
@@ -50,7 +59,8 @@ public class SegmentationComponent implements AutoCloseable {
 		labelingComponent = new BasicLabelingComponent(dialogBoxOwner, imageLabelingModel);
 		labelingComponent.addBdvLayer(PredictionLayer.createPredictionLayer(segmentationModel));
 		initActions();
-		this.panel = initPanel();
+		setLayout(new BorderLayout());
+		add(initGui());
 	}
 
 	private void initActions() {
@@ -88,7 +98,7 @@ public class SegmentationComponent implements AutoCloseable {
 		return panel;
 	}
 
-	private JComponent initPanel() {
+	private JSplitPane initGui() {
 		JSplitPane panel = new JSplitPane();
 		panel.setOneTouchExpandable(true);
 		panel.setLeftComponent(initLeftPanel());
@@ -97,14 +107,16 @@ public class SegmentationComponent implements AutoCloseable {
 		return panel;
 	}
 
+	@Deprecated
 	public JComponent getComponent() {
-		return panel;
+		return this;
 	}
 
 	public JMenu createMenu(MenuKey<Void> key) {
-		if (key == MenuBar.SEGMENTER_MENU) return extensible.createMenu(
-			SegmentationItem.SEGMENTER_MENU, segmentationModel
-				.segmenterList().selectedSegmenter()::get);
+		if (key == MenuBar.SEGMENTER_MENU)
+			return extensible.createMenu(
+				SegmentationItem.SEGMENTER_MENU, segmentationModel
+					.segmenterList().selectedSegmenter()::get);
 		return extensible.createMenu(key, () -> null);
 	}
 

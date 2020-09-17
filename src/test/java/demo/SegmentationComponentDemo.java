@@ -34,7 +34,7 @@ public class SegmentationComponentDemo {
 		Context context = new Context();
 		segmentationModel = new DefaultSegmentationModel(context, new DatasetInputImage(image));
 		segmenter = new SegmentationComponent(frame, segmentationModel, false);
-		frame.add(segmenter.getComponent());
+		frame.add(segmenter);
 		frame.add(getBottomPanel(), BorderLayout.PAGE_END);
 		frame.setVisible(true);
 	}

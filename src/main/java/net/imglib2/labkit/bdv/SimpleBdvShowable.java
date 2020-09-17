@@ -14,6 +14,10 @@ import net.imglib2.realtransform.AffineTransform3D;
 import net.imglib2.type.numeric.NumericType;
 import net.imglib2.util.Pair;
 
+/**
+ * Implementation of {@link BdvShowable} that wraps around
+ * {@link RandomAccessibleInterval}.
+ */
 class SimpleBdvShowable implements BdvShowable {
 
 	private final RandomAccessibleInterval<? extends NumericType<?>> image;

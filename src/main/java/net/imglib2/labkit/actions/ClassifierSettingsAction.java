@@ -9,6 +9,8 @@ import net.imglib2.labkit.panel.GuiUtils;
 import java.util.function.Consumer;
 
 /**
+ * Implements the menu item for changing the classifier settings.
+ *
  * @author Matthias Arzt
  */
 public class ClassifierSettingsAction {

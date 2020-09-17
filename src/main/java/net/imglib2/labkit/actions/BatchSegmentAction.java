@@ -18,6 +18,8 @@ import org.scijava.widget.FileWidget;
 import java.io.File;
 
 /**
+ * Implements the "Batch Segment Images ..." menu item.
+ *
  * @author Matthias Arzt
  */
 public class BatchSegmentAction {

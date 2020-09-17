@@ -21,6 +21,9 @@ import javax.swing.*;
 import java.util.function.Function;
 
 /**
+ * Implements the menu items that allow to save the segmentation and probability
+ * map.
+ *
  * @author Matthias Arzt
  */
 public class SegmentationExportAction extends AbstractFileIoAction {

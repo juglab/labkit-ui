@@ -9,10 +9,14 @@ import net.imglib2.labkit.panel.LabelPanel;
 import net.miginfocom.swing.MigLayout;
 
 import javax.swing.*;
+import java.awt.*;
 
-public class LabelingComponent implements AutoCloseable {
-
-	private final JSplitPane panel;
+/**
+ * LabelingComponent provides a UI for displaying an image overlaid with a
+ * labeling. It features brush tools for modifying the labeling, and a sidebar
+ * that shows a list of all the labels.
+ */
+public class LabelingComponent extends JPanel implements AutoCloseable {
 
 	private final BasicLabelingComponent labelingComponent;
 
@@ -25,7 +29,8 @@ public class LabelingComponent implements AutoCloseable {
 		new LabelEditAction(extensible, false, new ColoredLabelsModel(model));
 		leftPanel.add(LabelPanel.newFramedLabelPanel(model, extensible, false),
 			"grow");
-		this.panel = initSplitPane(leftPanel, labelingComponent.getComponent());
+		setLayout(new BorderLayout());
+		add(initSplitPane(leftPanel, labelingComponent.getComponent()));
 	}
 
 	private JSplitPane initSplitPane(JComponent left, JComponent right) {
@@ -37,8 +42,9 @@ public class LabelingComponent implements AutoCloseable {
 		return panel;
 	}
 
+	@Deprecated
 	public JComponent getComponent() {
-		return panel;
+		return this;
 	}
 
 	@Override

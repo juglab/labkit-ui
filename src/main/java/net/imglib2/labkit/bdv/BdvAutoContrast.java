@@ -17,6 +17,10 @@ import net.imglib2.view.Views;
 
 import java.util.Random;
 
+/**
+ * Calling {@link BdvAutoContrast#autoContrast(BdvSource)} will set the contrast
+ * of the given {@link BdvSource} to reasonable values.
+ */
 public class BdvAutoContrast {
 
 	public static void autoContrast(BdvSource bdvSource) {

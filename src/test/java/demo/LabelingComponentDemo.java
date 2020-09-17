@@ -3,25 +3,18 @@ package demo;
 
 import ij.ImagePlus;
 import net.imagej.ImgPlus;
-import net.imglib2.RandomAccessibleInterval;
-import net.imglib2.img.Img;
 import net.imglib2.img.VirtualStackAdapter;
-import net.imglib2.img.array.ArrayImgs;
-import net.imglib2.img.display.imagej.ImageJFunctions;
 import net.imglib2.labkit.LabelingComponent;
 import net.imglib2.labkit.inputimage.DatasetInputImage;
-import net.imglib2.labkit.labeling.Labeling;
 import net.imglib2.labkit.models.ImageLabelingModel;
-import net.imglib2.type.numeric.ARGBType;
-import net.imglib2.type.numeric.NumericType;
-import net.imglib2.view.Views;
 
 import javax.swing.*;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
-import java.util.Arrays;
-import java.util.Random;
 
+/**
+ * Demonstrates how the {@link LabelingComponent} can be used.
+ */
 public class LabelingComponentDemo {
 
 	public static void main(String... args) {
@@ -51,6 +44,6 @@ public class LabelingComponentDemo {
 				labelingComponent.close();
 			}
 		});
-		return labelingComponent.getComponent();
+		return labelingComponent;
 	}
 }

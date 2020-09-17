@@ -24,6 +24,8 @@ import javax.swing.*;
 import java.util.List;
 
 /**
+ * Implements the create label form segmentation menu item.
+ *
  * @author Matthias Arzt
  */
 public class SegmentationAsLabelAction {

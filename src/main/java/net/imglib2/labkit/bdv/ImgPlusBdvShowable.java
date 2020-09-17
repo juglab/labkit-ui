@@ -20,10 +20,12 @@ import java.util.Map;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
+/**
+ * Implementation of {@link BdvShowable} that wraps around {@link ImgPlus}.
+ */
 class ImgPlusBdvShowable implements BdvShowable {
 
 	private final ImgPlus<? extends NumericType<?>> image;
-	private AxisOrder axisOrder;
 
 	ImgPlusBdvShowable(ImgPlus<? extends NumericType<?>> image) {
 		this.image = image;
