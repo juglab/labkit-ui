@@ -103,7 +103,7 @@ public class TrainableSegmentationSegmenter implements Segmenter {
 		if (ImgPlusViewsOld.hasAxis(image, Axes.TIME))
 			applyOnSlices(this::segment, image, labels, image.dimensionIndex(Axes.TIME), labels
 				.numDimensions() - 1);
-		else if (ImgPlusViewsOld.hasAxis(image, Axes.Z))
+		else if (ImgPlusViewsOld.hasAxis(image, Axes.Z) && is2D())
 			applyOnSlices(this::segment, image, labels, image.dimensionIndex(Axes.Z), labels
 				.numDimensions() - 1);
 		else
@@ -117,11 +117,15 @@ public class TrainableSegmentationSegmenter implements Segmenter {
 		if (ImgPlusViewsOld.hasAxis(image, Axes.TIME))
 			applyOnSlices(this::predict, image, prediction, image.dimensionIndex(Axes.TIME), prediction
 				.numDimensions() - 2);
-		else if (ImgPlusViewsOld.hasAxis(image, Axes.Z))
+		else if (ImgPlusViewsOld.hasAxis(image, Axes.Z) && is2D())
 			applyOnSlices(this::predict, image, prediction, image.dimensionIndex(Axes.Z), prediction
 				.numDimensions() - 2);
 		else
 			segmenter.predict(prediction, Views.extendBorder(image));
+	}
+
+	private boolean is2D() {
+		return segmenter.features().settings().globals().numDimensions() == 2;
 	}
 
 	@Override
