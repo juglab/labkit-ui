@@ -4,6 +4,10 @@ package net.imglib2.labkit.bdv;
 import net.imglib2.labkit.models.Holder;
 import net.imglib2.labkit.utils.Notifier;
 
+/**
+ * Objects that implement {@link BdvLayer}, can easily be made visible in
+ * BigDataViewer using {@link BdvLayerLink}.
+ */
 public interface BdvLayer {
 
 	Holder<BdvShowable> image();

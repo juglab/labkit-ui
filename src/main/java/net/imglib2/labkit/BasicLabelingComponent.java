@@ -8,14 +8,12 @@ import bdv.util.BdvStackSource;
 import bdv.viewer.DisplayMode;
 import net.imglib2.labkit.bdv.BdvAutoContrast;
 import net.imglib2.labkit.bdv.BdvLayer;
-import net.imglib2.labkit.bdv.BdvShowable;
-import net.imglib2.labkit.bdv.BdvVisibilityLink;
+import net.imglib2.labkit.bdv.BdvLayerLink;
 import net.imglib2.labkit.brush.ChangeLabel;
 import net.imglib2.labkit.brush.FloodFillController;
 import net.imglib2.labkit.brush.LabelBrushController;
 import net.imglib2.labkit.brush.SelectLabelController;
 import net.imglib2.labkit.labeling.LabelsLayer;
-import net.imglib2.labkit.models.DefaultHolder;
 import net.imglib2.labkit.models.Holder;
 import net.imglib2.labkit.models.ImageLabelingModel;
 import net.imglib2.labkit.panel.LabelToolsPanel;
@@ -81,26 +79,7 @@ public class BasicLabelingComponent implements AutoCloseable {
 	}
 
 	public Holder<BdvStackSource<?>> addBdvLayer(BdvLayer layer) {
-		BdvOptions options = BdvOptions.options().addTo(bdvHandle);
-		Holder<BdvShowable> image = layer.image();
-		BdvShowable showable1 = image.get();
-		BdvStackSource<?> bdvStackSource = showable1 != null ? showable1.show(layer.title(), options)
-			: null;
-		Holder<BdvStackSource<?>> source = new DefaultHolder<>(bdvStackSource);
-		image.notifier().addListener(() -> {
-			BdvStackSource<?> source1 = source.get();
-			source.set(null);
-			if (source1 != null)
-				source1.removeFromBdv();
-			BdvShowable showable = image.get();
-			if (showable != null) {
-				source.set(showable.show(layer.title(), options));
-				source.get().setActive(layer.visibility().get());
-			}
-		});
-		layer.listeners().addListener(this::requestRepaint);
-		new BdvVisibilityLink(layer.visibility(), bdvHandle, source);
-		return source;
+		return new BdvLayerLink(layer, bdvHandle);
 	}
 
 	private JPanel initBrushLayer() {
@@ -121,10 +100,6 @@ public class BasicLabelingComponent implements AutoCloseable {
 		Collection<? extends AbstractNamedAction> shortcuts)
 	{
 		shortcuts.forEach(actionsAndBehaviours::addAction);
-	}
-
-	private void requestRepaint() {
-		bdvHandle.getViewerPanel().requestRepaint();
 	}
 
 	@Override
