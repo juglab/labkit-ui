@@ -154,12 +154,6 @@
 		<dependency>
 			<groupId>sc.fiji</groupId>
 			<artifactId>bigdataviewer-core</artifactId>
-			<exclusions>
-				<exclusion>
-					<groupId>com.miglayout</groupId>
-					<artifactId>miglayout-swing</artifactId>
-				</exclusion>
-			</exclusions>
 		</dependency>
 		<dependency>
 			<groupId>sc.fiji</groupId>
