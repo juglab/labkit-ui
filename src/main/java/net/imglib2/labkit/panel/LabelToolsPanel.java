@@ -16,6 +16,9 @@ import java.awt.event.ItemEvent;
 import java.awt.event.MouseAdapter;
 import java.util.EnumSet;
 
+/**
+ * Panel with the tool buttons for brush, flood fill, etc...
+ */
 public class LabelToolsPanel extends JPanel {
 
 	private static final String BUTTON_BEHAVIOUR_ID = "panel";

@@ -24,7 +24,7 @@ import java.util.Arrays;
 import java.util.function.Consumer;
 
 /**
- * Represents an {@link ImageLabelingModel} that is save to disk.
+ * Represents an {@link ImageLabelingModel} that stored on disk.
  */
 public class LabeledImage {
 

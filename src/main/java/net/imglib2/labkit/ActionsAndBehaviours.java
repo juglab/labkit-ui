@@ -12,7 +12,7 @@ import org.scijava.ui.behaviour.util.Behaviours;
 import javax.swing.*;
 
 /**
- * Created by arzt on 31.08.17.
+ * A wrapper around {@link Actions} and {@link Behaviours}.
  */
 public class ActionsAndBehaviours {
 
@@ -28,25 +28,18 @@ public class ActionsAndBehaviours {
 		this.bdvHandle = bdvHandle;
 	}
 
-	public ActionMap getActions() {
-		return actions.getActionMap();
-	}
-
 	public void addAction(AbstractNamedAction action) {
 		KeyStroke keyStroke = (KeyStroke) action.getValue(Action.ACCELERATOR_KEY);
 		actions.namedAction(action, new String[] { keyStroke != null ? keyStroke
 			.toString() : "not mapped" });
-		actions.install(bdvHandle.getKeybindings(), "classifier training");
+		actions.install(bdvHandle.getKeybindings(), "simplified-actions-and-behaviours");
 	}
 
 	public void addBehaviour(Behaviour behaviour, String name,
 		String... defaultTriggers)
 	{
 		behaviors.behaviour(behaviour, name, defaultTriggers);
-		behaviors.install(bdvHandle.getTriggerbindings(), "classifier training");
+		behaviors.install(bdvHandle.getTriggerbindings(), "simplified-actions-and-behaviours");
 	}
 
-	public Behaviour getBehaviour(String name) {
-		return behaviors.getBehaviourMap().get(name);
-	}
 }

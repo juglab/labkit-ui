@@ -20,6 +20,9 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
+/**
+ * Utility functions associated with {@link Labeling}.
+ */
 public class Labelings {
 
 	public static List<Labeling> slices(Labeling labeling) {

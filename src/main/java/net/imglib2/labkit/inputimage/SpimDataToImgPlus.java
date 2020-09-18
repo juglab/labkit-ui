@@ -36,6 +36,11 @@ import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
+/**
+ * Converts {@link AbstractSpimData} to {@link ImgPlus}.
+ * <p>
+ * Helper to {@link SpimDataInputImage}.
+ */
 public class SpimDataToImgPlus {
 
 	public static ImgPlus<?> openWithGuiForLevelSelection(
@@ -120,7 +125,7 @@ public class SpimDataToImgPlus {
 		return channels.size() > 1 ? Views.stack(channels) : channels.get(0);
 	}
 
-	public static CalibratedAxis[] getAxes(AbstractSpimData<?> spimData) {
+	private static CalibratedAxis[] getAxes(AbstractSpimData<?> spimData) {
 		VoxelDimensions voxelSize = getVoxelDimensions(spimData);
 		List<CalibratedAxis> list = new ArrayList<>();
 		list.add(new DefaultLinearAxis(Axes.X, voxelSize.unit(), voxelSize.dimension(0)));

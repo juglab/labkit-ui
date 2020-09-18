@@ -30,11 +30,10 @@ import java.util.NoSuchElementException;
 import java.util.stream.Collectors;
 
 /**
- * SegmentationResultsModel is segmentation + probability map. It wraps around a
- * SegmentationModel and update whenever the Segmentation changes. It's possible
- * to listen to the SegmentationResultsModel.
+ * SegmentationResultsModel is segmentation + probability map. It and updates
+ * whenever the Segmentation changes. It's possible to listen to the
+ * SegmentationResultsModel.
  */
-
 public class SegmentationResultsModel {
 
 	private ImageLabelingModel model;

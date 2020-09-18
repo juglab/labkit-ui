@@ -1,12 +1,16 @@
 
-package net.imglib2.labkit.segmentation;
+package net.imglib2.labkit.segmentation.weka;
 
-import net.imglib2.labkit.segmentation.weka.TrainableSegmentationSegmenter;
+import net.imglib2.labkit.segmentation.SegmentationPlugin;
+import net.imglib2.labkit.segmentation.Segmenter;
 import net.imglib2.trainable_segmentation.utils.SingletonContext;
 import org.scijava.Context;
 import org.scijava.plugin.Parameter;
 import org.scijava.plugin.Plugin;
 
+/**
+ * Plugin provides the "Labkit Pixel Classification".
+ */
 @Plugin(type = SegmentationPlugin.class)
 public class PixelClassificationPlugin implements SegmentationPlugin {
 

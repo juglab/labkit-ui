@@ -59,6 +59,7 @@ import java.util.function.BiConsumer;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
+// TODO: rename to PixelClassification
 public class TrainableSegmentationSegmenter implements Segmenter {
 
 	private final Context context;

@@ -13,7 +13,6 @@ import net.imglib2.labkit.labeling.Label;
 import net.imglib2.roi.labeling.LabelingType;
 import net.imglib2.type.Type;
 import net.imglib2.type.numeric.IntegerType;
-import net.imglib2.util.Util;
 import net.imglib2.view.ExtendedRandomAccessibleInterval;
 import net.imglib2.view.Views;
 
@@ -22,22 +21,41 @@ import java.util.function.BiPredicate;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
 
-public class FloodFill {
+/**
+ * Helper for {@link FloodFillController}.
+ */
+class FloodFill {
 
-	public static <T extends Type<T>> void cachedFloodFill(
-		RandomAccessibleInterval<T> image, Localizable seed,
-		Predicate<? super T> visit, Consumer<? super T> operation)
+	/**
+	 * Does a flood fill on the given labeling, starting from the seed point. Only
+	 * the visible labels are taken into account. Fills in all the pixels that have
+	 * exactly the same visible labels as the seed point.
+	 * 
+	 * @param labeling Input and output to the flood fill operation.
+	 * @param seed Seed point.
+	 * @param operation Operation that es performed for the flood filled pixels.
+	 */
+	public static void doFloodFillOnActiveLabels(
+		RandomAccessibleInterval<LabelingType<Label>> labeling, Point seed,
+		Consumer<? super LabelingType<Label>> operation)
 	{
-		if (Util.getTypeFromInterval(image) instanceof LabelingType) {
-			visit = (Predicate) new CacheForPredicateLabelingType<>(
-				(Predicate) visit);
-			operation = (Consumer) new CacheForOperationLabelingType<>(
-				(Consumer) operation);
-		}
-		doFloodFill(image, seed, (Predicate) visit, (Consumer) operation);
+		Set<Label> seedValue = getPixel(labeling, seed).copy();
+		Predicate<LabelingType<Label>> visit = value -> activeLabelsAreEquals(value,
+			seedValue);
+		cachedFloodFill(labeling, seed, visit, operation);
 	}
 
-	public static <T extends Type<T>> void doFloodFill(
+	// package-private to allow testing
+	static <T> void cachedFloodFill(
+		RandomAccessibleInterval<LabelingType<T>> image, Localizable seed,
+		Predicate<? super LabelingType<T>> visit, Consumer<? super LabelingType<T>> operation)
+	{
+		Predicate<LabelingType<T>> cachedVisit = new CacheForPredicateLabelingType<>(visit);
+		Consumer<LabelingType<T>> cachedOperation = new CacheForOperationLabelingType<>(operation);
+		doFloodFill(image, seed, cachedVisit, cachedOperation);
+	}
+
+	private static <T extends Type<T>> void doFloodFill(
 		RandomAccessibleInterval<T> image, Localizable seed, Predicate<T> visit,
 		Consumer<T> operation)
 	{
@@ -53,16 +71,6 @@ public class FloodFill {
 		final DiamondShape shape = new DiamondShape(1);
 		net.imglib2.algorithm.fill.FloodFill.fill(target, target, seed, shape,
 			filter, operation);
-	}
-
-	public static void doFloodFillOnActiveLabels(
-		RandomAccessibleInterval<LabelingType<Label>> labeling, Point seed,
-		Consumer<? super LabelingType<Label>> operation)
-	{
-		Set<Label> seedValue = getPixel(labeling, seed).copy();
-		Predicate<LabelingType<Label>> visit = value -> activeLabelsAreEquals(value,
-			seedValue);
-		cachedFloodFill(labeling, seed, visit, operation);
 	}
 
 	private static boolean activeLabelsAreEquals(LabelingType<Label> a,
@@ -87,11 +95,11 @@ public class FloodFill {
 		Predicate<LabelingType<T>>
 	{
 
-		private final Predicate<LabelingType<T>> predicate;
+		private final Predicate<? super LabelingType<T>> predicate;
 		private final TIntIntMap cache = new TIntIntHashMap();
 		private final int noEntryValue = cache.getNoEntryValue();
 
-		CacheForPredicateLabelingType(Predicate<LabelingType<T>> predicate) {
+		CacheForPredicateLabelingType(Predicate<? super LabelingType<T>> predicate) {
 			this.predicate = predicate;
 		}
 
@@ -112,12 +120,12 @@ public class FloodFill {
 		Consumer<LabelingType<T>>
 	{
 
-		private final Consumer<LabelingType<T>> operation;
+		private final Consumer<? super LabelingType<T>> operation;
 
 		private final TIntIntMap cache = new TIntIntHashMap();
 		private final int noEntryValue = cache.getNoEntryValue();
 
-		private CacheForOperationLabelingType(Consumer<LabelingType<T>> operation) {
+		private CacheForOperationLabelingType(Consumer<? super LabelingType<T>> operation) {
 			this.operation = operation;
 		}
 

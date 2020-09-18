@@ -14,6 +14,10 @@ import java.util.Map;
 import java.util.WeakHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
 
+/**
+ * A model that wraps around {@link Segmenter} and provides additional
+ * information.
+ */
 public class SegmentationItem extends ForwardingSegmenter {
 
 	public final static MenuKey<SegmentationItem> SEGMENTER_MENU = new MenuKey<>(

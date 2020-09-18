@@ -12,8 +12,8 @@ import java.util.List;
 import java.util.function.Function;
 
 /**
- * LabkitProjectSerializer allows to save an {@link LabkitProjectModel} to file,
- * and to open it from file.
+ * {@link LabkitProjectFileSerializer} allows to save and open a
+ * {@link LabkitProjectModel}.
  */
 public class LabkitProjectFileSerializer {
 

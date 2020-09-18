@@ -10,6 +10,10 @@ import net.imglib2.labkit.bdv.BdvShowable;
 import net.imglib2.realtransform.AffineTransform3D;
 import net.imglib2.type.numeric.NumericType;
 
+/**
+ * Helper for {@link DatasetInputImage} that picks the correct contrast when
+ * showing an ImgPlus.
+ */
 class ContrastUtils {
 
 	public static double getMin(ImgPlus<?> image) {

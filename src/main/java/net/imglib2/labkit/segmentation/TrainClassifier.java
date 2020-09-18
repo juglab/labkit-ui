@@ -18,6 +18,9 @@ import java.util.List;
 import java.util.concurrent.CancellationException;
 import java.util.function.Consumer;
 
+/**
+ * Implements the train classifier, and remove classifier menu items.
+ */
 public class TrainClassifier {
 
 	private final SegmenterListModel model;
@@ -31,7 +34,7 @@ public class TrainClassifier {
 		extensible.addMenuItem(SegmentationItem.SEGMENTER_MENU, "Train Classifier",
 			1, train, GuiUtils.loadIcon("run.png"), null);
 		extensible.addMenuItem(SegmentationItem.SEGMENTER_MENU, "Remove Classifier",
-			3, (Consumer<SegmentationItem>) ((SegmenterListModel) model)::remove,
+			3, model::remove,
 			GuiUtils.loadIcon("remove.png"), null);
 	}
 

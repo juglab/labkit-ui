@@ -13,6 +13,10 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Random;
 
+/**
+ * Similar two JList. But doesn't require the complicated renderer. And the
+ * components in the ComponentList can normally react to user input.
+ */
 public class ComponentList<K, C extends JComponent> {
 
 	private final Color SELECTED_BACKGROUND = UIManager.getColor(

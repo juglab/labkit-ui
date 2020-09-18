@@ -9,6 +9,9 @@ import javax.swing.*;
 import java.awt.event.ActionEvent;
 import java.util.List;
 
+/**
+ * {@link AbstractAction} that goes to the next label when "N" is pressed.
+ */
 public class ChangeLabel extends AbstractNamedAction {
 
 	private final LabelingModel model;

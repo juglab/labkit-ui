@@ -5,15 +5,21 @@ import net.imglib2.labkit.utils.Notifier;
 
 import java.util.function.Function;
 
+/**
+ * A {@link Holder} of which the value derives from a given source Holder, to
+ * which an operation is applied.
+ * <p>
+ * Provides only readonly functionality.
+ */
 public class MappedHolder<T, R> implements Holder<R> {
 
 	private final Holder<T> source;
 
-	private final Function<T, R> opration;
+	private final Function<T, R> operation;
 
-	public MappedHolder(Holder<T> source, Function<T, R> opration) {
+	public MappedHolder(Holder<T> source, Function<T, R> operation) {
 		this.source = source;
-		this.opration = opration;
+		this.operation = operation;
 	}
 
 	@Override
@@ -23,7 +29,7 @@ public class MappedHolder<T, R> implements Holder<R> {
 
 	@Override
 	public R get() {
-		return opration.apply(source.get());
+		return operation.apply(source.get());
 	}
 
 	@Override

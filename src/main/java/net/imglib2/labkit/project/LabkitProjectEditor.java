@@ -18,6 +18,9 @@ import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.function.UnaryOperator;
 
+/**
+ * Implements a dialog that shows the content of a Labkit project as table.
+ */
 public class LabkitProjectEditor extends JPanel {
 
 	private final LabkitProjectModel model;

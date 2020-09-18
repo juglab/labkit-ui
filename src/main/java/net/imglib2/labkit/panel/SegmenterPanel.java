@@ -4,7 +4,6 @@ package net.imglib2.labkit.panel;
 import net.imglib2.labkit.DefaultExtensible;
 import net.imglib2.labkit.models.SegmentationItem;
 import net.imglib2.labkit.models.SegmenterListModel;
-import net.imglib2.labkit.segmentation.AddSegmenterPanel;
 import net.imglib2.labkit.segmentation.SegmentationPlugin;
 import net.imglib2.labkit.segmentation.SegmentationPluginService;
 import net.imglib2.labkit.segmentation.TrainClassifier;
@@ -19,6 +18,9 @@ import java.util.List;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
+/**
+ * Panel that shows the list of segmentation algorithms.
+ */
 public class SegmenterPanel extends JPanel {
 
 	private final SegmenterListModel segmentationModel;

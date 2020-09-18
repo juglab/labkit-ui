@@ -15,6 +15,9 @@ import net.imglib2.util.Intervals;
 import java.util.Arrays;
 import java.util.stream.IntStream;
 
+/**
+ * Wrapper around {@link AbstractSpimData} that implements {@link InputImage}.
+ */
 public class SpimDataInputImage implements InputImage {
 
 	private final AbstractSpimData<?> spimData;

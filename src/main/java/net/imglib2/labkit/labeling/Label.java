@@ -4,6 +4,10 @@ package net.imglib2.labkit.labeling;
 import net.imglib2.labkit.menu.MenuKey;
 import net.imglib2.type.numeric.ARGBType;
 
+/**
+ * The {@link Label} class represents a labels name, color and visibility. The
+ * actual pixels are stored in {@link Labeling}.
+ */
 public class Label {
 
 	public final static MenuKey<Label> LABEL_MENU = new MenuKey<>(Label.class);

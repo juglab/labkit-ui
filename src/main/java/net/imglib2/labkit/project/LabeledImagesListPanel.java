@@ -15,8 +15,7 @@ import java.util.Set;
 import java.util.concurrent.CopyOnWriteArrayList;
 
 /**
- * A Panel the holds an list of {@link LabeledImage} in the
- * {@link LabkitProjectModel}.
+ * A Panel the shows a list of labeled images.
  */
 public class LabeledImagesListPanel extends JPanel {
 

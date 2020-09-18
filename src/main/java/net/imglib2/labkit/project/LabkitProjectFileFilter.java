@@ -3,6 +3,9 @@ package net.imglib2.labkit.project;
 
 import java.io.File;
 
+/**
+ * File filter that only matched files named "labkit-project.yaml"
+ */
 public class LabkitProjectFileFilter extends javax.swing.filechooser.FileFilter {
 
 	@Override

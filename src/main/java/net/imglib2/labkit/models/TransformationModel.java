@@ -9,6 +9,10 @@ import net.imglib2.trainable_segmentation.RevampUtils;
 import java.util.Arrays;
 import java.util.Collections;
 
+/**
+ * Needs to be refactored, this is a strange way to enable the reset view &
+ * focus on label functionality.
+ */
 public class TransformationModel {
 
 	private final boolean isTimeSeries;
@@ -23,11 +27,11 @@ public class TransformationModel {
 		this.viewerPanel = viewerPanel;
 	}
 
-	public int width() {
+	private int width() {
 		return viewerPanel == null ? 100 : viewerPanel.getWidth();
 	}
 
-	public int height() {
+	private int height() {
 		return viewerPanel == null ? 100 : viewerPanel.getHeight();
 	}
 

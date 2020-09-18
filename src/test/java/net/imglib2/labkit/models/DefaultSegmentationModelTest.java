@@ -5,7 +5,7 @@ import net.imglib2.img.array.ArrayImgs;
 import net.imglib2.labkit.inputimage.DatasetInputImage;
 import net.imglib2.labkit.labeling.Label;
 import net.imglib2.labkit.labeling.Labeling;
-import net.imglib2.labkit.segmentation.PixelClassificationPlugin;
+import net.imglib2.labkit.segmentation.weka.PixelClassificationPlugin;
 import net.imglib2.type.logic.BitType;
 import net.imglib2.util.ValuePair;
 import net.imglib2.view.Views;

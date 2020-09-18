@@ -14,6 +14,9 @@ import net.imglib2.realtransform.AffineTransform3D;
 import java.awt.*;
 
 /**
+ * Overlay for Big Data Viewer that shows a circle, and a label title at a given
+ * location.
+ *
  * @author Stephan Saalfeld &lt;saalfelds@janelia.hhmi.org&gt;
  */
 public class BrushOverlay implements OverlayRenderer {

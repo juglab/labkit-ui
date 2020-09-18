@@ -9,6 +9,10 @@ import org.scijava.Context;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * Represents a Labkit project, that contains a list of labeled images and
+ * trained segmentation algorithms.
+ */
 public class LabkitProjectModel {
 
 	private final Context context;

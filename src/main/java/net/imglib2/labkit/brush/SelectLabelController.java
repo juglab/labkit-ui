@@ -20,6 +20,9 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
+/**
+ * This class implements the color picker tool.
+ */
 public class SelectLabelController {
 
 	private static final double[] PIXEL_CENTER_OFFSET = { 0.5, 0.5, 0.5 };

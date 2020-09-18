@@ -9,7 +9,7 @@ import net.imglib2.labkit.project.LabkitProjectModel;
 import net.imglib2.labkit.models.SegmentationItem;
 import net.imglib2.labkit.models.SegmentationModel;
 import net.imglib2.labkit.models.SegmenterListModel;
-import net.imglib2.labkit.segmentation.PixelClassificationPlugin;
+import net.imglib2.labkit.segmentation.weka.PixelClassificationPlugin;
 import net.imglib2.util.Pair;
 import net.imglib2.util.ValuePair;
 import org.scijava.Context;

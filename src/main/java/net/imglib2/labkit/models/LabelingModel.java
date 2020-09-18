@@ -7,6 +7,10 @@ import net.imglib2.labkit.labeling.Labeling;
 import net.imglib2.labkit.utils.ParametricNotifier;
 import net.imglib2.realtransform.AffineTransform3D;
 
+/**
+ * Represents a {@link Labeling} and provides additional information and
+ * listeners.
+ */
 public interface LabelingModel {
 
 	Holder<Label> selectedLabel();

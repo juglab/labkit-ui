@@ -12,6 +12,9 @@ import org.scijava.service.SciJavaService;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * Service that returns a list of all segmentation plugins.
+ */
 @Plugin(type = SciJavaService.class)
 public class SegmentationPluginService extends AbstractService implements SciJavaService {
 

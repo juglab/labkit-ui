@@ -20,6 +20,9 @@ import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import java.util.stream.LongStream;
 
+/**
+ * Class for {@link ImgPlus} related utility functions.
+ */
 // TODO: make this avaiblable in imglib2
 public class ImgPlusViewsOld {
 

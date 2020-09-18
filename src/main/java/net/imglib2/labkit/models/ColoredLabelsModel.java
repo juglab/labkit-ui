@@ -6,6 +6,7 @@ import net.imglib2.FinalInterval;
 import net.imglib2.Interval;
 import net.imglib2.labkit.labeling.Label;
 import net.imglib2.labkit.labeling.Labeling;
+import net.imglib2.labkit.panel.LabelPanel;
 import net.imglib2.labkit.utils.Notifier;
 import net.imglib2.roi.IterableRegion;
 import net.imglib2.type.logic.BitType;
@@ -17,6 +18,13 @@ import java.util.List;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
+/**
+ * Represents a list of {@link Label}, with a selected element.
+ * {@link ColoredLabelsModel} is a intermediate layer between
+ * {@link LabelingModel} and {@link LabelPanel}. Wraps around
+ * {@link LabelingModel} and serves as a model to the {@link LabelPanel}.
+ */
+// TODO rename to LabelListModel
 public class ColoredLabelsModel {
 
 	private final LabelingModel model;

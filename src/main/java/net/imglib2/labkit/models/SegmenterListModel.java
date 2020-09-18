@@ -10,6 +10,10 @@ import org.scijava.Context;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * A list of {@link SegmentationItem}, with selected item, and a bunch of
+ * listeners.
+ */
 public class SegmenterListModel {
 
 	private final Context context;

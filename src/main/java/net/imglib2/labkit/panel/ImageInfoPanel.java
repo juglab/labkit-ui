@@ -11,6 +11,9 @@ import javax.swing.*;
 import java.awt.*;
 import java.util.Arrays;
 
+/**
+ * A panel that shows the image size and provides an "auto contrast" button.
+ */
 public class ImageInfoPanel {
 
 	private ImageInfoPanel() {

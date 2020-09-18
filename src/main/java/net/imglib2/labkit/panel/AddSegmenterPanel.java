@@ -1,7 +1,9 @@
 
-package net.imglib2.labkit.segmentation;
+package net.imglib2.labkit.panel;
 
 import net.imglib2.labkit.models.SegmenterListModel;
+import net.imglib2.labkit.segmentation.SegmentationPlugin;
+import net.imglib2.labkit.segmentation.SegmentationPluginService;
 import net.imglib2.trainable_segmentation.utils.SingletonContext;
 import net.miginfocom.swing.MigLayout;
 import org.scijava.Context;
@@ -9,6 +11,10 @@ import org.scijava.Context;
 import javax.swing.*;
 import java.awt.*;
 
+/**
+ * Panel that shows a list of available segmentation algorithms. This panel is
+ * usually shown only if the {@link SegmenterPanel} is empty.
+ */
 public class AddSegmenterPanel extends JPanel {
 
 	public AddSegmenterPanel(SegmenterListModel segmenterListModel) {

@@ -11,6 +11,10 @@ import net.imglib2.util.Pair;
 import javax.swing.*;
 import java.util.List;
 
+/**
+ * Simple implementation of a {@link Segmenter}, that forwards every method call
+ * to a "source" Segmenter.
+ */
 public class ForwardingSegmenter implements Segmenter {
 
 	private final Segmenter source;

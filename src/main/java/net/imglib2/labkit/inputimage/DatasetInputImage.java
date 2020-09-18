@@ -24,8 +24,10 @@ import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
-// TODO: the management of color channels, is spread over the whole class, improve this.
-public class DatasetInputImage extends AbstractInputImage {
+/**
+ * Adapter from {@link ImgPlus} to {@link InputImage}.
+ */
+public class DatasetInputImage implements InputImage {
 
 	private final ImgPlus<? extends NumericType<?>> image;
 	private final BdvShowable showable;

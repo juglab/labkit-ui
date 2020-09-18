@@ -15,6 +15,10 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 
+/**
+ * Holds a list of commands, together with the meta data required to generate a
+ * menu from it.
+ */
 public class MenuFactory {
 
 	private final ConcurrentMap<MenuKey<?>, List<Entry<?>>> menus =

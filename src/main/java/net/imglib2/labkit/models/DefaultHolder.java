@@ -4,7 +4,9 @@ package net.imglib2.labkit.models;
 import net.imglib2.labkit.utils.Notifier;
 
 /**
- * Created by arzt on 21.08.17.
+ * Default implementation of {@link Holder}. Somehow similar to JavaFX property.
+ * DefaultHolder holds a value, provides a getter and setter and listerners. The
+ * listeners a notified whenever the value changes.
  */
 public class DefaultHolder<T> implements Holder<T> {
 

@@ -20,7 +20,10 @@ import java.util.List;
 import java.util.stream.IntStream;
 
 /**
- * This class serves as a model to SegmentationComponent.
+ * A model that represents an image with an overlaid {@link Labeling}.
+ * <p>
+ * Serves as a model to {@link net.imglib2.labkit.LabelingComponent} and is an
+ * important part of {@link SegmentationModel}.
  */
 public class ImageLabelingModel implements LabelingModel {
 

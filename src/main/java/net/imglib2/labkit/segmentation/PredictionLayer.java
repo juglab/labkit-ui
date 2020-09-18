@@ -20,6 +20,9 @@ import net.imglib2.type.numeric.ARGBType;
 import net.imglib2.type.volatiles.VolatileARGBType;
 import net.imglib2.type.volatiles.VolatileShortType;
 
+/**
+ * A {@link BdvLayer} that lazily shows the result of a {@link Segmenter}.
+ */
 public class PredictionLayer implements BdvLayer {
 
 	private final Holder<SegmentationResultsModel> model;

@@ -21,6 +21,9 @@ import java.util.function.Consumer;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
+/**
+ * This class implements the flood fill tool.
+ */
 public class FloodFillController {
 
 	private static final double[] PIXEL_CENTER_OFFSET = { 0.5, 0.5, 0.5 };

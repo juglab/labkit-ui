@@ -20,6 +20,8 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 /**
+ * A {@link BdvLayer} that shows a {@link Labeling}.
+ *
  * @author Matthias Arzt
  */
 public class LabelsLayer implements BdvLayer {

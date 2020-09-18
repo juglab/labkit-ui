@@ -11,6 +11,9 @@ import org.scijava.Context;
 import javax.swing.*;
 import java.awt.*;
 
+/**
+ * Setting dialog for the Labkit Pixel Classification.
+ */
 class TrainableSegmentationSettingsDialog {
 
 	private final Context context;

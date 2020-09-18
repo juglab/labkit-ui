@@ -30,11 +30,9 @@ import java.util.function.Consumer;
 import java.util.stream.IntStream;
 
 /**
- * A {@link TransformEventHandler} that changes an {@link AffineTransform3D}
- * through a set of {@link Behaviour}s.
+ * This class implements the brush and eraser tool.
  *
- * @author Stephan Saalfeld &lt;saalfelds@janelia.hhmi.org&gt;
- * @author Tobias Pietzsch &lt;tobias.pietzsch@gmail.com&gt;
+ * @author Matthias Arzt
  * @author Philipp Hanslovsky
  */
 public class LabelBrushController {

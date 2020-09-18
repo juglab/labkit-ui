@@ -11,6 +11,9 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 
+/**
+ * Dialog that allows to create a new Labkit project.
+ */
 public class NewProjectDialog extends JDialog {
 
 	private final JTextField textField;
