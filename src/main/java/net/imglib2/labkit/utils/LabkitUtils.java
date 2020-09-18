@@ -80,10 +80,11 @@ public class LabkitUtils {
 		if (firstElement instanceof UnsignedByteType) return new ValuePair<>(0.,
 			255.);
 		if (firstElement instanceof ARGBType) return new ValuePair<>(0., 255.);
-		if (firstElement instanceof UnsignedShortType) return tryEstimateMinMax(
-			Casts.unchecked(rawData), 0., 256. * 256. - 1);
-		if (firstElement instanceof RealType) return tryEstimateMinMax(Casts
-			.unchecked(rawData), 0., 1.);
+		if (firstElement instanceof UnsignedShortType)
+			return tryEstimateMinMax(
+				Cast.unchecked(rawData), 0., 256. * 256. - 1);
+		if (firstElement instanceof RealType)
+			return tryEstimateMinMax(Cast.unchecked(rawData), 0., 1.);
 		return new ValuePair<>(0., 255.);
 	}
 

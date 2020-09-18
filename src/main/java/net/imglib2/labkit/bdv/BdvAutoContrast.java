@@ -7,9 +7,8 @@ import bdv.viewer.Source;
 import bdv.viewer.ViewerPanel;
 import net.imglib2.Cursor;
 import net.imglib2.RandomAccessibleInterval;
-import net.imglib2.labkit.utils.Casts;
-import net.imglib2.type.numeric.ARGBType;
 import net.imglib2.type.numeric.RealType;
+import net.imglib2.util.Cast;
 import net.imglib2.util.Intervals;
 import net.imglib2.util.Util;
 import net.imglib2.util.ValuePair;
@@ -36,7 +35,7 @@ public class BdvAutoContrast {
 		RandomAccessibleInterval<?> source = spimSource.getSource(viewer.state()
 			.getCurrentTimepoint(), level);
 		if (Util.getTypeFromInterval(source) instanceof RealType)
-			return getMinMaxForRealType(Casts.unchecked(source));
+			return getMinMaxForRealType(Cast.unchecked(source));
 		return new ValuePair<>(0.0, 255.0);
 	}
 
