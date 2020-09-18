@@ -11,8 +11,8 @@ import net.imglib2.labkit.bdv.BdvShowable;
 import net.imglib2.labkit.inputimage.ImgPlusViewsOld;
 import net.imglib2.labkit.inputimage.InputImage;
 import net.imglib2.labkit.labeling.Label;
-import net.imglib2.labkit.utils.Notifier;
 import net.imglib2.labkit.labeling.Labeling;
+import net.imglib2.labkit.utils.ParametricNotifier;
 import net.imglib2.realtransform.AffineTransform3D;
 
 import java.util.Arrays;
@@ -28,7 +28,8 @@ public class ImageLabelingModel implements LabelingModel {
 
 	private Holder<Labeling> labelingHolder;
 
-	private Notifier dataChangedNotifier = new Notifier();
+	private ParametricNotifier<Interval> dataChangedNotifier =
+		new ParametricNotifier<>();
 
 	private Holder<Label> selectedLabelHolder;
 
@@ -113,7 +114,7 @@ public class ImageLabelingModel implements LabelingModel {
 	}
 
 	@Override
-	public Notifier dataChangedNotifier() {
+	public ParametricNotifier<Interval> dataChangedNotifier() {
 		return dataChangedNotifier;
 	}
 

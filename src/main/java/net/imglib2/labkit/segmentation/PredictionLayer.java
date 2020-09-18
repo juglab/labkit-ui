@@ -3,6 +3,7 @@ package net.imglib2.labkit.segmentation;
 
 import bdv.util.volatiles.SharedQueue;
 import bdv.util.volatiles.VolatileViews;
+import net.imglib2.Interval;
 import net.imglib2.RandomAccessibleInterval;
 import net.imglib2.converter.Converter;
 import net.imglib2.converter.Converters;
@@ -14,7 +15,7 @@ import net.imglib2.labkit.models.ImageLabelingModel;
 import net.imglib2.labkit.models.MappedHolder;
 import net.imglib2.labkit.models.SegmentationModel;
 import net.imglib2.labkit.models.SegmentationResultsModel;
-import net.imglib2.labkit.utils.Notifier;
+import net.imglib2.labkit.utils.ParametricNotifier;
 import net.imglib2.type.numeric.ARGBType;
 import net.imglib2.type.volatiles.VolatileARGBType;
 import net.imglib2.type.volatiles.VolatileShortType;
@@ -26,7 +27,7 @@ public class PredictionLayer implements BdvLayer {
 		.availableProcessors());
 	private final Holder<Boolean> visibility;
 	private final Runnable classifierChanged = this::classifierChanged;
-	private Notifier listeners = new Notifier();
+	private ParametricNotifier<Interval> listeners = new ParametricNotifier<>();
 	private DefaultHolder<BdvShowable> showable;
 	private final Runnable onTrainingCompleted = this::onTrainingCompleted;
 
@@ -77,7 +78,7 @@ public class PredictionLayer implements BdvLayer {
 			showable.set(BdvShowable.wrap(coloredVolatileView(results)));
 		else
 			showable.set(null);
-		listeners.notifyListeners();
+		listeners.notifyListeners(null);
 	}
 
 	private RandomAccessibleInterval<VolatileARGBType> coloredVolatileView(
@@ -107,7 +108,7 @@ public class PredictionLayer implements BdvLayer {
 	}
 
 	@Override
-	public Notifier listeners() {
+	public ParametricNotifier<Interval> listeners() {
 		return listeners;
 	}
 
