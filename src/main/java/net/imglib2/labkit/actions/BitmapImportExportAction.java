@@ -33,8 +33,6 @@ public class BitmapImportExportAction extends AbstractFileIoAction {
 
 	private final ImageLabelingModel model;
 
-	private final Extensible extensible;
-
 	@Parameter
 	DatasetService datasetService;
 
@@ -45,7 +43,6 @@ public class BitmapImportExportAction extends AbstractFileIoAction {
 		ImageLabelingModel model)
 	{
 		super(extensible, AbstractFileIoAction.TIFF_FILTER);
-		this.extensible = extensible;
 		this.model = model;
 		extensible.context().inject(this);
 		initOpenAction(MenuBar.LABELING_MENU, "Import Bitmap ...", 100,

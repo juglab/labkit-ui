@@ -25,7 +25,7 @@ public abstract class AbstractFileIoAction {
 	public static final FileFilter HDF5_FILTER = new FileNameExtensionFilter(
 		"HDF5 + XML (*.h5, *.xml)", "h5", "xml");
 
-	private final Extensible extensible;
+	protected final Extensible extensible;
 
 	private final JFileChooser fileChooser;
 

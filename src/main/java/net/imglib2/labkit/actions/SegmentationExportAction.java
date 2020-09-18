@@ -28,12 +28,9 @@ import java.util.function.Function;
  */
 public class SegmentationExportAction extends AbstractFileIoAction {
 
-	private final Extensible extensible;
-
 	public SegmentationExportAction(Extensible extensible, ImageLabelingModel labelingModel) {
 		super(extensible, AbstractFileIoAction.TIFF_FILTER,
 			AbstractFileIoAction.HDF5_FILTER);
-		this.extensible = extensible;
 		addMenuItems(item -> item.results(labelingModel).segmentation(), "Segmentation Result");
 		addMenuItems(item -> item.results(labelingModel).prediction(), "Probability Map");
 	}
