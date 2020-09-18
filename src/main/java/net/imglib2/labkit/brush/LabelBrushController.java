@@ -176,7 +176,7 @@ public class LabelBrushController {
 
 		private AffineTransform3D viewerTransformation() {
 			AffineTransform3D t = new AffineTransform3D();
-			viewer.getState().getViewerTransform(t);
+			viewer.state().getViewerTransform(t);
 			return t;
 		}
 
@@ -256,7 +256,7 @@ public class LabelBrushController {
 		RandomAccessibleInterval<LabelingType<Label>> slice = model.labeling()
 			.get();
 		if (this.model.isTimeSeries()) return Views.hyperSlice(slice, slice
-			.numDimensions() - 1, viewer.getState().getCurrentTimepoint());
+			.numDimensions() - 1, viewer.state().getCurrentTimepoint());
 		return slice;
 	}
 

@@ -33,7 +33,7 @@ public class BdvAutoContrast {
 		ViewerPanel viewer = bdvSource.getBdvHandle().getViewerPanel();
 		Source<?> spimSource = ((BdvStackSource<?>) bdvSource).getSources().get(0).getSpimSource();
 		int level = spimSource.getNumMipmapLevels() - 1;
-		RandomAccessibleInterval<?> source = spimSource.getSource(viewer.getState()
+		RandomAccessibleInterval<?> source = spimSource.getSource(viewer.state()
 			.getCurrentTimepoint(), level);
 		if (Util.getTypeFromInterval(source) instanceof RealType)
 			return getMinMaxForRealType(Casts.unchecked(source));
