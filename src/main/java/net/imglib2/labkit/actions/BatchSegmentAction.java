@@ -33,7 +33,7 @@ public class BatchSegmentAction {
 		this.extensible = extensible;
 		this.selectedSegmenter = selectedSegmenter;
 		extensible.addMenuItem(MenuBar.OTHERS_MENU, "Batch Segment Images ...", 0,
-			ignore -> ((Runnable) this::segmentImages).run(), null, "");
+			ignore -> segmentImages(), null, "");
 	}
 
 	private void segmentImages() {
