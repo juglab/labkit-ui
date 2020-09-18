@@ -15,6 +15,7 @@ import net.imglib2.view.Views;
 import java.util.List;
 import java.util.concurrent.Callable;
 import java.util.concurrent.CancellationException;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
@@ -80,11 +81,14 @@ public class ParallelUtils {
 	public static void executeInParallel(ExecutorService executor,
 		List<Callable<Void>> collection)
 	{
-		CheckedExceptionUtils.run(() -> {
+		try {
 			for (Future<Void> future : executor.invokeAll(collection)) {
 				future.get();
 			}
-		});
+		}
+		catch (InterruptedException | ExecutionException e) {
+			throw new RuntimeException(e);
+		}
 	}
 
 	public static void runInOtherThread(Runnable action) {

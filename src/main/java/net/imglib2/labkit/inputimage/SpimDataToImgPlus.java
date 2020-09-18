@@ -4,6 +4,7 @@ package net.imglib2.labkit.inputimage;
 import bdv.ViewerSetupImgLoader;
 import bdv.spimdata.SpimDataMinimal;
 import bdv.spimdata.XmlIoSpimDataMinimal;
+import mpicbg.spim.data.SpimDataException;
 import mpicbg.spim.data.generic.AbstractSpimData;
 import mpicbg.spim.data.generic.sequence.AbstractSequenceDescription;
 import mpicbg.spim.data.generic.sequence.BasicViewSetup;
@@ -20,7 +21,6 @@ import net.imglib2.Dimensions;
 import net.imglib2.RandomAccessibleInterval;
 import net.imglib2.img.Img;
 import net.imglib2.img.ImgView;
-import net.imglib2.labkit.utils.CheckedExceptionUtils;
 import net.imglib2.util.Cast;
 import net.imglib2.util.Intervals;
 import net.imglib2.view.Views;
@@ -54,9 +54,13 @@ public class SpimDataToImgPlus {
 	}
 
 	private static ImgPlus<?> open(String filename, Integer resolutionLevel) {
-		SpimDataMinimal spimData = CheckedExceptionUtils.run(() -> new XmlIoSpimDataMinimal().load(
-			filename));
-		return wrap(spimData, resolutionLevel);
+		try {
+			SpimDataMinimal spimData = new XmlIoSpimDataMinimal().load(filename);
+			return wrap(spimData, resolutionLevel);
+		}
+		catch (SpimDataException e) {
+			throw new RuntimeException(e);
+		}
 	}
 
 	public static ImgPlus<?> wrap(AbstractSpimData<?> spimData, Integer resolutionLevel) {

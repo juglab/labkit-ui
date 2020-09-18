@@ -7,7 +7,6 @@ import net.imglib2.labkit.inputimage.DatasetInputImage;
 import net.imglib2.labkit.inputimage.InputImage;
 import net.imglib2.labkit.models.DefaultSegmentationModel;
 import net.imglib2.labkit.models.SegmentationModel;
-import net.imglib2.labkit.utils.CheckedExceptionUtils;
 import net.imglib2.labkit.utils.Notifier;
 import net.imglib2.trainable_segmentation.utils.SingletonContext;
 import org.scijava.Context;
@@ -15,6 +14,7 @@ import org.scijava.Context;
 import javax.swing.*;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
+import java.io.IOException;
 
 /**
  * The main Labkit window. (This window allows to segment a single image. It has
@@ -40,8 +40,12 @@ public class LabkitFrame {
 	}
 
 	private static Dataset openDataset(Context context, String filename) {
-		return CheckedExceptionUtils.run(() -> context.service(
-			DatasetIOService.class).open(filename));
+		try {
+			return context.service(DatasetIOService.class).open(filename);
+		}
+		catch (IOException e) {
+			throw new RuntimeException(e);
+		}
 	}
 
 	public static LabkitFrame showForImage(final Context context,

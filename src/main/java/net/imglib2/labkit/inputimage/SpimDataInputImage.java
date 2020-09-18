@@ -2,10 +2,10 @@
 package net.imglib2.labkit.inputimage;
 
 import bdv.spimdata.XmlIoSpimDataMinimal;
+import mpicbg.spim.data.SpimDataException;
 import mpicbg.spim.data.generic.AbstractSpimData;
 import net.imagej.ImgPlus;
 import net.imglib2.labkit.bdv.BdvShowable;
-import net.imglib2.labkit.utils.CheckedExceptionUtils;
 import net.imglib2.type.numeric.NumericType;
 import net.imglib2.util.Cast;
 
@@ -21,9 +21,14 @@ public class SpimDataInputImage implements InputImage {
 	private final String defaultLabelingFilename;
 
 	public SpimDataInputImage(String filename, Integer level) {
-		this.spimData = CheckedExceptionUtils.run(() -> new XmlIoSpimDataMinimal().load(filename));
-		this.imageForSegmentation = Cast.unchecked(SpimDataToImgPlus.wrap(spimData, level));
-		this.defaultLabelingFilename = filename + ".labeling";
+		try {
+			this.spimData = new XmlIoSpimDataMinimal().load(filename);
+			this.imageForSegmentation = Cast.unchecked(SpimDataToImgPlus.wrap(spimData, level));
+			this.defaultLabelingFilename = filename + ".labeling";
+		}
+		catch (SpimDataException e) {
+			throw new RuntimeException(e);
+		}
 	}
 
 	public static SpimDataInputImage openWithGuiForLevelSelection(

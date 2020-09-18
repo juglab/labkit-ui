@@ -11,7 +11,6 @@ import net.imglib2.labkit.models.DefaultHolder;
 import net.imglib2.labkit.models.Holder;
 import net.imglib2.labkit.models.ImageLabelingModel;
 import net.imglib2.labkit.models.MappedHolder;
-import net.imglib2.labkit.utils.CheckedExceptionUtils;
 import org.apache.commons.io.FilenameUtils;
 import org.scijava.Context;
 
@@ -194,9 +193,14 @@ public class LabeledImage {
 	}
 
 	private DatasetInputImage openInputImage() {
-		DatasetIOService datasetIOService = context.service(DatasetIOService.class);
-		Dataset dataset = CheckedExceptionUtils.run(() -> datasetIOService.open(imageFile));
-		return new DatasetInputImage(dataset);
+		try {
+			DatasetIOService datasetIOService = context.service(DatasetIOService.class);
+			Dataset dataset = datasetIOService.open(imageFile);
+			return new DatasetInputImage(dataset);
+		}
+		catch (IOException e) {
+			throw new RuntimeException(e);
+		}
 	}
 
 	private Labeling openOrEmptyLabeling(String filename, Interval interval) {

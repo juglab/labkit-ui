@@ -26,7 +26,6 @@ import net.imglib2.img.cell.CellImgFactory;
 import net.imglib2.labkit.bdv.BdvShowable;
 import net.imglib2.labkit.inputimage.DatasetInputImage;
 import net.imglib2.labkit.plugin.ui.ImageSelectionDialog;
-import net.imglib2.labkit.utils.CheckedExceptionUtils;
 import net.imglib2.labkit.utils.ParallelUtils;
 import bdv.export.ProgressWriter;
 import net.imglib2.type.NativeType;
@@ -243,18 +242,22 @@ public class CziOpener {
 		private void readToInterval(int series,
 			RandomAccessibleInterval<ARGBType> interval)
 		{
-			int[] min = Intervals.minAsIntArray(interval);
-			int[] size = Intervals.dimensionsAsIntArray(interval);
-			ImageReader reader = getReader(series);
-			byte[] bytes = CheckedExceptionUtils.run(() -> reader.openBytes(0, min[0],
-				min[1], size[0], size[1]));
-			Cursor<ARGBType> cursor = Views.flatIterable(interval).cursor();
-			int index = 0;
-			while (cursor.hasNext()) {
-				int color = ARGBType.rgba(bytes[index], bytes[index + 1], bytes[index +
-					2], 255);
-				cursor.next().set(color);
-				index += 3;
+			try {
+				int[] min = Intervals.minAsIntArray(interval);
+				int[] size = Intervals.dimensionsAsIntArray(interval);
+				ImageReader reader = getReader(series);
+				byte[] bytes = reader.openBytes(0, min[0], min[1], size[0], size[1]);
+				Cursor<ARGBType> cursor = Views.flatIterable(interval).cursor();
+				int index = 0;
+				while (cursor.hasNext()) {
+					int color = ARGBType.rgba(bytes[index], bytes[index + 1], bytes[index +
+						2], 255);
+					cursor.next().set(color);
+					index += 3;
+				}
+			}
+			catch (FormatException | IOException e) {
+				throw new RuntimeException(e);
 			}
 		}
 
