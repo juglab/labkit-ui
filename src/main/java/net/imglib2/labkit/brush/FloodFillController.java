@@ -131,7 +131,7 @@ public class FloodFillController {
 		RandomAccessibleInterval<LabelingType<Label>> label = model.labeling()
 			.get();
 		if (model.isTimeSeries()) return Views.hyperSlice(label, label
-			.numDimensions() - 1, viewer.getState().getCurrentTimepoint());
+			.numDimensions() - 1, viewer.state().getCurrentTimepoint());
 		return label;
 	}
 }

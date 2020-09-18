@@ -76,7 +76,7 @@ public class BrushOverlay implements OverlayRenderer {
 
 	private double getScale() {
 		synchronized (viewer) {
-			viewer.getState().getViewerTransform(viewerTransform);
+			viewer.state().getViewerTransform(viewerTransform);
 			return Affine3DHelpers.extractScale(viewerTransform, 0);
 		}
 	}
