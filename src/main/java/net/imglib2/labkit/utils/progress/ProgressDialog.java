@@ -8,8 +8,13 @@ import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import java.awt.*;
 import java.awt.event.ItemEvent;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
 import java.beans.PropertyChangeEvent;
 
+/**
+ * A dialog the shows a progress bar.
+ */
 public class ProgressDialog {
 
 	private final JDialog dialog;
@@ -25,6 +30,13 @@ public class ProgressDialog {
 			null, new Object[] { "Hide", "Cancel" });
 		pane.addPropertyChangeListener(this::buttonClicked);
 		dialog = pane.createDialog(parent, text);
+		dialog.addWindowListener(new WindowAdapter() {
+
+			@Override
+			public void windowClosing(WindowEvent e) {
+				hide = true;
+			}
+		});
 		dialog.setResizable(true);
 		dialog.setModal(false);
 		dialog.add(pane);
@@ -33,8 +45,9 @@ public class ProgressDialog {
 
 	private void buttonClicked(PropertyChangeEvent event) {
 		if (event.getPropertyName().equals(JOptionPane.VALUE_PROPERTY)) {
-			if (event.getNewValue().equals("Cancel")) canceled = true;
-			if (event.getNewValue().equals("Hide")) hide = true;
+			Object title = event.getNewValue();
+			if ("Cancel".equals(title)) canceled = true;
+			if ("Hide".equals(title)) hide = true;
 		}
 	}
 
@@ -48,8 +61,12 @@ public class ProgressDialog {
 	}
 
 	public void setVisible(boolean visible) {
-		if (visible) dialog.setVisible(true);
-		else dialog.dispose(); // is dispose here to allow garbage collection
+		if (dialog.isVisible() == visible)
+			return;
+		if (visible)
+			dialog.setVisible(true);
+		else
+			dialog.dispose(); // Dispose to allow garbage collection
 	}
 
 	public void addDetails(String line) {
