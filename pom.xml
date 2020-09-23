@@ -73,6 +73,10 @@
 			<id>scijava.public</id>
 			<url>https://maven.scijava.org/content/groups/public</url>
 		</repository>
+		<repository>
+			<id>clij</id>
+			<url>http://dl.bintray.com/haesleinhuepf/clij</url>
+		</repository>
 	</repositories>
 
 	<scm>
@@ -103,7 +107,7 @@
 		<bigdataviewer-core.version>10.0.1</bigdataviewer-core.version>
 		<bigdataviewer-vistools.version>1.0.0-beta-22</bigdataviewer-vistools.version>
 
-		<imglib2-trainable-segmentation.version>0.1.4</imglib2-trainable-segmentation.version>
+		<imglib2-trainable-segmentation.version>0.1.5</imglib2-trainable-segmentation.version>
 	</properties>
 
 	<build>
