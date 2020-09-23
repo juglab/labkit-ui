@@ -12,6 +12,7 @@ import java.awt.event.MouseEvent;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Random;
+import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * Similar two JList. But doesn't require the complicated renderer. And the
@@ -24,11 +25,11 @@ public class ComponentList<K, C extends JComponent> {
 	private final Color BACKGROUND = UIManager.getColor("List.background");
 
 	private JPanel background = new JPanel();
-	private JComponent component = new JScrollPane(background,
+	private JComponent scrollPane = new JScrollPane(background,
 		ScrollPaneConstants.VERTICAL_SCROLLBAR_AS_NEEDED,
 		ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
 	private K selected;
-	private Map<C, K> panels = new HashMap<>();
+	private Map<K, C> items = new HashMap<>();
 	private Notifier listeners = new Notifier();
 
 	public ComponentList() {
@@ -37,7 +38,7 @@ public class ComponentList<K, C extends JComponent> {
 	}
 
 	public JComponent getComponent() {
-		return component;
+		return scrollPane;
 	}
 
 	public void add(K key, C component) {
@@ -50,7 +51,7 @@ public class ComponentList<K, C extends JComponent> {
 			}
 		});
 		component.setBackground(key == selected ? SELECTED_BACKGROUND : BACKGROUND);
-		panels.put(component, key);
+		items.put(key, component);
 		background.add(component, "grow, wrap");
 		background.revalidate();
 		background.repaint();
@@ -58,10 +59,30 @@ public class ComponentList<K, C extends JComponent> {
 
 	public void setSelected(K key) {
 		if (this.selected == key) return;
+		setItemBackground(selected, BACKGROUND);
 		this.selected = key;
-		panels.forEach((component, k) -> component.setBackground(k == selected
-			? SELECTED_BACKGROUND : BACKGROUND));
+		setItemBackground(key, SELECTED_BACKGROUND);
+		focusItem(key);
 		listeners.notifyListeners();
+	}
+
+	private void setItemBackground(K key, Color selected_background) {
+		C component = getComponent(key);
+		if (component != null)
+			component.setBackground(selected_background);
+	}
+
+	private void focusItem(K key) {
+		C component = getComponent(key);
+		if (component != null)
+			component.scrollRectToVisible(new Rectangle(0, 0, component.getHeight(), component
+				.getWidth()));
+	}
+
+	private C getComponent(K key) {
+		if (key == null)
+			return null;
+		return items.get(key);
 	}
 
 	public K getSelected() {
@@ -69,7 +90,7 @@ public class ComponentList<K, C extends JComponent> {
 	}
 
 	public void clear() {
-		panels.clear();
+		items.clear();
 		background.removeAll();
 		background.revalidate();
 		background.repaint();
@@ -85,25 +106,33 @@ public class ComponentList<K, C extends JComponent> {
 		JFrame frame = new JFrame();
 		frame.setSize(300, 600);
 		frame.setLayout(new MigLayout("", "[grow]", "[grow][]"));
-		ComponentList<String, JPanel> panelList = new ComponentList<>();
-		frame.add(panelList.getComponent(), "grow, wrap");
+		ComponentList<Integer, JPanel> panelList = new ComponentList<>();
+		AtomicInteger counter = new AtomicInteger();
+		for (int i = 0; i < 1000; i++)
+			addItem(panelList, counter);
 		Random random = new Random();
-		frame.add(new JButton(new RunnableAction("add", () -> panelList.add(Integer
-			.toString(random.nextInt()), panelList.newExamplePanel()))), "split");
-		frame.add(new JButton(new RunnableAction("clear", () -> panelList
-			.clear())));
+		frame.add(panelList.getComponent(), "grow, wrap");
+		frame.add(new JButton(new RunnableAction("add", () -> addItem(panelList, counter))), "split");
+		frame.add(new JButton(new RunnableAction("clear", () -> panelList.clear())));
+		frame.add(new JButton(new RunnableAction("jump", () -> panelList.setSelected(random.nextInt(
+			counter.get())))));
 		frame.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
 		frame.setVisible(true);
 	}
 
-	private static JPanel newExamplePanel() {
+	private static void addItem(ComponentList<Integer, JPanel> panelList, AtomicInteger counter) {
+		int key = counter.getAndIncrement();
+		panelList.add(key, newExamplePanel(key));
+	}
+
+	private static JPanel newExamplePanel(int i) {
 		JPanel panel = new JPanel();
 		panel.setLayout(new MigLayout("", "[][][grow]"));
 		panel.add(new JCheckBox());
 		JButton button = new JButton();
 		button.setBackground(Color.RED);
 		panel.add(button);
-		panel.add(new JLabel("Hello"));
+		panel.add(new JLabel("Hello " + i));
 		return panel;
 	}
 }

@@ -40,6 +40,8 @@ public class LabelPanel {
 		this.panel = initPanel(fixedLabels);
 		this.menuFactory = menuFactory;
 		model.listeners().addListener(this::update);
+		model.selected().notifier().addListener(() -> list.setSelected(model.selected().get()));
+		list.listeners().addListener(() -> model.selected().set(list.getSelected()));
 		update();
 	}
 
@@ -64,7 +66,6 @@ public class LabelPanel {
 		list.clear();
 		List<Label> items = model.items();
 		items.forEach((label) -> list.add(label, new EntryPanel(label)));
-		list.setSelected(model.selected());
 	}
 
 	private JPanel initPanel(boolean fixedLabels) {
@@ -90,7 +91,8 @@ public class LabelPanel {
 
 	private void changeSelectedLabel() {
 		Label label = list.getSelected();
-		if (label != null) model.setSelected(label);
+		if (label != null)
+			model.selected().set(label);
 	}
 
 	private void addLabel() {

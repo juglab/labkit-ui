@@ -29,33 +29,27 @@ public class ColoredLabelsModel {
 
 	private final LabelingModel model;
 
-	private final Notifier listeners = new Notifier();
-	private final Runnable notifyListeners = this::notifyListeners;
+	private final Notifier listChangeListeners = new Notifier();
+	private final Runnable onLabelingChanged = listChangeListeners::notifyListeners;
+
+	private final Holder<Label> selected;
 
 	public ColoredLabelsModel(LabelingModel model) {
 		this.model = model;
-		model.labeling().notifier().addWeakListener(notifyListeners);
-		model.selectedLabel().notifier().addWeakListener(notifyListeners);
-	}
-
-	private void notifyListeners() {
-		listeners.notifyListeners();
+		model.labeling().notifier().addWeakListener(onLabelingChanged);
+		this.selected = new WeakListeningHolder<>(model.selectedLabel());
 	}
 
 	public List<Label> items() {
 		return model.labeling().get().getLabels();
 	}
 
-	public Label selected() {
-		return model.selectedLabel().get();
-	}
-
-	public void setSelected(Label value) {
-		model.selectedLabel().set(value);
+	public Holder<Label> selected() {
+		return selected;
 	}
 
 	public Notifier listeners() {
-		return listeners;
+		return listChangeListeners;
 	}
 
 	public void addLabel() {
