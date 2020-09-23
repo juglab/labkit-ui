@@ -10,8 +10,8 @@ import java.util.Arrays;
 import java.util.Collections;
 
 /**
- * Needs to be refactored, this is a strange way to enable the reset view &
- * focus on label functionality.
+ * Needs to be refactored, this is a strange way to enable the "reset view" and
+ * "focus label" functionality.
  */
 public class TransformationModel {
 

@@ -30,8 +30,8 @@ import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 /**
- * {@link Labeling} is basically an ImgLabeling<Label, ?> with some additional
- * functionality.
+ * {@link Labeling} is basically an {@code ImgLabeling<Label, ?>} with some
+ * additional functionality.
  *
  * @author Matthias Arzt
  */

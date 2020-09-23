@@ -90,7 +90,7 @@ import java.util.stream.IntStream;
  * saver.writeXmlAndHdf5();
  *
  * // Write the partitions one by one
- * for (int i = 0; i < saver.numberOfPartitions(); i++)
+ * for (int i = 0; i &lt; saver.numberOfPartitions(); i++)
  * 	saver.writePartition(i);
  * </pre>
  *
