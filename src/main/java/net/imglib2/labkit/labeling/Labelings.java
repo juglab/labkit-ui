@@ -9,6 +9,7 @@ import net.imglib2.roi.labeling.ImgLabeling;
 import net.imglib2.roi.labeling.LabelingMapping;
 import net.imglib2.labkit.utils.DimensionUtils;
 import net.imglib2.roi.labeling.LabelingType;
+import net.imglib2.util.Cast;
 import net.imglib2.view.Views;
 
 import java.util.ArrayList;
@@ -80,7 +81,6 @@ public class Labelings {
 				.toSet());
 			newLabels.add(newer);
 		}
-		return LabelingSerializer.fromImageAndLabelSets(input.getIndexImg(),
-			newLabels);
+		return ImgLabeling.fromImageAndLabelSets(Cast.unchecked(input.getIndexImg()), newLabels);
 	}
 }

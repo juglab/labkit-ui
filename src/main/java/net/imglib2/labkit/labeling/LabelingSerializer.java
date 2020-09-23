@@ -6,6 +6,8 @@ import com.google.gson.internal.LinkedTreeMap;
 import com.google.gson.reflect.TypeToken;
 import com.google.gson.stream.JsonReader;
 import com.google.gson.stream.JsonWriter;
+import gnu.trove.set.TIntSet;
+import gnu.trove.set.hash.TIntHashSet;
 import io.scif.services.DatasetIOService;
 import net.imagej.DatasetService;
 import net.imagej.axis.Axes;
@@ -18,14 +20,13 @@ import net.imglib2.Interval;
 import net.imglib2.Point;
 import net.imglib2.RandomAccessibleInterval;
 import net.imglib2.img.Img;
+import net.imglib2.labkit.utils.NumberAwareStringComparator;
 import net.imglib2.roi.IterableRegion;
 import net.imglib2.roi.labeling.ImgLabeling;
-import net.imglib2.roi.labeling.LabelingMapping;
 import net.imglib2.sparse.SparseIterableRegion;
 import net.imglib2.type.logic.BitType;
 import net.imglib2.type.numeric.ARGBType;
 import net.imglib2.type.numeric.IntegerType;
-import net.imglib2.type.numeric.integer.IntType;
 import net.imglib2.util.Cast;
 import org.apache.commons.io.FilenameUtils;
 import org.scijava.Context;
@@ -39,12 +40,13 @@ import java.lang.reflect.Type;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
+import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
-import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
 /**
@@ -93,7 +95,10 @@ public class LabelingSerializer {
 
 	private Labeling openFromTiff(String filename) throws IOException {
 		ImgLabeling<String, ?> imgLabeling = openImgLabelingFromTiff(filename);
-		return Labeling.fromImgLabeling(imgLabeling);
+		Labeling labeling = Labeling.fromImgLabeling(imgLabeling);
+		labeling.setLabelOrder(Comparator.comparing(Label::name, NumberAwareStringComparator
+			.getInstance()));
+		return labeling;
 	}
 
 	public ImgLabeling<String, ?> openImgLabelingFromTiff(String filename)
@@ -102,22 +107,7 @@ public class LabelingSerializer {
 		Img<? extends IntegerType<?>> img = openImageFromTiff(filename);
 		LabelsMetaData meta = (new File(filename + ".labels").exists())
 			? openMetaData(filename + ".labels") : new LabelsMetaData(img);
-		return fromImageAndLabelSets(img, meta.asLabelSets());
-	}
-
-	// TODO make part of imglib2-roi
-	public static <L> ImgLabeling<L, ?> fromImageAndLabelSets(
-		RandomAccessibleInterval<? extends IntegerType<?>> img,
-		List<Set<L>> labelSets)
-	{
-		ImgLabeling<L, ?> result = new ImgLabeling<>(Cast.unchecked(img));
-		new LabelingMapping.SerialisationAccess<L>(result.getMapping()) {
-
-			public void run() {
-				setLabelSets(labelSets);
-			}
-		}.run();
-		return result;
+		return ImgLabeling.fromImageAndLabelSets(Cast.unchecked(img), meta.asLabelSets());
 	}
 
 	private Img<? extends IntegerType<?>> openImageFromTiff(String filename)
@@ -173,13 +163,16 @@ public class LabelingSerializer {
 		List<Set<String>> labelSets;
 
 		public LabelsMetaData(Img<? extends IntegerType<?>> img) {
-			IntType max = new IntType(0);
+			TIntSet values = new TIntHashSet(100, 0.5f, 0);
 			img.forEach(x -> {
-				if (max.get() < x.getInteger()) max.set(x.getInteger());
+				int integer = x.getInteger();
+				if (integer != 0)
+					values.add(integer);
 			});
-			labelSets = IntStream.rangeClosed(0, max.get()).mapToObj(i -> i == 0
-				? Collections.<String> emptySet() : Collections.singleton(Integer
-					.toString(i))).collect(Collectors.toList());
+			labelSets = new ArrayList<>();
+			labelSets.add(Collections.emptySet());
+			for (int value : values.toArray())
+				labelSets.add(Collections.singleton(Integer.toString(value)));
 		}
 
 		public LabelsMetaData(List<Set<Label>> mapping) {
@@ -193,14 +186,6 @@ public class LabelingSerializer {
 	}
 
 	public static class Adapter extends TypeAdapter<Labeling> {
-
-		private static final Type regionType =
-			new TypeToken<IterableRegion<BitType>>()
-			{}.getType();
-
-		private static final Type mapType =
-			new TypeToken<Map<String, IterableRegion<BitType>>>()
-			{}.getType();
 
 		@Override
 		public void write(JsonWriter jsonWriter, Labeling labeling)
