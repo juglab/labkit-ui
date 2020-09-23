@@ -10,7 +10,7 @@ import java.util.regex.Pattern;
  * A {@link Comparator} for comparing {@link String}s that works better for
  * numbers than {@link String#compareTo(String)} does.
  * <p>
- * It will correctly sort "file9.tif" < "file10.tif".
+ * It will correctly sort "file9.tif" &lt; "file10.tif".
  */
 public class NumberAwareStringComparator implements Comparator<CharSequence> {
 

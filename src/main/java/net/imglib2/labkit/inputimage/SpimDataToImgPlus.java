@@ -21,6 +21,8 @@ import net.imglib2.Dimensions;
 import net.imglib2.RandomAccessibleInterval;
 import net.imglib2.img.Img;
 import net.imglib2.img.ImgView;
+import net.imglib2.img.cell.CellImgFactory;
+import net.imglib2.type.numeric.integer.UnsignedShortType;
 import net.imglib2.util.Cast;
 import net.imglib2.util.Intervals;
 import net.imglib2.view.Views;
@@ -64,7 +66,8 @@ public class SpimDataToImgPlus {
 	}
 
 	public static ImgPlus<?> wrap(AbstractSpimData<?> spimData, Integer resolutionLevel) {
-		Img<?> img = ImgView.wrap(Cast.unchecked(asRai(spimData, resolutionLevel)), null);
+		Img<?> img = ImgView.wrap(Cast.unchecked(asRai(spimData, resolutionLevel)), Cast.unchecked(
+			new CellImgFactory()));
 		String name = spimData.getSequenceDescription().getViewSetups().get(0).getName();
 		CalibratedAxis[] axes = getAxes(spimData);
 		return new ImgPlus<>(img, name, axes);

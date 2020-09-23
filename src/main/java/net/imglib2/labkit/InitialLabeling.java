@@ -26,6 +26,10 @@ import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import java.util.stream.LongStream;
 
+/**
+ * Helper class that allows to create an initial labeling, when the image has no
+ * labeling yet.
+ */
 public class InitialLabeling {
 
 	public static Labeling initialLabeling(Context context, InputImage inputImage) {

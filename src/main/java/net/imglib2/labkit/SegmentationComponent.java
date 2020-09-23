@@ -102,7 +102,7 @@ public class SegmentationComponent extends JPanel implements AutoCloseable {
 		JSplitPane panel = new JSplitPane();
 		panel.setOneTouchExpandable(true);
 		panel.setLeftComponent(initLeftPanel());
-		panel.setRightComponent(labelingComponent.getComponent());
+		panel.setRightComponent(labelingComponent);
 		panel.setBorder(BorderFactory.createEmptyBorder());
 		return panel;
 	}

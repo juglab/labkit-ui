@@ -23,23 +23,21 @@ import org.scijava.ui.behaviour.util.AbstractNamedAction;
 import javax.swing.*;
 import java.util.Collection;
 
-public class BasicLabelingComponent implements AutoCloseable {
+/**
+ * A swing UI component that shows a Big Data Viewer panel and a tool bar for
+ * label editing.
+ */
+public class BasicLabelingComponent extends JPanel implements AutoCloseable {
 
 	private final Holder<BdvStackSource<?>> imageSource;
 
 	private BdvHandle bdvHandle;
-
-	private JPanel panel = new JPanel();
 
 	private final JFrame dialogBoxOwner;
 
 	private ActionsAndBehaviours actionsAndBehaviours;
 
 	private ImageLabelingModel model;
-
-	public JComponent getComponent() {
-		return panel;
-	}
 
 	public BasicLabelingComponent(final JFrame dialogBoxOwner,
 		final ImageLabelingModel model)
@@ -64,9 +62,9 @@ public class BasicLabelingComponent implements AutoCloseable {
 	}
 
 	private void initPanel(JPanel toolsPanel) {
-		panel.setLayout(new MigLayout("", "[grow]", "[][grow]"));
-		panel.add(toolsPanel, "wrap, growx");
-		panel.add(bdvHandle.getViewerPanel(), "grow");
+		setLayout(new MigLayout("", "[grow]", "[][grow]"));
+		add(toolsPanel, "wrap, growx");
+		add(bdvHandle.getViewerPanel(), "grow");
 	}
 
 	private Holder<BdvStackSource<?>> initImageLayer() {

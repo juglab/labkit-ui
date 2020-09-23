@@ -3,6 +3,7 @@ package demo;
 
 import mpicbg.spim.data.SpimDataException;
 import net.imglib2.labkit.BasicLabelingComponent;
+import net.imglib2.labkit.LabelingComponent;
 import net.imglib2.labkit.inputimage.SpimDataInputImage;
 import net.imglib2.labkit.models.ImageLabelingModel;
 
@@ -11,8 +12,7 @@ import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 
 /**
- * This example because it uses a multiview big data viewer dataset. But I
- * consider Labkit to work only on a dataset with one view.
+ * Demonstrates how to use {@link LabelingComponent} for an HDF5 image.
  */
 public class LabelingComponentHdf5Demo {
 
@@ -34,7 +34,7 @@ public class LabelingComponentHdf5Demo {
 		String filename)
 	{
 		ImageLabelingModel model = new ImageLabelingModel(new SpimDataInputImage(filename, 0));
-		BasicLabelingComponent labelingComponent = new BasicLabelingComponent(frame, model);
+		LabelingComponent labelingComponent = new LabelingComponent(frame, model);
 		frame.addWindowListener(new WindowAdapter() {
 
 			@Override
@@ -42,7 +42,7 @@ public class LabelingComponentHdf5Demo {
 				labelingComponent.close();
 			}
 		});
-		return labelingComponent.getComponent();
+		return labelingComponent;
 	}
 
 }

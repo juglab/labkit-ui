@@ -14,6 +14,9 @@ import java.util.List;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 
+/**
+ * Default implementation of {@link DefaultExtensible}.
+ */
 public class DefaultExtensible implements Extensible {
 
 	private final Context context;

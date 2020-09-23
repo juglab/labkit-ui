@@ -30,7 +30,7 @@ public class LabelingComponent extends JPanel implements AutoCloseable {
 		leftPanel.add(LabelPanel.newFramedLabelPanel(model, extensible, false),
 			"grow");
 		setLayout(new BorderLayout());
-		add(initSplitPane(leftPanel, labelingComponent.getComponent()));
+		add(initSplitPane(leftPanel, labelingComponent));
 	}
 
 	private JSplitPane initSplitPane(JComponent left, JComponent right) {

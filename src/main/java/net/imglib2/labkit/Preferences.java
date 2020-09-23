@@ -8,6 +8,9 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.StringJoiner;
 
+/**
+ * Wrapper around {@link PrefService} to store preferences.
+ */
 public class Preferences {
 
 	private final PrefService prefService;
