@@ -75,8 +75,7 @@ public class ComponentList<K, C extends JComponent> {
 	private void focusItem(K key) {
 		C component = getComponent(key);
 		if (component != null)
-			component.scrollRectToVisible(new Rectangle(0, 0, component.getHeight(), component
-				.getWidth()));
+			component.scrollRectToVisible(new Rectangle(component.getWidth(), component.getHeight()));
 	}
 
 	private C getComponent(K key) {
