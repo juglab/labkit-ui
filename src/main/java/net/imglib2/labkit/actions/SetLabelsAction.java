@@ -3,7 +3,6 @@ package net.imglib2.labkit.actions;
 
 import net.imglib2.labkit.Preferences;
 import net.imglib2.labkit.SegmentationComponent;
-import org.scijava.ui.behaviour.util.RunnableAction;
 
 import javax.swing.*;
 import java.awt.*;

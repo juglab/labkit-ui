@@ -5,7 +5,6 @@ import bdv.util.BdvStackSource;
 import bdv.viewer.Source;
 import bdv.util.BdvFunctions;
 import bdv.util.BdvOptions;
-import bdv.util.BdvSource;
 import net.imglib2.FinalInterval;
 import net.imglib2.Interval;
 import net.imglib2.realtransform.AffineTransform3D;

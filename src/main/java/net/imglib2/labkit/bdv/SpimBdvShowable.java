@@ -3,7 +3,6 @@ package net.imglib2.labkit.bdv;
 
 import bdv.util.BdvFunctions;
 import bdv.util.BdvOptions;
-import bdv.util.BdvSource;
 import bdv.util.BdvStackSource;
 import mpicbg.spim.data.generic.AbstractSpimData;
 import mpicbg.spim.data.generic.sequence.AbstractSequenceDescription;
@@ -15,7 +14,6 @@ import net.imglib2.FinalInterval;
 import net.imglib2.Interval;
 import net.imglib2.RandomAccessibleInterval;
 import net.imglib2.realtransform.AffineTransform3D;
-import net.imglib2.type.numeric.NumericType;
 
 /**
  * Implementation of {@link BdvShowable} that wraps around
