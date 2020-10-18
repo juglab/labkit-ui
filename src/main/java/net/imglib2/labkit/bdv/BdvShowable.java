@@ -16,7 +16,7 @@ import java.util.Objects;
 
 /**
  * A {@link BdvShowable} is "something that can be shown with
- * {@link BdvFunctions}.
+ * {@link BdvFunctions}".
  * <p>
  * (The most important method is {@link BdvShowable#show} that shows the
  * object.)
@@ -28,7 +28,7 @@ import java.util.Objects;
  * <li>{@link AbstractSpimData}</li>
  * <li>{@link Source}</li>
  * </ul>
- * These classes have different features, methods, and they lag a common
+ * These classes have different features, methods, and they lack a common
  * interface. This causes a problem for Labkit where we currently want to
  * support all these three classes. (Until there is a better solution.) There is
  * no type that can be used to represent all different objects that can be shown
