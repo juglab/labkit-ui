@@ -1,6 +1,7 @@
 **/.classpath
 **/.project
 **/.settings
+**/.idea
 **/target
 .DS_Store
 .classpath
