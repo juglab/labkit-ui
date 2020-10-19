@@ -16,6 +16,7 @@ import net.imglib2.labkit.models.MappedHolder;
 import net.imglib2.labkit.models.SegmentationModel;
 import net.imglib2.labkit.models.SegmentationResultsModel;
 import net.imglib2.labkit.utils.ParametricNotifier;
+import net.imglib2.realtransform.AffineTransform3D;
 import net.imglib2.type.numeric.ARGBType;
 import net.imglib2.type.volatiles.VolatileARGBType;
 import net.imglib2.type.volatiles.VolatileShortType;
@@ -26,6 +27,7 @@ import net.imglib2.type.volatiles.VolatileShortType;
 public class PredictionLayer implements BdvLayer {
 
 	private final Holder<SegmentationResultsModel> model;
+	private final AffineTransform3D transformation;
 	private final SharedQueue queue = new SharedQueue(Runtime.getRuntime()
 		.availableProcessors());
 	private final Holder<Boolean> visibility;
@@ -41,14 +43,17 @@ public class PredictionLayer implements BdvLayer {
 		return new PredictionLayer(
 			new MappedHolder<>(segmentationModel.segmenterList().selectedSegmenter(), si -> si == null
 				? null : si.results(imageLabelingModel)),
-			segmentationModel.segmenterList().segmentationVisibility());
+			segmentationModel.segmenterList().segmentationVisibility(),
+			imageLabelingModel.labelTransformation());
 	}
 
 	private PredictionLayer(
 		Holder<SegmentationResultsModel> model,
-		Holder<Boolean> visibility)
+		Holder<Boolean> visibility,
+		AffineTransform3D transformation)
 	{
 		this.model = model;
+		this.transformation = transformation;
 		this.showable = new DefaultHolder<>(null);
 		this.visibility = visibility;
 		model.notifier().addWeakListener(classifierChanged);
@@ -56,6 +61,11 @@ public class PredictionLayer implements BdvLayer {
 		classifierChanged();
 	}
 
+	/**
+	 * Makes this PredictionLayer listen to the given SegmentationResultsModel
+	 *
+	 * @param segmenter
+	 */
 	private void registerListener(SegmentationResultsModel segmenter) {
 		if (segmenter == this.segmenter)
 			return;
@@ -78,7 +88,7 @@ public class PredictionLayer implements BdvLayer {
 		registerListener(results);
 		boolean hasResult = results != null && results.hasResults();
 		if (hasResult)
-			showable.set(BdvShowable.wrap(coloredVolatileView(results)));
+			showable.set(BdvShowable.wrap(coloredVolatileView(results), transformation));
 		else
 			showable.set(null);
 		listeners.notifyListeners(null);
