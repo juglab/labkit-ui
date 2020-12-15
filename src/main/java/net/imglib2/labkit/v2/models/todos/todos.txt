@@ -1,0 +1,5 @@
+
+* Add view and controller classes
+* How to deal with "visibility"
+* How to deal with active labeledimage, label, segmenter
+* How to deal with pixel size / pixel display ratio
