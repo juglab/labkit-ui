@@ -3,7 +3,7 @@ package net.imglib2.labkit.project;
 
 import net.imglib2.labkit.utils.properties.DefaultProperty;
 import net.imglib2.labkit.utils.properties.Property;
-import net.imglib2.labkit.utils.Notifier;
+import net.imglib2.labkit.utils.Listeners;
 import org.scijava.Context;
 
 import java.util.ArrayList;
@@ -25,7 +25,7 @@ public class LabkitProjectModel {
 
 	private List<String> segmenterFiles;
 
-	private final Notifier changeNotifier = new Notifier();
+	private final Listeners changeListeners = new Listeners();
 
 	public LabkitProjectModel(Context context,
 		String projectDirectory,
@@ -38,7 +38,7 @@ public class LabkitProjectModel {
 				0));
 		this.labeledImageFiles = labeledImageFiles;
 		this.segmenterFiles = new ArrayList<>();
-		changeNotifier.addListener(this::onLabeledImagesChanged);
+		changeListeners.addListener(this::onLabeledImagesChanged);
 	}
 
 	public String getProjectDirectory() {
@@ -57,8 +57,8 @@ public class LabkitProjectModel {
 		return context;
 	}
 
-	public Notifier changeNotifier() {
-		return changeNotifier;
+	public Listeners changeNotifier() {
+		return changeListeners;
 	}
 
 	public Property<LabeledImage> selectedImage() {

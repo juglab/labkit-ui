@@ -1,7 +1,7 @@
 
 package net.imglib2.labkit.panel;
 
-import net.imglib2.labkit.utils.Notifier;
+import net.imglib2.labkit.utils.Listeners;
 import net.miginfocom.swing.MigLayout;
 import org.scijava.ui.behaviour.util.RunnableAction;
 
@@ -30,7 +30,7 @@ public class ComponentList<K, C extends JComponent> {
 		ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
 	private K selected;
 	private Map<K, C> items = new HashMap<>();
-	private Notifier listeners = new Notifier();
+	private Listeners listeners = new Listeners();
 
 	public ComponentList() {
 		background.setLayout(new MigLayout("insets 4pt, gap 4pt", "[grow]"));
@@ -95,7 +95,7 @@ public class ComponentList<K, C extends JComponent> {
 		background.repaint();
 	}
 
-	public Notifier listeners() {
+	public Listeners listeners() {
 		return listeners;
 	}
 

@@ -10,7 +10,7 @@ import java.util.concurrent.CopyOnWriteArrayList;
 /**
  * @author Matthias Arzt
  */
-public class Notifier {
+public class Listeners {
 
 	private final List<Runnable> listeners = new CopyOnWriteArrayList<>();
 

@@ -14,7 +14,7 @@ import net.imglib2.img.cell.CellGrid;
 import net.imglib2.labkit.inputimage.ImgPlusViewsOld;
 import net.imglib2.labkit.labeling.Labeling;
 import net.imglib2.labkit.segmentation.Segmenter;
-import net.imglib2.labkit.utils.Notifier;
+import net.imglib2.labkit.utils.Listeners;
 import net.imglib2.labkit.utils.DimensionUtils;
 import net.imglib2.type.NativeType;
 import net.imglib2.type.numeric.ARGBType;
@@ -44,7 +44,7 @@ public class SegmentationResultsModel {
 	private List<String> labels = Collections.emptyList();
 	private List<ARGBType> colors = Collections.emptyList();
 
-	private Notifier listeners = new Notifier();
+	private Listeners listeners = new Listeners();
 
 	public SegmentationResultsModel(ImageLabelingModel model, Segmenter segmenter) {
 		this.model = model;
@@ -166,7 +166,7 @@ public class SegmentationResultsModel {
 		return colors;
 	}
 
-	public Notifier segmentationChangedListeners() {
+	public Listeners segmentationChangedListeners() {
 		return listeners;
 	}
 

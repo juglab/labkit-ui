@@ -1,7 +1,7 @@
 
 package net.imglib2.labkit.utils.properties;
 
-import net.imglib2.labkit.utils.Notifier;
+import net.imglib2.labkit.utils.Listeners;
 
 /**
  * A {@link Property}, that stays synchronous with a source properties. It
@@ -12,7 +12,7 @@ public class WeakListeningProperty<T> implements Property<T> {
 
 	private final Property<T> source;
 
-	private final Notifier listeners = new Notifier();
+	private final Listeners listeners = new Listeners();
 
 	private final Runnable onSourceChanged = this::onSourceChanged;
 
@@ -36,7 +36,7 @@ public class WeakListeningProperty<T> implements Property<T> {
 	}
 
 	@Override
-	public Notifier notifier() {
+	public Listeners notifier() {
 		return listeners;
 	}
 }

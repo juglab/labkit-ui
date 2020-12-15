@@ -1,7 +1,7 @@
 
 package net.imglib2.labkit.utils.properties;
 
-import net.imglib2.labkit.utils.Notifier;
+import net.imglib2.labkit.utils.Listeners;
 
 /**
  * Default implementation of {@link Property}. Somehow similar to JavaFX
@@ -10,7 +10,7 @@ import net.imglib2.labkit.utils.Notifier;
  */
 public class DefaultProperty<T> implements Property<T> {
 
-	private Notifier notifier = new Notifier();
+	private Listeners listeners = new Listeners();
 
 	private T value;
 
@@ -22,7 +22,7 @@ public class DefaultProperty<T> implements Property<T> {
 	public void set(T value) {
 		if (value == this.value) return;
 		this.value = value;
-		notifier.notifyListeners();
+		listeners.notifyListeners();
 	}
 
 	@Override
@@ -31,7 +31,7 @@ public class DefaultProperty<T> implements Property<T> {
 	}
 
 	@Override
-	public Notifier notifier() {
-		return notifier;
+	public Listeners notifier() {
+		return listeners;
 	}
 }

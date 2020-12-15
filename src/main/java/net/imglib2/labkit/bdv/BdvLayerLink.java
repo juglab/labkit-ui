@@ -8,7 +8,7 @@ import bdv.viewer.SynchronizedViewerState;
 import bdv.viewer.ViewerStateChange;
 import net.imglib2.Interval;
 import net.imglib2.labkit.utils.properties.Property;
-import net.imglib2.labkit.utils.Notifier;
+import net.imglib2.labkit.utils.Listeners;
 
 import java.util.function.Consumer;
 
@@ -32,7 +32,7 @@ public class BdvLayerLink implements Property<BdvStackSource<?>> {
 
 	private final BdvLayer layer;
 
-	private final Notifier notifier = new Notifier();
+	private final Listeners listeners = new Listeners();
 
 	private final Runnable onImageChanged = this::onImageChanged;
 
@@ -70,7 +70,7 @@ public class BdvLayerLink implements Property<BdvStackSource<?>> {
 			bdvSource.setActive(layer.visibility().get());
 		}
 		onBdvSourceChanged();
-		notifier.notifyListeners();
+		listeners.notifyListeners();
 	}
 
 	private void onRequestRepaint(Interval interval) {
@@ -118,7 +118,7 @@ public class BdvLayerLink implements Property<BdvStackSource<?>> {
 	}
 
 	@Override
-	public Notifier notifier() {
-		return notifier;
+	public Listeners notifier() {
+		return listeners;
 	}
 }

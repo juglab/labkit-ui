@@ -17,14 +17,14 @@ public class NotifierTest {
 
 	@Test
 	public void testWeakListener() {
-		Notifier notifier = new Notifier();
+		Listeners listeners = new Listeners();
 		counter = 0;
-		notifier.addWeakListener(() -> counter++);
-		notifier.notifyListeners();
+		listeners.addWeakListener(() -> counter++);
+		listeners.notifyListeners();
 		assertEquals(1, counter);
 		System.gc();
 		System.gc();
-		notifier.notifyListeners();
+		listeners.notifyListeners();
 		assertEquals(1, counter);
 	}
 
@@ -40,12 +40,12 @@ public class NotifierTest {
 
 	@Test
 	public void testRemoveListener() {
-		Notifier notifier = new Notifier();
+		Listeners listeners = new Listeners();
 		counter = 0;
 		Runnable increaseCounter = this::increaseCounter;
-		notifier.addListener(increaseCounter);
-		notifier.removeListener(increaseCounter);
-		notifier.notifyListeners();
+		listeners.addListener(increaseCounter);
+		listeners.removeListener(increaseCounter);
+		listeners.notifyListeners();
 		assertEquals(0, counter);
 	}
 }

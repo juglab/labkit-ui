@@ -7,7 +7,7 @@ import net.imglib2.labkit.inputimage.DatasetInputImage;
 import net.imglib2.labkit.inputimage.InputImage;
 import net.imglib2.labkit.models.DefaultSegmentationModel;
 import net.imglib2.labkit.models.SegmentationModel;
-import net.imglib2.labkit.utils.Notifier;
+import net.imglib2.labkit.utils.Listeners;
 import net.imglib2.trainable_segmentation.utils.SingletonContext;
 import org.scijava.Context;
 
@@ -28,7 +28,7 @@ public class LabkitFrame {
 
 	private final JFrame frame = initFrame();
 
-	private final Notifier onCloseListeners = new Notifier();
+	private final Listeners onCloseListeners = new Listeners();
 
 	public static LabkitFrame showForFile(Context context,
 		final String filename)
@@ -101,7 +101,7 @@ public class LabkitFrame {
 		else frame.setTitle("Labkit - " + name);
 	}
 
-	public Notifier onCloseListeners() {
+	public Listeners onCloseListeners() {
 		return onCloseListeners;
 	}
 }

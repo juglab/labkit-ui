@@ -1,7 +1,7 @@
 
 package net.imglib2.labkit.utils.properties;
 
-import net.imglib2.labkit.utils.Notifier;
+import net.imglib2.labkit.utils.Listeners;
 
 /**
  * An interface that is similar to JavaFX property.
@@ -13,5 +13,5 @@ public interface Property<T> {
 
 	T get();
 
-	Notifier notifier();
+	Listeners notifier();
 }

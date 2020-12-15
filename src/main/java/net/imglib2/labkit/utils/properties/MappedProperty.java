@@ -1,7 +1,7 @@
 
 package net.imglib2.labkit.utils.properties;
 
-import net.imglib2.labkit.utils.Notifier;
+import net.imglib2.labkit.utils.Listeners;
 
 import java.util.function.Function;
 
@@ -33,7 +33,7 @@ public class MappedProperty<T, R> implements Property<R> {
 	}
 
 	@Override
-	public Notifier notifier() {
+	public Listeners notifier() {
 		return source.notifier();
 	}
 }

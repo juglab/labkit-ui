@@ -9,7 +9,7 @@ import net.imglib2.labkit.labeling.Labeling;
 import net.imglib2.labkit.utils.properties.Property;
 import net.imglib2.labkit.utils.properties.WeakListeningProperty;
 import net.imglib2.labkit.panel.LabelPanel;
-import net.imglib2.labkit.utils.Notifier;
+import net.imglib2.labkit.utils.Listeners;
 import net.imglib2.roi.IterableRegion;
 import net.imglib2.type.logic.BitType;
 import net.imglib2.type.numeric.ARGBType;
@@ -31,7 +31,7 @@ public class ColoredLabelsModel {
 
 	private final LabelingModel model;
 
-	private final Notifier listChangeListeners = new Notifier();
+	private final Listeners listChangeListeners = new Listeners();
 	private final Runnable onLabelingChanged = listChangeListeners::notifyListeners;
 
 	private final Property<Label> selected;
@@ -50,7 +50,7 @@ public class ColoredLabelsModel {
 		return selected;
 	}
 
-	public Notifier listeners() {
+	public Listeners listeners() {
 		return listChangeListeners;
 	}
 
