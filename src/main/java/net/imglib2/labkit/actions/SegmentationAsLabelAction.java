@@ -10,7 +10,7 @@ import net.imglib2.labkit.Extensible;
 import net.imglib2.labkit.MenuBar;
 import net.imglib2.labkit.labeling.Label;
 import net.imglib2.labkit.labeling.Labeling;
-import net.imglib2.labkit.utils.holder.Holder;
+import net.imglib2.labkit.utils.properties.Property;
 import net.imglib2.labkit.models.ImageLabelingModel;
 import net.imglib2.labkit.models.SegmentationItem;
 import net.imglib2.labkit.models.SegmentationModel;
@@ -31,7 +31,7 @@ import java.util.List;
 public class SegmentationAsLabelAction {
 
 	private final ImageLabelingModel labelingModel;
-	private final Holder<? extends SegmentationItem> selectedSegmenter;
+	private final Property<? extends SegmentationItem> selectedSegmenter;
 
 	public SegmentationAsLabelAction(
 		Extensible extensible, SegmentationModel segmentationModel)
@@ -69,9 +69,9 @@ public class SegmentationAsLabelAction {
 			.get() == index);
 		RandomAccessibleInterval<BitType> result = Converters.convert(segmentation,
 			converter, new BitType());
-		Holder<Labeling> labelingHolder = labelingModel.labeling();
-		addLabel(labelingHolder.get(), "segmented " + selected, result);
-		labelingHolder.notifier().notifyListeners();
+		Property<Labeling> labelingProperty = labelingModel.labeling();
+		addLabel(labelingProperty.get(), "segmented " + selected, result);
+		labelingProperty.notifier().notifyListeners();
 	}
 
 	// TODO move to better place

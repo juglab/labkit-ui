@@ -12,8 +12,8 @@ import net.imglib2.labkit.inputimage.ImgPlusViewsOld;
 import net.imglib2.labkit.inputimage.InputImage;
 import net.imglib2.labkit.labeling.Label;
 import net.imglib2.labkit.labeling.Labeling;
-import net.imglib2.labkit.utils.holder.DefaultHolder;
-import net.imglib2.labkit.utils.holder.Holder;
+import net.imglib2.labkit.utils.properties.DefaultProperty;
+import net.imglib2.labkit.utils.properties.Property;
 import net.imglib2.labkit.utils.ParametricNotifier;
 import net.imglib2.realtransform.AffineTransform3D;
 
@@ -31,26 +31,26 @@ public class ImageLabelingModel implements LabelingModel {
 
 	private final AffineTransform3D labelTransformation = new AffineTransform3D();
 
-	private Holder<Labeling> labelingHolder;
+	private Property<Labeling> labelingProperty;
 
 	private ParametricNotifier<Interval> dataChangedNotifier =
 		new ParametricNotifier<>();
 
-	private Holder<Label> selectedLabelHolder;
+	private Property<Label> selectedLabelProperty;
 
-	private Holder<Boolean> imageVisibility = new DefaultHolder<>(true);
+	private Property<Boolean> imageVisibility = new DefaultProperty<>(true);
 
-	private Holder<Boolean> labelingVisibility = new DefaultHolder<>(true);
+	private Property<Boolean> labelingVisibility = new DefaultProperty<>(true);
 
 	private final boolean isTimeSeries;
 
 	private final TransformationModel transformationModel;
 
-	private final Holder<BdvShowable> showable;
+	private final Property<BdvShowable> showable;
 
 	private String defaultFileName;
 
-	private final Holder<ImgPlus<?>> imageForSegmentation;
+	private final Property<ImgPlus<?>> imageForSegmentation;
 
 	public ImageLabelingModel(InputImage inputImage) {
 		ImgPlus<?> image = inputImage.imageForSegmentation();
@@ -58,13 +58,13 @@ public class ImageLabelingModel implements LabelingModel {
 		Interval intervalWithoutChannels = new FinalInterval(firstChannel);
 		Labeling labeling = Labeling.createEmpty(Arrays.asList("background", "foreground"),
 			intervalWithoutChannels);
-		this.showable = new DefaultHolder<>(inputImage.showable());
-		this.labelingHolder = new DefaultHolder<>(labeling);
-		this.imageForSegmentation = new DefaultHolder<>(image);
-		this.labelingHolder.notifier().addListener(this::labelingReplacedEvent);
+		this.showable = new DefaultProperty<>(inputImage.showable());
+		this.labelingProperty = new DefaultProperty<>(labeling);
+		this.imageForSegmentation = new DefaultProperty<>(image);
+		this.labelingProperty.notifier().addListener(this::labelingReplacedEvent);
 		updateLabelTransform();
 		Label anyLabel = labeling.getLabels().stream().findAny().orElse(null);
-		this.selectedLabelHolder = new DefaultHolder<>(anyLabel);
+		this.selectedLabelProperty = new DefaultProperty<>(anyLabel);
 		this.isTimeSeries = ImgPlusViewsOld.hasAxis(image, Axes.TIME);
 		this.transformationModel = new TransformationModel(isTimeSeries);
 		this.defaultFileName = inputImage.getDefaultLabelingFilename();
@@ -72,7 +72,7 @@ public class ImageLabelingModel implements LabelingModel {
 
 	private void updateLabelTransform() {
 		labelTransformation.set(multiply(showable.get().transformation(), getScaling(
-			showable.get().interval(), labelingHolder.get().interval())));
+			showable.get().interval(), labelingProperty.get().interval())));
 	}
 
 	private AffineTransform3D multiply(AffineTransform3D transformation,
@@ -86,13 +86,13 @@ public class ImageLabelingModel implements LabelingModel {
 
 	private void labelingReplacedEvent() {
 		updateLabelTransform();
-		Label selectedLabel = selectedLabelHolder.get();
-		List<Label> labels = labelingHolder.get().getLabels();
-		if (!labels.contains(selectedLabel)) selectedLabelHolder.set(labels
+		Label selectedLabel = selectedLabelProperty.get();
+		List<Label> labels = labelingProperty.get().getLabels();
+		if (!labels.contains(selectedLabel)) selectedLabelProperty.set(labels
 			.isEmpty() ? null : labels.get(0));
 	}
 
-	public Holder<BdvShowable> showable() {
+	public Property<BdvShowable> showable() {
 		return showable;
 	}
 
@@ -109,13 +109,13 @@ public class ImageLabelingModel implements LabelingModel {
 	}
 
 	@Override
-	public Holder<Labeling> labeling() {
-		return labelingHolder;
+	public Property<Labeling> labeling() {
+		return labelingProperty;
 	}
 
 	@Override
-	public Holder<Label> selectedLabel() {
-		return selectedLabelHolder;
+	public Property<Label> selectedLabel() {
+		return selectedLabelProperty;
 	}
 
 	@Override
@@ -128,12 +128,12 @@ public class ImageLabelingModel implements LabelingModel {
 		return isTimeSeries;
 	}
 
-	public Holder<Boolean> imageVisibility() {
+	public Property<Boolean> imageVisibility() {
 		return imageVisibility;
 	}
 
 	@Override
-	public Holder<Boolean> labelingVisibility() {
+	public Property<Boolean> labelingVisibility() {
 		return labelingVisibility;
 	}
 
@@ -142,12 +142,12 @@ public class ImageLabelingModel implements LabelingModel {
 		return transformationModel;
 	}
 
-	public Holder<ImgPlus<?>> imageForSegmentation() {
+	public Property<ImgPlus<?>> imageForSegmentation() {
 		return imageForSegmentation;
 	}
 
 	public Dimensions spatialDimensions() {
-		Interval interval = labelingHolder.get().interval();
+		Interval interval = labelingProperty.get().interval();
 		int n = interval.numDimensions() - (isTimeSeries() ? 1 : 0);
 		return new FinalDimensions(IntStream.range(0, n).mapToLong(
 			interval::dimension).toArray());

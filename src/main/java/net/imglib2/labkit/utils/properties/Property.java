@@ -1,5 +1,5 @@
 
-package net.imglib2.labkit.utils.holder;
+package net.imglib2.labkit.utils.properties;
 
 import net.imglib2.labkit.utils.Notifier;
 
@@ -7,7 +7,7 @@ import net.imglib2.labkit.utils.Notifier;
  * An interface that is similar to JavaFX property.
  */
 //TODO rename "notifier" to "changeListerners"
-public interface Holder<T> {
+public interface Property<T> {
 
 	void set(T value);
 

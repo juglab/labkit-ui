@@ -8,8 +8,8 @@ import net.imglib2.RandomAccessibleInterval;
 import net.imglib2.converter.Converters;
 import net.imglib2.labkit.bdv.BdvLayer;
 import net.imglib2.labkit.bdv.BdvShowable;
-import net.imglib2.labkit.utils.holder.DefaultHolder;
-import net.imglib2.labkit.utils.holder.Holder;
+import net.imglib2.labkit.utils.properties.DefaultProperty;
+import net.imglib2.labkit.utils.properties.Property;
 import net.imglib2.labkit.models.LabelingModel;
 import net.imglib2.labkit.utils.ARGBVector;
 import net.imglib2.labkit.utils.ParametricNotifier;
@@ -28,7 +28,7 @@ public class LabelsLayer implements BdvLayer {
 
 	private final LabelingModel model;
 
-	private final Holder<BdvShowable> showable;
+	private final Property<BdvShowable> showable;
 
 	private final ParametricNotifier<Interval> listeners =
 		new ParametricNotifier<>();
@@ -37,7 +37,8 @@ public class LabelsLayer implements BdvLayer {
 
 	public LabelsLayer(LabelingModel model) {
 		this.model = model;
-		this.showable = new DefaultHolder<>(BdvShowable.wrap(colorView(), model.labelTransformation()));
+		this.showable = new DefaultProperty<>(BdvShowable.wrap(colorView(), model
+			.labelTransformation()));
 		model.labeling().notifier().addListener(this::updateView);
 		model.dataChangedNotifier().addListener(interval -> listeners.notifyListeners(interval));
 	}
@@ -76,7 +77,7 @@ public class LabelsLayer implements BdvLayer {
 	}
 
 	@Override
-	public Holder<BdvShowable> image() {
+	public Property<BdvShowable> image() {
 		return showable;
 	}
 
@@ -86,7 +87,7 @@ public class LabelsLayer implements BdvLayer {
 	}
 
 	@Override
-	public Holder<Boolean> visibility() {
+	public Property<Boolean> visibility() {
 		return model.labelingVisibility();
 	}
 

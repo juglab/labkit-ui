@@ -6,8 +6,8 @@ import net.imglib2.FinalInterval;
 import net.imglib2.Interval;
 import net.imglib2.labkit.labeling.Label;
 import net.imglib2.labkit.labeling.Labeling;
-import net.imglib2.labkit.utils.holder.Holder;
-import net.imglib2.labkit.utils.holder.WeakListeningHolder;
+import net.imglib2.labkit.utils.properties.Property;
+import net.imglib2.labkit.utils.properties.WeakListeningProperty;
 import net.imglib2.labkit.panel.LabelPanel;
 import net.imglib2.labkit.utils.Notifier;
 import net.imglib2.roi.IterableRegion;
@@ -34,19 +34,19 @@ public class ColoredLabelsModel {
 	private final Notifier listChangeListeners = new Notifier();
 	private final Runnable onLabelingChanged = listChangeListeners::notifyListeners;
 
-	private final Holder<Label> selected;
+	private final Property<Label> selected;
 
 	public ColoredLabelsModel(LabelingModel model) {
 		this.model = model;
 		model.labeling().notifier().addWeakListener(onLabelingChanged);
-		this.selected = new WeakListeningHolder<>(model.selectedLabel());
+		this.selected = new WeakListeningProperty<>(model.selectedLabel());
 	}
 
 	public List<Label> items() {
 		return model.labeling().get().getLabels();
 	}
 
-	public Holder<Label> selected() {
+	public Property<Label> selected() {
 		return selected;
 	}
 
@@ -55,8 +55,8 @@ public class ColoredLabelsModel {
 	}
 
 	public void addLabel() {
-		Holder<Labeling> holder = model.labeling();
-		Labeling labeling = holder.get();
+		Property<Labeling> property = model.labeling();
+		Labeling labeling = property.get();
 		String newName = suggestName(labeling.getLabels().stream().map(Label::name)
 			.collect(Collectors.toList()));
 		if (newName == null) return;
@@ -138,8 +138,8 @@ public class ColoredLabelsModel {
 	// -- Helper methods --
 
 	private void fireLabelsChanged() {
-		Holder<Labeling> holder = model.labeling();
-		holder.notifier().notifyListeners();
+		Property<Labeling> property = model.labeling();
+		property.notifier().notifyListeners();
 	}
 
 }

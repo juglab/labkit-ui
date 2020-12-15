@@ -2,7 +2,7 @@
 package net.imglib2.labkit.actions;
 
 import net.imglib2.labkit.Extensible;
-import net.imglib2.labkit.utils.holder.Holder;
+import net.imglib2.labkit.utils.properties.Property;
 import net.imglib2.labkit.models.SegmentationItem;
 
 import javax.swing.filechooser.FileNameExtensionFilter;
@@ -14,10 +14,10 @@ import javax.swing.filechooser.FileNameExtensionFilter;
  */
 public class ClassifierIoAction extends AbstractFileIoAction {
 
-	private final Holder<SegmentationItem> selectedSegmenter;
+	private final Property<SegmentationItem> selectedSegmenter;
 
 	public ClassifierIoAction(Extensible extensible,
-		final Holder<SegmentationItem> selectedSegmenter)
+		final Property<SegmentationItem> selectedSegmenter)
 	{
 		super(extensible, new FileNameExtensionFilter("Classifier", "classifier"));
 		this.selectedSegmenter = selectedSegmenter;

@@ -7,10 +7,10 @@ import net.imglib2.Interval;
 import net.imglib2.labkit.inputimage.DatasetInputImage;
 import net.imglib2.labkit.labeling.Labeling;
 import net.imglib2.labkit.labeling.LabelingSerializer;
-import net.imglib2.labkit.utils.holder.DefaultHolder;
-import net.imglib2.labkit.utils.holder.Holder;
+import net.imglib2.labkit.utils.properties.DefaultProperty;
+import net.imglib2.labkit.utils.properties.Property;
 import net.imglib2.labkit.models.ImageLabelingModel;
-import net.imglib2.labkit.utils.holder.MappedHolder;
+import net.imglib2.labkit.utils.properties.MappedProperty;
 import org.apache.commons.io.FilenameUtils;
 import org.scijava.Context;
 
@@ -39,9 +39,9 @@ public class LabeledImage {
 
 	private ImageLabelingModel imageLabelingModel;
 
-	private final Holder<String> storedIn;
+	private final Property<String> storedIn;
 
-	private final Holder<Boolean> modified;
+	private final Property<Boolean> modified;
 
 	private final Runnable onLabelingChanged = this::onLabelingChanged;
 
@@ -57,8 +57,8 @@ public class LabeledImage {
 		this.imageFile = imageFile;
 		this.labelingFile = labelingFile;
 		this.modifiedLabelingFile = initModifiedLabelingFile();
-		this.storedIn = new DefaultHolder<>(labelingFile);
-		this.modified = new MappedHolder<>(storedIn, value -> !labelingFile.equals(value));
+		this.storedIn = new DefaultProperty<>(labelingFile);
+		this.modified = new MappedProperty<>(storedIn, value -> !labelingFile.equals(value));
 	}
 
 	public void setName(String name) {
@@ -84,7 +84,7 @@ public class LabeledImage {
 		return new File(parent, "~" + name).getAbsolutePath();
 	}
 
-	public Holder<Boolean> modified() {
+	public Property<Boolean> modified() {
 		return modified;
 	}
 

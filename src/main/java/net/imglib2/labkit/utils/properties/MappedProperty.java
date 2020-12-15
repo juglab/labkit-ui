@@ -1,23 +1,23 @@
 
-package net.imglib2.labkit.utils.holder;
+package net.imglib2.labkit.utils.properties;
 
 import net.imglib2.labkit.utils.Notifier;
 
 import java.util.function.Function;
 
 /**
- * A {@link Holder} of which the value derives from a given source Holder, to
+ * A {@link Property} of which the value derives from a given source Holder, to
  * which an operation is applied.
  * <p>
  * Provides only readonly functionality.
  */
-public class MappedHolder<T, R> implements Holder<R> {
+public class MappedProperty<T, R> implements Property<R> {
 
-	private final Holder<T> source;
+	private final Property<T> source;
 
 	private final Function<T, R> operation;
 
-	public MappedHolder(Holder<T> source, Function<T, R> operation) {
+	public MappedProperty(Property<T> source, Function<T, R> operation) {
 		this.source = source;
 		this.operation = operation;
 	}

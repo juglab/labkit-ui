@@ -4,7 +4,7 @@ package net.imglib2.labkit.actions;
 import net.imglib2.labkit.BatchSegmenter;
 import net.imglib2.labkit.Extensible;
 import net.imglib2.labkit.MenuBar;
-import net.imglib2.labkit.utils.holder.Holder;
+import net.imglib2.labkit.utils.properties.Property;
 import net.imglib2.labkit.models.SegmentationItem;
 import net.imglib2.labkit.segmentation.Segmenter;
 import net.imglib2.labkit.utils.progress.StatusServiceProgressWriter;
@@ -25,10 +25,10 @@ import java.io.File;
 public class BatchSegmentAction {
 
 	private final Extensible extensible;
-	private final Holder<SegmentationItem> selectedSegmenter;
+	private final Property<SegmentationItem> selectedSegmenter;
 
 	public BatchSegmentAction(Extensible extensible,
-		Holder<SegmentationItem> selectedSegmenter)
+		Property<SegmentationItem> selectedSegmenter)
 	{
 		this.extensible = extensible;
 		this.selectedSegmenter = selectedSegmenter;

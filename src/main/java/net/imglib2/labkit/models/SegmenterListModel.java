@@ -3,8 +3,8 @@ package net.imglib2.labkit.models;
 
 import net.imagej.ImgPlus;
 import net.imglib2.labkit.labeling.Labeling;
-import net.imglib2.labkit.utils.holder.DefaultHolder;
-import net.imglib2.labkit.utils.holder.Holder;
+import net.imglib2.labkit.utils.properties.DefaultProperty;
+import net.imglib2.labkit.utils.properties.Property;
 import net.imglib2.labkit.segmentation.SegmentationPlugin;
 import net.imglib2.util.Pair;
 import org.scijava.Context;
@@ -19,10 +19,12 @@ import java.util.List;
 public class SegmenterListModel {
 
 	private final Context context;
-	private final Holder<List<SegmentationItem>> segmenters = new DefaultHolder<>(new ArrayList<>());
-	private final Holder<SegmentationItem> selectedSegmenter = new DefaultHolder<>(null);
-	private final Holder<Boolean> segmentationVisibility = new DefaultHolder<>(true);
-	private final Holder<List<Pair<ImgPlus<?>, Labeling>>> trainingData = new DefaultHolder<>(null);
+	private final Property<List<SegmentationItem>> segmenters = new DefaultProperty<>(
+		new ArrayList<>());
+	private final Property<SegmentationItem> selectedSegmenter = new DefaultProperty<>(null);
+	private final Property<Boolean> segmentationVisibility = new DefaultProperty<>(true);
+	private final Property<List<Pair<ImgPlus<?>, Labeling>>> trainingData = new DefaultProperty<>(
+		null);
 
 	public SegmenterListModel(Context context) {
 		this.context = context;
@@ -31,11 +33,11 @@ public class SegmenterListModel {
 		});
 	}
 
-	public Holder<List<SegmentationItem>> segmenters() {
+	public Property<List<SegmentationItem>> segmenters() {
 		return segmenters;
 	}
 
-	public Holder<SegmentationItem> selectedSegmenter() {
+	public Property<SegmentationItem> selectedSegmenter() {
 		return selectedSegmenter;
 	}
 
@@ -51,7 +53,7 @@ public class SegmenterListModel {
 		segmenters.notifier().notifyListeners();
 	}
 
-	public Holder<Boolean> segmentationVisibility() {
+	public Property<Boolean> segmentationVisibility() {
 		return segmentationVisibility;
 	}
 
@@ -59,7 +61,7 @@ public class SegmenterListModel {
 		return context;
 	}
 
-	public Holder<List<Pair<ImgPlus<?>, Labeling>>> trainingData() {
+	public Property<List<Pair<ImgPlus<?>, Labeling>>> trainingData() {
 		return trainingData;
 	}
 }

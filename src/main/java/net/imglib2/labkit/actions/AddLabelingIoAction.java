@@ -6,7 +6,7 @@ import net.imglib2.RandomAccess;
 import net.imglib2.labkit.Extensible;
 import net.imglib2.labkit.MenuBar;
 import net.imglib2.labkit.labeling.Label;
-import net.imglib2.labkit.utils.holder.Holder;
+import net.imglib2.labkit.utils.properties.Property;
 import net.imglib2.labkit.labeling.Labeling;
 import net.imglib2.labkit.labeling.LabelingSerializer;
 import net.imglib2.roi.IterableRegion;
@@ -24,10 +24,10 @@ import java.util.stream.Collectors;
  */
 public class AddLabelingIoAction extends AbstractFileIoAction {
 
-	private final Holder<Labeling> labeling;
+	private final Property<Labeling> labeling;
 	private final LabelingSerializer serializer;
 
-	public AddLabelingIoAction(Extensible extensible, Holder<Labeling> labeling) {
+	public AddLabelingIoAction(Extensible extensible, Property<Labeling> labeling) {
 		super(extensible, AbstractFileIoAction.LABELING_FILTER,
 			AbstractFileIoAction.TIFF_FILTER);
 		this.labeling = labeling;

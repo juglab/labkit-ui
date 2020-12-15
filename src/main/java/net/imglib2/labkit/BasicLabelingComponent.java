@@ -14,7 +14,7 @@ import net.imglib2.labkit.brush.FloodFillController;
 import net.imglib2.labkit.brush.LabelBrushController;
 import net.imglib2.labkit.brush.SelectLabelController;
 import net.imglib2.labkit.labeling.LabelsLayer;
-import net.imglib2.labkit.utils.holder.Holder;
+import net.imglib2.labkit.utils.properties.Property;
 import net.imglib2.labkit.models.ImageLabelingModel;
 import net.imglib2.labkit.panel.LabelToolsPanel;
 import net.miginfocom.swing.MigLayout;
@@ -29,7 +29,7 @@ import java.util.Collection;
  */
 public class BasicLabelingComponent extends JPanel implements AutoCloseable {
 
-	private final Holder<BdvStackSource<?>> imageSource;
+	private final Property<BdvStackSource<?>> imageSource;
 
 	private BdvHandle bdvHandle;
 
@@ -67,7 +67,7 @@ public class BasicLabelingComponent extends JPanel implements AutoCloseable {
 		add(bdvHandle.getViewerPanel(), "grow");
 	}
 
-	private Holder<BdvStackSource<?>> initImageLayer() {
+	private Property<BdvStackSource<?>> initImageLayer() {
 		return addBdvLayer(new BdvLayer.FinalLayer(model.showable(), "Image", model
 			.imageVisibility()));
 	}
@@ -76,7 +76,7 @@ public class BasicLabelingComponent extends JPanel implements AutoCloseable {
 		addBdvLayer(new LabelsLayer(model));
 	}
 
-	public Holder<BdvStackSource<?>> addBdvLayer(BdvLayer layer) {
+	public Property<BdvStackSource<?>> addBdvLayer(BdvLayer layer) {
 		return new BdvLayerLink(layer, bdvHandle);
 	}
 

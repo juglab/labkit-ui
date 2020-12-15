@@ -1,7 +1,7 @@
 
 package net.imglib2.labkit.panel;
 
-import net.imglib2.labkit.utils.holder.Holder;
+import net.imglib2.labkit.utils.properties.Property;
 import net.miginfocom.swing.MigLayout;
 import org.scijava.ui.behaviour.DragBehaviour;
 import org.scijava.ui.behaviour.util.RunnableAction;
@@ -47,7 +47,7 @@ public class GuiUtils {
 		return new ImageIcon(image);
 	}
 
-	public static JPanel createCheckboxGroupedPanel(Holder<Boolean> visibility,
+	public static JPanel createCheckboxGroupedPanel(Property<Boolean> visibility,
 		String text, JComponent panel)
 	{
 		JPanel dark = new JPanel();
@@ -66,7 +66,7 @@ public class GuiUtils {
 		return dark;
 	}
 
-	private static JCheckBox createCheckbox(Holder<Boolean> visibility,
+	private static JCheckBox createCheckbox(Property<Boolean> visibility,
 		String text)
 	{
 		final JCheckBox checkbox = new LinkedCheckBox(text, visibility);
@@ -75,10 +75,10 @@ public class GuiUtils {
 
 	private static class LinkedCheckBox extends JCheckBox {
 
-		private final Holder<Boolean> model;
+		private final Property<Boolean> model;
 		private final Runnable onModelChanged = this::onModelChanged;
 
-		private LinkedCheckBox(String text, Holder<Boolean> model) {
+		private LinkedCheckBox(String text, Property<Boolean> model) {
 			super(text);
 			this.model = model;
 			this.model.notifier().addWeakListener(onModelChanged);

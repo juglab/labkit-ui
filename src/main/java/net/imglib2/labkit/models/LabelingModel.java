@@ -4,7 +4,7 @@ package net.imglib2.labkit.models;
 import net.imglib2.Interval;
 import net.imglib2.labkit.labeling.Label;
 import net.imglib2.labkit.labeling.Labeling;
-import net.imglib2.labkit.utils.holder.Holder;
+import net.imglib2.labkit.utils.properties.Property;
 import net.imglib2.labkit.utils.ParametricNotifier;
 import net.imglib2.realtransform.AffineTransform3D;
 
@@ -14,9 +14,9 @@ import net.imglib2.realtransform.AffineTransform3D;
  */
 public interface LabelingModel {
 
-	Holder<Label> selectedLabel();
+	Property<Label> selectedLabel();
 
-	Holder<Labeling> labeling();
+	Property<Labeling> labeling();
 
 	ParametricNotifier<Interval> dataChangedNotifier();
 
@@ -26,7 +26,7 @@ public interface LabelingModel {
 
 	String defaultFileName();
 
-	Holder<Boolean> labelingVisibility();
+	Property<Boolean> labelingVisibility();
 
 	TransformationModel transformationModel();
 }

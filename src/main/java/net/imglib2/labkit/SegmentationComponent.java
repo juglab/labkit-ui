@@ -13,7 +13,7 @@ import net.imglib2.labkit.actions.SegmentationAsLabelAction;
 import net.imglib2.labkit.actions.SegmentationExportAction;
 import net.imglib2.labkit.menu.MenuKey;
 import net.imglib2.labkit.models.ColoredLabelsModel;
-import net.imglib2.labkit.utils.holder.Holder;
+import net.imglib2.labkit.utils.properties.Property;
 import net.imglib2.labkit.models.ImageLabelingModel;
 import net.imglib2.labkit.models.SegmentationItem;
 import net.imglib2.labkit.models.SegmentationModel;
@@ -64,7 +64,7 @@ public class SegmentationComponent extends JPanel implements AutoCloseable {
 	}
 
 	private void initActions() {
-		final Holder<SegmentationItem> selectedSegmenter = segmentationModel
+		final Property<SegmentationItem> selectedSegmenter = segmentationModel
 			.segmenterList().selectedSegmenter();
 		final ImageLabelingModel labelingModel = segmentationModel
 			.imageLabelingModel();

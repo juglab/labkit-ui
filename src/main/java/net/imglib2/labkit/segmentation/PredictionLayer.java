@@ -9,10 +9,10 @@ import net.imglib2.converter.Converter;
 import net.imglib2.converter.Converters;
 import net.imglib2.labkit.bdv.BdvLayer;
 import net.imglib2.labkit.bdv.BdvShowable;
-import net.imglib2.labkit.utils.holder.DefaultHolder;
-import net.imglib2.labkit.utils.holder.Holder;
+import net.imglib2.labkit.utils.properties.DefaultProperty;
+import net.imglib2.labkit.utils.properties.Property;
 import net.imglib2.labkit.models.ImageLabelingModel;
-import net.imglib2.labkit.utils.holder.MappedHolder;
+import net.imglib2.labkit.utils.properties.MappedProperty;
 import net.imglib2.labkit.models.SegmentationModel;
 import net.imglib2.labkit.models.SegmentationResultsModel;
 import net.imglib2.labkit.utils.ParametricNotifier;
@@ -25,13 +25,13 @@ import net.imglib2.type.volatiles.VolatileShortType;
  */
 public class PredictionLayer implements BdvLayer {
 
-	private final Holder<SegmentationResultsModel> model;
+	private final Property<SegmentationResultsModel> model;
 	private final SharedQueue queue = new SharedQueue(Runtime.getRuntime()
 		.availableProcessors());
-	private final Holder<Boolean> visibility;
+	private final Property<Boolean> visibility;
 	private final Runnable classifierChanged = this::classifierChanged;
 	private ParametricNotifier<Interval> listeners = new ParametricNotifier<>();
-	private DefaultHolder<BdvShowable> showable;
+	private DefaultProperty<BdvShowable> showable;
 	private final Runnable onTrainingCompleted = this::onTrainingCompleted;
 
 	private SegmentationResultsModel segmenter;
@@ -39,17 +39,17 @@ public class PredictionLayer implements BdvLayer {
 	public static PredictionLayer createPredictionLayer(SegmentationModel segmentationModel) {
 		ImageLabelingModel imageLabelingModel = segmentationModel.imageLabelingModel();
 		return new PredictionLayer(
-			new MappedHolder<>(segmentationModel.segmenterList().selectedSegmenter(), si -> si == null
+			new MappedProperty<>(segmentationModel.segmenterList().selectedSegmenter(), si -> si == null
 				? null : si.results(imageLabelingModel)),
 			segmentationModel.segmenterList().segmentationVisibility());
 	}
 
 	private PredictionLayer(
-		Holder<SegmentationResultsModel> model,
-		Holder<Boolean> visibility)
+		Property<SegmentationResultsModel> model,
+		Property<Boolean> visibility)
 	{
 		this.model = model;
-		this.showable = new DefaultHolder<>(null);
+		this.showable = new DefaultProperty<>(null);
 		this.visibility = visibility;
 		model.notifier().addWeakListener(classifierChanged);
 		registerListener(model.get());
@@ -106,7 +106,7 @@ public class PredictionLayer implements BdvLayer {
 	}
 
 	@Override
-	public Holder<BdvShowable> image() {
+	public Property<BdvShowable> image() {
 		return showable;
 	}
 
@@ -116,7 +116,7 @@ public class PredictionLayer implements BdvLayer {
 	}
 
 	@Override
-	public Holder<Boolean> visibility() {
+	public Property<Boolean> visibility() {
 		return visibility;
 	}
 

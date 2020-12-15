@@ -12,8 +12,8 @@ import net.imagej.ImgPlus;
 import net.imglib2.img.VirtualStackAdapter;
 import net.imglib2.labkit.bdv.BdvShowable;
 import net.imglib2.labkit.inputimage.SpimDataInputImage;
-import net.imglib2.labkit.utils.holder.DefaultHolder;
-import net.imglib2.labkit.utils.holder.Holder;
+import net.imglib2.labkit.utils.properties.DefaultProperty;
+import net.imglib2.labkit.utils.properties.Property;
 import net.miginfocom.swing.MigLayout;
 
 import javax.swing.*;
@@ -41,39 +41,39 @@ public class ReplaceImageTest {
 
 	private static class Model {
 
-		private final Holder<BdvShowable> image = new DefaultHolder<>(null);
+		private final Property<BdvShowable> image = new DefaultProperty<>(null);
 
-		private final Holder<Boolean> imageVisibility = new DefaultHolder<>(true);
+		private final Property<Boolean> imageVisibility = new DefaultProperty<>(true);
 
-		private final Holder<BdvShowable> labeling = new DefaultHolder<>(null);
+		private final Property<BdvShowable> labeling = new DefaultProperty<>(null);
 
-		private final Holder<Boolean> labelingVisibility = new DefaultHolder<>(true);
+		private final Property<Boolean> labelingVisibility = new DefaultProperty<>(true);
 
-		private final Holder<BdvShowable> segmentation = new DefaultHolder<>(null);
+		private final Property<BdvShowable> segmentation = new DefaultProperty<>(null);
 
-		private final Holder<Boolean> segmentationVisibility = new DefaultHolder<>(true);
+		private final Property<Boolean> segmentationVisibility = new DefaultProperty<>(true);
 
-		public Holder<BdvShowable> image() {
+		public Property<BdvShowable> image() {
 			return image;
 		}
 
-		public Holder<Boolean> imageVisibility() {
+		public Property<Boolean> imageVisibility() {
 			return imageVisibility;
 		}
 
-		public Holder<BdvShowable> labeling() {
+		public Property<BdvShowable> labeling() {
 			return labeling;
 		}
 
-		public Holder<Boolean> labelingVisibility() {
+		public Property<Boolean> labelingVisibility() {
 			return labelingVisibility;
 		}
 
-		public Holder<BdvShowable> segmentation() {
+		public Property<BdvShowable> segmentation() {
 			return segmentation;
 		}
 
-		public Holder<Boolean> segmentationVisibility() {
+		public Property<Boolean> segmentationVisibility() {
 			return segmentationVisibility;
 		}
 	}
@@ -107,14 +107,14 @@ public class ReplaceImageTest {
 
 		private final BdvHandle handle;
 
-		private final Holder<BdvShowable> image;
+		private final Property<BdvShowable> image;
 
-		private final Holder<Boolean> visibility;
+		private final Property<Boolean> visibility;
 
 		private BdvStackSource<?> source;
 
-		public BigDataViewEntry(BdvHandle handle, Holder<BdvShowable> image,
-			Holder<Boolean> visibility)
+		public BigDataViewEntry(BdvHandle handle, Property<BdvShowable> image,
+			Property<Boolean> visibility)
 		{
 			this.handle = handle;
 			this.image = image;
@@ -161,11 +161,12 @@ public class ReplaceImageTest {
 
 		private final JCheckBox checkBox;
 
-		private final Holder<BdvShowable> image;
+		private final Property<BdvShowable> image;
 
-		private final Holder<Boolean> visibility;
+		private final Property<Boolean> visibility;
 
-		private ImageController(Holder<BdvShowable> image, Holder<Boolean> visibility, JPanel sidePanel,
+		private ImageController(Property<BdvShowable> image, Property<Boolean> visibility,
+			JPanel sidePanel,
 			String title)
 		{
 			this.image = image;

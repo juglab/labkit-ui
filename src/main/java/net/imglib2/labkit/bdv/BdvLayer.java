@@ -2,7 +2,7 @@
 package net.imglib2.labkit.bdv;
 
 import net.imglib2.Interval;
-import net.imglib2.labkit.utils.holder.Holder;
+import net.imglib2.labkit.utils.properties.Property;
 import net.imglib2.labkit.utils.ParametricNotifier;
 
 /**
@@ -11,24 +11,24 @@ import net.imglib2.labkit.utils.ParametricNotifier;
  */
 public interface BdvLayer {
 
-	Holder<BdvShowable> image();
+	Property<BdvShowable> image();
 
 	ParametricNotifier<Interval> listeners();
 
-	Holder<Boolean> visibility();
+	Property<Boolean> visibility();
 
 	String title();
 
 	class FinalLayer implements BdvLayer {
 
-		private final Holder<BdvShowable> image;
+		private final Property<BdvShowable> image;
 		private final String title;
 		private final ParametricNotifier<Interval> listeners =
 			new ParametricNotifier<>();
-		private final Holder<Boolean> visibility;
+		private final Property<Boolean> visibility;
 
-		public FinalLayer(Holder<BdvShowable> image, String title,
-			Holder<Boolean> visibility)
+		public FinalLayer(Property<BdvShowable> image, String title,
+			Property<Boolean> visibility)
 		{
 			this.image = image;
 			this.title = title;
@@ -36,7 +36,7 @@ public interface BdvLayer {
 		}
 
 		@Override
-		public Holder<BdvShowable> image() {
+		public Property<BdvShowable> image() {
 			return image;
 		}
 
@@ -46,7 +46,7 @@ public interface BdvLayer {
 		}
 
 		@Override
-		public Holder<Boolean> visibility() {
+		public Property<Boolean> visibility() {
 			return visibility;
 		}
 

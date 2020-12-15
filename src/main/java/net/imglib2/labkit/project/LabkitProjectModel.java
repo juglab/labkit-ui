@@ -1,8 +1,8 @@
 
 package net.imglib2.labkit.project;
 
-import net.imglib2.labkit.utils.holder.DefaultHolder;
-import net.imglib2.labkit.utils.holder.Holder;
+import net.imglib2.labkit.utils.properties.DefaultProperty;
+import net.imglib2.labkit.utils.properties.Property;
 import net.imglib2.labkit.utils.Notifier;
 import org.scijava.Context;
 
@@ -19,7 +19,7 @@ public class LabkitProjectModel {
 
 	private final String projectDirectory;
 
-	private Holder<LabeledImage> selectedImage;
+	private Property<LabeledImage> selectedImage;
 
 	private List<LabeledImage> labeledImageFiles;
 
@@ -33,7 +33,7 @@ public class LabkitProjectModel {
 	{
 		this.context = context;
 		this.projectDirectory = projectDirectory;
-		this.selectedImage = new DefaultHolder<>(labeledImageFiles.size() == 0 ? null
+		this.selectedImage = new DefaultProperty<>(labeledImageFiles.size() == 0 ? null
 			: labeledImageFiles.get(
 				0));
 		this.labeledImageFiles = labeledImageFiles;
@@ -61,7 +61,7 @@ public class LabkitProjectModel {
 		return changeNotifier;
 	}
 
-	public Holder<LabeledImage> selectedImage() {
+	public Property<LabeledImage> selectedImage() {
 		return selectedImage;
 	}
 

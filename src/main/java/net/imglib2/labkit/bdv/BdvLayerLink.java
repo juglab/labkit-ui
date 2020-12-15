@@ -7,7 +7,7 @@ import bdv.util.BdvStackSource;
 import bdv.viewer.SynchronizedViewerState;
 import bdv.viewer.ViewerStateChange;
 import net.imglib2.Interval;
-import net.imglib2.labkit.utils.holder.Holder;
+import net.imglib2.labkit.utils.properties.Property;
 import net.imglib2.labkit.utils.Notifier;
 
 import java.util.function.Consumer;
@@ -24,7 +24,7 @@ import java.util.function.Consumer;
  * {@link BdvStackSource}. A call to {@link BdvLayer#listeners()} will trigger a
  * repaint of the BDV.
  */
-public class BdvLayerLink implements Holder<BdvStackSource<?>> {
+public class BdvLayerLink implements Property<BdvStackSource<?>> {
 
 	private final BdvHandle handle;
 
@@ -47,7 +47,7 @@ public class BdvLayerLink implements Holder<BdvStackSource<?>> {
 		this.viewerState = handle.getViewerPanel().state();
 		this.layer = layer;
 		BdvOptions options = BdvOptions.options().addTo(handle);
-		Holder<BdvShowable> image = layer.image();
+		Property<BdvShowable> image = layer.image();
 		BdvShowable showable1 = image.get();
 		bdvSource = showable1 != null ? showable1.show(layer.title(), options) : null;
 		image.notifier().addWeakListener(onImageChanged);
