@@ -10,11 +10,13 @@ import net.imglib2.labkit.labeling.Labeling;
  */
 public class LabeledImageModel {
 
+	private String name;
+
 	private String imageFile;
 
 	private String labelingFile;
 
-	private String changedLabelingFile;
+	private String tmpLabelingFile;
 
 	private ImgPlus<?> imageForSegmentation;
 

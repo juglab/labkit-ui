@@ -12,7 +12,7 @@ public class SegmenterModel {
 
 	private String name;
 
-	private String file;
+	private String segmenterFile; // could be moved to segmenter
 
 	private Segmenter segmenter;
 

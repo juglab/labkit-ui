@@ -1,7 +1,7 @@
 
 package net.imglib2.labkit.v2.models;
 
-import java.util.Collections;
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -9,9 +9,9 @@ import java.util.List;
  */
 public class LabkitModel {
 
-	private List<SegmenterModel> segmenterModels;
+	private List<SegmenterModel> segmenterModels = new ArrayList<>();
 
-	private List<LabeledImageModel> labeledImageModels;
+	private List<LabeledImageModel> labeledImageModels = new ArrayList<>();
 
 	// Getters
 
