@@ -2,7 +2,7 @@
 package net.imglib2.labkit.actions;
 
 import net.imglib2.labkit.Extensible;
-import net.imglib2.labkit.models.Holder;
+import net.imglib2.labkit.utils.holder.Holder;
 import net.imglib2.labkit.models.SegmentationItem;
 
 import javax.swing.filechooser.FileNameExtensionFilter;

@@ -4,7 +4,7 @@ package net.imglib2.labkit.actions;
 import net.imglib2.labkit.BatchSegmenter;
 import net.imglib2.labkit.Extensible;
 import net.imglib2.labkit.MenuBar;
-import net.imglib2.labkit.models.Holder;
+import net.imglib2.labkit.utils.holder.Holder;
 import net.imglib2.labkit.models.SegmentationItem;
 import net.imglib2.labkit.segmentation.Segmenter;
 import net.imglib2.labkit.utils.progress.StatusServiceProgressWriter;

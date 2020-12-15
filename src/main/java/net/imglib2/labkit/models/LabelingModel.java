@@ -4,6 +4,7 @@ package net.imglib2.labkit.models;
 import net.imglib2.Interval;
 import net.imglib2.labkit.labeling.Label;
 import net.imglib2.labkit.labeling.Labeling;
+import net.imglib2.labkit.utils.holder.Holder;
 import net.imglib2.labkit.utils.ParametricNotifier;
 import net.imglib2.realtransform.AffineTransform3D;
 

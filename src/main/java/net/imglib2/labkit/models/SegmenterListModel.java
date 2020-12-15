@@ -3,6 +3,8 @@ package net.imglib2.labkit.models;
 
 import net.imagej.ImgPlus;
 import net.imglib2.labkit.labeling.Labeling;
+import net.imglib2.labkit.utils.holder.DefaultHolder;
+import net.imglib2.labkit.utils.holder.Holder;
 import net.imglib2.labkit.segmentation.SegmentationPlugin;
 import net.imglib2.util.Pair;
 import org.scijava.Context;

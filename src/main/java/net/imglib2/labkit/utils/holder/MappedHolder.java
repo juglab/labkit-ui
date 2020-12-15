@@ -1,5 +1,5 @@
 
-package net.imglib2.labkit.models;
+package net.imglib2.labkit.utils.holder;
 
 import net.imglib2.labkit.utils.Notifier;
 

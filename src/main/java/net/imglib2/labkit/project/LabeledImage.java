@@ -7,10 +7,10 @@ import net.imglib2.Interval;
 import net.imglib2.labkit.inputimage.DatasetInputImage;
 import net.imglib2.labkit.labeling.Labeling;
 import net.imglib2.labkit.labeling.LabelingSerializer;
-import net.imglib2.labkit.models.DefaultHolder;
-import net.imglib2.labkit.models.Holder;
+import net.imglib2.labkit.utils.holder.DefaultHolder;
+import net.imglib2.labkit.utils.holder.Holder;
 import net.imglib2.labkit.models.ImageLabelingModel;
-import net.imglib2.labkit.models.MappedHolder;
+import net.imglib2.labkit.utils.holder.MappedHolder;
 import org.apache.commons.io.FilenameUtils;
 import org.scijava.Context;
 

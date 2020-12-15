@@ -6,7 +6,7 @@ import net.imglib2.RandomAccess;
 import net.imglib2.labkit.Extensible;
 import net.imglib2.labkit.MenuBar;
 import net.imglib2.labkit.labeling.Label;
-import net.imglib2.labkit.models.Holder;
+import net.imglib2.labkit.utils.holder.Holder;
 import net.imglib2.labkit.labeling.Labeling;
 import net.imglib2.labkit.labeling.LabelingSerializer;
 import net.imglib2.roi.IterableRegion;
@@ -15,7 +15,6 @@ import net.imglib2.type.logic.BitType;
 
 import java.io.IOException;
 import java.util.List;
-import java.util.Set;
 import java.util.stream.Collectors;
 
 /**

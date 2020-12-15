@@ -7,7 +7,7 @@ import bdv.util.BdvStackSource;
 import bdv.viewer.SynchronizedViewerState;
 import bdv.viewer.ViewerStateChange;
 import net.imglib2.Interval;
-import net.imglib2.labkit.models.Holder;
+import net.imglib2.labkit.utils.holder.Holder;
 import net.imglib2.labkit.utils.Notifier;
 
 import java.util.function.Consumer;

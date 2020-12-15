@@ -14,7 +14,7 @@ import net.imglib2.labkit.brush.FloodFillController;
 import net.imglib2.labkit.brush.LabelBrushController;
 import net.imglib2.labkit.brush.SelectLabelController;
 import net.imglib2.labkit.labeling.LabelsLayer;
-import net.imglib2.labkit.models.Holder;
+import net.imglib2.labkit.utils.holder.Holder;
 import net.imglib2.labkit.models.ImageLabelingModel;
 import net.imglib2.labkit.panel.LabelToolsPanel;
 import net.miginfocom.swing.MigLayout;

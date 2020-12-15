@@ -12,8 +12,8 @@ import net.imagej.ImgPlus;
 import net.imglib2.img.VirtualStackAdapter;
 import net.imglib2.labkit.bdv.BdvShowable;
 import net.imglib2.labkit.inputimage.SpimDataInputImage;
-import net.imglib2.labkit.models.DefaultHolder;
-import net.imglib2.labkit.models.Holder;
+import net.imglib2.labkit.utils.holder.DefaultHolder;
+import net.imglib2.labkit.utils.holder.Holder;
 import net.miginfocom.swing.MigLayout;
 
 import javax.swing.*;

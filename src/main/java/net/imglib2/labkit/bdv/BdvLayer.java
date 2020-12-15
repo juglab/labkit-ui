@@ -2,7 +2,7 @@
 package net.imglib2.labkit.bdv;
 
 import net.imglib2.Interval;
-import net.imglib2.labkit.models.Holder;
+import net.imglib2.labkit.utils.holder.Holder;
 import net.imglib2.labkit.utils.ParametricNotifier;
 
 /**

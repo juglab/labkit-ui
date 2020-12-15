@@ -12,6 +12,8 @@ import net.imglib2.labkit.inputimage.ImgPlusViewsOld;
 import net.imglib2.labkit.inputimage.InputImage;
 import net.imglib2.labkit.labeling.Label;
 import net.imglib2.labkit.labeling.Labeling;
+import net.imglib2.labkit.utils.holder.DefaultHolder;
+import net.imglib2.labkit.utils.holder.Holder;
 import net.imglib2.labkit.utils.ParametricNotifier;
 import net.imglib2.realtransform.AffineTransform3D;
 

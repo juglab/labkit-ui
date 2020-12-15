@@ -1,7 +1,7 @@
 
 package net.imglib2.labkit.panel;
 
-import net.imglib2.labkit.models.Holder;
+import net.imglib2.labkit.utils.holder.Holder;
 import net.miginfocom.swing.MigLayout;
 import org.scijava.ui.behaviour.DragBehaviour;
 import org.scijava.ui.behaviour.util.RunnableAction;

@@ -1,8 +1,8 @@
 
 package net.imglib2.labkit.project;
 
-import net.imglib2.labkit.models.DefaultHolder;
-import net.imglib2.labkit.models.Holder;
+import net.imglib2.labkit.utils.holder.DefaultHolder;
+import net.imglib2.labkit.utils.holder.Holder;
 import net.imglib2.labkit.utils.Notifier;
 import org.scijava.Context;
 

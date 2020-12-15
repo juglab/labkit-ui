@@ -6,6 +6,8 @@ import net.imglib2.FinalInterval;
 import net.imglib2.Interval;
 import net.imglib2.labkit.labeling.Label;
 import net.imglib2.labkit.labeling.Labeling;
+import net.imglib2.labkit.utils.holder.Holder;
+import net.imglib2.labkit.utils.holder.WeakListeningHolder;
 import net.imglib2.labkit.panel.LabelPanel;
 import net.imglib2.labkit.utils.Notifier;
 import net.imglib2.roi.IterableRegion;
