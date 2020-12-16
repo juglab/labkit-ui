@@ -9,9 +9,11 @@ import java.util.List;
  */
 public class LabkitModel {
 
+	private List<ImageModel> imageModels = new ArrayList<>();
+
 	private List<SegmenterModel> segmenterModels = new ArrayList<>();
 
-	private List<ImageModel> imageModels = new ArrayList<>();
+	private ImageModel activeImageModel;
 
 	// Getters
 
@@ -21,5 +23,13 @@ public class LabkitModel {
 
 	public List<ImageModel> getImageModels() {
 		return imageModels;
+	}
+
+	public ImageModel getActiveImageModel() {
+		return activeImageModel;
+	}
+
+	public void setActiveImageModel(ImageModel activeImageModel) {
+		this.activeImageModel = activeImageModel;
 	}
 }

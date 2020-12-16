@@ -10,18 +10,21 @@ public class LabkitView extends JFrame {
 
 	private final JButton addImageButton = new JButton("add");
 
-	private final DefaultListModel<String> imageList = new DefaultListModel<>();
+	private final JList<String> imageList = new JList<>();
+
+	private final JLabel activeImageLabel = new JLabel("-");
 
 	public LabkitView() {
-		add(new JLabel("still empty"));
+		add(activeImageLabel);
 		add(rightPanel(), BorderLayout.LINE_END);
 		setSize(800, 600);
 	}
 
 	private JPanel rightPanel() {
 		JPanel panel = new JPanel();
-		panel.setLayout(new MigLayout("", "[grow]", "[grow][]"));
-		panel.add(new JScrollPane(new JList<>(imageList)), "grow, wrap");
+		panel.setLayout(new MigLayout("", "[grow]", "[][grow][]"));
+		panel.add(new JLabel("Images"), "wrap");
+		panel.add(new JScrollPane(imageList), "grow, wrap");
 		panel.add(addImageButton);
 		return panel;
 	}
@@ -32,11 +35,17 @@ public class LabkitView extends JFrame {
 		return addImageButton;
 	}
 
-	public static void main(String... args) {
-		new LabkitView().setVisible(true);
+	public JList<String> getImageList() {
+		return imageList;
 	}
 
-	public DefaultListModel<String> getImageList() {
-		return imageList;
+	public JLabel getActiveImageLabel() {
+		return activeImageLabel;
+	}
+
+	// demo
+
+	public static void main(String... args) {
+		new LabkitView().setVisible(true);
 	}
 }

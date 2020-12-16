@@ -1,6 +1,6 @@
 
-* Add view and controller classes
+* Add view and controller classes (check)
+* How to deal with active labeledimage, label, segmenter
 * How to deal with "visibility"
   * Place label visibilities in the model.
-* How to deal with active labeledimage, label, segmenter
 * How to deal with pixel size / pixel display ratio
