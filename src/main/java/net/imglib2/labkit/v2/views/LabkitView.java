@@ -1,8 +1,13 @@
 
 package net.imglib2.labkit.v2.views;
 
+import bdv.util.Bdv;
+import bdv.util.BdvHandlePanel;
+import bdv.util.BdvStackSource;
+import net.imglib2.labkit.bdv.BdvAutoContrast;
 import net.imglib2.labkit.v2.models.ImageModel;
 import net.imglib2.labkit.v2.models.LabkitModel;
+import net.imglib2.labkit.v2.utils.BdvShowableIoUtils;
 import net.miginfocom.swing.MigLayout;
 
 import javax.swing.*;
@@ -25,9 +30,11 @@ public class LabkitView extends JFrame {
 
 	private final JLabel activeImageLabel = new JLabel("-");
 
+	private BdvHandlePanel activeBdv;
+
 	public LabkitView(LabkitModel model) {
 		this.model = model;
-		add(activeImageLabel);
+		add(activeImageLabel, BorderLayout.PAGE_START);
 		add(rightPanel(), BorderLayout.LINE_END);
 		setSize(800, 600);
 	}
@@ -48,7 +55,17 @@ public class LabkitView extends JFrame {
 	}
 
 	public void updateActiveImageLabel() {
-		String text = model.getActiveImageModel().getName();
+		ImageModel activeImageModel = model.getActiveImageModel();
+		String text = activeImageModel.getName();
+		if (activeBdv != null) {
+			remove(activeBdv.getViewerPanel());
+			activeBdv.close();
+		}
+		activeBdv = new BdvHandlePanel(this, Bdv.options());
+		add(activeBdv.getViewerPanel());
+		BdvStackSource<?> source = BdvShowableIoUtils.open(model.getContext(), activeImageModel
+			.getImageFile()).show(activeImageModel.getName(), Bdv.options().addTo(activeBdv));
+		BdvAutoContrast.autoContrast(source);
 		activeImageLabel.setText(text);
 	}
 

@@ -10,9 +10,12 @@ public class Demo {
 
 	public static void main(String... arg) {
 		LabkitModel model = new LabkitModel();
-		model.getImageModels().add(ImageModel.createForImageFile("a.tif"));
-		model.getImageModels().add(ImageModel.createForImageFile("b.tif"));
-		model.getImageModels().add(ImageModel.createForImageFile("c.tif"));
+		model.getImageModels().add(ImageModel.createForImageFile(
+			"/home/arzt/Documents/Datasets/Example/boats.tif"));
+		model.getImageModels().add(ImageModel.createForImageFile(
+			"/home/arzt/Documents/Datasets/Example/AuPbSn40-2.jpg"));
+		model.getImageModels().add(ImageModel.createForImageFile(
+			"/home/arzt/Documents/Datasets/Example/t1-head.tif"));
 		LabkitView view = new LabkitView(model);
 		LabkitController controller = new LabkitController(model, view);
 		controller.showView();

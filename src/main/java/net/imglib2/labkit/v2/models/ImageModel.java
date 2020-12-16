@@ -39,4 +39,7 @@ public class ImageModel {
 		return name;
 	}
 
+	public String getImageFile() {
+		return imageFile;
+	}
 }
