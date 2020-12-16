@@ -13,7 +13,7 @@ public class Demo {
 		model.getImageModels().add(ImageModel.createForImageFile("a.tif"));
 		model.getImageModels().add(ImageModel.createForImageFile("b.tif"));
 		model.getImageModels().add(ImageModel.createForImageFile("c.tif"));
-		LabkitView view = new LabkitView();
+		LabkitView view = new LabkitView(model);
 		LabkitController controller = new LabkitController(model, view);
 		controller.showView();
 	}
