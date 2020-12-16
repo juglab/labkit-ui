@@ -1,7 +1,7 @@
 
 package net.imglib2.labkit.v2.controller;
 
-import net.imglib2.labkit.v2.models.LabeledImageModel;
+import net.imglib2.labkit.v2.models.ImageModel;
 import net.imglib2.labkit.v2.models.LabkitModel;
 import net.imglib2.labkit.v2.views.LabkitView;
 
@@ -36,15 +36,15 @@ public class LabkitController {
 		if (result != JFileChooser.APPROVE_OPTION)
 			return;
 		String file = dialog.getSelectedFile().getAbsolutePath();
-		LabeledImageModel image = LabeledImageModel.createForImageFile(file);
-		model.getLabeledImageModels().add(image);
+		ImageModel image = ImageModel.createForImageFile(file);
+		model.getImageModels().add(image);
 		updateListView();
 	}
 
 	private void updateListView() {
 		DefaultListModel<String> imageList = view.getImageList();
 		imageList.removeAllElements();
-		for (LabeledImageModel imageModel : model.getLabeledImageModels()) {
+		for (ImageModel imageModel : model.getImageModels()) {
 			imageList.addElement(imageModel.getName());
 		}
 	}

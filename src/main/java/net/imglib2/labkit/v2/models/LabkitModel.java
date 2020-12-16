@@ -11,7 +11,7 @@ public class LabkitModel {
 
 	private List<SegmenterModel> segmenterModels = new ArrayList<>();
 
-	private List<LabeledImageModel> labeledImageModels = new ArrayList<>();
+	private List<ImageModel> imageModels = new ArrayList<>();
 
 	// Getters
 
@@ -19,7 +19,7 @@ public class LabkitModel {
 		return segmenterModels;
 	}
 
-	public List<LabeledImageModel> getLabeledImageModels() {
-		return labeledImageModels;
+	public List<ImageModel> getImageModels() {
+		return imageModels;
 	}
 }

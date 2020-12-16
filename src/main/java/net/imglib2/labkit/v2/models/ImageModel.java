@@ -9,7 +9,7 @@ import org.apache.commons.io.FilenameUtils;
 /**
  * Represents an image, overlaid with a labeling.
  */
-public class LabeledImageModel {
+public class ImageModel {
 
 	private String name;
 
@@ -25,8 +25,8 @@ public class LabeledImageModel {
 
 	private Labeling labeling;
 
-	public static LabeledImageModel createForImageFile(String imageFile) {
-		LabeledImageModel image = new LabeledImageModel();
+	public static ImageModel createForImageFile(String imageFile) {
+		ImageModel image = new ImageModel();
 		image.name = FilenameUtils.getName(imageFile);
 		image.imageFile = imageFile;
 		image.labelingFile = imageFile + ".labeling";

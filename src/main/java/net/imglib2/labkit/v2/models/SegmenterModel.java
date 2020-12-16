@@ -16,5 +16,5 @@ public class SegmenterModel {
 
 	private Segmenter segmenter;
 
-	private Map<LabeledImageModel, SegmentationModel> results;
+	private Map<ImageModel, SegmentationModel> results;
 }
