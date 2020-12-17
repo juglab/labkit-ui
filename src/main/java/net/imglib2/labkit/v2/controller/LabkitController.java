@@ -6,6 +6,8 @@ import net.imglib2.labkit.v2.models.ImageModel;
 import net.imglib2.labkit.v2.models.LabkitModel;
 import net.imglib2.labkit.v2.utils.BdvShowableIoUtils;
 import net.imglib2.labkit.v2.views.LabkitView;
+import net.imglib2.trainable_segmentation.utils.SingletonContext;
+import org.scijava.Context;
 
 import javax.swing.*;
 
@@ -14,6 +16,8 @@ public class LabkitController {
 	private LabkitModel model;
 
 	private LabkitView view;
+
+	private Context context = SingletonContext.getInstance();
 
 	public LabkitController(LabkitModel model, LabkitView view) {
 		this.model = model;
@@ -40,7 +44,7 @@ public class LabkitController {
 
 	private void loadImage(ImageModel activeImageModel) {
 		String imageFile = activeImageModel.getImageFile();
-		BdvShowable showable = BdvShowableIoUtils.open(model.getContext(), imageFile);
+		BdvShowable showable = BdvShowableIoUtils.open(context, imageFile);
 		activeImageModel.setImageForDisplaying(showable);
 	}
 
