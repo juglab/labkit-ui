@@ -1,11 +1,16 @@
 
 package net.imglib2.labkit.plugin;
 
+import net.imglib2.labkit.InitialLabeling;
 import net.imglib2.labkit.LabkitFrame;
 import net.imglib2.labkit.inputimage.InputImage;
 import net.imglib2.labkit.inputimage.SpimDataInputImage;
 import bdv.export.ProgressWriter;
+import net.imglib2.labkit.models.DefaultSegmentationModel;
+import net.imglib2.labkit.models.SegmentationModel;
 import net.imglib2.labkit.utils.progress.StatusServiceProgressWriter;
+import net.imglib2.util.Pair;
+import net.imglib2.util.ValuePair;
 import org.scijava.Context;
 import org.scijava.app.StatusService;
 import org.scijava.command.Command;
@@ -30,24 +35,33 @@ public class LabkitImportPlugin implements Command {
 
 	@Override
 	public void run() {
-		run(context, file);
-	}
-
-	private static void run(Context context, File file) {
 		ProgressWriter progressWriter = new StatusServiceProgressWriter(context
 			.service(StatusService.class));
-		InputImage image = openImage(progressWriter, file);
-		LabkitFrame.showForImage(context, image);
+		Pair<InputImage, String> imageAndLabelingFile = openImage(progressWriter, file);
+		InputImage image = imageAndLabelingFile.getA();
+		String labelingFile = imageAndLabelingFile.getB();
+		final SegmentationModel model = new DefaultSegmentationModel(context, image);
+		initializeLabeling(model, image, labelingFile);
+		LabkitFrame.show(model, image.imageForSegmentation().getName());
 	}
 
-	private static InputImage openImage(ProgressWriter progressWriter,
+	private void initializeLabeling(SegmentationModel model, InputImage image,
+		String labelingFilename)
+	{
+		model.imageLabelingModel().labeling().set(InitialLabeling.initialLabeling(context, image,
+			labelingFilename));
+	}
+
+	private static Pair<InputImage, String> openImage(ProgressWriter progressWriter,
 		File file)
 	{
 		String filename = file.getAbsolutePath();
-		if (filename.endsWith(".czi")) return new CziOpener(progressWriter)
-			.openWithDialog(file.getAbsolutePath());
-		if (filename.endsWith(".xml")) return SpimDataInputImage
-			.openWithGuiForLevelSelection(filename);
+		if (filename.endsWith(".czi")) return new CziOpener(progressWriter).openWithDialog(file
+			.getAbsolutePath());
+		if (filename.endsWith(".xml")) {
+			SpimDataInputImage inputImage = SpimDataInputImage.openWithGuiForLevelSelection(filename);
+			return new ValuePair<>(inputImage, file.toString() + ".labeling");
+		}
 		throw new UnsupportedOperationException(
 			"Only files with extension czi / xml are supported.");
 	}

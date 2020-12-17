@@ -8,6 +8,7 @@ import io.scif.img.ImgIOException;
 import loci.formats.FormatException;
 import net.imglib2.exception.IncompatibleTypeException;
 import net.imglib2.labkit.inputimage.DatasetInputImage;
+import net.imglib2.labkit.inputimage.InputImage;
 
 import java.awt.*;
 import java.io.IOException;
@@ -23,7 +24,7 @@ public class CziOpenerDemo {
 
 	public static void run(String filename) {
 		CziOpener opener = new CziOpener(new ProgressWriterConsole());
-		DatasetInputImage out = opener.openWithDialog(filename);
+		InputImage out = opener.openWithDialog(filename).getA();
 		out.showable().show("Image", BdvOptions.options().is2D());
 	}
 

@@ -66,7 +66,7 @@ public class ChangingImageSegmentationComponentDemo {
 		model.showable().set(datasetInputImage.showable());
 		model.imageForSegmentation().set(datasetInputImage.imageForSegmentation());
 		model.labeling().set(InitialLabeling.initialLabeling(SingletonContext.getInstance(),
-			datasetInputImage));
+			datasetInputImage, datasetInputImage.filename() + ".labeling"));
 	}
 
 	private JPanel getBottomPanel() {

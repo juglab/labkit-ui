@@ -67,7 +67,6 @@ public class ImageLabelingModel implements LabelingModel {
 		this.selectedLabelProperty = new DefaultProperty<>(anyLabel);
 		this.isTimeSeries = ImgPlusViewsOld.hasAxis(image, Axes.TIME);
 		this.transformationModel = new TransformationModel(isTimeSeries);
-		this.defaultFileName = inputImage.getDefaultLabelingFilename();
 	}
 
 	private void updateLabelTransform() {
@@ -144,6 +143,10 @@ public class ImageLabelingModel implements LabelingModel {
 
 	public Property<ImgPlus<?>> imageForSegmentation() {
 		return imageForSegmentation;
+	}
+
+	public void setDefaultFileName(String defaultFileName) {
+		this.defaultFileName = defaultFileName;
 	}
 
 	public Dimensions spatialDimensions() {

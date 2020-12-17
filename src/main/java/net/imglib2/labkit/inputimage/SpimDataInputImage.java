@@ -18,13 +18,13 @@ public class SpimDataInputImage implements InputImage {
 
 	private final ImgPlus<? extends NumericType<?>> imageForSegmentation;
 
-	private final String defaultLabelingFilename;
+	private final String filename;
 
 	public SpimDataInputImage(String filename, Integer level) {
 		try {
 			this.spimData = new XmlIoSpimDataMinimal().load(filename);
 			this.imageForSegmentation = Cast.unchecked(SpimDataToImgPlus.wrap(spimData, level));
-			this.defaultLabelingFilename = filename + ".labeling";
+			this.filename = filename;
 		}
 		catch (SpimDataException e) {
 			throw new RuntimeException(e);
@@ -43,12 +43,12 @@ public class SpimDataInputImage implements InputImage {
 	}
 
 	@Override
-	public ImgPlus<? extends NumericType<?>> imageForSegmentation() {
-		return imageForSegmentation;
+	public String filename() {
+		return filename;
 	}
 
 	@Override
-	public String getDefaultLabelingFilename() {
-		return defaultLabelingFilename;
+	public ImgPlus<? extends NumericType<?>> imageForSegmentation() {
+		return imageForSegmentation;
 	}
 }

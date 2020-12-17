@@ -5,13 +5,9 @@ import net.imagej.Dataset;
 import net.imagej.ImgPlus;
 import net.imagej.axis.Axes;
 import net.imagej.axis.AxisType;
-import net.imagej.axis.CalibratedAxis;
-import net.imglib2.Interval;
-import net.imglib2.RandomAccessibleInterval;
 import net.imglib2.img.Img;
 import net.imglib2.img.display.imagej.ImgPlusViews;
 import net.imglib2.labkit.bdv.BdvShowable;
-import net.imglib2.labkit.utils.DimensionUtils;
 import net.imglib2.type.numeric.ARGBType;
 import net.imglib2.type.numeric.NumericType;
 import net.imglib2.type.numeric.RealType;
@@ -19,11 +15,8 @@ import net.imglib2.type.numeric.integer.UnsignedByteType;
 import net.imglib2.util.Cast;
 
 import java.net.URI;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.stream.Collectors;
-import java.util.stream.IntStream;
 
 /**
  * Adapter from {@link ImgPlus} to {@link InputImage}.
@@ -32,14 +25,14 @@ public class DatasetInputImage implements InputImage {
 
 	private final ImgPlus<? extends NumericType<?>> image;
 	private final BdvShowable showable;
-	private String defaultLabelingFilename;
+	private String filename;
 
 	public DatasetInputImage(ImgPlus<? extends NumericType<?>> image,
 		BdvShowable showable)
 	{
 		this.showable = showable;
 		this.image = prepareImage(image);
-		this.defaultLabelingFilename = URI.create(image.getSource()).getPath() + ".labeling";
+		this.filename = URI.create(image.getSource()).getPath();
 	}
 
 	public DatasetInputImage(Img<?> image) {
@@ -104,13 +97,9 @@ public class DatasetInputImage implements InputImage {
 		return image;
 	}
 
-	public void setDefaultLabelingFilename(String defaultLabelingFilename) {
-		this.defaultLabelingFilename = defaultLabelingFilename;
-	}
-
 	@Override
-	public String getDefaultLabelingFilename() {
-		return defaultLabelingFilename;
+	public String filename() {
+		return filename;
 	}
 
 }

@@ -55,4 +55,8 @@ public class ImageModel {
 	public void setLabeling(Labeling labeling) {
 		this.labeling = labeling;
 	}
+
+	public String getLabelingFile() {
+		return labelingFile;
+	}
 }

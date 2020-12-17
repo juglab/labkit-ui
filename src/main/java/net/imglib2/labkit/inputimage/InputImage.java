@@ -22,5 +22,5 @@ public interface InputImage {
 		return BdvShowable.wrap(imageForSegmentation());
 	}
 
-	String getDefaultLabelingFilename();
+	String filename();
 }

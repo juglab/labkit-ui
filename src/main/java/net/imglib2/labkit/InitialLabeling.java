@@ -32,16 +32,15 @@ import java.util.stream.LongStream;
  */
 public class InitialLabeling {
 
-	public static Labeling initialLabeling(Context context, InputImage inputImage) {
+	public static Labeling initialLabeling(Context context, InputImage inputImage, String filename) {
 		Preferences preferences = new Preferences(context);
 		List<String> defaultLabels = preferences.getDefaultLabels();
-		return initLabeling(inputImage, context, defaultLabels);
+		return initLabeling(inputImage, context, defaultLabels, filename);
 	}
 
 	static Labeling initLabeling(InputImage inputImage, Context context,
-		List<String> defaultLabels)
+		List<String> defaultLabels, String filename)
 	{
-		String filename = inputImage.getDefaultLabelingFilename();
 		if (new File(filename).exists()) try {
 			return openLabeling(inputImage, context, filename);
 		}
@@ -73,11 +72,11 @@ public class InitialLabeling {
 		String filename) throws IOException
 	{
 		Labeling open = new LabelingSerializer(context).open(filename);
-		fixAxes(open, inputImage);
+		fixAxes(open, inputImage, filename);
 		return open;
 	}
 
-	private static void fixAxes(Labeling labeling, InputImage image) {
+	private static void fixAxes(Labeling labeling, InputImage image, String filename) {
 		ImgPlus<? extends NumericType<?>> imgPlus = image.imageForSegmentation();
 		if (!imgPlus.getName().endsWith(".czi")) return;
 		List<CalibratedAxis> labelingAxes = labeling.axes();
@@ -86,7 +85,7 @@ public class InitialLabeling {
 		Interval labelingInterval = labeling.interval();
 		OptionalDouble optionalDouble = getScale(labelingInterval, imageInterval);
 		if (!optionalDouble.isPresent()) {
-			String message = "\"" + image.getDefaultLabelingFilename() + "\"\n" +
+			String message = "\"" + filename + "\"\n" +
 				"The labeling does not match the image sizes.\n" +
 				"Labkit might give wrong results.\n" +
 				"It's recommended to delete the labeling and start from scratch again.";

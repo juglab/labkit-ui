@@ -48,7 +48,7 @@ public class LabkitController {
 			activeImageModel.setImage(InputImageIoUtils.open(context, imageFile));
 		if (activeImageModel.getLabeling() == null)
 			activeImageModel.setLabeling(InitialLabeling.initialLabeling(context, activeImageModel
-				.getImage()));
+				.getImage(), activeImageModel.getLabelingFile()));
 	}
 
 	private void onAddImageClicked() {

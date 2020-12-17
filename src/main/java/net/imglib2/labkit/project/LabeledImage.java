@@ -185,10 +185,10 @@ public class LabeledImage {
 		if (imageLabelingModel != null)
 			return imageLabelingModel;
 		DatasetInputImage inputImage = openInputImage();
-		inputImage.setDefaultLabelingFilename(modifiedLabelingFile);
 		Labeling labeling = openOrEmptyLabeling(storedIn.get(), inputImage.imageForSegmentation());
 		ImageLabelingModel imageLabelingModel = new ImageLabelingModel(inputImage);
 		imageLabelingModel.labeling().set(labeling);
+		imageLabelingModel.setDefaultFileName(modifiedLabelingFile);
 		return imageLabelingModel;
 	}
 

@@ -1,6 +1,7 @@
 
 package net.imglib2.labkit.plugin;
 
+import bdv.export.ProgressWriter;
 import bdv.util.AbstractSource;
 import loci.formats.ClassList;
 import loci.formats.FormatException;
@@ -25,13 +26,14 @@ import net.imglib2.img.cell.CellGrid;
 import net.imglib2.img.cell.CellImgFactory;
 import net.imglib2.labkit.bdv.BdvShowable;
 import net.imglib2.labkit.inputimage.DatasetInputImage;
+import net.imglib2.labkit.inputimage.InputImage;
 import net.imglib2.labkit.plugin.ui.ImageSelectionDialog;
 import net.imglib2.labkit.utils.ParallelUtils;
-import bdv.export.ProgressWriter;
 import net.imglib2.type.NativeType;
 import net.imglib2.type.numeric.ARGBType;
 import net.imglib2.type.numeric.NumericType;
 import net.imglib2.util.Intervals;
+import net.imglib2.util.Pair;
 import net.imglib2.util.ValuePair;
 import net.imglib2.view.Views;
 import ome.units.UNITS;
@@ -57,21 +59,20 @@ public class CziOpener {
 		this.progressWriter = progressWriter;
 	}
 
-	public DatasetInputImage openWithDialog(String filename) {
+	public Pair<InputImage, String> openWithDialog(String filename) {
 		ImageSelectionDialog dialog = ImageSelectionDialog.show(initReader(
 			filename));
 		List<Integer> selectedSectionIndices = dialog.getSelectedSectionIndices();
 		String labelingFilename = dialog.getLabelingFilename();
 		final OptionalInt series = selectSectionResolution(filename,
 			selectedSectionIndices);
-		if (series.isPresent()) return openInputImage(filename, labelingFilename,
-			selectedSectionIndices.get(0), series.getAsInt());
-		return openResolutionPyramid(filename, labelingFilename,
-			selectedSectionIndices);
+		InputImage image = (series.isPresent()) ? openInputImage(filename, selectedSectionIndices.get(
+			0), series.getAsInt()) : openResolutionPyramid(filename, selectedSectionIndices);
+		return new ValuePair<>(image, labelingFilename);
 	}
 
 	private static DatasetInputImage openResolutionPyramid(String filename,
-		String labelingFilename, List<Integer> selectedSectionIndices)
+		List<Integer> selectedSectionIndices)
 	{
 		int fullres = selectedSectionIndices.get(0);
 		List<ImgPlus<ARGBType>> pyramid = selectedSectionIndices.stream().map(
@@ -84,16 +85,14 @@ public class CziOpener {
 		imageForSegmentation.setSource(filename);
 		DatasetInputImage result = new DatasetInputImage(imageForSegmentation,
 			showable);
-		result.setDefaultLabelingFilename(labelingFilename);
 		return result;
 	}
 
 	private DatasetInputImage openInputImage(String filename,
-		String labelingFilename, int fullres, int series)
+		int fullres, int series)
 	{
 		DatasetInputImage result = new DatasetInputImage(openImage(filename,
 			fullres, series));
-		result.setDefaultLabelingFilename(labelingFilename);
 		return result;
 	}
 
