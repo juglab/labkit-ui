@@ -27,21 +27,40 @@ public class LabkitView extends JFrame {
 
 	private final JLabel activeImageLabel = new JLabel("-");
 
+	private final JPanel workspace = initWorkspace();
+
 	private LabelingComponent activeLabelingComponent;
 
 	public LabkitView(LabkitModel model) {
 		this.model = model;
 		add(activeImageLabel, BorderLayout.PAGE_START);
-		add(rightPanel(), BorderLayout.LINE_END);
-		setSize(800, 600);
+		workspace.setLayout(new BorderLayout());
+		JPanel rightPanel = initRightPanel();
+		add(initSplitPanel(workspace, rightPanel));
+		pack();
 	}
 
-	private JPanel rightPanel() {
+	private JSplitPane initSplitPanel(JPanel workspace, JPanel rightPanel) {
+		JSplitPane splitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, workspace, rightPanel);
+		splitPane.setResizeWeight(1);
+		splitPane.setOneTouchExpandable(true);
+		return splitPane;
+	}
+
+	private JPanel initWorkspace() {
+		JPanel workspace = new JPanel();
+		workspace.setBackground(Color.DARK_GRAY);
+		workspace.setPreferredSize(new Dimension(800, 500));
+		return workspace;
+	}
+
+	private JPanel initRightPanel() {
 		JPanel panel = new JPanel();
 		panel.setLayout(new MigLayout("", "[grow]", "[][grow][]"));
 		panel.add(new JLabel("Images"), "wrap");
 		panel.add(new JScrollPane(imageList), "grow, wrap");
 		panel.add(addImageButton);
+		panel.setPreferredSize(new Dimension(200, panel.getPreferredSize().height));
 		return panel;
 	}
 
@@ -55,13 +74,13 @@ public class LabkitView extends JFrame {
 		ImageModel activeImageModel = model.getActiveImageModel();
 		String text = activeImageModel.getName();
 		if (activeLabelingComponent != null) {
-			remove(activeLabelingComponent);
+			workspace.remove(activeLabelingComponent);
 			activeLabelingComponent.close();
 		}
 		ImageLabelingModel ilm = new ImageLabelingModel(activeImageModel.getImage());
 		ilm.labeling().set(activeImageModel.getLabeling());
 		activeLabelingComponent = new LabelingComponent(this, ilm);
-		add(activeLabelingComponent);
+		workspace.add(activeLabelingComponent);
 		activeImageLabel.setText(text);
 	}
 
