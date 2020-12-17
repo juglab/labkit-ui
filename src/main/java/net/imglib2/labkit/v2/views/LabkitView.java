@@ -54,7 +54,7 @@ public class LabkitView extends JFrame {
 		listAdapter.triggerUpdate();
 	}
 
-	public void updateActiveImageLabel() {
+	public void updateActiveImage() {
 		ImageModel activeImageModel = model.getActiveImageModel();
 		String text = activeImageModel.getName();
 		if (activeBdv != null) {

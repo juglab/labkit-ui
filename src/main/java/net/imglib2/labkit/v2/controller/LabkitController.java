@@ -39,7 +39,7 @@ public class LabkitController {
 	private void changeSelectedImageModel(ImageModel activeImageModel) {
 		model.setActiveImageModel(activeImageModel);
 		loadImage(activeImageModel);
-		view.updateActiveImageLabel();
+		view.updateActiveImage();
 	}
 
 	private void loadImage(ImageModel activeImageModel) {
