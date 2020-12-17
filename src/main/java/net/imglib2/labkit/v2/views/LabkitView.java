@@ -63,8 +63,8 @@ public class LabkitView extends JFrame {
 		}
 		activeBdv = new BdvHandlePanel(this, Bdv.options());
 		add(activeBdv.getViewerPanel());
-		BdvStackSource<?> source = BdvShowableIoUtils.open(model.getContext(), activeImageModel
-			.getImageFile()).show(activeImageModel.getName(), Bdv.options().addTo(activeBdv));
+		BdvStackSource<?> source = activeImageModel.getImageForDisplaying().show(activeImageModel
+			.getName(), Bdv.options().addTo(activeBdv));
 		BdvAutoContrast.autoContrast(source);
 		activeImageLabel.setText(text);
 	}

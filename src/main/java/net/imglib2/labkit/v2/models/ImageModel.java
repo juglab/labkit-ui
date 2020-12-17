@@ -42,4 +42,12 @@ public class ImageModel {
 	public String getImageFile() {
 		return imageFile;
 	}
+
+	public BdvShowable getImageForDisplaying() {
+		return imageForDisplaying;
+	}
+
+	public void setImageForDisplaying(BdvShowable imageForDisplaying) {
+		this.imageForDisplaying = imageForDisplaying;
+	}
 }

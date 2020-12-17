@@ -1,12 +1,13 @@
 
 package net.imglib2.labkit.v2.controller;
 
+import net.imglib2.labkit.bdv.BdvShowable;
 import net.imglib2.labkit.v2.models.ImageModel;
 import net.imglib2.labkit.v2.models.LabkitModel;
+import net.imglib2.labkit.v2.utils.BdvShowableIoUtils;
 import net.imglib2.labkit.v2.views.LabkitView;
 
 import javax.swing.*;
-import java.util.function.Consumer;
 
 public class LabkitController {
 
@@ -33,7 +34,14 @@ public class LabkitController {
 
 	private void changeSelectedImageModel(ImageModel activeImageModel) {
 		model.setActiveImageModel(activeImageModel);
+		loadImage(activeImageModel);
 		view.updateActiveImageLabel();
+	}
+
+	private void loadImage(ImageModel activeImageModel) {
+		String imageFile = activeImageModel.getImageFile();
+		BdvShowable showable = BdvShowableIoUtils.open(model.getContext(), imageFile);
+		activeImageModel.setImageForDisplaying(showable);
 	}
 
 	private void onAddImageClicked() {
