@@ -1,10 +1,9 @@
 
 package net.imglib2.labkit.v2.controller;
 
-import net.imglib2.labkit.bdv.BdvShowable;
 import net.imglib2.labkit.v2.models.ImageModel;
 import net.imglib2.labkit.v2.models.LabkitModel;
-import net.imglib2.labkit.v2.utils.BdvShowableIoUtils;
+import net.imglib2.labkit.v2.utils.InputImageIoUtils;
 import net.imglib2.labkit.v2.views.LabkitView;
 import net.imglib2.trainable_segmentation.utils.SingletonContext;
 import org.scijava.Context;
@@ -44,8 +43,7 @@ public class LabkitController {
 
 	private void loadImage(ImageModel activeImageModel) {
 		String imageFile = activeImageModel.getImageFile();
-		BdvShowable showable = BdvShowableIoUtils.open(context, imageFile);
-		activeImageModel.setImageForDisplaying(showable);
+		activeImageModel.setImage(InputImageIoUtils.open(context, imageFile));
 	}
 
 	private void onAddImageClicked() {

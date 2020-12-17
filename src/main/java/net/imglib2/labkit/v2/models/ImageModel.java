@@ -1,8 +1,7 @@
 
 package net.imglib2.labkit.v2.models;
 
-import net.imagej.ImgPlus;
-import net.imglib2.labkit.bdv.BdvShowable;
+import net.imglib2.labkit.inputimage.InputImage;
 import net.imglib2.labkit.labeling.Labeling;
 import org.apache.commons.io.FilenameUtils;
 
@@ -19,9 +18,7 @@ public class ImageModel {
 
 	private String tmpLabelingFile;
 
-	private ImgPlus<?> imageForSegmentation;
-
-	private BdvShowable imageForDisplaying;
+	private InputImage image;
 
 	private Labeling labeling;
 
@@ -43,11 +40,11 @@ public class ImageModel {
 		return imageFile;
 	}
 
-	public BdvShowable getImageForDisplaying() {
-		return imageForDisplaying;
+	public InputImage getImage() {
+		return image;
 	}
 
-	public void setImageForDisplaying(BdvShowable imageForDisplaying) {
-		this.imageForDisplaying = imageForDisplaying;
+	public void setImage(InputImage image) {
+		this.image = image;
 	}
 }
