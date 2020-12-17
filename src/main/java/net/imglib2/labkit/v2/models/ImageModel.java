@@ -47,4 +47,12 @@ public class ImageModel {
 	public void setImage(InputImage image) {
 		this.image = image;
 	}
+
+	public Labeling getLabeling() {
+		return labeling;
+	}
+
+	public void setLabeling(Labeling labeling) {
+		this.labeling = labeling;
+	}
 }

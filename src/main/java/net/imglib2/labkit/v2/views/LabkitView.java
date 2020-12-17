@@ -58,8 +58,9 @@ public class LabkitView extends JFrame {
 			remove(activeLabelingComponent);
 			activeLabelingComponent.close();
 		}
-		activeLabelingComponent = new LabelingComponent(this, new ImageLabelingModel(activeImageModel
-			.getImage()));
+		ImageLabelingModel ilm = new ImageLabelingModel(activeImageModel.getImage());
+		ilm.labeling().set(activeImageModel.getLabeling());
+		activeLabelingComponent = new LabelingComponent(this, ilm);
 		add(activeLabelingComponent);
 		activeImageLabel.setText(text);
 	}

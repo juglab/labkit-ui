@@ -18,6 +18,7 @@ import net.imglib2.type.numeric.RealType;
 import net.imglib2.type.numeric.integer.UnsignedByteType;
 import net.imglib2.util.Cast;
 
+import java.net.URI;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -38,7 +39,7 @@ public class DatasetInputImage implements InputImage {
 	{
 		this.showable = showable;
 		this.image = prepareImage(image);
-		this.defaultLabelingFilename = image.getSource() + ".labeling";
+		this.defaultLabelingFilename = URI.create(image.getSource()).getPath() + ".labeling";
 	}
 
 	public DatasetInputImage(Img<?> image) {

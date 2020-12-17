@@ -1,6 +1,7 @@
 
 package net.imglib2.labkit.v2.controller;
 
+import net.imglib2.labkit.InitialLabeling;
 import net.imglib2.labkit.v2.models.ImageModel;
 import net.imglib2.labkit.v2.models.LabkitModel;
 import net.imglib2.labkit.v2.utils.InputImageIoUtils;
@@ -37,13 +38,17 @@ public class LabkitController {
 
 	private void changeSelectedImageModel(ImageModel activeImageModel) {
 		model.setActiveImageModel(activeImageModel);
-		loadImage(activeImageModel);
+		loadImageModel(activeImageModel);
 		view.updateActiveImage();
 	}
 
-	private void loadImage(ImageModel activeImageModel) {
+	private void loadImageModel(ImageModel activeImageModel) {
 		String imageFile = activeImageModel.getImageFile();
-		activeImageModel.setImage(InputImageIoUtils.open(context, imageFile));
+		if (activeImageModel.getImage() == null)
+			activeImageModel.setImage(InputImageIoUtils.open(context, imageFile));
+		if (activeImageModel.getLabeling() == null)
+			activeImageModel.setLabeling(InitialLabeling.initialLabeling(context, activeImageModel
+				.getImage()));
 	}
 
 	private void onAddImageClicked() {
