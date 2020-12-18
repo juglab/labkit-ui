@@ -6,12 +6,13 @@ import net.imglib2.labkit.v2.models.ImageModel;
 import net.imglib2.labkit.v2.models.LabkitModel;
 import net.imglib2.labkit.v2.utils.InputImageIoUtils;
 import net.imglib2.labkit.v2.views.LabkitView;
+import net.imglib2.labkit.v2.views.LabkitViewListener;
 import net.imglib2.trainable_segmentation.utils.SingletonContext;
 import org.scijava.Context;
 
 import javax.swing.*;
 
-public class LabkitController {
+public class LabkitController implements LabkitViewListener {
 
 	private LabkitModel model;
 
@@ -22,7 +23,7 @@ public class LabkitController {
 	public LabkitController(LabkitModel model, LabkitView view) {
 		this.model = model;
 		this.view = view;
-		registerActions();
+		view.addListerner(this);
 	}
 
 	public void showView() {
@@ -31,27 +32,25 @@ public class LabkitController {
 
 	// -- Private Helper Methods ---
 
-	private void registerActions() {
-		view.getAddImageButton().addActionListener(e -> onAddImageClicked());
-		view.addImageModelSelectionListener(this::changeSelectedImageModel);
+	@Override
+	public void onOpenProject() {
+		// TODO:
 	}
 
-	private void changeSelectedImageModel(ImageModel activeImageModel) {
+	@Override
+	public void onSaveProject() {
+		// TODO:
+	}
+
+	@Override
+	public void onChangeActiveImage(ImageModel activeImageModel) {
 		model.setActiveImageModel(activeImageModel);
 		loadImageModel(activeImageModel);
 		view.updateActiveImage();
 	}
 
-	private void loadImageModel(ImageModel activeImageModel) {
-		String imageFile = activeImageModel.getImageFile();
-		if (activeImageModel.getImage() == null)
-			activeImageModel.setImage(InputImageIoUtils.open(context, imageFile));
-		if (activeImageModel.getLabeling() == null)
-			activeImageModel.setLabeling(InitialLabeling.initialLabeling(context, activeImageModel
-				.getImage(), activeImageModel.getLabelingFile()));
-	}
-
-	private void onAddImageClicked() {
+	@Override
+	public void onAddImage() {
 		JFileChooser dialog = new JFileChooser();
 		int result = dialog.showOpenDialog(view);
 		if (result != JFileChooser.APPROVE_OPTION)
@@ -62,4 +61,12 @@ public class LabkitController {
 		view.updateImageList();
 	}
 
+	private void loadImageModel(ImageModel activeImageModel) {
+		String imageFile = activeImageModel.getImageFile();
+		if (activeImageModel.getImage() == null)
+			activeImageModel.setImage(InputImageIoUtils.open(context, imageFile));
+		if (activeImageModel.getLabeling() == null)
+			activeImageModel.setLabeling(InitialLabeling.initialLabeling(context, activeImageModel
+				.getImage(), activeImageModel.getLabelingFile()));
+	}
 }

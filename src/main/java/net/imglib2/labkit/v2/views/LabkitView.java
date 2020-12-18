@@ -17,9 +17,13 @@ import java.util.function.Consumer;
 
 public class LabkitView extends JFrame {
 
+	// Model
+
 	private final LabkitModel model;
 
-	private final JButton addImageButton = new JButton("add");
+	// UI Components
+
+	private final JMenuBar menuBar = new JMenuBar();
 
 	private final ListAdapter listAdapter = new ListAdapter();
 
@@ -27,17 +31,48 @@ public class LabkitView extends JFrame {
 
 	private final JLabel activeImageLabel = new JLabel("-");
 
-	private final JPanel workspace = initWorkspace();
+	private final JPanel workspacePanel = initWorkspace();
 
 	private LabelingComponent activeLabelingComponent;
 
+	// Listeners
+
+	private final List<LabkitViewListener> listeners = new CopyOnWriteArrayList<>();
+
+	// Constructor
+
 	public LabkitView(LabkitModel model) {
 		this.model = model;
+		setJMenuBar(menuBar);
+		initializeMenuBar();
 		add(activeImageLabel, BorderLayout.PAGE_START);
-		workspace.setLayout(new BorderLayout());
+		workspacePanel.setLayout(new BorderLayout());
 		JPanel rightPanel = initRightPanel();
-		add(initSplitPanel(workspace, rightPanel));
+		add(initSplitPanel(workspacePanel, rightPanel));
+		imageList.addListSelectionListener(e -> {
+			if (!e.getValueIsAdjusting()) {
+				ImageModel value = model.getImageModels().get(imageList.getSelectedIndex());
+				listeners.forEach(listener -> listener.onChangeActiveImage(value));
+			}
+		});
 		pack();
+	}
+
+	// Initialization
+
+	private void initializeMenuBar() {
+		JMenu projectMenu = new JMenu("Project");
+		projectMenu.add(createMenuItem("Open Project", LabkitViewListener::onOpenProject));
+		projectMenu.add(createMenuItem("Save Project", LabkitViewListener::onSaveProject));
+		projectMenu.add(new JSeparator());
+		projectMenu.add(new JMenuItem("Close"));
+		menuBar.add(projectMenu);
+	}
+
+	private JMenuItem createMenuItem(String title, Consumer<LabkitViewListener> action) {
+		JMenuItem menuItem = new JMenuItem(title);
+		menuItem.addActionListener(l -> listeners.forEach(action));
+		return menuItem;
 	}
 
 	private JSplitPane initSplitPanel(JPanel workspace, JPanel rightPanel) {
@@ -59,6 +94,8 @@ public class LabkitView extends JFrame {
 		panel.setLayout(new MigLayout("", "[grow]", "[][grow][]"));
 		panel.add(new JLabel("Images"), "wrap");
 		panel.add(new JScrollPane(imageList), "grow, wrap");
+		JButton addImageButton = new JButton("add");
+		addImageButton.addActionListener(e -> listeners.forEach(LabkitViewListener::onAddImage));
 		panel.add(addImageButton);
 		panel.setPreferredSize(new Dimension(200, panel.getPreferredSize().height));
 		return panel;
@@ -74,31 +111,24 @@ public class LabkitView extends JFrame {
 		ImageModel activeImageModel = model.getActiveImageModel();
 		String text = activeImageModel.getName();
 		if (activeLabelingComponent != null) {
-			workspace.remove(activeLabelingComponent);
+			workspacePanel.remove(activeLabelingComponent);
 			activeLabelingComponent.close();
 		}
 		ImageLabelingModel ilm = new ImageLabelingModel(activeImageModel.getImage());
 		ilm.labeling().set(activeImageModel.getLabeling());
 		activeLabelingComponent = new LabelingComponent(this, ilm);
-		workspace.add(activeLabelingComponent);
+		workspacePanel.add(activeLabelingComponent);
 		activeImageLabel.setText(text);
-	}
-
-	// Getter
-
-	public JButton getAddImageButton() {
-		return addImageButton;
 	}
 
 	// Listeners
 
-	public void addImageModelSelectionListener(Consumer<ImageModel> listener) {
-		imageList.addListSelectionListener(e -> {
-			if (!e.getValueIsAdjusting()) {
-				ImageModel activeImageModel = model.getImageModels().get(imageList.getSelectedIndex());
-				listener.accept(activeImageModel);
-			}
-		});
+	public void addListerner(LabkitViewListener listener) {
+		listeners.add(listener);
+	}
+
+	public void removeListener(LabkitViewListener listener) {
+		listeners.remove(listener);
 	}
 
 	// Data visualization
