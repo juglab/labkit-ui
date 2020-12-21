@@ -1,8 +1,6 @@
 
-package net.imglib2.v2.models;
+package net.imglib2.labkit.v2.models;
 
-import net.imglib2.labkit.v2.models.LabkitModel;
-import net.imglib2.labkit.v2.models.LabkitModelSerialization;
 import org.apache.commons.io.FileUtils;
 import org.junit.Test;
 

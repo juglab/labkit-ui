@@ -10,6 +10,7 @@ import net.miginfocom.swing.MigLayout;
 import javax.swing.*;
 import javax.swing.event.ListDataEvent;
 import javax.swing.event.ListDataListener;
+import javax.swing.event.ListSelectionEvent;
 import java.awt.*;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.List;
@@ -19,7 +20,7 @@ public class LabkitView extends JFrame {
 
 	// Model
 
-	private final LabkitModel model;
+	private LabkitModel model;
 
 	// UI Components
 
@@ -41,21 +42,20 @@ public class LabkitView extends JFrame {
 
 	// Constructor
 
-	public LabkitView(LabkitModel model) {
-		this.model = model;
+	public LabkitView() {
+		this.model = new LabkitModel();
 		setJMenuBar(menuBar);
 		initializeMenuBar();
 		add(activeImageLabel, BorderLayout.PAGE_START);
 		workspacePanel.setLayout(new BorderLayout());
 		JPanel rightPanel = initRightPanel();
 		add(initSplitPanel(workspacePanel, rightPanel));
-		imageList.addListSelectionListener(e -> {
-			if (!e.getValueIsAdjusting()) {
-				ImageModel value = model.getImageModels().get(imageList.getSelectedIndex());
-				listeners.forEach(listener -> listener.onChangeActiveImage(value));
-			}
-		});
+		imageList.addListSelectionListener(this::onListSelectionChanged);
 		pack();
+	}
+
+	public void setModel(LabkitModel model) {
+		this.model = model;
 	}
 
 	// Initialization
@@ -101,6 +101,15 @@ public class LabkitView extends JFrame {
 		return panel;
 	}
 
+	// Event Listeners
+
+	private void onListSelectionChanged(ListSelectionEvent e) {
+		if (!e.getValueIsAdjusting()) {
+			ImageModel value = model.getImageModels().get(imageList.getSelectedIndex());
+			listeners.forEach(listener -> listener.onChangeActiveImage(value));
+		}
+	}
+
 	// Updater
 
 	public void updateImageList() {
@@ -109,16 +118,23 @@ public class LabkitView extends JFrame {
 
 	public void updateActiveImage() {
 		ImageModel activeImageModel = model.getActiveImageModel();
-		String text = activeImageModel.getName();
 		if (activeLabelingComponent != null) {
 			workspacePanel.remove(activeLabelingComponent);
 			activeLabelingComponent.close();
+			activeLabelingComponent = null;
 		}
-		ImageLabelingModel ilm = new ImageLabelingModel(activeImageModel.getImage());
-		ilm.labeling().set(activeImageModel.getLabeling());
-		activeLabelingComponent = new LabelingComponent(this, ilm);
-		workspacePanel.add(activeLabelingComponent);
-		activeImageLabel.setText(text);
+		if (activeImageModel == null) {
+			activeImageLabel.setText("-");
+		}
+		else {
+			ImageLabelingModel ilm = new ImageLabelingModel(activeImageModel.getImage());
+			ilm.labeling().set(activeImageModel.getLabeling());
+			activeLabelingComponent = new LabelingComponent(this, ilm);
+			workspacePanel.add(activeLabelingComponent);
+			activeImageLabel.setText(activeImageModel.getName());
+		}
+		workspacePanel.revalidate();
+		workspacePanel.repaint();
 	}
 
 	// Listeners
@@ -169,6 +185,9 @@ public class LabkitView extends JFrame {
 		LabkitModel model = new LabkitModel();
 		model.getImageModels().add(ImageModel.createForImageFile("a.tif"));
 		model.getImageModels().add(ImageModel.createForImageFile("b.tif"));
-		new LabkitView(model).setVisible(true);
+		LabkitView view = new LabkitView();
+		view.setModel(model);
+		view.updateImageList();
+		view.setVisible(true);
 	}
 }

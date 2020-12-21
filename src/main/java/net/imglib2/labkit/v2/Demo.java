@@ -16,7 +16,7 @@ public class Demo {
 			"/home/arzt/Documents/Datasets/Example/AuPbSn40-2.jpg"));
 		model.getImageModels().add(ImageModel.createForImageFile(
 			"/home/arzt/Documents/Datasets/Example/t1-head.tif"));
-		LabkitView view = new LabkitView(model);
+		LabkitView view = new LabkitView();
 		LabkitController controller = new LabkitController(model, view);
 		controller.showView();
 	}

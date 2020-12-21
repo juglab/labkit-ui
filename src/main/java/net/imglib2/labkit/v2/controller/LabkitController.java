@@ -2,8 +2,10 @@
 package net.imglib2.labkit.v2.controller;
 
 import net.imglib2.labkit.InitialLabeling;
+import net.imglib2.labkit.project.LabkitProjectFileFilter;
 import net.imglib2.labkit.v2.models.ImageModel;
 import net.imglib2.labkit.v2.models.LabkitModel;
+import net.imglib2.labkit.v2.models.LabkitModelSerialization;
 import net.imglib2.labkit.v2.utils.InputImageIoUtils;
 import net.imglib2.labkit.v2.views.LabkitView;
 import net.imglib2.labkit.v2.views.LabkitViewListener;
@@ -23,6 +25,8 @@ public class LabkitController implements LabkitViewListener {
 	public LabkitController(LabkitModel model, LabkitView view) {
 		this.model = model;
 		this.view = view;
+		view.setModel(model);
+		view.updateImageList();
 		view.addListerner(this);
 	}
 
@@ -34,12 +38,32 @@ public class LabkitController implements LabkitViewListener {
 
 	@Override
 	public void onOpenProject() {
-		// TODO:
+		JFileChooser dialog = new JFileChooser();
+		dialog.setFileFilter(new LabkitProjectFileFilter());
+		int result = dialog.showOpenDialog(view);
+		if (result != JFileChooser.APPROVE_OPTION)
+			return;
+		String file = dialog.getSelectedFile().getAbsolutePath();
+		LabkitModel newModel = LabkitModelSerialization.open(file);
+		setModel(newModel);
+	}
+
+	private void setModel(LabkitModel newModel) {
+		model = newModel;
+		view.setModel(newModel);
+		view.updateImageList();
+		view.updateActiveImage();
 	}
 
 	@Override
 	public void onSaveProject() {
-		// TODO:
+		JFileChooser dialog = new JFileChooser();
+		dialog.setFileFilter(new LabkitProjectFileFilter());
+		int result = dialog.showSaveDialog(view);
+		if (result != JFileChooser.APPROVE_OPTION)
+			return;
+		String file = dialog.getSelectedFile().getAbsolutePath();
+		LabkitModelSerialization.save(model, file);
 	}
 
 	@Override
