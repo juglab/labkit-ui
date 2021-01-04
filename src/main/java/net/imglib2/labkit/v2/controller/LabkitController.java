@@ -80,7 +80,7 @@ public class LabkitController implements LabkitViewListener {
 		if (result != JFileChooser.APPROVE_OPTION)
 			return;
 		String file = dialog.getSelectedFile().getAbsolutePath();
-		ImageModel image = ImageModel.createForImageFile(file);
+		ImageModel image = ImageModel.createForImageFile(file, model.getProjectFolder());
 		model.getImageModels().add(image);
 		view.updateImageList();
 	}

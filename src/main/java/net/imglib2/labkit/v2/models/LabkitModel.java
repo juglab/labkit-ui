@@ -12,6 +12,8 @@ import java.util.List;
  */
 public class LabkitModel {
 
+	private String projectFolder;
+
 	@JsonProperty("images")
 	private List<ImageModel> imageModels = new ArrayList<>();
 
@@ -21,7 +23,15 @@ public class LabkitModel {
 	@JsonIgnore
 	private ImageModel activeImageModel;
 
+	public LabkitModel(String projectFolder) {
+		this.projectFolder = projectFolder;
+	}
+
 	// Getters
+
+	public String getProjectFolder() {
+		return projectFolder;
+	}
 
 	public List<SegmenterModel> getSegmenterModels() {
 		return segmenterModels;

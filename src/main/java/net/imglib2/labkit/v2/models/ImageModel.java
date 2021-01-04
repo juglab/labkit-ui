@@ -30,11 +30,12 @@ public class ImageModel {
 	@JsonIgnore
 	private Labeling labeling;
 
-	public static ImageModel createForImageFile(String imageFile) {
+	public static ImageModel createForImageFile(String imageFile, String projectFolder) {
 		ImageModel image = new ImageModel();
-		image.name = FilenameUtils.getName(imageFile);
+		String name = FilenameUtils.getName(imageFile);
+		image.name = name;
 		image.imageFile = imageFile;
-		image.labelingFile = imageFile + ".labeling";
+		image.labelingFile = FilenameUtils.concat(projectFolder, name + ".labeling");
 		return image;
 	}
 

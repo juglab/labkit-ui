@@ -12,6 +12,7 @@ import javax.swing.event.ListDataEvent;
 import javax.swing.event.ListDataListener;
 import javax.swing.event.ListSelectionEvent;
 import java.awt.*;
+import java.nio.file.Files;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.List;
 import java.util.function.Consumer;
@@ -43,7 +44,7 @@ public class LabkitView extends JFrame {
 	// Constructor
 
 	public LabkitView() {
-		this.model = new LabkitModel();
+		this.model = new LabkitModel(".");
 		setJMenuBar(menuBar);
 		initializeMenuBar();
 		add(activeImageLabel, BorderLayout.PAGE_START);
@@ -182,9 +183,9 @@ public class LabkitView extends JFrame {
 	// demo
 
 	public static void main(String... args) {
-		LabkitModel model = new LabkitModel();
-		model.getImageModels().add(ImageModel.createForImageFile("a.tif"));
-		model.getImageModels().add(ImageModel.createForImageFile("b.tif"));
+		LabkitModel model = new LabkitModel("./");
+		model.getImageModels().add(ImageModel.createForImageFile("a.tif", "./"));
+		model.getImageModels().add(ImageModel.createForImageFile("b.tif", "./"));
 		LabkitView view = new LabkitView();
 		view.setModel(model);
 		view.updateImageList();
