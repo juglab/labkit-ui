@@ -2,7 +2,6 @@
 package net.imglib2.labkit.v2.controller;
 
 import net.imglib2.labkit.InitialLabeling;
-import net.imglib2.labkit.project.LabkitProjectFileFilter;
 import net.imglib2.labkit.v2.models.ImageModel;
 import net.imglib2.labkit.v2.models.LabkitModel;
 import net.imglib2.labkit.v2.models.LabkitModelSerialization;
@@ -11,8 +10,6 @@ import net.imglib2.labkit.v2.views.LabkitView;
 import net.imglib2.labkit.v2.views.LabkitViewListener;
 import net.imglib2.trainable_segmentation.utils.SingletonContext;
 import org.scijava.Context;
-
-import javax.swing.*;
 
 public class LabkitController implements LabkitViewListener {
 
@@ -37,13 +34,7 @@ public class LabkitController implements LabkitViewListener {
 	// -- Private Helper Methods ---
 
 	@Override
-	public void onOpenProject() {
-		JFileChooser dialog = new JFileChooser();
-		dialog.setFileFilter(new LabkitProjectFileFilter());
-		int result = dialog.showOpenDialog(view);
-		if (result != JFileChooser.APPROVE_OPTION)
-			return;
-		String file = dialog.getSelectedFile().getAbsolutePath();
+	public void openProject(String file) {
 		LabkitModel newModel = LabkitModelSerialization.open(file);
 		setModel(newModel);
 	}
@@ -56,30 +47,19 @@ public class LabkitController implements LabkitViewListener {
 	}
 
 	@Override
-	public void onSaveProject() {
-		JFileChooser dialog = new JFileChooser();
-		dialog.setFileFilter(new LabkitProjectFileFilter());
-		int result = dialog.showSaveDialog(view);
-		if (result != JFileChooser.APPROVE_OPTION)
-			return;
-		String file = dialog.getSelectedFile().getAbsolutePath();
+	public void saveProject(String file) {
 		LabkitModelSerialization.save(model, file);
 	}
 
 	@Override
-	public void onChangeActiveImage(ImageModel activeImageModel) {
+	public void changeActiveImage(ImageModel activeImageModel) {
 		model.setActiveImageModel(activeImageModel);
 		loadImageModel(activeImageModel);
 		view.updateActiveImage();
 	}
 
 	@Override
-	public void onAddImage() {
-		JFileChooser dialog = new JFileChooser();
-		int result = dialog.showOpenDialog(view);
-		if (result != JFileChooser.APPROVE_OPTION)
-			return;
-		String file = dialog.getSelectedFile().getAbsolutePath();
+	public void addImage(String file) {
 		ImageModel image = ImageModel.createForImageFile(file, model.getProjectFolder());
 		model.getImageModels().add(image);
 		view.updateImageList();

@@ -5,11 +5,11 @@ import net.imglib2.labkit.v2.models.ImageModel;
 
 public interface LabkitViewListener {
 
-	void onAddImage();
+	void addImage(String file);
 
-	void onOpenProject();
+	void openProject(String file);
 
-	void onSaveProject();
+	void saveProject(String file);
 
-	void onChangeActiveImage(ImageModel value);
+	void changeActiveImage(ImageModel value);
 }

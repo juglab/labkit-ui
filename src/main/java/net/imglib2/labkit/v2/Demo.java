@@ -15,14 +15,11 @@ public class Demo {
 		String projectFolder = Files.createTempDirectory("labkit-demo-project").toFile()
 			.getAbsolutePath();
 		LabkitModel model = new LabkitModel(projectFolder);
-		model.getImageModels().add(ImageModel.createForImageFile(
-			"/home/arzt/Documents/Datasets/Example/boats.tif", projectFolder));
-		model.getImageModels().add(ImageModel.createForImageFile(
-			"/home/arzt/Documents/Datasets/Example/AuPbSn40-2.jpg", projectFolder));
-		model.getImageModels().add(ImageModel.createForImageFile(
-			"/home/arzt/Documents/Datasets/Example/t1-head.tif", projectFolder));
 		LabkitView view = new LabkitView();
 		LabkitController controller = new LabkitController(model, view);
+		controller.addImage("/home/arzt/Documents/Datasets/Example/boats.tif");
+		controller.addImage("/home/arzt/Documents/Datasets/Example/AuPbSn40-2.jpg");
+		controller.addImage("/home/arzt/Documents/Datasets/Example/t1-head.tif");
 		controller.showView();
 	}
 }

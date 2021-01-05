@@ -3,6 +3,7 @@ package net.imglib2.labkit.v2.views;
 
 import net.imglib2.labkit.LabelingComponent;
 import net.imglib2.labkit.models.ImageLabelingModel;
+import net.imglib2.labkit.project.LabkitProjectFileFilter;
 import net.imglib2.labkit.v2.models.ImageModel;
 import net.imglib2.labkit.v2.models.LabkitModel;
 import net.miginfocom.swing.MigLayout;
@@ -12,10 +13,8 @@ import javax.swing.event.ListDataEvent;
 import javax.swing.event.ListDataListener;
 import javax.swing.event.ListSelectionEvent;
 import java.awt.*;
-import java.nio.file.Files;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.List;
-import java.util.function.Consumer;
 
 public class LabkitView extends JFrame {
 
@@ -63,16 +62,36 @@ public class LabkitView extends JFrame {
 
 	private void initializeMenuBar() {
 		JMenu projectMenu = new JMenu("Project");
-		projectMenu.add(createMenuItem("Open Project", LabkitViewListener::onOpenProject));
-		projectMenu.add(createMenuItem("Save Project", LabkitViewListener::onSaveProject));
+		projectMenu.add(createMenuItem("Open Project", this::onOpenProject));
+		projectMenu.add(createMenuItem("Save Project", this::onSaveProject));
 		projectMenu.add(new JSeparator());
 		projectMenu.add(new JMenuItem("Close"));
 		menuBar.add(projectMenu);
 	}
 
-	private JMenuItem createMenuItem(String title, Consumer<LabkitViewListener> action) {
+	private void onOpenProject() {
+		JFileChooser dialog = new JFileChooser();
+		dialog.setFileFilter(new LabkitProjectFileFilter());
+		int result = dialog.showOpenDialog(this);
+		if (result != JFileChooser.APPROVE_OPTION)
+			return;
+		String file = dialog.getSelectedFile().getAbsolutePath();
+		listeners.forEach(listener -> listener.openProject(file));
+	}
+
+	private void onSaveProject() {
+		JFileChooser dialog = new JFileChooser();
+		dialog.setFileFilter(new LabkitProjectFileFilter());
+		int result = dialog.showSaveDialog(this);
+		if (result != JFileChooser.APPROVE_OPTION)
+			return;
+		String file = dialog.getSelectedFile().getAbsolutePath();
+		listeners.forEach(listener -> listener.saveProject(file));
+	}
+
+	private JMenuItem createMenuItem(String title, Runnable action) {
 		JMenuItem menuItem = new JMenuItem(title);
-		menuItem.addActionListener(l -> listeners.forEach(action));
+		menuItem.addActionListener(l -> action.run());
 		return menuItem;
 	}
 
@@ -96,10 +115,19 @@ public class LabkitView extends JFrame {
 		panel.add(new JLabel("Images"), "wrap");
 		panel.add(new JScrollPane(imageList), "grow, wrap");
 		JButton addImageButton = new JButton("add");
-		addImageButton.addActionListener(e -> listeners.forEach(LabkitViewListener::onAddImage));
+		addImageButton.addActionListener(ignore -> onAddImage());
 		panel.add(addImageButton);
 		panel.setPreferredSize(new Dimension(200, panel.getPreferredSize().height));
 		return panel;
+	}
+
+	private void onAddImage() {
+		JFileChooser dialog = new JFileChooser();
+		int result = dialog.showOpenDialog(this);
+		if (result != JFileChooser.APPROVE_OPTION)
+			return;
+		String file = dialog.getSelectedFile().getAbsolutePath();
+		listeners.forEach(listener -> listener.addImage(file));
 	}
 
 	// Event Listeners
@@ -107,7 +135,7 @@ public class LabkitView extends JFrame {
 	private void onListSelectionChanged(ListSelectionEvent e) {
 		if (!e.getValueIsAdjusting()) {
 			ImageModel value = model.getImageModels().get(imageList.getSelectedIndex());
-			listeners.forEach(listener -> listener.onChangeActiveImage(value));
+			listeners.forEach(listener -> listener.changeActiveImage(value));
 		}
 	}
 
