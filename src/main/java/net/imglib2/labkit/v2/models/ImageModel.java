@@ -30,15 +30,6 @@ public class ImageModel {
 	@JsonIgnore
 	private Labeling labeling;
 
-	public static ImageModel createForImageFile(String imageFile, String projectFolder) {
-		ImageModel image = new ImageModel();
-		String name = FilenameUtils.getName(imageFile);
-		image.name = name;
-		image.imageFile = imageFile;
-		image.labelingFile = FilenameUtils.concat(projectFolder, name + ".labeling");
-		return image;
-	}
-
 	// Getter & Setter ...
 
 	public String getName() {
@@ -51,6 +42,10 @@ public class ImageModel {
 
 	public String getImageFile() {
 		return imageFile;
+	}
+
+	public void setImageFile(String imageFile) {
+		this.imageFile = imageFile;
 	}
 
 	public String getLabelingFile() {
@@ -76,5 +71,4 @@ public class ImageModel {
 	public void setLabeling(Labeling labeling) {
 		this.labeling = labeling;
 	}
-
 }

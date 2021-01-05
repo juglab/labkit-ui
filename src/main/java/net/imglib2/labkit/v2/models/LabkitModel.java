@@ -12,6 +12,7 @@ import java.util.List;
  */
 public class LabkitModel {
 
+	@JsonIgnore
 	private String projectFolder;
 
 	@JsonProperty("images")

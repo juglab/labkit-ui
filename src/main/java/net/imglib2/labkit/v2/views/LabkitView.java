@@ -212,8 +212,6 @@ public class LabkitView extends JFrame {
 
 	public static void main(String... args) {
 		LabkitModel model = new LabkitModel("./");
-		model.getImageModels().add(ImageModel.createForImageFile("a.tif", "./"));
-		model.getImageModels().add(ImageModel.createForImageFile("b.tif", "./"));
 		LabkitView view = new LabkitView();
 		view.setModel(model);
 		view.updateImageList();

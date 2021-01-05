@@ -2,6 +2,7 @@
 package net.imglib2.labkit.v2.controller;
 
 import net.imglib2.labkit.InitialLabeling;
+import net.imglib2.labkit.labeling.Labeling;
 import net.imglib2.labkit.v2.models.ImageModel;
 import net.imglib2.labkit.v2.models.LabkitModel;
 import net.imglib2.labkit.v2.models.LabkitModelSerialization;
@@ -9,6 +10,7 @@ import net.imglib2.labkit.v2.utils.InputImageIoUtils;
 import net.imglib2.labkit.v2.views.LabkitView;
 import net.imglib2.labkit.v2.views.LabkitViewListener;
 import net.imglib2.trainable_segmentation.utils.SingletonContext;
+import org.apache.commons.io.FilenameUtils;
 import org.scijava.Context;
 
 public class LabkitController implements LabkitViewListener {
@@ -60,7 +62,11 @@ public class LabkitController implements LabkitViewListener {
 
 	@Override
 	public void addImage(String file) {
-		ImageModel image = ImageModel.createForImageFile(file, model.getProjectFolder());
+		ImageModel image = new ImageModel();
+		String name = FilenameUtils.getName(file);
+		image.setName(name);
+		image.setImageFile(file);
+		image.setLabelingFile(name + ".labeling");
 		model.getImageModels().add(image);
 		view.updateImageList();
 	}
@@ -69,8 +75,12 @@ public class LabkitController implements LabkitViewListener {
 		String imageFile = activeImageModel.getImageFile();
 		if (activeImageModel.getImage() == null)
 			activeImageModel.setImage(InputImageIoUtils.open(context, imageFile));
-		if (activeImageModel.getLabeling() == null)
-			activeImageModel.setLabeling(InitialLabeling.initialLabeling(context, activeImageModel
-				.getImage(), activeImageModel.getLabelingFile()));
+		if (activeImageModel.getLabeling() == null) {
+			String fullLabelingFile = FilenameUtils.concat(model.getProjectFolder(), activeImageModel
+				.getLabelingFile());
+			Labeling labeling = InitialLabeling.initialLabeling(context, activeImageModel.getImage(),
+				fullLabelingFile);
+			activeImageModel.setLabeling(labeling);
+		}
 	}
 }
