@@ -169,7 +169,7 @@ public class LabkitView extends JFrame {
 
 	public void updateActiveImage() {
 		updateActiveImageLabel();
-		updateWorkSpace();
+		updateWorkspace();
 		updateSelection();
 	}
 
@@ -178,7 +178,7 @@ public class LabkitView extends JFrame {
 		activeImageLabel.setText(activeImageModel != null ? activeImageModel.getName() : "-");
 	}
 
-	private void updateWorkSpace() {
+	private void updateWorkspace() {
 		ImageModel activeImageModel = model.getActiveImageModel();
 		if (activeLabelingComponent != null) {
 			workspacePanel.remove(activeLabelingComponent);
@@ -210,7 +210,7 @@ public class LabkitView extends JFrame {
 
 	// Listeners
 
-	public void addListerner(LabkitViewListener listener) {
+	public void addListener(LabkitViewListener listener) {
 		listeners.add(listener);
 	}
 

@@ -32,7 +32,7 @@ public class LabkitController implements LabkitViewListener {
 		this.view = view;
 		view.setModel(model);
 		view.updateImageList();
-		view.addListerner(this);
+		view.addListener(this);
 	}
 
 	public void showView() {
