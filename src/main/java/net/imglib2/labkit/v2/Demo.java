@@ -14,7 +14,8 @@ public class Demo {
 	public static void main(String... arg) throws IOException {
 		String projectFolder = Files.createTempDirectory("labkit-demo-project").toFile()
 			.getAbsolutePath();
-		LabkitModel model = new LabkitModel(projectFolder);
+		LabkitModel model = new LabkitModel();
+		model.setProjectFolder(projectFolder);
 		LabkitView view = new LabkitView();
 		LabkitController controller = new LabkitController(model, view);
 		controller.addImage("/home/arzt/Documents/Datasets/Example/boats.tif");

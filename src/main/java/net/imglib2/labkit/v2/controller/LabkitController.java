@@ -3,6 +3,7 @@ package net.imglib2.labkit.v2.controller;
 
 import net.imglib2.labkit.InitialLabeling;
 import net.imglib2.labkit.labeling.Labeling;
+import net.imglib2.labkit.labeling.LabelingSerializer;
 import net.imglib2.labkit.v2.models.ImageModel;
 import net.imglib2.labkit.v2.models.LabkitModel;
 import net.imglib2.labkit.v2.models.LabkitModelSerialization;
@@ -13,6 +14,7 @@ import net.imglib2.trainable_segmentation.utils.SingletonContext;
 import org.apache.commons.io.FilenameUtils;
 import org.scijava.Context;
 
+import java.io.IOException;
 import java.util.List;
 
 public class LabkitController implements LabkitViewListener {
@@ -40,6 +42,7 @@ public class LabkitController implements LabkitViewListener {
 	@Override
 	public void openProject(String file) {
 		LabkitModel newModel = LabkitModelSerialization.open(file);
+		newModel.setProjectFolder(FilenameUtils.getFullPath(file));
 		setModel(newModel);
 	}
 
@@ -53,6 +56,18 @@ public class LabkitController implements LabkitViewListener {
 	@Override
 	public void saveProject(String file) {
 		LabkitModelSerialization.save(model, file);
+		saveLabelings(FilenameUtils.getFullPath(file));
+	}
+
+	private void saveLabelings(String projectFolder) {
+		for (ImageModel imageModel : model.getImageModels())
+			try {
+				String labelingFile = FilenameUtils.concat(projectFolder, imageModel.getLabelingFile());
+				new LabelingSerializer(context).save(imageModel.getLabeling(), labelingFile);
+			}
+			catch (IOException e) {
+				e.printStackTrace();
+			}
 	}
 
 	@Override

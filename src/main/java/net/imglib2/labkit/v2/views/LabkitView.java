@@ -45,7 +45,7 @@ public class LabkitView extends JFrame {
 	// Constructor
 
 	public LabkitView() {
-		this.model = new LabkitModel(".");
+		this.model = new LabkitModel();
 		setJMenuBar(menuBar);
 		initializeMenuBar();
 		add(activeImageLabel, BorderLayout.PAGE_START);
@@ -246,7 +246,7 @@ public class LabkitView extends JFrame {
 	// demo
 
 	public static void main(String... args) {
-		LabkitModel model = new LabkitModel("./");
+		LabkitModel model = new LabkitModel();
 		LabkitView view = new LabkitView();
 		view.setModel(model);
 		view.updateImageList();

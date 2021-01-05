@@ -1,8 +1,9 @@
 
 * Add view and controller classes (check)
 * How to deal with active labeledimage, label, segmenter (check)
+* Implement save project to save all the labelings (check)
+* Only save modified labelings
 * Initialize the labelingFile to not clash with any other labelingFile
-* Implement save project to save all the labelings
 * Discussion with Tom
   * What has been done:
     * LabkitModel is simple serialized with YAML

@@ -4,6 +4,8 @@ package net.imglib2.labkit.v2.models;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
+import java.io.IOException;
+import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -24,14 +26,24 @@ public class LabkitModel {
 	@JsonIgnore
 	private ImageModel activeImageModel;
 
-	public LabkitModel(String projectFolder) {
-		this.projectFolder = projectFolder;
+	public LabkitModel() {
+		try {
+			this.projectFolder = Files.createTempDirectory("new-labkit-project").toFile()
+				.getAbsolutePath();
+		}
+		catch (IOException e) {
+			e.printStackTrace();
+		}
 	}
 
 	// Getters
 
 	public String getProjectFolder() {
 		return projectFolder;
+	}
+
+	public void setProjectFolder(String projectFolder) {
+		this.projectFolder = projectFolder;
 	}
 
 	public List<SegmenterModel> getSegmenterModels() {
