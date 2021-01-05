@@ -13,6 +13,8 @@ import net.imglib2.trainable_segmentation.utils.SingletonContext;
 import org.apache.commons.io.FilenameUtils;
 import org.scijava.Context;
 
+import java.util.List;
+
 public class LabkitController implements LabkitViewListener {
 
 	private LabkitModel model;
@@ -56,7 +58,8 @@ public class LabkitController implements LabkitViewListener {
 	@Override
 	public void changeActiveImage(ImageModel activeImageModel) {
 		model.setActiveImageModel(activeImageModel);
-		loadImageModel(activeImageModel);
+		if (activeImageModel != null)
+			loadImageModel(activeImageModel);
 		view.updateActiveImage();
 	}
 
@@ -68,6 +71,15 @@ public class LabkitController implements LabkitViewListener {
 		image.setImageFile(file);
 		image.setLabelingFile(name + ".labeling");
 		model.getImageModels().add(image);
+		view.updateImageList();
+	}
+
+	@Override
+	public void removeImages(List<ImageModel> imagesToRemove) {
+		List<ImageModel> list = model.getImageModels();
+		list.removeAll(imagesToRemove);
+		if (!list.contains(model.getActiveImageModel()))
+			changeActiveImage(list.isEmpty() ? null : list.get(0));
 		view.updateImageList();
 	}
 

@@ -15,6 +15,8 @@ import javax.swing.event.ListSelectionEvent;
 import java.awt.*;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 public class LabkitView extends JFrame {
 
@@ -116,7 +118,10 @@ public class LabkitView extends JFrame {
 		panel.add(new JScrollPane(imageList), "grow, wrap");
 		JButton addImageButton = new JButton("add");
 		addImageButton.addActionListener(ignore -> onAddImage());
-		panel.add(addImageButton);
+		panel.add(addImageButton, "split 2");
+		JButton removeImagesButton = new JButton("remove");
+		removeImagesButton.addActionListener(ignore -> onRemoveImages());
+		panel.add(removeImagesButton);
 		panel.setPreferredSize(new Dimension(200, panel.getPreferredSize().height));
 		return panel;
 	}
@@ -130,11 +135,23 @@ public class LabkitView extends JFrame {
 		listeners.forEach(listener -> listener.addImage(file));
 	}
 
+	private void onRemoveImages() {
+		int[] selected = imageList.getSelectedIndices();
+		List<ImageModel> images = model.getImageModels();
+		List<ImageModel> selectedImages = IntStream.of(selected).mapToObj(images::get).collect(
+			Collectors.toList());
+		listeners.forEach(listener -> listener.removeImages(selectedImages));
+	}
+
 	// Event Listeners
 
 	private void onListSelectionChanged(ListSelectionEvent e) {
 		if (!e.getValueIsAdjusting()) {
-			ImageModel value = model.getImageModels().get(imageList.getSelectedIndex());
+			int index = imageList.getSelectedIndex();
+			List<ImageModel> imageModels = model.getImageModels();
+			if (index < 0 || index >= imageModels.size())
+				return;
+			ImageModel value = imageModels.get(index);
 			listeners.forEach(listener -> listener.changeActiveImage(value));
 		}
 	}
@@ -146,6 +163,17 @@ public class LabkitView extends JFrame {
 	}
 
 	public void updateActiveImage() {
+		updateActiveImageLabel();
+		updateWorkSpace();
+		updateSelection();
+	}
+
+	private void updateActiveImageLabel() {
+		ImageModel activeImageModel = model.getActiveImageModel();
+		activeImageLabel.setText(activeImageModel != null ? activeImageModel.getName() : "-");
+	}
+
+	private void updateWorkSpace() {
 		ImageModel activeImageModel = model.getActiveImageModel();
 		if (activeLabelingComponent != null) {
 			workspacePanel.remove(activeLabelingComponent);
@@ -164,6 +192,13 @@ public class LabkitView extends JFrame {
 		}
 		workspacePanel.revalidate();
 		workspacePanel.repaint();
+	}
+
+	private void updateSelection() {
+		ImageModel activeImageModel = model.getActiveImageModel();
+		int index = model.getImageModels().indexOf(activeImageModel);
+		if (imageList.getSelectedIndex() != index)
+			imageList.setSelectedIndex(index);
 	}
 
 	// Listeners
