@@ -3,7 +3,7 @@
 * How to deal with active labeledimage, label, segmenter (check)
 * Implement save project to save all the labelings (check)
 * Only save modified labelings (check)
-* Initialize the labelingFile to not clash with any other labelingFile
+* Initialize the labelingFile to not clash with any other labelingFile (check)
 * Discussion with Tom
   * What has been done:
     * LabkitModel is simple serialized with YAML

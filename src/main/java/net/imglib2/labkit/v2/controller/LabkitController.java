@@ -16,6 +16,8 @@ import org.scijava.Context;
 
 import java.io.IOException;
 import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 public class LabkitController implements LabkitViewListener {
 
@@ -98,9 +100,19 @@ public class LabkitController implements LabkitViewListener {
 		String name = FilenameUtils.getName(file);
 		image.setName(name);
 		image.setImageFile(file);
-		image.setLabelingFile(name + ".labeling");
+		image.setLabelingFile(newLabelingFileName(name));
 		model.getImageModels().add(image);
 		view.updateImageList();
+	}
+
+	private String newLabelingFileName(String name) {
+		Set<String> labelingFiles = model.getImageModels().stream()
+			.map(ImageModel::getLabelingFile).collect(Collectors.toSet());
+		String labelingFile = name + ".labeling";
+		for (int i = 1; labelingFiles.contains(labelingFile); i++) {
+			labelingFile = name + "_" + i + ".labeling";
+		}
+		return labelingFile;
 	}
 
 	@Override
