@@ -54,20 +54,34 @@ public class LabkitController implements LabkitViewListener {
 	}
 
 	@Override
-	public void saveProject(String file) {
+	public void saveProject() {
+		String yaml = FilenameUtils.concat(model.getProjectFolder(), "labkit-project.yaml");
+		LabkitModelSerialization.save(model, yaml);
+		saveLabelings(model.getProjectFolder());
+	}
+
+	@Override
+	public void saveProjectAs(String file) {
 		LabkitModelSerialization.save(model, file);
 		saveLabelings(FilenameUtils.getFullPath(file));
 	}
 
 	private void saveLabelings(String projectFolder) {
-		for (ImageModel imageModel : model.getImageModels())
+		boolean inplace = model.getProjectFolder().equals(projectFolder);
+		for (ImageModel imageModel : model.getImageModels()) {
+			Labeling labeling = imageModel.getLabeling();
+			if (labeling == null || (inplace && !imageModel.isLabelingModified()))
+				continue;
 			try {
 				String labelingFile = FilenameUtils.concat(projectFolder, imageModel.getLabelingFile());
-				new LabelingSerializer(context).save(imageModel.getLabeling(), labelingFile);
+				new LabelingSerializer(context).save(labeling, labelingFile);
+				if (inplace)
+					imageModel.setLabelingModified(false);
 			}
 			catch (IOException e) {
 				e.printStackTrace();
 			}
+		}
 	}
 
 	@Override

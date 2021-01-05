@@ -22,13 +22,13 @@ public class ImageModel {
 	private String labelingFile;
 
 	@JsonIgnore
-	private String tmpLabelingFile;
-
-	@JsonIgnore
 	private InputImage image;
 
 	@JsonIgnore
 	private Labeling labeling;
+
+	@JsonIgnore
+	private boolean labelingModified = false;
 
 	// Getter & Setter ...
 
@@ -70,5 +70,13 @@ public class ImageModel {
 
 	public void setLabeling(Labeling labeling) {
 		this.labeling = labeling;
+	}
+
+	public boolean isLabelingModified() {
+		return labelingModified;
+	}
+
+	public void setLabelingModified(boolean labelingModified) {
+		this.labelingModified = labelingModified;
 	}
 }

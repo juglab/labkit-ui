@@ -66,6 +66,7 @@ public class LabkitView extends JFrame {
 		JMenu projectMenu = new JMenu("Project");
 		projectMenu.add(createMenuItem("Open Project", this::onOpenProject));
 		projectMenu.add(createMenuItem("Save Project", this::onSaveProject));
+		projectMenu.add(createMenuItem("Save Project As ...", this::onSaveProjectAs));
 		projectMenu.add(new JSeparator());
 		projectMenu.add(new JMenuItem("Close"));
 		menuBar.add(projectMenu);
@@ -82,13 +83,17 @@ public class LabkitView extends JFrame {
 	}
 
 	private void onSaveProject() {
+		listeners.forEach(LabkitViewListener::saveProject);
+	}
+
+	private void onSaveProjectAs() {
 		JFileChooser dialog = new JFileChooser();
 		dialog.setFileFilter(new LabkitProjectFileFilter());
 		int result = dialog.showSaveDialog(this);
 		if (result != JFileChooser.APPROVE_OPTION)
 			return;
 		String file = dialog.getSelectedFile().getAbsolutePath();
-		listeners.forEach(listener -> listener.saveProject(file));
+		listeners.forEach(listener -> listener.saveProjectAs(file));
 	}
 
 	private JMenuItem createMenuItem(String title, Runnable action) {
@@ -186,6 +191,8 @@ public class LabkitView extends JFrame {
 		else {
 			ImageLabelingModel ilm = new ImageLabelingModel(activeImageModel.getImage());
 			ilm.labeling().set(activeImageModel.getLabeling());
+			ilm.labeling().notifier().addListener(() -> activeImageModel.setLabelingModified(true));
+			ilm.dataChangedNotifier().addListener(ignore -> activeImageModel.setLabelingModified(true));
 			activeLabelingComponent = new LabelingComponent(this, ilm);
 			workspacePanel.add(activeLabelingComponent);
 			activeImageLabel.setText(activeImageModel.getName());

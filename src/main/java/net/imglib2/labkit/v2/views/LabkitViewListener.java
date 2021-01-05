@@ -11,7 +11,9 @@ public interface LabkitViewListener {
 
 	void openProject(String file);
 
-	void saveProject(String file);
+	void saveProject();
+
+	void saveProjectAs(String file);
 
 	void changeActiveImage(ImageModel value);
 
