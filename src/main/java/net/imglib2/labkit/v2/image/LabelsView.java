@@ -34,20 +34,10 @@ public class LabelsView extends JPanel {
 		this.model = model;
 		this.listener = listener;
 		setLayout(new BorderLayout());
+		add(new GroupTitle("Labeling"), BorderLayout.PAGE_START);
 		add(initPanel(false));
 		updateList();
 	}
-
-//	public static JPanel newFramedLabelPanel(
-//		LabelingModel imageLabelingModel, DefaultExtensible extensible,
-//		boolean fixedLabels)
-//	{
-//		return GuiUtils.createCheckboxGroupedPanel(imageLabelingModel
-//			.labelingVisibility(), "Labeling", new LabelsView(extensible
-//				.dialogParent(), new ColoredLabelsModel(imageLabelingModel),
-//				fixedLabels, item1 -> extensible.createPopupMenu(Label.LABEL_MENU,
-//					item1)).getComponent());
-//	}
 
 	// -- Helper methods --
 
