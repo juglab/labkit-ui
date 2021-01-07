@@ -9,6 +9,10 @@
     * Who should initialize the labelingFile to not clash with any other labelingFile.
   * The view now changes the model, by calling ImageModel.setLabelingModified(), how do we deal with this.
 
+* Consider introducing ImageController
+* Information about brightness and contrast should be part of imageModel and also stored in YAML
+* Scrap main menu
+
 Future:
 * How to deal with "visibility"
   * Place label visibilities in the model.

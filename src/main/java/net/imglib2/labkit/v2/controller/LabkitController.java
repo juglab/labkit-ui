@@ -1,20 +1,15 @@
 
 package net.imglib2.labkit.v2.controller;
 
-import net.imglib2.labkit.InitialLabeling;
-import net.imglib2.labkit.labeling.Labeling;
-import net.imglib2.labkit.labeling.LabelingSerializer;
 import net.imglib2.labkit.v2.models.ImageModel;
 import net.imglib2.labkit.v2.models.LabkitModel;
 import net.imglib2.labkit.v2.models.LabkitModelSerialization;
-import net.imglib2.labkit.v2.utils.InputImageIoUtils;
 import net.imglib2.labkit.v2.views.LabkitView;
 import net.imglib2.labkit.v2.views.LabkitViewListener;
 import net.imglib2.trainable_segmentation.utils.SingletonContext;
 import org.apache.commons.io.FilenameUtils;
 import org.scijava.Context;
 
-import java.io.IOException;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -71,18 +66,7 @@ public class LabkitController implements LabkitViewListener {
 	private void saveLabelings(String projectFolder) {
 		boolean inplace = model.getProjectFolder().equals(projectFolder);
 		for (ImageModel imageModel : model.getImageModels()) {
-			Labeling labeling = imageModel.getLabeling();
-			if (labeling == null || (inplace && !imageModel.isLabelingModified()))
-				continue;
-			try {
-				String labelingFile = FilenameUtils.concat(projectFolder, imageModel.getLabelingFile());
-				new LabelingSerializer(context).save(labeling, labelingFile);
-				if (inplace)
-					imageModel.setLabelingModified(false);
-			}
-			catch (IOException e) {
-				e.printStackTrace();
-			}
+			imageModel.saveLabeling(projectFolder, inplace, context);
 		}
 	}
 
@@ -90,7 +74,7 @@ public class LabkitController implements LabkitViewListener {
 	public void changeActiveImage(ImageModel activeImageModel) {
 		model.setActiveImageModel(activeImageModel);
 		if (activeImageModel != null)
-			loadImageModel(activeImageModel);
+			activeImageModel.load(context, model.getProjectFolder());
 		view.updateActiveImage();
 	}
 
@@ -124,16 +108,4 @@ public class LabkitController implements LabkitViewListener {
 		view.updateImageList();
 	}
 
-	private void loadImageModel(ImageModel activeImageModel) {
-		String imageFile = activeImageModel.getImageFile();
-		if (activeImageModel.getImage() == null)
-			activeImageModel.setImage(InputImageIoUtils.open(context, imageFile));
-		if (activeImageModel.getLabeling() == null) {
-			String fullLabelingFile = FilenameUtils.concat(model.getProjectFolder(), activeImageModel
-				.getLabelingFile());
-			Labeling labeling = InitialLabeling.initialLabeling(context, activeImageModel.getImage(),
-				fullLabelingFile);
-			activeImageModel.setLabeling(labeling);
-		}
-	}
 }
