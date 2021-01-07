@@ -6,9 +6,7 @@ import net.imglib2.labkit.v2.models.LabkitModel;
 import net.imglib2.labkit.v2.models.LabkitModelSerialization;
 import net.imglib2.labkit.v2.views.LabkitView;
 import net.imglib2.labkit.v2.views.LabkitViewListener;
-import net.imglib2.trainable_segmentation.utils.SingletonContext;
 import org.apache.commons.io.FilenameUtils;
-import org.scijava.Context;
 
 import java.util.List;
 import java.util.Set;
@@ -20,7 +18,7 @@ public class LabkitController implements LabkitViewListener {
 
 	private LabkitView view;
 
-	private Context context = SingletonContext.getInstance();
+	private ImageController imageController = new ImageController();
 
 	public LabkitController(LabkitModel model, LabkitView view) {
 		this.model = model;
@@ -65,16 +63,23 @@ public class LabkitController implements LabkitViewListener {
 
 	private void saveLabelings(String projectFolder) {
 		boolean inplace = model.getProjectFolder().equals(projectFolder);
+		ImageController ic = new ImageController();
 		for (ImageModel imageModel : model.getImageModels()) {
-			imageModel.saveLabeling(projectFolder, inplace, context);
+			ic.setModel(imageModel);
+			if (inplace)
+				ic.saveChanges(projectFolder);
+			else
+				ic.writeLabeling(projectFolder);
 		}
 	}
 
 	@Override
 	public void changeActiveImage(ImageModel activeImageModel) {
 		model.setActiveImageModel(activeImageModel);
-		if (activeImageModel != null)
-			activeImageModel.load(context, model.getProjectFolder());
+		if (activeImageModel != null) {
+			imageController.setModel(activeImageModel);
+			imageController.load(model.getProjectFolder());
+		}
 		view.updateActiveImage();
 	}
 

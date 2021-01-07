@@ -33,6 +33,10 @@ public class ImageModel {
 	@JsonIgnore
 	private Labeling labeling;
 
+	/**
+	 * True if the {@link #labeling} equals the labeling stored in
+	 * {@link #labelingFile}.
+	 */
 	@JsonIgnore
 	private boolean labelingModified = false;
 
@@ -85,44 +89,4 @@ public class ImageModel {
 	public void setLabelingModified(boolean labelingModified) {
 		this.labelingModified = labelingModified;
 	}
-
-	// Move this into a ImageModelController
-
-	public void load(Context context, String projectFolder) {
-		loadImage(context);
-		loadLabeling(context, projectFolder);
-	}
-
-	private void loadLabeling(Context context, String projectFolder) {
-		if (this.getLabeling() == null) {
-			String fullLabelingFile = FilenameUtils.concat(
-				projectFolder, this
-					.getLabelingFile());
-			Labeling labeling = InitialLabeling
-				.initialLabeling(context, this.getImage(),
-					fullLabelingFile);
-			setLabeling(labeling);
-		}
-	}
-
-	private void loadImage(Context context) {
-		if (this.getImage() == null)
-			setImage(InputImageIoUtils.open(context, getImageFile()));
-	}
-
-	public void saveLabeling(String projectFolder, boolean inplace, Context context) {
-		Labeling labeling = this.getLabeling();
-		if (labeling == null || (inplace && !this.isLabelingModified()))
-			return;
-		try {
-			String labelingFile = FilenameUtils.concat(projectFolder, this.getLabelingFile());
-			new LabelingSerializer(context).save(labeling, labelingFile);
-			if (inplace)
-				this.setLabelingModified(false);
-		}
-		catch (IOException e) {
-			e.printStackTrace();
-		}
-	}
-
 }
