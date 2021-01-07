@@ -18,4 +18,8 @@ public interface LabkitViewListener {
 	void changeActiveImage(ImageModel value);
 
 	void removeImages(List<ImageModel> images);
+
+	// TODO, This smells: the view should not notify the controler about a change
+	// that already happened.
+	void setLabelingModified();
 }

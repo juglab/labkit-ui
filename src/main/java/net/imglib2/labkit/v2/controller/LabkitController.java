@@ -113,4 +113,9 @@ public class LabkitController implements LabkitViewListener {
 		view.updateImageList();
 	}
 
+	@Override
+	public void setLabelingModified() {
+		imageController.setLabelingModified();
+	}
+
 }

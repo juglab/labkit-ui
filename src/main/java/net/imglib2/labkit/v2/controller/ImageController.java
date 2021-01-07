@@ -64,4 +64,7 @@ public class ImageController {
 		}
 	}
 
+	public void setLabelingModified() {
+		model.setLabelingModified(true);
+	}
 }

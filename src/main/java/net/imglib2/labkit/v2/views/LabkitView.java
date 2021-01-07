@@ -191,14 +191,18 @@ public class LabkitView extends JFrame {
 		else {
 			ImageLabelingModel ilm = new ImageLabelingModel(activeImageModel.getImage());
 			ilm.labeling().set(activeImageModel.getLabeling());
-			ilm.labeling().notifier().addListener(() -> activeImageModel.setLabelingModified(true));
-			ilm.dataChangedNotifier().addListener(ignore -> activeImageModel.setLabelingModified(true));
+			ilm.labeling().notifier().addListener(this::onLabelingModified);
+			ilm.dataChangedNotifier().addListener(ignore -> onLabelingModified());
 			activeLabelingComponent = new LabelingComponent(this, ilm);
 			workspacePanel.add(activeLabelingComponent);
 			activeImageLabel.setText(activeImageModel.getName());
 		}
 		workspacePanel.revalidate();
 		workspacePanel.repaint();
+	}
+
+	private void onLabelingModified() {
+		listeners.forEach(LabkitViewListener::setLabelingModified);
 	}
 
 	private void updateSelection() {

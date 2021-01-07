@@ -3,7 +3,6 @@
     * LabkitModel is simply serialized with YAML
     * Move open image, open project & save project dialogs from LabkitController to LabkitView
     * LabkitController initializes ImageModel
-  * Why should a view support multiple controller, that's nonsense
   * Relative labeling path in ImageModel
     * The labelingFile in ImageModel should be stored as relative path to the projectFolder
     * Who should initialize the labelingFile to not clash with any other labelingFile.
@@ -24,3 +23,4 @@ Done:
 * Implement save project to save all the labelings (check)
 * Only save modified labelings (check)
 * Initialize the labelingFile to not clash with any other labelingFile (check)
+  * Why should a view support multiple controller, that's nonsense (it's ok)
