@@ -304,7 +304,6 @@ public class TrainableSegmentationSegmenter implements Segmenter {
 		for (int i = 0; i < cellDimension.length; i++) {
 			cellDimension[i] = image.axis(i).type().isSpatial() ? cellSize : 1;
 		}
-		Arrays.fill(cellDimension, cellSize);
 		return cellDimension;
 	}
 
