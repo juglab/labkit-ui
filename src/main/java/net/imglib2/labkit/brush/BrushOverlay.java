@@ -23,7 +23,8 @@ public class BrushOverlay implements OverlayRenderer {
 
 	private final ViewerPanel viewer;
 	private final LabelingModel model;
-	private int x, y, radius = 5;
+	private int x, y;
+	private double radius = 5;
 	private boolean visible = false;
 	private boolean fontVisible = true;
 	final AffineTransform3D viewerTransform = new AffineTransform3D();
@@ -38,7 +39,7 @@ public class BrushOverlay implements OverlayRenderer {
 		this.y = y;
 	}
 
-	public void setRadius(final int radius) {
+	public void setRadius(final double radius) {
 		this.radius = radius;
 	}
 

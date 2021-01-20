@@ -1,7 +1,6 @@
 
 package net.imglib2.labkit.brush;
 
-import bdv.TransformEventHandler;
 import bdv.util.Affine3DHelpers;
 import bdv.viewer.ViewerPanel;
 import net.imglib2.FinalInterval;
@@ -19,7 +18,6 @@ import net.imglib2.roi.labeling.LabelingType;
 import net.imglib2.util.LinAlgHelpers;
 import net.imglib2.util.Util;
 import net.imglib2.view.Views;
-import org.scijava.ui.behaviour.Behaviour;
 import org.scijava.ui.behaviour.DragBehaviour;
 import org.scijava.ui.behaviour.ScrollBehaviour;
 import org.scijava.ui.behaviour.util.RunnableAction;
@@ -92,7 +90,7 @@ public class LabelBrushController {
 
 	public void setBrushRadius(double brushRadius) {
 		this.brushRadius = brushRadius;
-		brushOverlay.setRadius((int) getTransformedBrushRadius());
+		brushOverlay.setRadius(getTransformedBrushRadius());
 		brushOverlay.requestRepaint();
 	}
 
@@ -249,7 +247,7 @@ public class LabelBrushController {
 	// TODO: find a good place
 	private double getScale(AffineTransform3D transformation) {
 		return IntStream.range(0, 3).mapToDouble(i -> Affine3DHelpers.extractScale(
-			transformation, i)).reduce(0, Math::max);
+			transformation, i)).reduce(Double.POSITIVE_INFINITY, Math::min);
 	}
 
 	private RandomAccessibleInterval<LabelingType<Label>> slice() {
@@ -281,9 +279,7 @@ public class LabelBrushController {
 			if (!isHorizontal) {
 				int sign = (wheelRotation < 0) ? 1 : -1;
 				double distance = Math.max(1, brushRadius * 0.1);
-				setBrushRadius(Math.min(Math.max(0.5, brushRadius + sign * distance),
-					50));
-
+				setBrushRadius(Math.min(Math.max(1, brushRadius + sign * distance), 50));
 			}
 		}
 	}
