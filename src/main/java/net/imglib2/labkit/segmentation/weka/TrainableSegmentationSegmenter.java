@@ -91,9 +91,7 @@ public class TrainableSegmentationSegmenter implements Segmenter {
 		dialog.show();
 		if (dialog.okClicked()) {
 			featureSettings = dialog.featureSettings();
-			useGpu = dialog.useGpu();
-			if (segmenter != null)
-				segmenter.setUseGpu(useGpu);
+			setUseGpu(dialog.useGpu());
 		}
 	}
 
@@ -152,6 +150,12 @@ public class TrainableSegmentationSegmenter implements Segmenter {
 					"The training requires some labeled regions.");
 			throw e;
 		}
+	}
+
+	public void setUseGpu(boolean useGpu) {
+		this.useGpu = useGpu;
+		if (segmenter != null)
+			segmenter.setUseGpu(this.useGpu);
 	}
 
 	private static List<String> collectLabels(
@@ -289,6 +293,7 @@ public class TrainableSegmentationSegmenter implements Segmenter {
 	public void openModel(final String path) {
 		segmenter = net.imglib2.trainable_segmentation.classification.Segmenter
 			.fromJson(context, GsonUtils.read(path));
+		segmenter.setUseGpu(useGpu);
 		featureSettings = segmenter.features().settings();
 	}
 
