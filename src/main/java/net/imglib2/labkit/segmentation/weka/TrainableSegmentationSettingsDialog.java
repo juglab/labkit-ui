@@ -68,7 +68,7 @@ class TrainableSegmentationSettingsDialog {
 		JCheckBox gpuCheckBox = initUseGpuCheckBox(dialogContent);
 		FeatureSettingsUI featureSettingsUI = new FeatureSettingsUI(context, featureSettings);
 		dialogContent.add(featureSettingsUI, "grow");
-		okClicked = showResizeableOkCancelDialog("Weka Trainable Segmentation Settings", dialogContent);
+		okClicked = showResizeableOkCancelDialog("Pixel Classification Settings", dialogContent);
 		if (okClicked) {
 			featureSettings = featureSettingsUI.get();
 			useGpu = gpuCheckBox.isSelected();
