@@ -1,6 +1,7 @@
 
 package net.imglib2.labkit.plugin;
 
+import bdv.img.imaris.Imaris;
 import net.imglib2.labkit.LabkitFrame;
 import net.imglib2.labkit.inputimage.InputImage;
 import net.imglib2.labkit.inputimage.SpimDataInputImage;
@@ -12,14 +13,16 @@ import org.scijava.command.Command;
 import org.scijava.command.CommandService;
 import org.scijava.plugin.Parameter;
 import org.scijava.plugin.Plugin;
+import org.scijava.util.FileUtils;
 
 import java.io.File;
+import java.io.IOException;
 
 /**
  * @author Matthias Arzt
  */
 @Plugin(type = Command.class,
-	menuPath = "Plugins > Segmentation > Labkit > Open CZI / HDF5 (experimental)")
+	menuPath = "Plugins > Segmentation > Labkit > Open CZI / HDF5 / IMS (experimental)")
 public class LabkitImportPlugin implements Command {
 
 	@Parameter
@@ -44,12 +47,14 @@ public class LabkitImportPlugin implements Command {
 		File file)
 	{
 		String filename = file.getAbsolutePath();
-		if (filename.endsWith(".czi")) return new CziOpener(progressWriter)
-			.openWithDialog(file.getAbsolutePath());
-		if (filename.endsWith(".xml")) return SpimDataInputImage
-			.openWithGuiForLevelSelection(filename);
+		if (filename.endsWith(".h5"))
+			filename = filename.replaceAll("\\.h5$", ".xml");
+		if (filename.endsWith(".czi"))
+			return new CziOpener(progressWriter).openWithDialog(file.getAbsolutePath());
+		if (filename.endsWith(".xml") || filename.endsWith(".ims"))
+			return SpimDataInputImage.openWithGuiForLevelSelection(filename);
 		throw new UnsupportedOperationException(
-			"Only files with extension czi / xml are supported.");
+			"Only files with extension czi / xml / ims are supported.");
 	}
 
 	public static void main(String... args) {
