@@ -11,6 +11,7 @@ import java.awt.event.ItemEvent;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.beans.PropertyChangeEvent;
+import java.time.Duration;
 
 /**
  * A dialog the shows a progress bar.
@@ -21,6 +22,7 @@ public class ProgressDialog {
 	private final JLabel note = new JLabel("");
 	private final JProgressBar progressBar = new JProgressBar(0, 1000);
 	private final DetailsPane details = new DetailsPane();
+	private long start;
 	private boolean canceled = false;
 	private boolean hide = false;
 
@@ -41,6 +43,8 @@ public class ProgressDialog {
 		dialog.setModal(false);
 		dialog.add(pane);
 		dialog.pack();
+		progressBar.setStringPainted(true);
+		start = System.currentTimeMillis();
 	}
 
 	private void buttonClicked(PropertyChangeEvent event) {
@@ -57,7 +61,28 @@ public class ProgressDialog {
 
 	public void setProgress(double progress) {
 		progressBar.getModel().setValue((int) (progress * 1000));
+		String duration = timeEstimateAsString(progress);
+		progressBar.setString(String.format("%.1f %%", progress * 100) + duration);
 		setVisible(!canceled && !hide && progress < 1.0);
+	}
+
+	private String timeEstimateAsString(double progress) {
+		if (progress <= 0) {
+			start = System.currentTimeMillis();
+			return "";
+		}
+		long seconds = (long) ((System.currentTimeMillis() - start) / 1000. / progress *
+			(1 - progress));
+		if (seconds < 60)
+			return "";
+		long mins = seconds / 60;
+		long hours = mins / 60;
+		String result = String.format("%2d s", seconds % 60);
+		if (mins > 0)
+			result = String.format("%2d min %s", mins % 60, result);
+		if (hours > 0)
+			result = String.format("%2d d %s", hours, result);
+		return "   " + result;
 	}
 
 	public void setVisible(boolean visible) {
