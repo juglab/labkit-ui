@@ -246,8 +246,7 @@ public class LabelBrushController {
 
 	// TODO: find a good place
 	private double getScale(AffineTransform3D transformation) {
-		return IntStream.range(0, 3).mapToDouble(i -> Affine3DHelpers.extractScale(
-			transformation, i)).reduce(Double.POSITIVE_INFINITY, Math::min);
+		return Affine3DHelpers.extractScale(transformation, 0);
 	}
 
 	private RandomAccessibleInterval<LabelingType<Label>> slice() {
