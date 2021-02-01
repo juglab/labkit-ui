@@ -162,6 +162,11 @@ public class CustomSegmenterDemo {
 		public int[] suggestCellSize(ImgPlus<?> image) {
 			return new int[] { 255, 255 };
 		}
+
+		@Override
+		public boolean requiresFixedCellSize() {
+			return false;
+		}
 	}
 
 	private static class MeanCalculator {

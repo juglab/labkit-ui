@@ -312,6 +312,11 @@ public class TrainableSegmentationSegmenter implements Segmenter {
 		return cellDimension;
 	}
 
+	@Override
+	public boolean requiresFixedCellSize() {
+		return useGpu;
+	}
+
 	// -- Helper methods --
 
 	private static List<Double> getPixelSize(ImgPlus<?> image) {

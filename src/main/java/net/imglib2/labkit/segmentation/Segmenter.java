@@ -84,4 +84,6 @@ public interface Segmenter {
 	List<String> classNames();
 
 	int[] suggestCellSize(ImgPlus<?> image);
+
+	boolean requiresFixedCellSize();
 }

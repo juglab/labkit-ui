@@ -75,4 +75,9 @@ public class ForwardingSegmenter implements Segmenter {
 	public int[] suggestCellSize(ImgPlus<?> image) {
 		return source.suggestCellSize(image);
 	}
+
+	@Override
+	public boolean requiresFixedCellSize() {
+		return source.requiresFixedCellSize();
+	}
 }

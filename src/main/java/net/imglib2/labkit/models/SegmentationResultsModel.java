@@ -9,6 +9,7 @@ import net.imglib2.RandomAccessibleInterval;
 import net.imglib2.cache.img.CellLoader;
 import net.imglib2.cache.img.DiskCachedCellImgFactory;
 import net.imglib2.cache.img.DiskCachedCellImgOptions;
+import net.imglib2.cache.img.SingleCellArrayImg;
 import net.imglib2.img.Img;
 import net.imglib2.img.cell.CellGrid;
 import net.imglib2.labkit.inputimage.ImgPlusViewsOld;
@@ -18,10 +19,12 @@ import net.imglib2.labkit.utils.Notifier;
 import net.imglib2.labkit.utils.DimensionUtils;
 import net.imglib2.type.NativeType;
 import net.imglib2.type.numeric.ARGBType;
+import net.imglib2.type.numeric.NumericType;
 import net.imglib2.type.numeric.integer.ShortType;
 import net.imglib2.type.numeric.real.FloatType;
 import net.imglib2.util.ConstantUtils;
 import net.imglib2.util.Intervals;
+import net.imglib2.view.Views;
 
 import java.util.Arrays;
 import java.util.Collections;
@@ -104,8 +107,9 @@ public class SegmentationResultsModel {
 	private void updatePrediction(Segmenter segmenter) {
 		int count = segmenter.classNames().size();
 		ImgPlus<?> image = model.imageForSegmentation().get();
-		CellLoader<FloatType> loader = target -> segmenter.predict(image, target);
 		int[] cellSize = segmenter.suggestCellSize(image);
+		CellLoader<FloatType> loader = target -> segmenter.predict(image, ensureCellSize(segmenter,
+			cellSize, target));
 		Interval interval = intervalNoChannels(image);
 		CellGrid grid = addDimensionToGrid(count, new CellGrid(Intervals.dimensionsAsLongArray(
 			interval), cellSize));
@@ -120,11 +124,32 @@ public class SegmentationResultsModel {
 
 	private void updateSegmentation(Segmenter segmenter) {
 		ImgPlus<?> image = model.imageForSegmentation().get();
-		CellLoader<ShortType> loader = target -> segmenter.segment(image, target);
 		int[] cellSize = segmenter.suggestCellSize(image);
+		CellLoader<ShortType> loader = target -> segmenter.segment(image, ensureCellSize(segmenter,
+			cellSize, target));
 		Interval interval = intervalNoChannels(image);
 		CellGrid grid = new CellGrid(Intervals.dimensionsAsLongArray(interval), cellSize);
 		segmentation = setupCachedImage(loader, grid, new ShortType());
+	}
+
+	/**
+	 * Grows the give target to cellSize if
+	 * {@link Segmenter#requiresFixedCellSize()} is true.
+	 */
+	private <T extends NativeType<T> & NumericType<T>> RandomAccessibleInterval<T> ensureCellSize(
+		Segmenter segmenter, int[] cellSize,
+		RandomAccessibleInterval<T> target)
+	{
+		if (segmenter.requiresFixedCellSize()) {
+			int[] targetSize = Intervals.dimensionsAsIntArray(target);
+			if (!Arrays.equals(cellSize, targetSize)) {
+				long[] min = Intervals.minAsLongArray(target);
+				long[] max = new long[min.length];
+				Arrays.setAll(max, d -> min[d] + cellSize[d] - 1);
+				return Views.interval(Views.extendZero(target), min, max);
+			}
+		}
+		return target;
 	}
 
 	private Interval intervalNoChannels(ImgPlus<?> image) {
