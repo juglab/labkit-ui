@@ -347,8 +347,7 @@ public class TrainableSegmentationSegmenter implements Segmenter {
 			GroupedFeatures.differenceOfGaussians(),
 			GroupedFeatures.gradient(),
 			GroupedFeatures.laplacian(),
-			GroupedFeatures.hessian(),
-			GroupedFeatures.structureTensor());
+			GroupedFeatures.hessian());
 	}
 
 	private GlobalSettings initGlobalSettings(List<Pair<ImgPlus<?>, Labeling>> trainingData) {
