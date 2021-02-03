@@ -126,6 +126,11 @@
 			<artifactId>imagej</artifactId>
 		</dependency>
 		<dependency>
+			<groupId>de.csbdresden</groupId>
+			<artifactId>denoiseg</artifactId>
+			<version>0.6.3</version>
+		</dependency>
+		<dependency>
 			<groupId>net.imagej</groupId>
 			<artifactId>imagej-legacy</artifactId>
 		</dependency>
