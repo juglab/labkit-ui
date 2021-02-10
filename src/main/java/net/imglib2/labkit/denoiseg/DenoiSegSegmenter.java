@@ -1,6 +1,7 @@
 
 package net.imglib2.labkit.denoiseg;
 
+import de.csbdresden.denoiseg.command.DenoiSegTrainCommand;
 import net.imagej.ImgPlus;
 import net.imglib2.RandomAccessibleInterval;
 import net.imglib2.img.display.imagej.ImageJFunctions;
@@ -9,28 +10,44 @@ import net.imglib2.labkit.segmentation.Segmenter;
 import net.imglib2.type.numeric.IntegerType;
 import net.imglib2.type.numeric.RealType;
 import net.imglib2.util.Pair;
+import org.scijava.Context;
+import org.scijava.command.CommandService;
 
 import javax.swing.*;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 
 public class DenoiSegSegmenter implements Segmenter {
+
+	private final CommandService commandService;
+
+	public DenoiSegSegmenter(Context context) {
+		commandService = context.getService(CommandService.class);
+	}
 
 	@Override
 	public void editSettings(JFrame dialogParent,
 		List<Pair<ImgPlus<?>, Labeling>> trainingData)
 	{
-
+		/*JPanel pane = new JPanel();
+		if (!SwingUtilities.isEventDispatchThread()) {
+			pane.add(new JLabel("Not EDT"));
+		} else {
+			pane.add(new JLabel("EDT alright"));
+		}
+		dialogParent = new JFrame();
+		dialogParent.add(pane);
+		dialogParent.pack();
+		dialogParent.setVisible(true);*/
 	}
 
 	@Override
 	public void train(List<Pair<ImgPlus<?>, Labeling>> trainingData) {
 		// TODO
-		Pair<ImgPlus<?>, Labeling> pair = trainingData.get(0);
-		ImgPlus<?> image = pair.getA();
-		Labeling labeling = pair.getB();
-		ImageJFunctions.show((RandomAccessibleInterval) image);
-		ImageJFunctions.show((RandomAccessibleInterval) labeling.getIndexImg());
+
+		//commandService.run(DenoiSegTrainCommand.class, true, new HashMap<String, Object>());
+
 	}
 
 	@Override
