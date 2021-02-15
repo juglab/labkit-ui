@@ -21,9 +21,6 @@ public class DenoiSegSegmenterPlugin implements SegmentationPlugin {
 	@Parameter
 	public Context context;
 
-	@Parameter
-	public LogService logService;
-
 	@Override
 	public String getTitle() {
 		return "DenoiSeg";
@@ -32,9 +29,7 @@ public class DenoiSegSegmenterPlugin implements SegmentationPlugin {
 	@Override
 	public Segmenter createSegmenter() {
 
-		//logService.log(0,"Create segmenter");
-
-		//commandService.run(DenoiSegTrainCommand.class, true, new HashMap<String, Object>());
+		// TODO: here must check that the image abides the right criterions: no z?
 
 		return new DenoiSegSegmenter(context);
 	}
