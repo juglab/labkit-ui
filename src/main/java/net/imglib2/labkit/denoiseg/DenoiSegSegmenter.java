@@ -72,7 +72,6 @@ public class DenoiSegSegmenter implements Segmenter {
 		int dim = (int) trainingData.get(0).getA().dimension(2);
 
 		// TODO: check if data is a movie, otherwise the labels will be 3D and will interfere with the training
-
 		DenoiSegTraining training = new DenoiSegTraining(context);
 
 		training.addCallbackOnCancel(this::cancel);
@@ -84,7 +83,9 @@ public class DenoiSegSegmenter implements Segmenter {
 				.setNeighborhoodRadius(params.neighborhoodRadius));
 
 		// sanity checks 2
-		int nLabeled = countNumberLabeled(trainingData); // TODO return list instead of number
+		List<Integer> labeledIndices = getLabeledIndices(trainingData);
+		int nLabeled = labeledIndices.size();
+
 		// TODO: replace with cancellation exception instead of asking the user?
 		if(nLabeled == 0) {
 			int r = showWarning("Not enough ground-truth labels, do you want to continue?");
@@ -113,7 +114,7 @@ public class DenoiSegSegmenter implements Segmenter {
 			RandomAccessibleInterval y = Views.hyperSlice((RandomAccessibleInterval<IntType>) trainingData.get(i).getB().getIndexImg(), 2, i);
 
 			// if not labeled, DenoiSeg expect null value (not a "black" image)
-			if(!isLabeled(y)){
+			if(!labeledIndices.contains(i)){
 				y = null;
 			}
 
@@ -154,18 +155,22 @@ public class DenoiSegSegmenter implements Segmenter {
 	}
 
 	private int countNumberLabeled(List<Pair<ImgPlus<?>, Labeling>> trainingData){
-		int n = 0;
+		return getLabeledIndices(trainingData).size();
+	}
+
+	private List<Integer> getLabeledIndices(List<Pair<ImgPlus<?>, Labeling>> trainingData){
+		List<Integer> list = new ArrayList<Integer>();
 		for(Pair<ImgPlus<?>, Labeling> p: trainingData){
 			int dim = (int) trainingData.get(0).getA().dimension(2);
 
 			for(int i=0; i<dim; i++) {
 				RandomAccessibleInterval label = Views.hyperSlice((RandomAccessibleInterval<IntType>) p.getB().getIndexImg(), 2, i);
 				if (isLabeled(label)) {
-					n++;
+					list.add(i);
 				}
 			}
 		}
-		return n;
+		return list;
 	}
 
 	private <T extends RealType> boolean isLabeled(RandomAccessibleInterval<T> img) {
