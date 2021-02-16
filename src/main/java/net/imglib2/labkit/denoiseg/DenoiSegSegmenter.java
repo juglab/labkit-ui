@@ -19,6 +19,8 @@ import net.imglib2.view.Views;
 import org.scijava.Context;
 
 import javax.swing.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.io.File;
 import java.io.IOException;
 import java.util.*;
@@ -27,18 +29,6 @@ import java.util.List;
 public class DenoiSegSegmenter implements Segmenter {
 
 	private final Context context;
-
-	private int numEpochs = 1;//300;
-
-	private int numStepsPerEpoch = 1;//200;
-
-	private int batchSize = 64;
-
-	private int patchShape = 16; // min=16, max=512, stepsize=16
-
-	private int neighborhoodRadius = 5;
-
-	private int numberValidation = 5;
 
 	private boolean trained = false;
 
@@ -50,58 +40,48 @@ public class DenoiSegSegmenter implements Segmenter {
 
 	private DenoiSegTraining training;
 
+	private DenoiSegParameters params;
+
 	private DenoiSegPrediction prediction;
 
 	private File model;
 
 	public DenoiSegSegmenter(Context context) {
 		this.context = context;
+		params = new DenoiSegParameters();
 	}
 
 	@Override
 	public void editSettings(JFrame dialogParent,
 		List<Pair<ImgPlus<?>, Labeling>> trainingData)
 	{
-		JPanel pane = new JPanel();
-		if (!SwingUtilities.isEventDispatchThread()) {
-			pane.add(new JLabel("Not EDT"));
-		} else {
-			pane.add(new JLabel("EDT alright"));
-		}
-		dialogParent = new JFrame();
-		dialogParent.add(pane);
+		// TODO same as in ::train
+		// TODO: this happens on the EDT, in case of large depth, this may cause slow downs
+		int[] dims = Intervals.dimensionsAsIntArray(trainingData.get(0).getA());
+		int nLabeled = countNumberLabeled(trainingData);
+
+		dialogParent= new DenoiSegParametersDialog(params, dims, nLabeled);
 		dialogParent.pack();
 		dialogParent.setVisible(true);
-
-		/*
-		What should be in the settings?
-		- proportion train / val
-		- number of epochs
-		- number of steps per epoch
-		- batch size
-		- patch shape?
-		- neighborhood radius
-		 */
 	}
 
 	@Override
 	public void train(List<Pair<ImgPlus<?>, Labeling>> trainingData) {
 		// sanity check 1
+		// TODO what if there are more than one pair? is the call to dimension proper (Axis?)?
+		int dim = (int) trainingData.get(0).getA().dimension(2);
 
-		// intervals
-
-		int dim = (int) trainingData.get(0).getA().dimension(2); // TODO is call to dimension=2 correct?
-		// TODO: check if data is a movie, otherwise the labels will be 3D and will interfere with the traning
+		// TODO: check if data is a movie, otherwise the labels will be 3D and will interfere with the training
 
 		DenoiSegTraining training = new DenoiSegTraining(context);
 
 		training.addCallbackOnCancel(this::cancel);
 		training.init(new DenoiSegConfig()
-				.setNumEpochs(numEpochs)
-				.setStepsPerEpoch(numStepsPerEpoch)
-				.setBatchSize(batchSize)
-				.setPatchShape(patchShape)
-				.setNeighborhoodRadius(neighborhoodRadius));
+				.setNumEpochs(params.numEpochs)
+				.setStepsPerEpoch(params.numStepsPerEpoch)
+				.setBatchSize(params.batchSize)
+				.setPatchShape(params.patchShape)
+				.setNeighborhoodRadius(params.neighborhoodRadius));
 
 		// sanity checks 2
 		int nLabeled = countNumberLabeled(trainingData); // TODO return list instead of number
@@ -112,13 +92,13 @@ public class DenoiSegSegmenter implements Segmenter {
 				training.cancel();
 				return;
 			}
-		} else if(numberValidation > nLabeled-5){ // TODO: 5 is arbitrary, replace by 0?
+		} else if(params.numberValidation > nLabeled-5){ // TODO: 5 is arbitrary, replace by 0?
 			int r = showWarning("Not enough training ground-truth labels, do you want to continue?");
 			if(r != 0){
 				training.cancel();
 				return;
 			}
-		} else if(numberValidation < 5){
+		} else if(params.numberValidation < 5){
 			int r = showWarning("Not enough validation labels, do you want to continue?");
 			if(r != 0){
 				training.cancel();
@@ -138,7 +118,7 @@ public class DenoiSegSegmenter implements Segmenter {
 			}
 
 			// TODO check if they are automatically normalised, especially the labels
-			if(y != null && nValidate < numberValidation){
+			if(y != null && nValidate < params.numberValidation){
 				training.input().addValidationData(x,y);
 				nValidate++;
 			} else {
