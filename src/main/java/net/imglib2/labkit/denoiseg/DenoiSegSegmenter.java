@@ -76,11 +76,11 @@ public class DenoiSegSegmenter implements Segmenter {
 
 		training.addCallbackOnCancel(this::cancel);
 		training.init(new DenoiSegConfig()
-				.setNumEpochs(params.numEpochs)
-				.setStepsPerEpoch(params.numStepsPerEpoch)
-				.setBatchSize(params.batchSize)
-				.setPatchShape(params.patchShape)
-				.setNeighborhoodRadius(params.neighborhoodRadius));
+				.setNumEpochs(params.getNumEpochs())
+				.setStepsPerEpoch(params.getNumStepsPerEpoch())
+				.setBatchSize(params.getBatchSize())
+				.setPatchShape(params.getPatchShape())
+				.setNeighborhoodRadius(params.getNeighborhoodRadius()));
 
 		// sanity checks 2
 		List<Integer> labeledIndices = getLabeledIndices(trainingData);
@@ -93,13 +93,13 @@ public class DenoiSegSegmenter implements Segmenter {
 				training.cancel();
 				return;
 			}
-		} else if(params.numberValidation > nLabeled-5){ // TODO: 5 is arbitrary, replace by 0?
+		} else if(params.getNumberValidation() > nLabeled-5){ // TODO: 5 is arbitrary, replace by 0?
 			int r = showWarning("Not enough training ground-truth labels, do you want to continue?");
 			if(r != 0){
 				training.cancel();
 				return;
 			}
-		} else if(params.numberValidation < 5){
+		} else if(params.getNumberValidation() < 5){
 			int r = showWarning("Not enough validation labels, do you want to continue?");
 			if(r != 0){
 				training.cancel();
@@ -118,8 +118,7 @@ public class DenoiSegSegmenter implements Segmenter {
 				y = null;
 			}
 
-			// TODO check if they are automatically normalised, especially the labels
-			if(y != null && nValidate < params.numberValidation){
+			if(y != null && nValidate < params.getNumberValidation()){
 				training.input().addValidationData(x,y);
 				nValidate++;
 			} else {

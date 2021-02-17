@@ -2,17 +2,65 @@ package net.imglib2.labkit.denoiseg;
 
 public class DenoiSegParameters {
 
-    protected int numEpochs = 1;//300;
+    private int numEpochs = 300;
 
-    protected int numStepsPerEpoch = 1;//200;
+    private int numStepsPerEpoch = 200;
 
-    protected int batchSize = 64;
+    private int batchSize = 64;
 
-    protected int patchShape = 16; // min=16, max=512, stepsize=16
+    private int patchShape = 16; // min=16, max=512, stepsize=16
 
-    protected int neighborhoodRadius = 5;
+    private int neighborhoodRadius = 5;
 
-    protected int numberValidation = 5;
+    private int numberValidation = 5;
+
+    public int getNumEpochs(){
+        return numEpochs;
+    }
+
+    public void setNumEpochs(int numEpochs){
+        if(numEpochs > 0) this.numEpochs = numEpochs;
+    }
+
+    public int getNumStepsPerEpoch(){
+        return numStepsPerEpoch;
+    }
+
+    public void setNumStepsPerEpoch(int numStepsPerEpoch){
+        if(numStepsPerEpoch > 0) this.numStepsPerEpoch = numStepsPerEpoch;
+    }
+
+    public int getBatchSize(){
+        return batchSize;
+    }
+
+    public void setBatchSize(int batchSize){
+        if(batchSize > 0) this.batchSize = batchSize;
+    }
+
+    public int getPatchShape(){
+        return patchShape;
+    }
+
+    public void setPatchShape(int patchShape) {
+        if(patchShape <= 512 && patchShape >= 16 && patchShape % 16 == 0) this.patchShape = patchShape;
+    }
+
+    public int getNeighborhoodRadius(){
+        return neighborhoodRadius;
+    }
+
+    public void setNeighborhoodRadius(int neighborhoodRadius){
+        if(neighborhoodRadius > 0) this.neighborhoodRadius = neighborhoodRadius;
+    }
+
+    public int getNumberValidation() {
+        return numberValidation;
+    }
+
+    public void setNumberValidation(int numberValidation) {
+        if(numberValidation > 0) this.numberValidation = numberValidation;
+    }
 
     @Override
     public String toString(){

@@ -48,7 +48,7 @@ public class DenoiSegParametersDialog extends JFrame {
             @Override
             public void stateChanged(ChangeEvent e) {
                 int val = (int) epochsSpinner.getValue();
-                params.numEpochs = val;
+                params.setNumEpochs(val);
             }
         });
 
@@ -58,7 +58,7 @@ public class DenoiSegParametersDialog extends JFrame {
             @Override
             public void stateChanged(ChangeEvent e) {
                 int val = (int) stepsSpinner.getValue();
-                params.numStepsPerEpoch = val;
+                params.setNumStepsPerEpoch(val);
             }
         });
 
@@ -68,7 +68,7 @@ public class DenoiSegParametersDialog extends JFrame {
             @Override
             public void stateChanged(ChangeEvent e) {
                 int val = (int) batchSpinner.getValue();
-                params.batchSize = val;
+                params.setBatchSize(val);
             }
         });
 
@@ -78,7 +78,7 @@ public class DenoiSegParametersDialog extends JFrame {
             @Override
             public void stateChanged(ChangeEvent e) {
                 int val = (int) patchShapeSpinner.getValue();
-                params.patchShape = val;
+                params.setPatchShape(val);
             }
         });
 
@@ -89,7 +89,7 @@ public class DenoiSegParametersDialog extends JFrame {
             @Override
             public void stateChanged(ChangeEvent e) {
                 int val = (int) neighborSpinner.getValue();
-                params.neighborhoodRadius = val;
+                params.setNeighborhoodRadius(val);
             }
         });
 
@@ -100,7 +100,7 @@ public class DenoiSegParametersDialog extends JFrame {
             @Override
             public void stateChanged(ChangeEvent e) {
                 int val = (int) valSpinner.getValue();
-                params.numberValidation = val;
+                params.setNumberValidation(val);
             }
         });
 
