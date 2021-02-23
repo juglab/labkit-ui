@@ -5,7 +5,7 @@
 	<parent>
 		<groupId>org.scijava</groupId>
 		<artifactId>pom-scijava</artifactId>
-		<version>27.0.1</version>
+		<version>29.2.1</version>
 	</parent>
 
 	<groupId>net.imglib2</groupId>
@@ -96,17 +96,17 @@
 		<!-- NB: Deploy releases to the SciJava Maven repository. -->
 		<releaseProfiles>deploy-to-scijava</releaseProfiles>
 
-		<bigdataviewer-core>7.0.0</bigdataviewer-core>
+		<bigdataviewer-core.version>10.2.0</bigdataviewer-core.version>
+		<bigdataviewer-vistools.version>1.0.0-beta-28</bigdataviewer-vistools.version>
+
+		<imglib2-cache.version>1.0.0-beta-16</imglib2-cache.version>
+
+		<imglib2.version>5.11.1</imglib2.version>
 		<scijava-coding-style.version>2.0.0</scijava-coding-style.version>
 		<scijava.coding-style>scijava</scijava.coding-style>
 	</properties>
 
 	<dependencies>
-		<dependency>
-			<groupId>com.miglayout</groupId>
-			<artifactId>miglayout</artifactId>
-			<classifier>swing</classifier>
-		</dependency>
 		<dependency>
 			<groupId>net.imglib2</groupId>
 			<artifactId>imglib2</artifactId>
@@ -163,13 +163,11 @@
 		<dependency>
 			<groupId>org.openjdk.jmh</groupId>
 			<artifactId>jmh-core</artifactId>
-			<version>1.19</version>
 			<scope>test</scope>
 		</dependency>
 		<dependency>
 			<groupId>org.openjdk.jmh</groupId>
 			<artifactId>jmh-generator-annprocess</artifactId>
-			<version>1.19</version>
 			<scope>test</scope>
 		</dependency>
 	</dependencies>

@@ -1,6 +1,7 @@
 
 package net.imglib2.labkit.brush;
 
+import bdv.TransformEventHandler;
 import bdv.util.Affine3DHelpers;
 import bdv.viewer.ViewerPanel;
 import net.imglib2.RandomAccessible;
@@ -14,7 +15,6 @@ import net.imglib2.labkit.labeling.Label;
 import net.imglib2.labkit.models.LabelingModel;
 import net.imglib2.realtransform.AffineTransform3D;
 import net.imglib2.roi.labeling.LabelingType;
-import net.imglib2.ui.TransformEventHandler;
 import net.imglib2.util.LinAlgHelpers;
 import net.imglib2.util.Util;
 import net.imglib2.view.Views;
