@@ -3,6 +3,8 @@ package net.imglib2.labkit.brush;
 
 import bdv.util.Affine3DHelpers;
 import bdv.viewer.ViewerPanel;
+import gnu.trove.map.TIntIntMap;
+import gnu.trove.map.hash.TIntIntHashMap;
 import net.imglib2.FinalInterval;
 import net.imglib2.RandomAccessible;
 import net.imglib2.RandomAccessibleInterval;
@@ -24,8 +26,9 @@ import org.scijava.ui.behaviour.util.RunnableAction;
 
 import javax.swing.*;
 import java.awt.*;
+import java.util.List;
 import java.util.function.Consumer;
-import java.util.stream.IntStream;
+import java.util.stream.Collectors;
 
 /**
  * This class implements the brush and eraser tool.
@@ -49,7 +52,7 @@ public class LabelBrushController {
 
 	private double brushRadius = 1;
 
-	private boolean override = false;
+	private boolean overlapping = false;
 
 	public LabelBrushController(final ViewerPanel viewer,
 		final LabelingModel model, final ActionsAndBehaviours behaviors)
@@ -98,8 +101,8 @@ public class LabelBrushController {
 		return brushRadius;
 	}
 
-	public void setOverride(boolean override) {
-		this.override = override;
+	public void setOverlapping(boolean overlapping) {
+		this.overlapping = overlapping;
 	}
 
 	private class PaintBehavior implements DragBehaviour {
@@ -117,7 +120,7 @@ public class LabelBrushController {
 				final RandomAccessible<LabelingType<Label>> extended =
 					extendLabelingType(slice());
 				double brushWidth = brushSizeInScreenPixel();
-				double brushDepth = brushWidth;
+				double brushDepth = brushWidth * 0.1;
 				AffineTransform3D D = brushMatrix(coords, brushWidth, brushDepth);
 				AffineTransform3D m = displayToImageTransformation();
 				m.concatenate(D);
@@ -134,17 +137,32 @@ public class LabelBrushController {
 
 		private Consumer<LabelingType<Label>> pixelOperation() {
 			Label label = model.selectedLabel().get();
-			if (value && label != null) {
-				if (override) return pixel -> {
-					pixel.clear();
-					pixel.add(label);
-				};
-				return pixel -> pixel.add(label);
+			if (value) {
+				if (label != null) {
+					if (overlapping) return pixel -> pixel.add(label);
+					List<Label> visibleLabels = getVisibleLabels();
+					return pixel -> {
+						pixel.removeAll(visibleLabels);
+						pixel.add(label);
+					};
+				}
+				else
+					return pixel -> {};
 			}
 			else {
-				if (override || label == null) return pixel -> pixel.clear();
-				return pixel -> pixel.remove(label);
+				if (overlapping && label != null)
+					return pixel -> pixel.remove(label);
+				List<Label> visibleLabels = getVisibleLabels();
+				return pixel -> pixel.removeAll(visibleLabels);
 			}
+		}
+
+		private List<Label> getVisibleLabels() {
+			List<Label> visibleLabels =
+				model.labeling().get().getLabels().stream()
+					.filter(Label::isVisible)
+					.collect(Collectors.toList());
+			return visibleLabels;
 		}
 
 		private RandomAccessible<LabelingType<Label>> extendLabelingType(
