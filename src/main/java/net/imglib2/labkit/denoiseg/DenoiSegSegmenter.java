@@ -1,11 +1,14 @@
 
 package net.imglib2.labkit.denoiseg;
 
+import de.csbdresden.denoiseg.predict.DenoiSegOutput;
 import de.csbdresden.denoiseg.predict.DenoiSegPrediction;
 import de.csbdresden.denoiseg.train.DenoiSegConfig;
 import de.csbdresden.denoiseg.train.DenoiSegTraining;
 import net.imagej.ImageJ;
 import net.imagej.ImgPlus;
+import net.imagej.modelzoo.ModelZooArchive;
+import net.imagej.modelzoo.ModelZooService;
 import net.imglib2.RandomAccessibleInterval;
 import net.imglib2.labkit.labeling.Labeling;
 import net.imglib2.labkit.plugin.LabkitPlugin;
@@ -17,6 +20,7 @@ import net.imglib2.util.Intervals;
 import net.imglib2.util.Pair;
 import net.imglib2.view.Views;
 import org.scijava.Context;
+import org.scijava.plugin.Parameter;
 
 import javax.swing.*;
 import java.io.File;
@@ -34,22 +38,17 @@ public class DenoiSegSegmenter implements Segmenter {
 
 	private boolean trained = false;
 
-	//protected ModelZooArchive latestTrainedModel;
-
-	//private ModelZooArchive bestTrainedModel;
-
 	private boolean canceled = false;
 
 	private DenoiSegTraining training;
 
 	private DenoiSegParameters params;
 
-	private DenoiSegPrediction prediction;
-
 	private File model;
 
 	public DenoiSegSegmenter(Context context) {
 		this.context = context;
+
 		params = new DenoiSegParameters();
 	}
 
@@ -57,7 +56,7 @@ public class DenoiSegSegmenter implements Segmenter {
 	public void editSettings(JFrame dialogParent,
 		List<Pair<ImgPlus<?>, Labeling>> trainingData)
 	{
-		// TODO same as in ::train
+		// TODO: exception thrown if not enough labeled data, put safe-guards
 		// TODO: this happens on the EDT, in case of large depth, this may cause slow downs
 		int[] dims = Intervals.dimensionsAsIntArray(trainingData.get(0).getA());
 		int nLabeled = countNumberLabeled(trainingData);
@@ -136,16 +135,13 @@ public class DenoiSegSegmenter implements Segmenter {
 		if(!trained) {
 			System.out.println("canceled");
 			cancel();
+		} else {
+			try {
+				model = training.output().exportBestTrainedModel();
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
 		}
-
-		// save the best model and return the File
-		/*try {
-			model = training.output().exportBestTrainedModel();
-		} catch (IOException e) {
-			e.printStackTrace();
-		}*/
-
-		trained = true;
 
 		System.out.println("Done");
 	}
@@ -174,6 +170,7 @@ public class DenoiSegSegmenter implements Segmenter {
 		return list;
 	}
 
+	// one label = image labeled...
 	private <T extends RealType> boolean isLabeled(RandomAccessibleInterval<T> img) {
 		Iterator<T> it = Views.iterable(img).iterator();
 
@@ -195,23 +192,48 @@ public class DenoiSegSegmenter implements Segmenter {
 
 	@Override
 	public void segment(ImgPlus<?> image,
-		RandomAccessibleInterval<? extends IntegerType<?>> outputSegmentation)
-	{
-		System.out.println("Call to segment method");
-	}
+		RandomAccessibleInterval<? extends IntegerType<?>> outputSegmentation) {
+		if (training != null) {
+			ModelZooService modelZooService = context.getService(ModelZooService.class);
+			try {
+				ModelZooArchive archive = modelZooService.io().open(model);
 
+				DenoiSegPrediction prediction = new DenoiSegPrediction(context);
+				prediction.setTrainedModel(archive);
+				DenoiSegOutput<?, ?> res = prediction.predict((RandomAccessibleInterval) image, "XYB"); // TODO what if single image
+
+				RandomAccessibleInterval<?> probabilityMaps = res.getSegmented(); // Z=maps, C=batch
+
+				// TODO segment here, which threshold?
+			} catch (IOException e) {
+				e.printStackTrace();
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
+		}
+	}
 	@Override
 	public void predict(ImgPlus<?> image,
 		RandomAccessibleInterval<? extends RealType<?>> outputProbabilityMap)
 	{
-		System.out.println("Call to predict method");
-/*
-		prediction = new DenoiSegPrediction(context);
-		prediction.setTrainedModel(latestTrainedModel);
-		DenoiSegOutput<?, ?> res = prediction.predict(this.predictionInput, axes);
-		this.denoised = datasetService.create(res.getDenoised());
-		this.segmented = datasetService.create(res.getSegmented());
-*/
+		if (training != null) {
+			ModelZooService modelZooService = context.getService(ModelZooService.class);
+			try {
+				ModelZooArchive archive = modelZooService.io().open(model);
+
+				DenoiSegPrediction prediction = new DenoiSegPrediction(context);
+				prediction.setTrainedModel(archive);
+				DenoiSegOutput<?, ?> res = prediction.predict((RandomAccessibleInterval) image, "XYB"); // TODO what if single image
+
+				RandomAccessibleInterval<?> probabilityMaps = res.getSegmented(); // Z=maps, C=batch
+
+				// TODO extract foreground prediction and copy pixels to outputProbabilityMap
+			} catch (IOException e) {
+				e.printStackTrace();
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
+		}
 	}
 
 	@Override
@@ -221,17 +243,11 @@ public class DenoiSegSegmenter implements Segmenter {
 
 	@Override
 	public void saveModel(String path) {
-		if(training != null) {
+		if (model != null) {
 			try {
-				File model = training.output().exportBestTrainedModel();
-
-				if(model != null){
-					// TODO should we make sure to name the model .io.zip to make it clear it is a zoomodel?
-					Path newPath = Paths.get(path);
-					Files.copy(model.toPath(), newPath);
-				} else {
-					// TODO no model to be saved
-				}
+				// TODO should we make sure to name the model .io.zip to make it clear it is a zoomodel?
+				Path newPath = Paths.get(path);
+				Files.copy(model.toPath(), newPath);
 			} catch (IOException e) {
 				e.printStackTrace();
 			}
