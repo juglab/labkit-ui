@@ -19,12 +19,14 @@ import net.imglib2.view.Views;
 import org.scijava.Context;
 
 import javax.swing.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.*;
 import java.util.List;
+import java.util.concurrent.ExecutionException;
 
 public class DenoiSegSegmenter implements Segmenter {
 
@@ -72,7 +74,7 @@ public class DenoiSegSegmenter implements Segmenter {
 		int dim = (int) trainingData.get(0).getA().dimension(2);
 
 		// TODO: check if data is a movie, otherwise the labels will be 3D and will interfere with the training
-		DenoiSegTraining training = new DenoiSegTraining(context);
+		training = new DenoiSegTraining(context);
 
 		training.addCallbackOnCancel(this::cancel);
 		training.init(new DenoiSegConfig()
@@ -219,14 +221,23 @@ public class DenoiSegSegmenter implements Segmenter {
 
 	@Override
 	public void saveModel(String path) {
-		// TODO check if trained and if the model is not null, then save
-/*
-		try {
-			File model = training.output().exportBestTrainedModel();
-		} catch (IOException e) {
-			e.printStackTrace();
+		if(training != null) {
+			try {
+				File model = training.output().exportBestTrainedModel();
+
+				if(model != null){
+					// TODO should we make sure to name the model .io.zip to make it clear it is a zoomodel?
+					Path newPath = Paths.get(path);
+					Files.copy(model.toPath(), newPath);
+				} else {
+					// TODO no model to be saved
+				}
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+		} else {
+			// TODO no model to be saved
 		}
- */
 	}
 
 	@Override
@@ -241,9 +252,11 @@ public class DenoiSegSegmenter implements Segmenter {
 
 	@Override
 	public int[] suggestCellSize(ImgPlus<?> image) {
-		// TODO return size of images
+		int[] dims = Intervals.dimensionsAsIntArray(image);
 
-		return Intervals.dimensionsAsIntArray(image);
+		// TODO if prediction takes too long, reduce number of planes
+
+		return dims;
 	}
 
 	@Override
@@ -251,7 +264,7 @@ public class DenoiSegSegmenter implements Segmenter {
 		return false;
 	}
 
-	public static void main(String... args) throws IOException {
+	public static void main(String... args) throws IOException, ExecutionException, InterruptedException {
 		ImageJ imageJ = new ImageJ();
 		imageJ.ui().showUI();
 		Object data = imageJ.io().open("/Users/deschamp/Downloads/denoiseg_mouse/Test_Labkit/Stack.tif");
