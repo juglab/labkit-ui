@@ -266,7 +266,7 @@ public class DenoiSegSegmenter implements Segmenter {
 					foregroundMap = (RandomAccessibleInterval<FloatType>) Views.hyperSlice(probabilityMaps, 2, 1);
 				}
 
-				LoopBuilder.setImages(outputProbabilityMap, foregroundMap).forEachPixel( (o,i) -> o.set(i.get()));
+				LoopBuilder.setImages(outputProbabilityMap, foregroundMap).forEachPixel( (o,i) -> o.setReal(i.get()));
 
 			} catch (IOException e) {
 				e.printStackTrace();
