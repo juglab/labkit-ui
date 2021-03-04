@@ -149,12 +149,12 @@ public class LabelToolsPanel extends JPanel {
 	}
 
 	private JCheckBox initOverrideCheckBox() {
-		JCheckBox checkBox = new JCheckBox("override");
+		JCheckBox checkBox = new JCheckBox("allow overlapping labels");
 		checkBox.setOpaque(false);
 		checkBox.addItemListener(action -> {
-			boolean override = action.getStateChange() == ItemEvent.SELECTED;
-			brushController.setOverride(override);
-			floodFillController.setOverride(override);
+			boolean overlapping = action.getStateChange() == ItemEvent.SELECTED;
+			brushController.setOverlapping(overlapping);
+			floodFillController.setOverlapping(overlapping);
 		});
 		return checkBox;
 	}

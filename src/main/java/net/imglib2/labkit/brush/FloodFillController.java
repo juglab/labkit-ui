@@ -32,12 +32,7 @@ public class FloodFillController {
 
 	private final LabelingModel model;
 
-	private final FloodFillClick floodEraseBehaviour = new FloodFillClick(() -> {
-		Collection<Label> visible = visibleLabels();
-		return l -> l.removeAll(visible);
-	});
-
-	private boolean override = false;
+	private boolean overlapping = false;
 
 	private Collection<Label> visibleLabels() {
 		return model.labeling().get().getLabels().stream().filter(Label::isVisible)
@@ -46,14 +41,26 @@ public class FloodFillController {
 
 	private final FloodFillClick floodFillBehaviour = new FloodFillClick(() -> {
 		Label selected = selectedLabel();
-		if (override) {
+		if (overlapping)
+			return l -> l.add(selected);
+		else {
 			Collection<Label> visible = visibleLabels();
 			return l -> {
 				l.removeAll(visible);
 				l.add(selected);
 			};
 		}
-		return l -> l.add(selected);
+	});
+
+	private final FloodFillClick floodEraseBehaviour = new FloodFillClick(() -> {
+		if (overlapping) {
+			Label selected = selectedLabel();
+			return l -> l.remove(selected);
+		}
+		else {
+			Collection<Label> visible = visibleLabels();
+			return l -> l.removeAll(visible);
+		}
 	});
 
 	public FloodFillController(final ViewerPanel viewer,
@@ -93,8 +100,8 @@ public class FloodFillController {
 		return labelLocation;
 	}
 
-	public void setOverride(boolean override) {
-		this.override = override;
+	public void setOverlapping(boolean override) {
+		this.overlapping = override;
 	}
 
 	private class FloodFillClick implements ClickBehaviour {

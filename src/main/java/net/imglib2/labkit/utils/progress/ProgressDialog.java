@@ -81,7 +81,7 @@ public class ProgressDialog {
 		if (mins > 0)
 			result = String.format("%2d min %s", mins % 60, result);
 		if (hours > 0)
-			result = String.format("%2d d %s", hours, result);
+			result = String.format("%2d h %s", hours, result);
 		return "   " + result;
 	}
 
