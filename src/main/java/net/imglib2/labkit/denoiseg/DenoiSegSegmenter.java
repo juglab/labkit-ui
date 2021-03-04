@@ -13,14 +13,15 @@ import net.imglib2.RandomAccessibleInterval;
 import net.imglib2.labkit.labeling.Labeling;
 import net.imglib2.labkit.plugin.LabkitPlugin;
 import net.imglib2.labkit.segmentation.Segmenter;
+import net.imglib2.loops.LoopBuilder;
 import net.imglib2.type.numeric.IntegerType;
 import net.imglib2.type.numeric.RealType;
 import net.imglib2.type.numeric.integer.IntType;
+import net.imglib2.type.numeric.real.FloatType;
 import net.imglib2.util.Intervals;
 import net.imglib2.util.Pair;
 import net.imglib2.view.Views;
 import org.scijava.Context;
-import org.scijava.plugin.Parameter;
 
 import javax.swing.*;
 import java.io.File;
@@ -198,13 +199,33 @@ public class DenoiSegSegmenter implements Segmenter {
 			try {
 				ModelZooArchive archive = modelZooService.io().open(model);
 
-				DenoiSegPrediction prediction = new DenoiSegPrediction(context);
+				final DenoiSegPrediction prediction = new DenoiSegPrediction(context);
 				prediction.setTrainedModel(archive);
-				DenoiSegOutput<?, ?> res = prediction.predict((RandomAccessibleInterval) image, "XYB"); // TODO what if single image
 
-				RandomAccessibleInterval<?> probabilityMaps = res.getSegmented(); // Z=maps, C=batch
+				// check whether single image or "movie"
+				String axes;
+				int[] dims = Intervals.dimensionsAsIntArray(image);
+				if(dims[2] > 1){
+					axes = "XY";
+				} else {
+					axes = "XYB";
+				}
 
-				// TODO segment here, which threshold?
+				// predict
+				final DenoiSegOutput<?, ?> res = prediction.predict((RandomAccessibleInterval) image, axes);
+				final RandomAccessibleInterval<FloatType> probabilityMaps = (RandomAccessibleInterval<FloatType>) res.getSegmented();
+
+				// extract foreground prediction
+				final RandomAccessibleInterval<FloatType> foregroundMap;
+				if(axes.compareTo("XYB") == 0){ // XYBC with channel being the dimension along bg-fg-border
+					foregroundMap = (RandomAccessibleInterval<FloatType>) Views.hyperSlice(probabilityMaps, 3, 1);
+				} else { // XYC
+					foregroundMap = (RandomAccessibleInterval<FloatType>) Views.hyperSlice(probabilityMaps, 2, 1);
+				}
+
+				// copy into outputSegmentation while thresholding
+				LoopBuilder.setImages(outputSegmentation, foregroundMap).forEachPixel( (o,i) -> o.setInteger(i.get() > 0.5 ? 1: 0));
+
 			} catch (IOException e) {
 				e.printStackTrace();
 			} catch (Exception e) {
@@ -221,13 +242,32 @@ public class DenoiSegSegmenter implements Segmenter {
 			try {
 				ModelZooArchive archive = modelZooService.io().open(model);
 
-				DenoiSegPrediction prediction = new DenoiSegPrediction(context);
+				final DenoiSegPrediction prediction = new DenoiSegPrediction(context);
 				prediction.setTrainedModel(archive);
-				DenoiSegOutput<?, ?> res = prediction.predict((RandomAccessibleInterval) image, "XYB"); // TODO what if single image
 
-				RandomAccessibleInterval<?> probabilityMaps = res.getSegmented(); // Z=maps, C=batch
+				// check whether single image or "movie"
+				String axes;
+				int[] dims = Intervals.dimensionsAsIntArray(image);
+				if(dims[2] > 1){
+					axes = "XY";
+				} else {
+					axes = "XYB";
+				}
 
-				// TODO extract foreground prediction and copy pixels to outputProbabilityMap
+				// predict
+				final DenoiSegOutput<?, ?> res = prediction.predict((RandomAccessibleInterval) image, axes);
+				final RandomAccessibleInterval<FloatType> probabilityMaps = (RandomAccessibleInterval<FloatType>) res.getSegmented();
+
+				// extract foreground prediction
+				final RandomAccessibleInterval<FloatType> foregroundMap;
+				if(axes.compareTo("XYB") == 0){ // XYBC with channel being the dimension along bg-fg-border
+					foregroundMap = (RandomAccessibleInterval<FloatType>) Views.hyperSlice(probabilityMaps, 3, 1);
+				} else { // XYC
+					foregroundMap = (RandomAccessibleInterval<FloatType>) Views.hyperSlice(probabilityMaps, 2, 1);
+				}
+
+				LoopBuilder.setImages(outputProbabilityMap, foregroundMap).forEachPixel( (o,i) -> o.set(i.get()));
+
 			} catch (IOException e) {
 				e.printStackTrace();
 			} catch (Exception e) {
@@ -258,7 +298,8 @@ public class DenoiSegSegmenter implements Segmenter {
 
 	@Override
 	public void openModel(String path) {
-		// TODO model zoo loader
+		// currently no safety checks
+		model = new File(path);
 	}
 
 	@Override
