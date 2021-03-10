@@ -120,8 +120,7 @@ public class LabelBrushController {
 				final RandomAccessible<LabelingType<Label>> extended =
 					extendLabelingType(slice());
 				double brushWidth = brushSizeInScreenPixel();
-				double brushDepth = brushWidth * 0.1;
-				AffineTransform3D D = brushMatrix(coords, brushWidth, brushDepth);
+				AffineTransform3D D = brushMatrix(coords, brushWidth, brushWidth);
 				AffineTransform3D m = displayToImageTransformation();
 				m.concatenate(D);
 				Neighborhood<LabelingType<Label>> neighborhood = TransformedSphere
