@@ -150,8 +150,6 @@ public class DenoiSegSegmenter implements Segmenter {
 				e.printStackTrace();
 			}
 		}
-
-		System.out.println("Done");
 	}
 
 	private int countNumberLabeled(List<Pair<ImgPlus<?>, Labeling>> trainingData){
@@ -216,7 +214,6 @@ public class DenoiSegSegmenter implements Segmenter {
 				// predict
 				final DenoiSegOutput<?, ?> res = prediction.predict((RandomAccessibleInterval) image, axes);
 				final RandomAccessibleInterval<FloatType> probabilityMaps = (RandomAccessibleInterval<FloatType>) res.getSegmented();
-				logService.log(0, "Done with prediction");
 
 				// extract foreground prediction
 				final RandomAccessibleInterval<FloatType> foregroundMap;
@@ -252,9 +249,9 @@ public class DenoiSegSegmenter implements Segmenter {
 				String axes;
 				int[] dims = Intervals.dimensionsAsIntArray(image);
 				if(dims[2] > 1){
-					axes = "XY";
-				} else {
 					axes = "XYB";
+				} else {
+					axes = "XY";
 				}
 
 				// predict
@@ -262,14 +259,17 @@ public class DenoiSegSegmenter implements Segmenter {
 				final RandomAccessibleInterval<FloatType> probabilityMaps = (RandomAccessibleInterval<FloatType>) res.getSegmented();
 
 				// extract foreground prediction
-				final RandomAccessibleInterval<FloatType> foregroundMap;
+				final RandomAccessibleInterval<FloatType> probabilityMap, backgroundMap, foregroundMap;
 				if(axes.compareTo("XYB") == 0){ // XYBC with channel being the dimension along bg-fg-border
+					backgroundMap = (RandomAccessibleInterval<FloatType>) Views.hyperSlice(probabilityMaps, 3, 0);
 					foregroundMap = (RandomAccessibleInterval<FloatType>) Views.hyperSlice(probabilityMaps, 3, 1);
 				} else { // XYC
+					backgroundMap = (RandomAccessibleInterval<FloatType>) Views.hyperSlice(probabilityMaps, 2, 0);
 					foregroundMap = (RandomAccessibleInterval<FloatType>) Views.hyperSlice(probabilityMaps, 2, 1);
 				}
+				probabilityMap = Views.stack(backgroundMap, foregroundMap);
 
-				LoopBuilder.setImages(outputProbabilityMap, foregroundMap).forEachPixel( (o,i) -> o.setReal(i.get()));
+				LoopBuilder.setImages(outputProbabilityMap, probabilityMap).forEachPixel( (o,i) -> o.setReal(i.get()));
 
 			} catch (IOException e) {
 				e.printStackTrace();
@@ -322,7 +322,7 @@ public class DenoiSegSegmenter implements Segmenter {
 
 	@Override
 	public List<String> classNames() {
-		return Arrays.asList("Foreground");
+		return Arrays.asList("background", "foreground");
 	}
 
 	@Override
