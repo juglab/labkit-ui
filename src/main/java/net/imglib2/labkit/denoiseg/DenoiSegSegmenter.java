@@ -10,6 +10,7 @@ import net.imagej.ImgPlus;
 import net.imagej.modelzoo.ModelZooArchive;
 import net.imagej.modelzoo.ModelZooService;
 import net.imglib2.RandomAccessibleInterval;
+import net.imglib2.img.display.imagej.ImageJFunctions;
 import net.imglib2.labkit.labeling.Labeling;
 import net.imglib2.labkit.plugin.LabkitPlugin;
 import net.imglib2.labkit.segmentation.Segmenter;
@@ -22,6 +23,8 @@ import net.imglib2.util.Intervals;
 import net.imglib2.util.Pair;
 import net.imglib2.view.Views;
 import org.scijava.Context;
+import org.scijava.log.LogService;
+import org.scijava.plugin.Parameter;
 
 import javax.swing.*;
 import java.io.File;
@@ -47,8 +50,12 @@ public class DenoiSegSegmenter implements Segmenter {
 
 	private File model;
 
+	@Parameter
+	private LogService logService;
+
 	public DenoiSegSegmenter(Context context) {
 		this.context = context;
+		logService = context.getService(LogService.class);
 
 		params = new DenoiSegParameters();
 	}
@@ -147,11 +154,6 @@ public class DenoiSegSegmenter implements Segmenter {
 		System.out.println("Done");
 	}
 
-	private int showWarning(String message){
-		int reply = JOptionPane.showConfirmDialog(null, message, "Warning", JOptionPane.YES_NO_OPTION);
-		return reply;
-	}
-
 	private int countNumberLabeled(List<Pair<ImgPlus<?>, Labeling>> trainingData){
 		return getLabeledIndices(trainingData).size();
 	}
@@ -194,7 +196,7 @@ public class DenoiSegSegmenter implements Segmenter {
 	@Override
 	public void segment(ImgPlus<?> image,
 		RandomAccessibleInterval<? extends IntegerType<?>> outputSegmentation) {
-		if (training != null) {
+		if (model != null) {
 			ModelZooService modelZooService = context.getService(ModelZooService.class);
 			try {
 				ModelZooArchive archive = modelZooService.io().open(model);
@@ -206,14 +208,15 @@ public class DenoiSegSegmenter implements Segmenter {
 				String axes;
 				int[] dims = Intervals.dimensionsAsIntArray(image);
 				if(dims[2] > 1){
-					axes = "XY";
-				} else {
 					axes = "XYB";
+				} else {
+					axes = "XY";
 				}
 
 				// predict
 				final DenoiSegOutput<?, ?> res = prediction.predict((RandomAccessibleInterval) image, axes);
 				final RandomAccessibleInterval<FloatType> probabilityMaps = (RandomAccessibleInterval<FloatType>) res.getSegmented();
+				logService.log(0, "Done with prediction");
 
 				// extract foreground prediction
 				final RandomAccessibleInterval<FloatType> foregroundMap;
@@ -237,7 +240,7 @@ public class DenoiSegSegmenter implements Segmenter {
 	public void predict(ImgPlus<?> image,
 		RandomAccessibleInterval<? extends RealType<?>> outputProbabilityMap)
 	{
-		if (training != null) {
+		if (model != null) {
 			ModelZooService modelZooService = context.getService(ModelZooService.class);
 			try {
 				ModelZooArchive archive = modelZooService.io().open(model);
@@ -283,6 +286,7 @@ public class DenoiSegSegmenter implements Segmenter {
 
 	@Override
 	public void saveModel(String path) {
+		// TODO potential problem
 		if (model != null) {
 			try {
 				// TODO should we make sure to name the model .io.zip to make it clear it is a zoomodel?
@@ -298,13 +302,27 @@ public class DenoiSegSegmenter implements Segmenter {
 
 	@Override
 	public void openModel(String path) {
-		// currently no safety checks
-		model = new File(path);
+		if(path.endsWith("bioimage.io.zip")) {
+			model = new File(path);
+
+			// TODO better way to check if it is a valid model?
+			ModelZooService modelZooService = context.getService(ModelZooService.class);
+			try {
+				ModelZooArchive archive = modelZooService.io().open(model);
+				trained = true;
+			} catch (IOException e) {
+				e.printStackTrace();
+				model = null;
+				trained = false;
+			}
+		} else {
+			// TODO show message
+		}
 	}
 
 	@Override
 	public List<String> classNames() {
-		return Arrays.asList("None");
+		return Arrays.asList("Foreground");
 	}
 
 	@Override
@@ -321,10 +339,16 @@ public class DenoiSegSegmenter implements Segmenter {
 		return false;
 	}
 
+	// TODO is there already such a mechanism in labkit/imagej2?
+ 	private int showWarning(String message){
+		int reply = JOptionPane.showConfirmDialog(null, message, "Warning", JOptionPane.YES_NO_OPTION);
+		return reply;
+	}
+
 	public static void main(String... args) throws IOException, ExecutionException, InterruptedException {
 		ImageJ imageJ = new ImageJ();
 		imageJ.ui().showUI();
-		Object data = imageJ.io().open("/Users/deschamp/Downloads/denoiseg_mouse/Test_Labkit/Stack.tif");
+		Object data = imageJ.io().open("/Users/deschamp/Downloads/denoiseg_mouse/Test_Labkit/Substack.tif");
 		imageJ.ui().show(data);
 		imageJ.command().run(LabkitPlugin.class, true);
 	}
