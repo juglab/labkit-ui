@@ -3,6 +3,7 @@ package net.imglib2.labkit.denoiseg;
 
 import de.csbdresden.denoiseg.predict.DenoiSegOutput;
 import de.csbdresden.denoiseg.predict.DenoiSegPrediction;
+import de.csbdresden.denoiseg.threshold.ThresholdOptimizer;
 import de.csbdresden.denoiseg.train.DenoiSegConfig;
 import de.csbdresden.denoiseg.train.DenoiSegTraining;
 import net.imagej.ImageJ;
@@ -10,7 +11,6 @@ import net.imagej.ImgPlus;
 import net.imagej.modelzoo.ModelZooArchive;
 import net.imagej.modelzoo.ModelZooService;
 import net.imglib2.RandomAccessibleInterval;
-import net.imglib2.img.display.imagej.ImageJFunctions;
 import net.imglib2.labkit.labeling.Labeling;
 import net.imglib2.labkit.plugin.LabkitPlugin;
 import net.imglib2.labkit.segmentation.Segmenter;
@@ -21,6 +21,8 @@ import net.imglib2.type.numeric.integer.IntType;
 import net.imglib2.type.numeric.real.FloatType;
 import net.imglib2.util.Intervals;
 import net.imglib2.util.Pair;
+import net.imglib2.util.ValuePair;
+import net.imglib2.view.IntervalView;
 import net.imglib2.view.Views;
 import org.scijava.Context;
 import org.scijava.log.LogService;
@@ -50,8 +52,12 @@ public class DenoiSegSegmenter implements Segmenter {
 
 	private File model;
 
+	ModelZooArchive archive;
+
 	@Parameter
 	private LogService logService;
+
+	private double threshold = 0.5;
 
 	public DenoiSegSegmenter(Context context) {
 		this.context = context;
@@ -64,7 +70,7 @@ public class DenoiSegSegmenter implements Segmenter {
 	public void editSettings(JFrame dialogParent,
 		List<Pair<ImgPlus<?>, Labeling>> trainingData)
 	{
-		// TODO: exception thrown if not enough labeled data, put safe-guards
+		// TODO: warn users if not enough labeled data
 		// TODO: this happens on the EDT, in case of large depth, this may cause slow downs
 		int[] dims = Intervals.dimensionsAsIntArray(trainingData.get(0).getA());
 		int nLabeled = countNumberLabeled(trainingData);
@@ -96,21 +102,21 @@ public class DenoiSegSegmenter implements Segmenter {
 		int nLabeled = labeledIndices.size();
 
 		// TODO: replace with cancellation exception instead of asking the user?
-		if(nLabeled == 0) {
+		if (nLabeled == 0) {
 			int r = showWarning("Not enough ground-truth labels, do you want to continue?");
-			if(r != 0){
+			if (r != 0) {
 				training.cancel();
 				return;
 			}
-		} else if(params.getNumberValidation() > nLabeled-5){ // TODO: 5 is arbitrary, replace by 0?
+		} else if (params.getNumberValidation() > nLabeled - 5) { // TODO: 5 is arbitrary, replace by 0?
 			int r = showWarning("Not enough training ground-truth labels, do you want to continue?");
-			if(r != 0){
+			if (r != 0) {
 				training.cancel();
 				return;
 			}
-		} else if(params.getNumberValidation() < 5){
+		} else if (params.getNumberValidation() < 5) {
 			int r = showWarning("Not enough validation labels, do you want to continue?");
-			if(r != 0){
+			if (r != 0) {
 				training.cancel();
 				return;
 			}
@@ -118,37 +124,57 @@ public class DenoiSegSegmenter implements Segmenter {
 
 		// TODO maybe we need to randomize the order
 		int nValidate = 0;
-		for(int i=0;i<dim;i++){
-			RandomAccessibleInterval x = Views.hyperSlice((RandomAccessibleInterval) trainingData.get(i).getA(), 2 ,i );
+		List<Pair<RandomAccessibleInterval<FloatType>, RandomAccessibleInterval<IntType>>> validationData = new ArrayList<>(); // used by threshold optimizer
+		for (int i = 0; i < dim; i++) {
+			RandomAccessibleInterval x = Views.hyperSlice((RandomAccessibleInterval) trainingData.get(i).getA(), 2, i);
 			RandomAccessibleInterval y = Views.hyperSlice((RandomAccessibleInterval<IntType>) trainingData.get(i).getB().getIndexImg(), 2, i);
 
 			// if not labeled, DenoiSeg expect null value (not a "black" image)
-			if(!labeledIndices.contains(i)){
+			if (!labeledIndices.contains(i)) {
 				y = null;
 			}
 
-			if(y != null && nValidate < params.getNumberValidation()){
-				training.input().addValidationData(x,y);
+			if (y != null && nValidate < params.getNumberValidation()) {
+				training.input().addValidationData(x, y);
+				validationData.add(new ValuePair<RandomAccessibleInterval<FloatType>, RandomAccessibleInterval<IntType>>(x, y));
 				nValidate++;
 			} else {
-				training.input().addTrainingData(x,y);
+				training.input().addTrainingData(x, y);
 			}
 		}
 
-		if(training.getDialog() != null) training.getDialog().addTask( "Prediction" );
+		if (training.getDialog() != null) training.getDialog().addTask("Prediction");
 
 		training.train(); // method returns upon cancelling or finishing training
 
 		trained = !training.isCanceled();
-		if(!trained) {
-			System.out.println("canceled");
+		if (!trained) {
 			cancel();
 		} else {
 			try {
 				model = training.output().exportBestTrainedModel();
+				archive = openModel(model);
+
+				ThresholdOptimizer thresholdOptimizer = new ThresholdOptimizer(context, archive, validationData);
+					Map<Double, Double> results = thresholdOptimizer.run();
+
+					if (results != null && !results.isEmpty()) {
+						double max = -1;
+						Iterator<Double> it = results.keySet().iterator();
+						while (it.hasNext()) {
+							double t = it.next();
+							if (results.get(t) > max) {
+								max = results.get(t);
+								threshold = t;
+							}
+						}
+					}
 			} catch (IOException e) {
 				e.printStackTrace();
+			} catch (Exception e) {
+				e.printStackTrace();
 			}
+
 		}
 	}
 
@@ -194,17 +220,19 @@ public class DenoiSegSegmenter implements Segmenter {
 	@Override
 	public void segment(ImgPlus<?> image,
 		RandomAccessibleInterval<? extends IntegerType<?>> outputSegmentation) {
-		if (model != null) {
-			ModelZooService modelZooService = context.getService(ModelZooService.class);
-			try {
-				ModelZooArchive archive = modelZooService.io().open(model);
 
+		// TODO this realods the archive, it should probably keep it in memory? how likely are users to move the cursor through the stack and segment frame by frame?
+		if (archive != null) {
+			try {
 				final DenoiSegPrediction prediction = new DenoiSegPrediction(context);
 				prediction.setTrainedModel(archive);
 
+				// extract interval on the image
+				final RandomAccessibleInterval slice = Views.interval(image, outputSegmentation);
+
 				// check whether single image or "movie"
 				String axes;
-				int[] dims = Intervals.dimensionsAsIntArray(image);
+				int[] dims = Intervals.dimensionsAsIntArray(slice);
 				if(dims[2] > 1){
 					axes = "XYB";
 				} else {
@@ -212,22 +240,21 @@ public class DenoiSegSegmenter implements Segmenter {
 				}
 
 				// predict
-				final DenoiSegOutput<?, ?> res = prediction.predict((RandomAccessibleInterval) image, axes);
+				final DenoiSegOutput<?, ?> res = prediction.predict(slice, axes);
 				final RandomAccessibleInterval<FloatType> probabilityMaps = (RandomAccessibleInterval<FloatType>) res.getSegmented();
 
 				// extract foreground prediction
 				final RandomAccessibleInterval<FloatType> foregroundMap;
 				if(axes.compareTo("XYB") == 0){ // XYBC with channel being the dimension along bg-fg-border
-					foregroundMap = (RandomAccessibleInterval<FloatType>) Views.hyperSlice(probabilityMaps, 3, 1);
+					foregroundMap = Views.hyperSlice(probabilityMaps, 3, 1);
 				} else { // XYC
-					foregroundMap = (RandomAccessibleInterval<FloatType>) Views.hyperSlice(probabilityMaps, 2, 1);
+					// add one dimension
+					foregroundMap = Views.addDimension(Views.hyperSlice(probabilityMaps, 2, 1), 0, 0);
 				}
 
 				// copy into outputSegmentation while thresholding
-				LoopBuilder.setImages(outputSegmentation, foregroundMap).forEachPixel( (o,i) -> o.setInteger(i.get() > 0.5 ? 1: 0));
+				LoopBuilder.setImages(outputSegmentation, foregroundMap).forEachPixel( (o,i) -> o.setInteger(i.get() > threshold ? 1: 0));
 
-			} catch (IOException e) {
-				e.printStackTrace();
 			} catch (Exception e) {
 				e.printStackTrace();
 			}
@@ -237,13 +264,13 @@ public class DenoiSegSegmenter implements Segmenter {
 	public void predict(ImgPlus<?> image,
 		RandomAccessibleInterval<? extends RealType<?>> outputProbabilityMap)
 	{
-		if (model != null) {
-			ModelZooService modelZooService = context.getService(ModelZooService.class);
+		if (archive != null) {
 			try {
-				ModelZooArchive archive = modelZooService.io().open(model);
-
 				final DenoiSegPrediction prediction = new DenoiSegPrediction(context);
 				prediction.setTrainedModel(archive);
+
+				// extract slice
+				final RandomAccessibleInterval slice = Views.interval(image, Views.hyperSlice(outputProbabilityMap, 2, 0));
 
 				// check whether single image or "movie"
 				String axes;
@@ -261,18 +288,16 @@ public class DenoiSegSegmenter implements Segmenter {
 				// extract foreground prediction
 				final RandomAccessibleInterval<FloatType> probabilityMap, backgroundMap, foregroundMap;
 				if(axes.compareTo("XYB") == 0){ // XYBC with channel being the dimension along bg-fg-border
-					backgroundMap = (RandomAccessibleInterval<FloatType>) Views.hyperSlice(probabilityMaps, 3, 0);
-					foregroundMap = (RandomAccessibleInterval<FloatType>) Views.hyperSlice(probabilityMaps, 3, 1);
+					backgroundMap = Views.hyperSlice(probabilityMaps, 3, 0);
+					foregroundMap = Views.hyperSlice(probabilityMaps, 3, 1);
 				} else { // XYC
-					backgroundMap = (RandomAccessibleInterval<FloatType>) Views.hyperSlice(probabilityMaps, 2, 0);
-					foregroundMap = (RandomAccessibleInterval<FloatType>) Views.hyperSlice(probabilityMaps, 2, 1);
+					backgroundMap = Views.addDimension(Views.hyperSlice(probabilityMaps, 2, 0), 0, 0);
+					foregroundMap = Views.addDimension(Views.hyperSlice(probabilityMaps, 2, 1), 0, 0);
 				}
 				probabilityMap = Views.stack(backgroundMap, foregroundMap);
 
 				LoopBuilder.setImages(outputProbabilityMap, probabilityMap).forEachPixel( (o,i) -> o.setReal(i.get()));
 
-			} catch (IOException e) {
-				e.printStackTrace();
 			} catch (Exception e) {
 				e.printStackTrace();
 			}
@@ -286,7 +311,7 @@ public class DenoiSegSegmenter implements Segmenter {
 
 	@Override
 	public void saveModel(String path) {
-		// TODO potential problem
+		// TODO potential problems
 		if (model != null) {
 			try {
 				// TODO should we make sure to name the model .io.zip to make it clear it is a zoomodel?
@@ -304,20 +329,24 @@ public class DenoiSegSegmenter implements Segmenter {
 	public void openModel(String path) {
 		if(path.endsWith("bioimage.io.zip")) {
 			model = new File(path);
-
-			// TODO better way to check if it is a valid model?
-			ModelZooService modelZooService = context.getService(ModelZooService.class);
 			try {
-				ModelZooArchive archive = modelZooService.io().open(model);
+				archive = openModel(model);
 				trained = true;
 			} catch (IOException e) {
-				e.printStackTrace();
-				model = null;
 				trained = false;
+				e.printStackTrace();
 			}
 		} else {
-			// TODO show message
+			// TODO feedback to user
 		}
+	}
+
+	private ModelZooArchive openModel(File model) throws IOException {
+		ModelZooArchive archive = null;
+		ModelZooService modelZooService = context.getService(ModelZooService.class);
+		archive = modelZooService.io().open(model);
+
+		return archive;
 	}
 
 	@Override
@@ -329,14 +358,19 @@ public class DenoiSegSegmenter implements Segmenter {
 	public int[] suggestCellSize(ImgPlus<?> image) {
 		int[] dims = Intervals.dimensionsAsIntArray(image);
 
-		// TODO if prediction takes too long, reduce number of planes
-
+		/*for (int i=2; i<dims.length;i++) {
+			dims[i] = 1;
+		}*/
 		return dims;
 	}
 
 	@Override
 	public boolean requiresFixedCellSize() {
 		return false;
+	}
+
+	public double getOptimizedThreshold(){
+		return threshold;
 	}
 
 	// TODO is there already such a mechanism in labkit/imagej2?
@@ -348,7 +382,7 @@ public class DenoiSegSegmenter implements Segmenter {
 	public static void main(String... args) throws IOException, ExecutionException, InterruptedException {
 		ImageJ imageJ = new ImageJ();
 		imageJ.ui().showUI();
-		Object data = imageJ.io().open("/Users/deschamp/Downloads/denoiseg_mouse/Test_Labkit/Substack.tif");
+		Object data = imageJ.io().open("/Users/deschamp/Downloads/denoiseg_mouse/Test_Labkit/Substack/Substack.tif");
 		imageJ.ui().show(data);
 		imageJ.command().run(LabkitPlugin.class, true);
 	}

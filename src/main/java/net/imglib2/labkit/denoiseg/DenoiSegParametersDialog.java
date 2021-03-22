@@ -62,7 +62,7 @@ public class DenoiSegParametersDialog extends JFrame {
             }
         });
 
-        SpinnerModel batchModel = new SpinnerNumberModel(64, 1, depth, 1);
+        SpinnerModel batchModel = new SpinnerNumberModel(64<=depth ? 64 : depth, 1, depth, 1);
         JSpinner batchSpinner = new JSpinner(batchModel);
         batchSpinner.addChangeListener(new ChangeListener() {
             @Override
@@ -93,9 +93,19 @@ public class DenoiSegParametersDialog extends JFrame {
             }
         });
 
-        // TODO: if nLabel too small, paint red and put another max than the default value
-        SpinnerModel valModel = new SpinnerNumberModel(5, 1, nLabeled, 1);
-        JSpinner valSpinner = new JSpinner(valModel);
+        SpinnerModel valModel;
+        JSpinner valSpinner;
+        if( nLabeled <= 5) {
+            valModel = new SpinnerNumberModel(0, 0, 0, 1);
+            valSpinner = new JSpinner(valModel);
+            valSpinner.setEnabled(false);
+            valSpinner.getEditor().getComponent(0).setBackground(Color.red);
+            valSpinner.setToolTipText("Not enough labeled slices.");
+        } else {
+            valModel = new SpinnerNumberModel( 5, 1, nLabeled, 1);
+            valSpinner = new JSpinner(valModel);
+        }
+
         valSpinner.addChangeListener(new ChangeListener() {
             @Override
             public void stateChanged(ChangeEvent e) {
