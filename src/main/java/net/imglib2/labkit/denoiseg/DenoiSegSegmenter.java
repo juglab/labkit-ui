@@ -22,7 +22,6 @@ import net.imglib2.type.numeric.real.FloatType;
 import net.imglib2.util.Intervals;
 import net.imglib2.util.Pair;
 import net.imglib2.util.ValuePair;
-import net.imglib2.view.IntervalView;
 import net.imglib2.view.Views;
 import org.scijava.Context;
 import org.scijava.log.LogService;
@@ -43,8 +42,6 @@ public class DenoiSegSegmenter implements Segmenter {
 	private final Context context;
 
 	private boolean trained = false;
-
-	private boolean canceled = false;
 
 	private DenoiSegTraining training;
 
@@ -86,41 +83,41 @@ public class DenoiSegSegmenter implements Segmenter {
 		// TODO what if there are more than one pair? is the call to dimension proper (Axis?)?
 		int dim = (int) trainingData.get(0).getA().dimension(2);
 
+		// sanity checks 2
+		List<Integer> labeledIndices = getLabeledIndices(trainingData);
+		int nLabeled = labeledIndices.size();
+
+		// TODO: replace with cancellation exception instead of asking the user?
+		// TODO: Replace number of validation slides with percentage.
+		// TODO: Remove this code block.
+		if (nLabeled == 0) {
+			int r = showWarning("Not enough ground-truth labels, do you want to continue?");
+			if (r != JOptionPane.OK_OPTION) {
+				return;
+			}
+		} else if (params.getNumberValidation() > nLabeled - 5) { // TODO: 5 is arbitrary, replace by 0?
+			int r = showWarning("Not enough training ground-truth labels, do you want to continue?");
+			if (r != JOptionPane.OK_OPTION) {
+				return;
+			}
+		} else if (params.getNumberValidation() < 5) {
+			int r = showWarning("Not enough validation labels, do you want to continue?");
+			if (r != JOptionPane.OK_OPTION) {
+				return;
+			}
+		}
+
 		// TODO: check if data is a movie, otherwise the labels will be 3D and will interfere with the training
 		training = new DenoiSegTraining(context);
-
-		training.addCallbackOnCancel(this::cancel);
+		training.addCallbackOnCancel(() -> {
+			if(training != null) training.dispose();
+		});
 		training.init(new DenoiSegConfig()
 				.setNumEpochs(params.getNumEpochs())
 				.setStepsPerEpoch(params.getNumStepsPerEpoch())
 				.setBatchSize(params.getBatchSize())
 				.setPatchShape(params.getPatchShape())
 				.setNeighborhoodRadius(params.getNeighborhoodRadius()));
-
-		// sanity checks 2
-		List<Integer> labeledIndices = getLabeledIndices(trainingData);
-		int nLabeled = labeledIndices.size();
-
-		// TODO: replace with cancellation exception instead of asking the user?
-		if (nLabeled == 0) {
-			int r = showWarning("Not enough ground-truth labels, do you want to continue?");
-			if (r != 0) {
-				training.cancel();
-				return;
-			}
-		} else if (params.getNumberValidation() > nLabeled - 5) { // TODO: 5 is arbitrary, replace by 0?
-			int r = showWarning("Not enough training ground-truth labels, do you want to continue?");
-			if (r != 0) {
-				training.cancel();
-				return;
-			}
-		} else if (params.getNumberValidation() < 5) {
-			int r = showWarning("Not enough validation labels, do you want to continue?");
-			if (r != 0) {
-				training.cancel();
-				return;
-			}
-		}
 
 		// TODO maybe we need to randomize the order
 		int nValidate = 0;
@@ -149,7 +146,7 @@ public class DenoiSegSegmenter implements Segmenter {
 
 		trained = !training.isCanceled();
 		if (!trained) {
-			cancel();
+			if(training != null) training.dispose();
 		} else {
 			try {
 				model = training.output().exportBestTrainedModel();
@@ -183,38 +180,29 @@ public class DenoiSegSegmenter implements Segmenter {
 	}
 
 	private List<Integer> getLabeledIndices(List<Pair<ImgPlus<?>, Labeling>> trainingData){
-		List<Integer> list = new ArrayList<Integer>();
-		for(Pair<ImgPlus<?>, Labeling> p: trainingData){
-			int dim = (int) trainingData.get(0).getA().dimension(2);
+		List<Integer> list = new ArrayList<>();
+		if(trainingData.size() != 1)
+			throw new UnsupportedOperationException();
+		Pair< ImgPlus< ? >, Labeling > p = trainingData.get(0);
+		int dim = (int) trainingData.get(0).getA().dimension(2);
 
-			for(int i=0; i<dim; i++) {
-				RandomAccessibleInterval label = Views.hyperSlice((RandomAccessibleInterval<IntType>) p.getB().getIndexImg(), 2, i);
-				if (isLabeled(label)) {
-					list.add(i);
-				}
+		for(int i=0; i<dim; i++) {
+			RandomAccessibleInterval<? extends IntegerType<?>> label = Views.hyperSlice(p.getB().getIndexImg(), 2, i);
+			if (isLabeled(label)) {
+				list.add(i);
 			}
 		}
 		return list;
 	}
 
 	// one label = image labeled...
-	private <T extends RealType> boolean isLabeled(RandomAccessibleInterval<T> img) {
-		Iterator<T> it = Views.iterable(img).iterator();
-
-		while(it.hasNext()){
-			float f = it.next().getRealFloat();
-
-			if(f > 0){
+	private boolean isLabeled(RandomAccessibleInterval<? extends IntegerType<?>> img) {
+		for(IntegerType<?> pixel : Views.iterable(img)){
+			if(pixel.getInteger() > 0){
 				return true;
 			}
 		}
-
 		return false;
-	}
-
-	public void cancel() {
-		canceled = true;
-		if(training != null) training.dispose();
 	}
 
 	@Override
