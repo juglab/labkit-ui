@@ -36,7 +36,7 @@ public class BdvLayerLink implements Holder<BdvStackSource<?>> {
 
 	private final Runnable onImageChanged = this::onImageChanged;
 
-	private final Runnable onVisibilityChanged = this::onVisibilityChanged;
+	private final Runnable onVisibilityChanged = this::updateBdv;
 
 	private final Consumer<Interval> onRequestRepaint = this::onRequestRepaint;
 
@@ -69,7 +69,7 @@ public class BdvLayerLink implements Holder<BdvStackSource<?>> {
 			bdvSource = showable.show(layer.title(), BdvOptions.options().addTo(handle));
 			bdvSource.setActive(layer.visibility().get());
 		}
-		onBdvSourceChanged();
+		updateBdv();
 		notifier.notifyListeners();
 	}
 
@@ -78,14 +78,6 @@ public class BdvLayerLink implements Holder<BdvStackSource<?>> {
 			handle.getViewerPanel().requestRepaint();
 		else
 			handle.getViewerPanel().requestRepaint(interval);
-	}
-
-	private void onBdvSourceChanged() {
-		updateBdv();
-	}
-
-	private void onVisibilityChanged() {
-		updateBdv();
 	}
 
 	private void updateBdv() {
