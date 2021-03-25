@@ -22,6 +22,10 @@ import java.util.Random;
  */
 public class BdvAutoContrast {
 
+	/**
+	 * Set display min/max of {@code bdvSource} to min/max estimated by random
+	 * sampling, computed at coarsest resolution for the current timepoint.
+	 */
 	public static void autoContrast(BdvSource bdvSource) {
 		ValuePair<Double, Double> minMax = getMinMax(bdvSource);
 		bdvSource.setDisplayRangeBounds(minMax.getA(), minMax.getB());
