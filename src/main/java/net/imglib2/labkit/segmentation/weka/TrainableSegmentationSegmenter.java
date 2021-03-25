@@ -161,8 +161,11 @@ public class TrainableSegmentationSegmenter implements Segmenter {
 	private static List<String> collectLabels(
 		List<? extends Labeling> labelings)
 	{
-		return new ArrayList<>(labelings.stream().flatMap(labeling -> labeling
-			.getLabels().stream()).map(Label::name).collect(Collectors.toSet()));
+		return labelings.stream()
+			.flatMap(labeling -> labeling.getLabels().stream())
+			.map(Label::name)
+			.distinct()
+			.collect(Collectors.toList());
 	}
 
 	private void trainStack(Training training, List<String> classes, Labeling labeling,
