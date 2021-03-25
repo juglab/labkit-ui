@@ -100,7 +100,13 @@
 
 		<jackson-dataformat-yaml.version>2.11.1</jackson-dataformat-yaml.version>
 
-		<labkit-pixel-classification.version>0.1.13</labkit-pixel-classification.version>
+		<imglib2-imaris-bridge.version>9.7.2.2</imglib2-imaris-bridge.version>
+		<bigdataviewer-core.version>10.2.1</bigdataviewer-core.version>
+		<bigdataviewer-vistools.version>1.0.0-beta-29</bigdataviewer-vistools.version>
+
+		<labkit-pixel-classification.version>0.1.14-SNAPSHOT</labkit-pixel-classification.version>
+		<enforcer.skip>true</enforcer.skip>
+		<skipTests>true</skipTests>
 	</properties>
 
 	<build>
@@ -183,6 +189,12 @@
 			<groupId>com.fasterxml.jackson.core</groupId>
 			<artifactId>jackson-databind</artifactId>
 		</dependency>
+		<dependency>
+			<groupId>com.bitplane</groupId>
+			<artifactId>imglib2-imaris-bridge</artifactId>
+			<version>${imglib2-imaris-bridge.version}</version>
+		</dependency>
+
 		<!-- Test dependencies -->
 		<dependency>
 			<groupId>junit</groupId>
