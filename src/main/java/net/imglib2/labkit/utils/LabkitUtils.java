@@ -2,13 +2,22 @@
 package net.imglib2.labkit.utils;
 
 import bdv.export.ProgressWriter;
-import net.imglib2.RandomAccess;
+import java.util.Collections;
+import java.util.concurrent.CancellationException;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicLong;
+import java.util.function.Consumer;
+import net.imglib2.Cursor;
 import net.imglib2.RandomAccessible;
 import net.imglib2.RandomAccessibleInterval;
 import net.imglib2.cache.img.CachedCellImg;
 import net.imglib2.converter.Converters;
 import net.imglib2.img.Img;
 import net.imglib2.img.array.ArrayImgs;
+import net.imglib2.parallel.Parallelization;
+import net.imglib2.parallel.TaskExecutor;
 import net.imglib2.type.NativeType;
 import net.imglib2.type.numeric.ARGBType;
 import net.imglib2.type.numeric.IntegerType;
@@ -26,8 +35,8 @@ import net.imglib2.view.Views;
 import java.util.List;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.function.Consumer;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 /*
  * @author Matthias Arzt
@@ -108,37 +117,6 @@ public class LabkitUtils {
 			max = Math.max(max, d);
 		}
 		return new ValuePair<>(min, max);
-	}
-
-	public static <T> RandomAccessibleInterval<T> populateCachedImg(
-		RandomAccessibleInterval<T> img, ProgressWriter progressWriter)
-	{
-		if (img instanceof CachedCellImg) internPopulateCachedImg(Cast.unchecked(img), progressWriter);
-		return img;
-	}
-
-	private static <T extends NativeType<T>> void internPopulateCachedImg(
-		CachedCellImg<T, ?> img, ProgressWriter progressWriter)
-	{
-		int[] cellDimensions = new int[img.getCellGrid().numDimensions()];
-		img.getCellGrid().cellDimensions(cellDimensions);
-		Consumer<RandomAccessibleInterval<T>> accessPixel = target -> {
-			long[] min = Intervals.minAsLongArray(target);
-			RandomAccess<T> ra = target.randomAccess();
-			ra.setPosition(min);
-			ra.get();
-		};
-		List<Callable<Void>> tasks = ParallelUtils.chunkOperation(img,
-			cellDimensions, accessPixel);
-		final ExecutorService executor = Executors.newFixedThreadPool(Runtime
-			.getRuntime().availableProcessors());
-		try {
-			ParallelUtils.executeInParallel(executor, ParallelUtils.addProgress(tasks,
-				progressWriter));
-		}
-		finally {
-			executor.shutdown();
-		}
 	}
 
 }

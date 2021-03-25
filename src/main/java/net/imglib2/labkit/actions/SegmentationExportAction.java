@@ -9,7 +9,6 @@ import net.imglib2.img.display.imagej.ImageJFunctions;
 import net.imglib2.labkit.Extensible;
 import net.imglib2.labkit.models.ImageLabelingModel;
 import net.imglib2.labkit.models.SegmentationItem;
-import net.imglib2.labkit.utils.LabkitUtils;
 import bdv.export.ProgressWriter;
 import net.imglib2.labkit.utils.ParallelUtils;
 import net.imglib2.labkit.utils.progress.SwingProgressWriter;
@@ -60,7 +59,7 @@ public class SegmentationExportAction extends AbstractFileIoAction {
 	{
 		final ProgressWriter progress = new SwingProgressWriter(null,
 			"Segment Entire Image Volume");
-		LabkitUtils.populateCachedImg(result, progress);
+		ParallelUtils.populateCachedImg(result, progress);
 	}
 
 	private <T extends NumericType<T> & NativeType<T>> void show(
@@ -91,5 +90,4 @@ public class SegmentationExportAction extends AbstractFileIoAction {
 			}
 		}
 	}
-
 }
