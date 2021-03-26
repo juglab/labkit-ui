@@ -28,9 +28,6 @@ public class DenoiSegSegmenterPlugin implements SegmentationPlugin {
 
 	@Override
 	public Segmenter createSegmenter() {
-
-		// TODO: here must check that the image abides the right criterions: no z?
-
 		return new DenoiSegSegmenter(context);
 	}
 }

@@ -12,7 +12,7 @@ public class DenoiSegParameters {
 
     private int neighborhoodRadius = 5;
 
-    private int numberValidation = 5;
+    private int validationPercentage = 50;
 
     public int getNumEpochs(){
         return numEpochs;
@@ -54,12 +54,12 @@ public class DenoiSegParameters {
         if(neighborhoodRadius > 0) this.neighborhoodRadius = neighborhoodRadius;
     }
 
-    public int getNumberValidation() {
-        return numberValidation;
+    public int getValidationPercentage() {
+        return validationPercentage;
     }
 
-    public void setNumberValidation(int numberValidation) {
-        if(numberValidation > 0) this.numberValidation = numberValidation;
+    public void setValidationPercentage(int validationPercentage) {
+        if(validationPercentage > 0) this.validationPercentage = validationPercentage;
     }
 
     @Override
@@ -72,7 +72,7 @@ public class DenoiSegParameters {
         sb.append("Batch size: "+batchSize+"\n");
         sb.append("Patch shape: "+patchShape+"\n");
         sb.append("Neighborhood radius: "+neighborhoodRadius+"\n");
-        sb.append("Number of validation: "+numberValidation+"\n");
+        sb.append("Proportion of validation images: "+ validationPercentage +"\n");
 
         return sb.toString();
     }

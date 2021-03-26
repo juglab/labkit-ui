@@ -9,17 +9,15 @@ import java.awt.event.ActionListener;
 
 public class DenoiSegParametersDialog extends JFrame {
 
-    public DenoiSegParametersDialog(final DenoiSegParameters params, int[] dims, int nLabeled){
-        initComponents(params, dims, nLabeled);
+    public DenoiSegParametersDialog(final DenoiSegParameters params, int[] dims){
+        initComponents(params, dims);
     }
 
-    private void initComponents(final DenoiSegParameters params, int[] dims, int nLabeled) {
-        // TODO: implement feedback to user on their choices of nValidation
-
+    private void initComponents(final DenoiSegParameters params, int[] dims) {
         JPanel contentPane = new JPanel();
         contentPane.setLayout(new BoxLayout(contentPane, BoxLayout.PAGE_AXIS));
 
-        JPanel paramPanel = getParamPanel(params, dims, nLabeled);
+        JPanel paramPanel = getParamPanel(params, dims);
         JPanel okPanel = getLowerPanel();
         contentPane.add(paramPanel);
         contentPane.add(okPanel);
@@ -27,7 +25,7 @@ public class DenoiSegParametersDialog extends JFrame {
         this.setContentPane(contentPane);
     }
 
-    private JPanel getParamPanel(final DenoiSegParameters params, int[] dims, int nLabeled){
+    private JPanel getParamPanel(final DenoiSegParameters params, int[] dims){
         JPanel paramPane = new JPanel();
         paramPane.setLayout(new GridBagLayout());
 
@@ -40,9 +38,9 @@ public class DenoiSegParametersDialog extends JFrame {
         JLabel batchSizeLabel =  new JLabel("Batch size:");
         JLabel patchShapeLabel = new JLabel("Patch shape:");
         JLabel neighborRadiusLabel = new JLabel("Neighborhood radius:");
-        JLabel nValidationLabel = new JLabel("Number of validation labels:");
+        JLabel nValidationLabel = new JLabel("Labeled image % used for validation:");
 
-        SpinnerModel epochModel = new SpinnerNumberModel(300, 1, 10000, 1);
+        SpinnerModel epochModel = new SpinnerNumberModel(params.getNumEpochs(), 1, 10000, 1);
         JSpinner epochsSpinner = new JSpinner(epochModel);
         epochsSpinner.addChangeListener(new ChangeListener() {
             @Override
@@ -52,7 +50,7 @@ public class DenoiSegParametersDialog extends JFrame {
             }
         });
 
-        SpinnerModel stepsModel = new SpinnerNumberModel(200, 1, 10000, 1);
+        SpinnerModel stepsModel = new SpinnerNumberModel(params.getNumStepsPerEpoch(), 1, 10000, 1);
         JSpinner stepsSpinner = new JSpinner(stepsModel);
         stepsSpinner.addChangeListener(new ChangeListener() {
             @Override
@@ -62,7 +60,7 @@ public class DenoiSegParametersDialog extends JFrame {
             }
         });
 
-        SpinnerModel batchModel = new SpinnerNumberModel(64<=depth ? 64 : depth, 1, depth, 1);
+        SpinnerModel batchModel = new SpinnerNumberModel(Math.min(64, params.getBatchSize()), 1, depth, 1);
         JSpinner batchSpinner = new JSpinner(batchModel);
         batchSpinner.addChangeListener(new ChangeListener() {
             @Override
@@ -72,7 +70,7 @@ public class DenoiSegParametersDialog extends JFrame {
             }
         });
 
-        SpinnerModel patchShapeModel = new SpinnerNumberModel(16, 16, 512, 16);
+        SpinnerModel patchShapeModel = new SpinnerNumberModel(params.getPatchShape(), 16, 512, 16);
         JSpinner patchShapeSpinner = new JSpinner(patchShapeModel);
         patchShapeSpinner.addChangeListener(new ChangeListener() {
             @Override
@@ -83,7 +81,7 @@ public class DenoiSegParametersDialog extends JFrame {
         });
 
         // TODO: make sure this is correct
-        SpinnerModel neighborModel = new SpinnerNumberModel(5, 1, minHW, 1);
+        SpinnerModel neighborModel = new SpinnerNumberModel(params.getNeighborhoodRadius(), 1, minHW, 1);
         JSpinner neighborSpinner = new JSpinner(neighborModel);
         neighborSpinner.addChangeListener(new ChangeListener() {
             @Override
@@ -93,24 +91,13 @@ public class DenoiSegParametersDialog extends JFrame {
             }
         });
 
-        SpinnerModel valModel;
-        JSpinner valSpinner;
-        if( nLabeled <= 5) {
-            valModel = new SpinnerNumberModel(0, 0, 0, 1);
-            valSpinner = new JSpinner(valModel);
-            valSpinner.setEnabled(false);
-            valSpinner.getEditor().getComponent(0).setBackground(Color.red);
-            valSpinner.setToolTipText("Not enough labeled slices.");
-        } else {
-            valModel = new SpinnerNumberModel( 5, 1, nLabeled, 1);
-            valSpinner = new JSpinner(valModel);
-        }
-
+        SpinnerModel valModel = new SpinnerNumberModel(params.getValidationPercentage(), 1, 100, 1);
+        JSpinner valSpinner = new JSpinner(valModel);
         valSpinner.addChangeListener(new ChangeListener() {
             @Override
             public void stateChanged(ChangeEvent e) {
                 int val = (int) valSpinner.getValue();
-                params.setNumberValidation(val);
+                params.setValidationPercentage(val);
             }
         });
 
