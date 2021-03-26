@@ -192,6 +192,8 @@ public class DenoiSegSegmenter implements Segmenter {
 				// Threshold and copy to the output segmentation
 				LoopBuilder.setImages(outputSegmentation, foregroundMap).forEachPixel( (o,i) -> o.setInteger(i.get() > threshold ? 1: 0));
 
+				// TODO How to save theshold? In the name of the model? Show message to user? Separate JSON? Hijack modelzoo to put it in the .zip?
+
 			} catch (Exception e) {
 				e.printStackTrace();
 			}
@@ -253,7 +255,8 @@ public class DenoiSegSegmenter implements Segmenter {
 	public void saveModel(String path) {
 		if (archive != null) {
 			try {
-				// TODO this method has not been tested, does it save with the bioimage.io.zip extension?
+				// TODO this saves as .classifier, but should use bioimage.io.zip?
+				// TODO save threshold in the name
 				ModelZooService modelZooService = context.getService(ModelZooService.class);
 				modelZooService.io().save(archive, path);
 			} catch (IOException e) {
