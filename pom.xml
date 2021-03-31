@@ -130,7 +130,7 @@
 		<dependency>
 			<groupId>de.csbdresden</groupId>
 			<artifactId>denoiseg</artifactId>
-			<version>0.6.3</version>
+			<version>0.6.5-SNAPSHOT</version>
 		</dependency>
 		<dependency>
 			<groupId>net.imagej</groupId>
@@ -209,11 +209,5 @@
 			<artifactId>jmh-generator-annprocess</artifactId>
 			<scope>test</scope>
 		</dependency>
-        <dependency>
-            <groupId>de.csbdresden</groupId>
-            <artifactId>denoiseg</artifactId>
-            <version>0.6.4-SNAPSHOT</version>
-            <scope>compile</scope>
-        </dependency>
 	</dependencies>
 </project>
