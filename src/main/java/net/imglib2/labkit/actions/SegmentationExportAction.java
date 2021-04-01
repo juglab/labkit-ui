@@ -9,6 +9,7 @@ import net.imglib2.img.display.imagej.ImageJFunctions;
 import net.imglib2.labkit.Extensible;
 import net.imglib2.labkit.models.ImageLabelingModel;
 import net.imglib2.labkit.models.SegmentationItem;
+import net.imglib2.labkit.models.SegmentationResultsModel;
 import bdv.export.ProgressWriter;
 import net.imglib2.labkit.utils.ParallelUtils;
 import net.imglib2.labkit.utils.progress.SwingProgressWriter;
@@ -27,34 +28,41 @@ import java.util.function.Function;
  */
 public class SegmentationExportAction extends AbstractFileIoAction {
 
-	public SegmentationExportAction(Extensible extensible, ImageLabelingModel labelingModel) {
+	private final ImageLabelingModel labelingModel;
+
+	public SegmentationExportAction(Extensible extensible,
+		ImageLabelingModel labelingModel)
+	{
 		super(extensible, AbstractFileIoAction.TIFF_FILTER,
 			AbstractFileIoAction.HDF5_FILTER);
-		addMenuItems(item -> item.results(labelingModel).segmentation(), "Segmentation Result");
-		addMenuItems(item -> item.results(labelingModel).prediction(), "Probability Map");
+		this.labelingModel = labelingModel;
+		addMenuItems(SegmentationResultsModel::segmentation, "Segmentation Result");
+		addMenuItems(SegmentationResultsModel::prediction, "Probability Map");
 	}
 
 	private <T extends NumericType<T> & NativeType<T>> void addMenuItems(
-		Function<SegmentationItem, RandomAccessibleInterval<T>> predictionFactory,
+		Function<SegmentationResultsModel, RandomAccessibleInterval<T>> getResultsImage,
 		String title)
 	{
 		initSaveAction(SegmentationItem.SEGMENTER_MENU, "Save " + title +
-			" as TIF / HDF5 ...", 200, (data, filename) -> saveImage(filename,
-				predictionFactory.apply(data)), "");
+			" as TIF / HDF5 ...", 200, (item, filename) -> saveImage(filename,
+				getResultsImage.apply(item.results(labelingModel))), "");
 		extensible.addMenuItem(SegmentationItem.SEGMENTER_MENU, "Show " + title +
-			" in ImageJ", 201, data -> show(predictionFactory.apply(data)), null, "");
+			" in ImageJ", 201, item -> show(getResultsImage.apply(item.results(labelingModel))), null,
+			"");
 		extensible.addMenuItem(SegmentationItem.SEGMENTER_MENU,
-			"Calculate entire " + title, 300, item -> populate(predictionFactory
-				.apply(item)), null, "");
+			"Calculate entire " + title, 300, item -> {
+				final RandomAccessibleInterval<T> resultsImage =
+					getResultsImage.apply(item.results(labelingModel));
+				ParallelUtils.runInOtherThread(() -> {
+					populate(resultsImage);
+					labelingModel.extensionPoints()
+						.afterPopulateResults(item, resultsImage);
+				});
+			}, null, "");
 	}
 
 	private <T extends NumericType<T> & NativeType<T>> void populate(
-		RandomAccessibleInterval<T> result)
-	{
-		ParallelUtils.runInOtherThread(() -> populate2(result));
-	}
-
-	private <T extends NumericType<T> & NativeType<T>> void populate2(
 		RandomAccessibleInterval<T> result)
 	{
 		final ProgressWriter progress = new SwingProgressWriter(null,

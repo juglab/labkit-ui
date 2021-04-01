@@ -9,7 +9,6 @@ import net.imglib2.RandomAccessibleInterval;
 import net.imglib2.cache.img.CellLoader;
 import net.imglib2.cache.img.DiskCachedCellImgFactory;
 import net.imglib2.cache.img.DiskCachedCellImgOptions;
-import net.imglib2.cache.img.SingleCellArrayImg;
 import net.imglib2.img.Img;
 import net.imglib2.img.cell.CellGrid;
 import net.imglib2.labkit.inputimage.ImgPlusViewsOld;
@@ -113,7 +112,11 @@ public class SegmentationResultsModel {
 		Interval interval = intervalNoChannels(image);
 		CellGrid grid = addDimensionToGrid(count, new CellGrid(Intervals.dimensionsAsLongArray(
 			interval), cellSize));
-		prediction = setupCachedImage(loader, grid, new FloatType());
+		final ExtensionPoints.SetupCachedResultsImage predictionStorageFactory = model.extensionPoints()
+			.getPredictionStorageFactory();
+		prediction = (predictionStorageFactory != null)
+			? predictionStorageFactory.setupCachedImage(segmenter, loader, grid, new FloatType())
+			: setupCachedImage(loader, grid, new FloatType());
 	}
 
 	private CellGrid addDimensionToGrid(int size, CellGrid grid) {
@@ -129,7 +132,11 @@ public class SegmentationResultsModel {
 			cellSize, target));
 		Interval interval = intervalNoChannels(image);
 		CellGrid grid = new CellGrid(Intervals.dimensionsAsLongArray(interval), cellSize);
-		segmentation = setupCachedImage(loader, grid, new ShortType());
+		final ExtensionPoints.SetupCachedResultsImage segmentationStorageFactory = model
+			.extensionPoints().getSegmentationStorageFactory();
+		segmentation = (segmentationStorageFactory != null)
+			? segmentationStorageFactory.setupCachedImage(segmenter, loader, grid, new ShortType())
+			: setupCachedImage(loader, grid, new ShortType());
 	}
 
 	/**
