@@ -41,8 +41,8 @@ public class DenoiSegSegmenter implements Segmenter {
 	private DenoiSegTraining training;
 	private DenoiSegParameters params;
 
-	private File model;
-	private ModelZooArchive archive;
+	private File modelFile;
+	private ModelZooArchive model;
 
 	private double threshold = 0.5;
 
@@ -75,15 +75,17 @@ public class DenoiSegSegmenter implements Segmenter {
 		// pixel labels on multiple frames) and will interfere with the training
 
 		// Retrieve the only image/labeling pair
-		RandomAccessibleInterval<?> image = (RandomAccessibleInterval) trainingData.get(0).getA();
+		RandomAccessibleInterval<?> image = trainingData.get(0).getA();
+		// TODO: change this from IntType to ? extends IntegerType<?>
 		RandomAccessibleInterval<IntType> labeling = (RandomAccessibleInterval<IntType>) trainingData
 			.get(0).getB().getIndexImg();
 
 		// Check number of labeled slices
 		final List<Integer> labeledImageIndices = getLabeledIndices(labeling);
 		final int nLabeled = labeledImageIndices.size();
-		final int nValidation = Math.max(1, Math.round(params.getValidationPercentage() * nLabeled /
-			100f));
+		final int nValidation = Math.min(nLabeled - 1, Math.max(1, Math.round(params
+			.getValidationPercentage() * nLabeled /
+			100f)));
 		if (nLabeled < 2) {
 			showError("Not enough ground-truth labels (minimum of 2 labeled slices required).");
 			return;
@@ -92,6 +94,7 @@ public class DenoiSegSegmenter implements Segmenter {
 		// Instantiate DenoiSeg training
 		training = new DenoiSegTraining(context);
 		training.addCallbackOnCancel(() -> {
+			// FIXME: this is slightly odd. Can probably be removed
 			if (training != null) training.dispose();
 		});
 		training.init(new DenoiSegConfig()
@@ -101,7 +104,39 @@ public class DenoiSegSegmenter implements Segmenter {
 			.setPatchShape(params.getPatchShape())
 			.setNeighborhoodRadius(params.getNeighborhoodRadius()));
 
+		List<Pair<RandomAccessibleInterval<FloatType>, RandomAccessibleInterval<IntType>>> validationData =
+			addTrainingData(image, labeling, labeledImageIndices, nValidation);
+
+		// Train model
+		training.train(); // method returns upon cancelling or finishing training
+
+		trained = !training.isCanceled();
+		if (!trained) {
+			training.dispose();
+		}
+		else {
+			try {
+				// Retrieve model and load it
+				modelFile = training.output().exportBestTrainedModel();
+				model = openModel(modelFile);
+
+				// Get optimised threshold
+				threshold = optimizeThreshold(model, validationData);
+
+			}
+			catch (IOException e) {
+				throw new RuntimeException(e);
+			}
+		}
+	}
+
+	private List<Pair<RandomAccessibleInterval<FloatType>, RandomAccessibleInterval<IntType>>>
+		addTrainingData(RandomAccessibleInterval<?> image, RandomAccessibleInterval<IntType> labeling,
+			List<Integer> labeledImageIndices, int nValidation)
+	{
 		// Remember validation data for later use with the ThresholdOptimizer
+		// TODO: Question do we need this variable or can
+		// training.input().getLabeledTrainingPairs() be used instead?
 		List<Pair<RandomAccessibleInterval<FloatType>, RandomAccessibleInterval<IntType>>> validationData =
 			new ArrayList<>(nValidation);
 
@@ -130,42 +165,23 @@ public class DenoiSegSegmenter implements Segmenter {
 				training.input().addTrainingData(x, y);
 			}
 		}
-
-		// Train model
-		training.train(); // method returns upon cancelling or finishing training
-
-		trained = !training.isCanceled();
-		if (!trained) {
-			if (training != null) training.dispose();
-		}
-		else {
-			try {
-				// Retrieve model and load it
-				model = training.output().exportBestTrainedModel();
-				archive = openModel(model);
-
-				// Get optimised threshold
-				threshold = optimizeThreshold(archive, validationData);
-
-			}
-			catch (IOException e) {
-				e.printStackTrace();
-			}
-			catch (Exception e) {
-				e.printStackTrace();
-			}
-		}
+		return validationData;
 	}
 
 	private double optimizeThreshold(ModelZooArchive archive,
 		List<Pair<RandomAccessibleInterval<FloatType>, RandomAccessibleInterval<IntType>>> validationData)
-		throws Exception
 	{
 		final ThresholdOptimizer thresholdOptimizer = new ThresholdOptimizer(context, archive,
 			validationData);
 
 		// Run threshold optimization, it returns a Map< threshold: metrics value >
-		final Map<Double, Double> results = thresholdOptimizer.run();
+		final Map<Double, Double> results;
+		try {
+			results = thresholdOptimizer.run();
+		}
+		catch (Exception e) {
+			throw new RuntimeException(e);
+		}
 
 		// Find threshold that maximizes the metrics
 		return Collections.max(results.entrySet(), Comparator.comparingDouble(Map.Entry::getValue))
@@ -178,10 +194,10 @@ public class DenoiSegSegmenter implements Segmenter {
 	{
 
 		// TODO is segment only called when trained == True? In which case remove clause
-		if (trained && archive != null) {
+		if (trained && model != null) {
 			try {
 				final DenoiSegPrediction prediction = new DenoiSegPrediction(context);
-				prediction.setTrainedModel(archive);
+				prediction.setTrainedModel(model);
 
 				// Extract cell interval on the image
 				final RandomAccessibleInterval cell = Views.interval(image, outputSegmentation);
@@ -230,10 +246,10 @@ public class DenoiSegSegmenter implements Segmenter {
 		RandomAccessibleInterval<? extends RealType<?>> outputProbabilityMap)
 	{
 		// TODO is predict only called when trained == True? In which case remove clause
-		if (trained && archive != null) {
+		if (trained && model != null) {
 			try {
 				final DenoiSegPrediction prediction = new DenoiSegPrediction(context);
-				prediction.setTrainedModel(archive);
+				prediction.setTrainedModel(model);
 
 				// TODO Is predict called only on the whole stack?
 
@@ -285,12 +301,12 @@ public class DenoiSegSegmenter implements Segmenter {
 
 	@Override
 	public void saveModel(String path) {
-		if (archive != null) {
+		if (model != null) {
 			try {
 				// TODO this saves as .classifier, but should use bioimage.io.zip?
 				// TODO save threshold in the name
 				ModelZooService modelZooService = context.getService(ModelZooService.class);
-				modelZooService.io().save(archive, path);
+				modelZooService.io().save(model, path);
 			}
 			catch (IOException e) {
 				e.printStackTrace();
@@ -305,9 +321,9 @@ public class DenoiSegSegmenter implements Segmenter {
 	public void openModel(String path) {
 		// TODO Should we try to load anyway and not just trust the extension?
 		if (path.endsWith("bioimage.io.zip")) {
-			model = new File(path);
+			modelFile = new File(path);
 			try {
-				archive = openModel(model);
+				model = openModel(modelFile);
 				trained = true;
 			}
 			catch (IOException e) {
