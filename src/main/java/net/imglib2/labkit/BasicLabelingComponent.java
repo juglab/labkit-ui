@@ -64,7 +64,7 @@ public class BasicLabelingComponent extends JPanel implements AutoCloseable {
 	private void initPanel(JPanel toolsPanel) {
 		setLayout(new MigLayout("", "[grow]", "[][grow]"));
 		add(toolsPanel, "wrap, growx");
-		add(bdvHandle.getViewerPanel(), "grow");
+		add(bdvHandle.getSplitPanel(), "grow");
 	}
 
 	private Holder<BdvStackSource<?>> initImageLayer() {
