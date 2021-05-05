@@ -33,5 +33,6 @@ public class ClassifierIoAction extends AbstractFileIoAction {
 
 	private void open(SegmentationItem item, String filename) {
 		item.openModel(filename);
+		selectedSegmenter.set(item);
 	}
 }

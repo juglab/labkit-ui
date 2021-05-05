@@ -30,7 +30,10 @@ public class TrainClassifier {
 		extensible.addMenuItem(MenuBar.SEGMENTER_MENU, "Train Classifier", 1,
 			ignore -> trainSelectedSegmenter(model), null, "ctrl shift T");
 		Consumer<SegmentationItem> train = item -> ParallelUtils.runInOtherThread(
-			() -> trainSegmenter(model, item));
+			() -> {
+				model.selectedSegmenter().set(item);
+				trainSegmenter(model, item);
+			});
 		extensible.addMenuItem(SegmentationItem.SEGMENTER_MENU, "Train Classifier",
 			1, train, GuiUtils.loadIcon("run.png"), null);
 		extensible.addMenuItem(SegmentationItem.SEGMENTER_MENU, "Remove Classifier",
