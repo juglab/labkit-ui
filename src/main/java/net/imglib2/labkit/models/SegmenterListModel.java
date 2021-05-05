@@ -17,13 +17,15 @@ import java.util.List;
 public class SegmenterListModel {
 
 	private final Context context;
+	private final ExtensionPoints extensionPoints;
 	private final Holder<List<SegmentationItem>> segmenters = new DefaultHolder<>(new ArrayList<>());
 	private final Holder<SegmentationItem> selectedSegmenter = new DefaultHolder<>(null);
 	private final Holder<Boolean> segmentationVisibility = new DefaultHolder<>(true);
 	private final Holder<List<Pair<ImgPlus<?>, Labeling>>> trainingData = new DefaultHolder<>(null);
 
-	public SegmenterListModel(Context context) {
+	public SegmenterListModel(Context context, ExtensionPoints extensionPoints) {
 		this.context = context;
+		this.extensionPoints = extensionPoints;
 		this.segmenters.notifier().addListener(() -> {
 			if (!segmenters.get().contains(selectedSegmenter.get())) selectedSegmenter.set(null);
 		});
@@ -38,7 +40,7 @@ public class SegmenterListModel {
 	}
 
 	public SegmentationItem addSegmenter(SegmentationPlugin plugin) {
-		SegmentationItem segmentationItem = new SegmentationItem(plugin);
+		SegmentationItem segmentationItem = new SegmentationItem(plugin, extensionPoints);
 		segmenters.get().add(segmentationItem);
 		segmenters.notifier().notifyListeners();
 		return segmentationItem;

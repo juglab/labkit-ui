@@ -41,7 +41,7 @@ public class AddSegmenterPanel extends JPanel {
 	public static void main(String... args) {
 		JFrame frame = new JFrame("Select Segmentation Algorithm");
 		Context context = SingletonContext.getInstance();
-		SegmenterListModel slm = new SegmenterListModel(context);
+		SegmenterListModel slm = new SegmenterListModel(context, extensionPoints);
 		frame.add(new AddSegmenterPanel(slm));
 		frame.setSize(300, 300);
 		frame.setVisible(true);

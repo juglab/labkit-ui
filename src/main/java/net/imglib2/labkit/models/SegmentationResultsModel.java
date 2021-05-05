@@ -35,7 +35,8 @@ import java.util.stream.Collectors;
  */
 public class SegmentationResultsModel {
 
-	private ImageLabelingModel model;
+	private final ExtensionPoints extensionPoints;
+	private final ImageLabelingModel model;
 	private final Segmenter segmenter;
 	private boolean hasResults = false;
 	private RandomAccessibleInterval<ShortType> segmentation;
@@ -43,10 +44,13 @@ public class SegmentationResultsModel {
 	private List<String> labels = Collections.emptyList();
 	private List<ARGBType> colors = Collections.emptyList();
 
-	private Notifier listeners = new Notifier();
+	private final Notifier listeners = new Notifier();
 
-	public SegmentationResultsModel(ImageLabelingModel model, Segmenter segmenter) {
+	public SegmentationResultsModel(ImageLabelingModel model, ExtensionPoints extensionPoints,
+		Segmenter segmenter)
+	{
 		this.model = model;
+		this.extensionPoints = extensionPoints;
 		this.segmenter = segmenter;
 		segmentation = dummy(new ShortType());
 		prediction = dummy(new FloatType());
@@ -109,7 +113,7 @@ public class SegmentationResultsModel {
 		Interval interval = intervalNoChannels(image);
 		CellGrid grid = addDimensionToGrid(count, new CellGrid(Intervals.dimensionsAsLongArray(
 			interval), cellSize));
-		final ExtensionPoints.SetupCachedResultsImage predictionStorageFactory = model.extensionPoints()
+		final ExtensionPoints.SetupCachedResultsImage predictionStorageFactory = extensionPoints
 			.getPredictionStorageFactory();
 		prediction = predictionStorageFactory.setupCachedImage(segmenter, loader, grid,
 			new FloatType());
@@ -128,8 +132,8 @@ public class SegmentationResultsModel {
 			cellSize, target));
 		Interval interval = intervalNoChannels(image);
 		CellGrid grid = new CellGrid(Intervals.dimensionsAsLongArray(interval), cellSize);
-		final ExtensionPoints.SetupCachedResultsImage segmentationStorageFactory = model
-			.extensionPoints().getSegmentationStorageFactory();
+		final ExtensionPoints.SetupCachedResultsImage segmentationStorageFactory = extensionPoints
+			.getSegmentationStorageFactory();
 		segmentation = segmentationStorageFactory.setupCachedImage(segmenter, loader, grid,
 			new ShortType());
 	}
