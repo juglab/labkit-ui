@@ -52,6 +52,10 @@ public class DefaultSegmentationModel implements SegmentationModel {
 		return segmenterList;
 	}
 
+	public ExtensionPoints extensionPoints() {
+		return extensionPoints;
+	}
+
 	public <T extends IntegerType<T> & NativeType<T>>
 		List<RandomAccessibleInterval<T>> getSegmentations(T type)
 	{
