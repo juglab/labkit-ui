@@ -1,6 +1,7 @@
 
 package net.imglib2.labkit.panel;
 
+import net.imglib2.labkit.models.ExtensionPoints;
 import net.imglib2.labkit.models.SegmenterListModel;
 import net.imglib2.labkit.segmentation.SegmentationPlugin;
 import net.imglib2.labkit.segmentation.SegmentationPluginService;
@@ -41,7 +42,7 @@ public class AddSegmenterPanel extends JPanel {
 	public static void main(String... args) {
 		JFrame frame = new JFrame("Select Segmentation Algorithm");
 		Context context = SingletonContext.getInstance();
-		SegmenterListModel slm = new SegmenterListModel(context, extensionPoints);
+		SegmenterListModel slm = new SegmenterListModel(context, new ExtensionPoints());
 		frame.add(new AddSegmenterPanel(slm));
 		frame.setSize(300, 300);
 		frame.setVisible(true);

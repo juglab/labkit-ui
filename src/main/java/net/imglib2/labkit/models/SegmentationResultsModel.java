@@ -113,8 +113,8 @@ public class SegmentationResultsModel {
 		Interval interval = intervalNoChannels(image);
 		CellGrid grid = addDimensionToGrid(count, new CellGrid(Intervals.dimensionsAsLongArray(
 			interval), cellSize));
-		final ExtensionPoints.SetupCachedResultsImage predictionStorageFactory = extensionPoints
-			.getPredictionStorageFactory();
+		final CachedImageFactory predictionStorageFactory = extensionPoints
+			.getCachedPredictionImageFactory();
 		prediction = predictionStorageFactory.setupCachedImage(segmenter, loader, grid,
 			new FloatType());
 	}
@@ -132,8 +132,8 @@ public class SegmentationResultsModel {
 			cellSize, target));
 		Interval interval = intervalNoChannels(image);
 		CellGrid grid = new CellGrid(Intervals.dimensionsAsLongArray(interval), cellSize);
-		final ExtensionPoints.SetupCachedResultsImage segmentationStorageFactory = extensionPoints
-			.getSegmentationStorageFactory();
+		final CachedImageFactory segmentationStorageFactory = extensionPoints
+			.getCachedSegmentationImageCallback();
 		segmentation = segmentationStorageFactory.setupCachedImage(segmenter, loader, grid,
 			new ShortType());
 	}
