@@ -48,16 +48,30 @@ public class SegmentationExportAction extends AbstractFileIoAction {
 			" as TIF / HDF5 ...", 200, (item, filename) -> saveImage(filename,
 				getResultsImage.apply(item.results(labelingModel))), "");
 		extensible.addMenuItem(SegmentationItem.SEGMENTER_MENU, "Show " + title +
-			" in ImageJ", 201, item -> show(getResultsImage.apply(item.results(labelingModel))), null,
+			" in ImageJ", 201, item -> onShowResultInImageJClicked(getResultsImage, item), null,
 			"");
 		extensible.addMenuItem(SegmentationItem.SEGMENTER_MENU,
 			"Calculate entire " + title, 300, item -> {
-				final RandomAccessibleInterval<T> resultsImage =
-					getResultsImage.apply(item.results(labelingModel));
-				ParallelUtils.runInOtherThread(() -> {
-					populate(resultsImage);
-				});
+				onCalculateEntireResultClicked(getResultsImage, item);
 			}, null, "");
+	}
+
+	private <T extends NumericType<T> & NativeType<T>> void onShowResultInImageJClicked(
+		Function<SegmentationResultsModel, RandomAccessibleInterval<T>> getResultsImage,
+		SegmentationItem item)
+	{
+		RandomAccessibleInterval<T> result = getResultsImage.apply(item.results(labelingModel));
+		ParallelUtils.runInOtherThread(() -> populate(result));
+		ParallelUtils.runInOtherThread(() -> ImageJFunctions.show(result));
+	}
+
+	private <T extends NumericType<T> & NativeType<T>> void onCalculateEntireResultClicked(
+		Function<SegmentationResultsModel, RandomAccessibleInterval<T>> getResultsImage,
+		SegmentationItem item)
+	{
+		final RandomAccessibleInterval<T> resultsImage = getResultsImage.apply(item.results(
+			labelingModel));
+		ParallelUtils.runInOtherThread(() -> populate(resultsImage));
 	}
 
 	private <T extends NumericType<T> & NativeType<T>> void populate(
@@ -66,13 +80,6 @@ public class SegmentationExportAction extends AbstractFileIoAction {
 		final ProgressWriter progress = new SwingProgressWriter(null,
 			"Segment Entire Image Volume");
 		ParallelUtils.populateCachedImg(result, progress);
-	}
-
-	private <T extends NumericType<T> & NativeType<T>> void show(
-		RandomAccessibleInterval<T> result)
-	{
-		populate(result);
-		ParallelUtils.runInOtherThread(() -> ImageJFunctions.show(result));
 	}
 
 	private <T extends Type<T>> void saveImage(String filename,
