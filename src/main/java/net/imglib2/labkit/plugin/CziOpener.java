@@ -28,6 +28,7 @@ import net.imglib2.labkit.inputimage.DatasetInputImage;
 import net.imglib2.labkit.plugin.ui.ImageSelectionDialog;
 import net.imglib2.labkit.utils.ParallelUtils;
 import bdv.export.ProgressWriter;
+import net.imglib2.parallel.Parallelization;
 import net.imglib2.type.NativeType;
 import net.imglib2.type.numeric.ARGBType;
 import net.imglib2.type.numeric.NumericType;
@@ -42,9 +43,8 @@ import javax.swing.*;
 import java.io.IOException;
 import java.util.List;
 import java.util.OptionalInt;
-import java.util.concurrent.Callable;
 import java.util.concurrent.CancellationException;
-import java.util.concurrent.Executors;
+import java.util.function.Consumer;
 import java.util.function.IntFunction;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -91,8 +91,9 @@ public class CziOpener {
 	private DatasetInputImage openInputImage(String filename,
 		String labelingFilename, int fullres, int series)
 	{
-		DatasetInputImage result = new DatasetInputImage(openImage(filename,
-			fullres, series));
+		ImgPlus<ARGBType> image = Parallelization.runMultiThreaded(() -> openImage(filename, fullres,
+			series));
+		DatasetInputImage result = new DatasetInputImage(image);
 		result.setDefaultLabelingFilename(labelingFilename);
 		return result;
 	}
@@ -105,10 +106,10 @@ public class CziOpener {
 		int[] cellDimensions = reader.getCellDimensions(series);
 		Img<ARGBType> out = new CellImgFactory<>(new ARGBType(), cellDimensions)
 			.create(dimensions);
-		List<Callable<Void>> chunks = ParallelUtils.chunkOperation(out,
-			cellDimensions, cell -> reader.readToInterval(series, cell));
-		ParallelUtils.executeInParallel(Executors.newFixedThreadPool(8),
-			ParallelUtils.addProgress(chunks, progressWriter));
+		Consumer<RandomAccessibleInterval<ARGBType>> operation = cell -> reader.readToInterval(series,
+			cell);
+		ProgressWriter progressWriter = this.progressWriter;
+		ParallelUtils.applyOperationOnCells(out, cellDimensions, operation, progressWriter);
 		return imgPlus(filename, out, reader.getCalibratedAxes(fullres, series));
 	}
 

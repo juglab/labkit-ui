@@ -30,13 +30,17 @@ public class SwingProgressWriter implements ProgressWriter {
 	}
 
 	private void showNote(String line) {
-		if (!line.isEmpty()) dialog.setNote(line);
-		dialog.addDetails(line);
+		SwingUtilities.invokeLater(() -> {
+			if (!line.isEmpty()) dialog.setNote(line);
+			dialog.addDetails(line);
+		});
 	}
 
 	@Override
 	public void setProgress(double completionRatio) {
-		dialog.setProgress(completionRatio);
+		SwingUtilities.invokeLater(() -> {
+			dialog.setProgress(completionRatio);
+		});
 		if (dialog.isCanceled()) throw new CancellationException();
 	}
 
