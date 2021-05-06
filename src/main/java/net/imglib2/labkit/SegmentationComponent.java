@@ -44,9 +44,9 @@ public class SegmentationComponent extends JPanel implements AutoCloseable {
 
 	private final DefaultExtensible extensible;
 
-	private BasicLabelingComponent labelingComponent;
+	private final BasicLabelingComponent labelingComponent;
 
-	private SegmentationModel segmentationModel;
+	private final SegmentationModel segmentationModel;
 
 	public SegmentationComponent(JFrame dialogBoxOwner,
 		SegmentationModel segmentationModel, boolean unmodifiableLabels)
