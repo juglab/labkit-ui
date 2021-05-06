@@ -133,7 +133,7 @@ public class SegmentationResultsModel {
 		Interval interval = intervalNoChannels(image);
 		CellGrid grid = new CellGrid(Intervals.dimensionsAsLongArray(interval), cellSize);
 		final CachedImageFactory segmentationStorageFactory = extensionPoints
-			.getCachedSegmentationImageCallback();
+			.getCachedSegmentationImageFactory();
 		segmentation = segmentationStorageFactory.setupCachedImage(segmenter, loader, grid,
 			new ShortType());
 	}

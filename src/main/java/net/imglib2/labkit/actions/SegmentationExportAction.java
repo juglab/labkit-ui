@@ -56,8 +56,6 @@ public class SegmentationExportAction extends AbstractFileIoAction {
 					getResultsImage.apply(item.results(labelingModel));
 				ParallelUtils.runInOtherThread(() -> {
 					populate(resultsImage);
-					labelingModel.extensionPoints()
-						.fireResultsCompletedCallback(item, resultsImage);
 				});
 			}, null, "");
 	}
