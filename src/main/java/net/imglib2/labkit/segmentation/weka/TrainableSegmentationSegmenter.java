@@ -14,7 +14,6 @@ import net.imglib2.cache.img.CellLoader;
 import net.imglib2.cache.img.DiskCachedCellImg;
 import net.imglib2.cache.img.DiskCachedCellImgFactory;
 import net.imglib2.cache.img.DiskCachedCellImgOptions;
-import net.imglib2.img.Img;
 import net.imglib2.img.cell.CellGrid;
 import net.imglib2.img.display.imagej.ImgPlusViews;
 import net.imglib2.labkit.inputimage.ImgPlusViewsOld;
@@ -41,6 +40,7 @@ import net.imglib2.type.numeric.real.FloatType;
 import net.imglib2.util.Cast;
 import net.imglib2.util.Intervals;
 import net.imglib2.util.Pair;
+import net.imglib2.view.ExtendedRandomAccessibleInterval;
 import net.imglib2.view.Views;
 import net.imglib2.view.composite.Composite;
 import org.scijava.Context;
@@ -48,7 +48,6 @@ import weka.core.WekaException;
 
 import javax.swing.*;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -193,7 +192,7 @@ public class TrainableSegmentationSegmenter implements Segmenter {
 	}
 
 	private void trainFrame(Training training, List<String> classes, Labeling labeling,
-		RandomAccessibleInterval<?> image, FeatureCalculator featuresCalculator)
+		ImgPlus<?> image, FeatureCalculator featuresCalculator)
 	{
 		SparseRandomAccessIntType classIndices = getClassIndices(labeling, classes);
 		if (classIndices.sparsityPattern().size() == 0)
@@ -210,37 +209,21 @@ public class TrainableSegmentationSegmenter implements Segmenter {
 		}
 	}
 
-	// TODO: caching the Feature Stack while training could be part of
-	// imglib2-trainable-segmentation
-	private static DiskCachedCellImg<FloatType, ?> cachedFeatureBlock(FeatureCalculator feature,
-		RandomAccessibleInterval<?> image)
-	{
-		return cachedFeatureBlock(feature, Views.extendBorder(image),
-			suggestGrid(feature.outputIntervalFromInput(image)));
-	}
-
-	private static CellGrid suggestGrid(Interval interval) {
-		long[] imageDimensions = Intervals.dimensionsAsLongArray(interval);
-		int[] cellDimensions = interval.numDimensions() == 2 ? new int[] { 128, 128 } : new int[] { 64,
-			64, 64 };
-		return new CellGrid(imageDimensions, cellDimensions);
-	}
-
-	private static DiskCachedCellImg<FloatType, ?> cachedFeatureBlock(FeatureCalculator feature,
-		RandomAccessible<?> extendedOriginal, CellGrid grid)
+	private DiskCachedCellImg<FloatType, ?> cachedFeatureBlock(FeatureCalculator feature,
+		ImgPlus<?> image)
 	{
 		int count = feature.count();
 		if (count <= 0) throw new IllegalArgumentException();
-		long[] dimensions = LabkitUtils.extend(grid.getImgDimensions(), count);
-		int[] cellDimensions = LabkitUtils.extend(new int[grid.numDimensions()],
-			count);
-		grid.cellDimensions(cellDimensions);
+		long[] dimensions = Intervals.dimensionsAsLongArray(feature.outputIntervalFromInput(image));
+		dimensions = LabkitUtils.extend(dimensions, count);
+		int[] cellDimensions = suggestCellSize(image);
+		cellDimensions = LabkitUtils.extend(cellDimensions, count);
 		final DiskCachedCellImgOptions featureOpts = DiskCachedCellImgOptions
 			.options().cellDimensions(cellDimensions).dirtyAccesses(false);
 		final DiskCachedCellImgFactory<FloatType> featureFactory =
 			new DiskCachedCellImgFactory<>(new FloatType(), featureOpts);
-		CellLoader<FloatType> loader = target -> feature.apply(extendedOriginal,
-			target);
+		RandomAccessible<?> input = Views.extendBorder(image);
+		CellLoader<FloatType> loader = target -> feature.apply(input, target);
 		return featureFactory.create(dimensions, loader);
 	}
 

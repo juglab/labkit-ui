@@ -2,31 +2,19 @@
 package net.imglib2.labkit.models;
 
 import net.imagej.ImgPlus;
-import net.imagej.axis.Axes;
 import net.imglib2.FinalInterval;
 import net.imglib2.Interval;
 import net.imglib2.RandomAccessibleInterval;
-import net.imglib2.cache.img.CellLoader;
-import net.imglib2.cache.img.DiskCachedCellImgFactory;
-import net.imglib2.cache.img.DiskCachedCellImgOptions;
-import net.imglib2.cache.img.SingleCellArrayImg;
-import net.imglib2.img.Img;
-import net.imglib2.img.cell.CellGrid;
-import net.imglib2.labkit.inputimage.ImgPlusViewsOld;
 import net.imglib2.labkit.labeling.Labeling;
+import net.imglib2.labkit.segmentation.SegmentationUtils;
 import net.imglib2.labkit.segmentation.Segmenter;
 import net.imglib2.labkit.utils.Notifier;
-import net.imglib2.labkit.utils.DimensionUtils;
-import net.imglib2.type.NativeType;
 import net.imglib2.type.numeric.ARGBType;
-import net.imglib2.type.numeric.NumericType;
 import net.imglib2.type.numeric.integer.ShortType;
 import net.imglib2.type.numeric.real.FloatType;
 import net.imglib2.util.ConstantUtils;
 import net.imglib2.util.Intervals;
-import net.imglib2.view.Views;
 
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.NoSuchElementException;
@@ -39,7 +27,7 @@ import java.util.stream.Collectors;
  */
 public class SegmentationResultsModel {
 
-	private ImageLabelingModel model;
+	private final ImageLabelingModel model;
 	private final Segmenter segmenter;
 	private boolean hasResults = false;
 	private RandomAccessibleInterval<ShortType> segmentation;
@@ -47,7 +35,7 @@ public class SegmentationResultsModel {
 	private List<String> labels = Collections.emptyList();
 	private List<ARGBType> colors = Collections.emptyList();
 
-	private Notifier listeners = new Notifier();
+	private final Notifier listeners = new Notifier();
 
 	public SegmentationResultsModel(ImageLabelingModel model, Segmenter segmenter) {
 		this.model = model;
@@ -105,78 +93,13 @@ public class SegmentationResultsModel {
 	}
 
 	private void updatePrediction(Segmenter segmenter) {
-		int count = segmenter.classNames().size();
 		ImgPlus<?> image = model.imageForSegmentation().get();
-		int[] cellSize = segmenter.suggestCellSize(image);
-		CellLoader<FloatType> loader = target -> segmenter.predict(image, ensureCellSize(segmenter,
-			cellSize, target));
-		Interval interval = intervalNoChannels(image);
-		CellGrid grid = addDimensionToGrid(count, new CellGrid(Intervals.dimensionsAsLongArray(
-			interval), cellSize));
-		prediction = setupCachedImage(loader, grid, new FloatType());
-	}
-
-	private CellGrid addDimensionToGrid(int size, CellGrid grid) {
-		return new CellGrid(DimensionUtils.extend(grid
-			.getImgDimensions(), size), DimensionUtils.extend(getCellDimensions(
-				grid), size));
+		this.prediction = SegmentationUtils.createCachedProbabilityMap(segmenter, image);
 	}
 
 	private void updateSegmentation(Segmenter segmenter) {
 		ImgPlus<?> image = model.imageForSegmentation().get();
-		int[] cellSize = segmenter.suggestCellSize(image);
-		CellLoader<ShortType> loader = target -> segmenter.segment(image, ensureCellSize(segmenter,
-			cellSize, target));
-		Interval interval = intervalNoChannels(image);
-		CellGrid grid = new CellGrid(Intervals.dimensionsAsLongArray(interval), cellSize);
-		segmentation = setupCachedImage(loader, grid, new ShortType());
-	}
-
-	/**
-	 * Grows the give target to cellSize if
-	 * {@link Segmenter#requiresFixedCellSize()} is true.
-	 */
-	private <T extends NativeType<T> & NumericType<T>> RandomAccessibleInterval<T> ensureCellSize(
-		Segmenter segmenter, int[] cellSize,
-		RandomAccessibleInterval<T> target)
-	{
-		if (segmenter.requiresFixedCellSize()) {
-			int[] targetSize = Intervals.dimensionsAsIntArray(target);
-			if (!Arrays.equals(cellSize, targetSize)) {
-				long[] min = Intervals.minAsLongArray(target);
-				long[] max = new long[min.length];
-				Arrays.setAll(max, d -> min[d] + cellSize[d] - 1);
-				return Views.interval(Views.extendZero(target), min, max);
-			}
-		}
-		return target;
-	}
-
-	private Interval intervalNoChannels(ImgPlus<?> image) {
-		return new FinalInterval(ImgPlusViewsOld.hasAxis(image, Axes.CHANNEL) ? ImgPlusViewsOld
-			.hyperSlice(image, Axes.CHANNEL, 0) : image);
-	}
-
-	private <T extends NativeType<T>> Img<T> setupCachedImage(
-		CellLoader<T> loader, CellGrid grid, T type)
-	{
-		final int[] cellDimensions = getCellDimensions(grid);
-		final long[] imgDimensions = grid.getImgDimensions();
-		Arrays.setAll(cellDimensions, i -> (int) Math.min(cellDimensions[i], imgDimensions[i]));
-		DiskCachedCellImgOptions optional = DiskCachedCellImgOptions.options()
-			// .cacheType( CacheType.BOUNDED )
-			// .maxCacheSize( 1000 )
-			.cellDimensions(cellDimensions).initializeCellsAsDirty(true);
-		final DiskCachedCellImgFactory<T> factory = new DiskCachedCellImgFactory<>(
-			type, optional);
-		return factory.create(imgDimensions, loader,
-			DiskCachedCellImgOptions.options().initializeCellsAsDirty(true));
-	}
-
-	private int[] getCellDimensions(CellGrid grid) {
-		final int[] cellDimensions = new int[grid.numDimensions()];
-		grid.cellDimensions(cellDimensions);
-		return cellDimensions;
+		this.segmentation = SegmentationUtils.createCachedSegmentation(segmenter, image);
 	}
 
 	public List<String> labels() {
