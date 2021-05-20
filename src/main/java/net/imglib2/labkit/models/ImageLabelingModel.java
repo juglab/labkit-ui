@@ -50,8 +50,6 @@ public class ImageLabelingModel implements LabelingModel {
 
 	private final Holder<ImgPlus<?>> imageForSegmentation;
 
-	private final ExtensionPoints extensionPoints;
-
 	public ImageLabelingModel(InputImage inputImage) {
 		ImgPlus<?> image = inputImage.imageForSegmentation();
 		ImgPlus<?> firstChannel = ImgPlusViewsOld.hyperSlice(image, Axes.CHANNEL, 0);
@@ -68,7 +66,6 @@ public class ImageLabelingModel implements LabelingModel {
 		this.isTimeSeries = ImgPlusViewsOld.hasAxis(image, Axes.TIME);
 		this.transformationModel = new TransformationModel(isTimeSeries);
 		this.defaultFileName = inputImage.getDefaultLabelingFilename();
-		this.extensionPoints = new ExtensionPoints();
 	}
 
 	private void updateLabelTransform() {
@@ -180,9 +177,5 @@ public class ImageLabelingModel implements LabelingModel {
 	@Override
 	public String toString() {
 		return imageForSegmentation.get().getName();
-	}
-
-	public ExtensionPoints extensionPoints() {
-		return extensionPoints;
 	}
 }
