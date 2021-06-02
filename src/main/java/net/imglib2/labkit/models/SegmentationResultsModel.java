@@ -5,6 +5,9 @@ import net.imagej.ImgPlus;
 import net.imglib2.FinalInterval;
 import net.imglib2.Interval;
 import net.imglib2.RandomAccessibleInterval;
+import net.imglib2.cache.img.CellLoader;
+import net.imglib2.img.cell.CellGrid;
+import net.imglib2.labkit.inputimage.ImgPlusViewsOld;
 import net.imglib2.labkit.labeling.Labeling;
 import net.imglib2.labkit.segmentation.SegmentationUtils;
 import net.imglib2.labkit.segmentation.Segmenter;
@@ -27,6 +30,7 @@ import java.util.stream.Collectors;
  */
 public class SegmentationResultsModel {
 
+	private final ExtensionPoints extensionPoints;
 	private final ImageLabelingModel model;
 	private final Segmenter segmenter;
 	private boolean hasResults = false;
@@ -37,8 +41,11 @@ public class SegmentationResultsModel {
 
 	private final Notifier listeners = new Notifier();
 
-	public SegmentationResultsModel(ImageLabelingModel model, Segmenter segmenter) {
+	public SegmentationResultsModel(ImageLabelingModel model, ExtensionPoints extensionPoints,
+		Segmenter segmenter)
+	{
 		this.model = model;
+		this.extensionPoints = extensionPoints;
 		this.segmenter = segmenter;
 		segmentation = dummy(new ShortType());
 		prediction = dummy(new FloatType());
@@ -94,12 +101,14 @@ public class SegmentationResultsModel {
 
 	private void updatePrediction(Segmenter segmenter) {
 		ImgPlus<?> image = model.imageForSegmentation().get();
-		this.prediction = SegmentationUtils.createCachedProbabilityMap(segmenter, image);
+		this.prediction = SegmentationUtils.createCachedProbabilityMap(segmenter, image,
+			extensionPoints.getCachedPredictionImageFactory());
 	}
 
 	private void updateSegmentation(Segmenter segmenter) {
 		ImgPlus<?> image = model.imageForSegmentation().get();
-		this.segmentation = SegmentationUtils.createCachedSegmentation(segmenter, image);
+		this.segmentation = SegmentationUtils.createCachedSegmentation(segmenter, image,
+			extensionPoints.getCachedSegmentationImageFactory());
 	}
 
 	public List<String> labels() {

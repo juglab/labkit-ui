@@ -18,6 +18,7 @@ import net.imglib2.labkit.models.SegmentationResultsModel;
 import net.imglib2.labkit.utils.ParametricNotifier;
 import net.imglib2.realtransform.AffineTransform3D;
 import net.imglib2.type.numeric.ARGBType;
+import net.imglib2.type.numeric.integer.ShortType;
 import net.imglib2.type.volatiles.VolatileARGBType;
 import net.imglib2.type.volatiles.VolatileShortType;
 
@@ -98,8 +99,19 @@ public class PredictionLayer implements BdvLayer {
 		SegmentationResultsModel selected)
 	{
 		ARGBType[] colors = selected.colors().toArray(new ARGBType[0]);
-		return mapColors(colors, VolatileViews.wrapAsVolatile(selected
-			.segmentation(), queue));
+		return mapColors(colors, wrapAsVolatile(selected.segmentation()));
+	}
+
+	private RandomAccessibleInterval<VolatileShortType> wrapAsVolatile(
+		RandomAccessibleInterval<ShortType> image)
+	{
+		try {
+			return VolatileViews.wrapAsVolatile(image, queue);
+		}
+		catch (IllegalArgumentException e) {
+			// This happens when image isn't some sort of CachedCellImg.
+			return Converters.convert(image, (i, o) -> o.set(i.get()), new VolatileShortType());
+		}
 	}
 
 	private RandomAccessibleInterval<VolatileARGBType> mapColors(

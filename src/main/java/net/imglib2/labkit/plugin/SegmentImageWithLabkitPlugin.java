@@ -9,6 +9,7 @@ import net.imglib2.Interval;
 import net.imglib2.img.Img;
 import net.imglib2.img.array.ArrayImgs;
 import net.imglib2.labkit.inputimage.DatasetInputImage;
+import net.imglib2.labkit.models.DefaultCachedImageFactory;
 import net.imglib2.labkit.segmentation.SegmentationUtils;
 import net.imglib2.labkit.segmentation.weka.TrainableSegmentationSegmenter;
 import net.imglib2.labkit.utils.ParallelUtils;
@@ -67,7 +68,7 @@ public class SegmentImageWithLabkitPlugin implements Command, Cancelable {
 	private Img<ShortType> calculateOnCachedImg(TrainableSegmentationSegmenter segmenter,
 		ImgPlus<?> imgPlus)
 	{
-		Img<ShortType> outputImg = SegmentationUtils.createCachedSegmentation(segmenter, imgPlus);
+		Img<ShortType> outputImg = SegmentationUtils.createCachedSegmentation(segmenter, imgPlus, null);
 		ParallelUtils.populateCachedImg(outputImg, new ProgressWriterConsole());
 		return outputImg;
 	}

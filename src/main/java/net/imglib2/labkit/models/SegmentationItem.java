@@ -33,9 +33,12 @@ public class SegmentationItem extends ForwardingSegmenter {
 
 	private final Map<ImageLabelingModel, SegmentationResultsModel> results;
 
-	public SegmentationItem(SegmentationPlugin plugin) {
+	private final ExtensionPoints extensionPoints;
+
+	public SegmentationItem(SegmentationPlugin plugin, ExtensionPoints extensionPoints) {
 		super(plugin.createSegmenter());
 		this.name = "#" + counter.incrementAndGet() + " - " + plugin.getTitle();
+		this.extensionPoints = extensionPoints;
 		this.results = new WeakHashMap<>();
 		this.filename = null;
 		this.modified = false;
@@ -53,7 +56,7 @@ public class SegmentationItem extends ForwardingSegmenter {
 	public SegmentationResultsModel results(ImageLabelingModel imageLabeling) {
 		SegmentationResultsModel result = results.get(imageLabeling);
 		if (result == null) {
-			result = new SegmentationResultsModel(imageLabeling, getSourceSegmenter());
+			result = new SegmentationResultsModel(imageLabeling, extensionPoints, getSourceSegmenter());
 			results.put(imageLabeling, result);
 		}
 		return result;

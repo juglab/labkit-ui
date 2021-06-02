@@ -3,6 +3,7 @@ package net.imglib2.labkit.multi_image;
 
 import net.imagej.ImgPlus;
 import net.imglib2.labkit.labeling.Labeling;
+import net.imglib2.labkit.models.ExtensionPoints;
 import net.imglib2.labkit.models.ImageLabelingModel;
 import net.imglib2.labkit.project.LabeledImage;
 import net.imglib2.labkit.project.LabkitProjectModel;
@@ -59,7 +60,7 @@ public class ProjectSegmentationModel implements SegmentationModel {
 	}
 
 	private SegmenterListModel initSegmenterListModel(List<String> segmenters) {
-		SegmenterListModel segmenterListModel = new SegmenterListModel(context);
+		SegmenterListModel segmenterListModel = new SegmenterListModel(context, new ExtensionPoints());
 		segmenterListModel.trainingData().set(new TrainingData());
 		for (String filename : segmenters) {
 			SegmentationItem segmentationItem = segmenterListModel.addSegmenter(PixelClassificationPlugin

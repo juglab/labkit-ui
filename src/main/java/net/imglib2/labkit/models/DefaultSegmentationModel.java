@@ -28,11 +28,12 @@ public class DefaultSegmentationModel implements SegmentationModel {
 	private final Context context;
 	private final ImageLabelingModel imageLabelingModel;
 	private final SegmenterListModel segmenterList;
+	private final ExtensionPoints extensionPoints = new ExtensionPoints();
 
 	public DefaultSegmentationModel(Context context, InputImage inputImage) {
 		this.context = context;
 		this.imageLabelingModel = new ImageLabelingModel(inputImage);
-		this.segmenterList = new SegmenterListModel(context);
+		this.segmenterList = new SegmenterListModel(context, extensionPoints);
 		this.segmenterList().trainingData().set(new SingletonTrainingData(imageLabelingModel));
 	}
 
@@ -49,6 +50,10 @@ public class DefaultSegmentationModel implements SegmentationModel {
 	@Override
 	public SegmenterListModel segmenterList() {
 		return segmenterList;
+	}
+
+	public ExtensionPoints extensionPoints() {
+		return extensionPoints;
 	}
 
 	public <T extends IntegerType<T> & NativeType<T>>
