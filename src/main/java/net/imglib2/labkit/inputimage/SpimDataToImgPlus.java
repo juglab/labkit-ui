@@ -68,7 +68,10 @@ public class SpimDataToImgPlus {
 	public static ImgPlus<?> wrap(AbstractSpimData<?> spimData, Integer resolutionLevel) {
 		Img<?> img = ImgView.wrap(Cast.unchecked(asRai(spimData, resolutionLevel)), Cast.unchecked(
 			new CellImgFactory()));
-		String name = spimData.getSequenceDescription().getViewSetups().get(0).getName();
+		AbstractSequenceDescription<? extends BasicViewSetup, ?, ?> sequenceDescription = spimData
+			.getSequenceDescription();
+		int setupId = sequenceDescription.getViewSetupsOrdered().get(0).getId();
+		String name = sequenceDescription.getViewSetups().get(setupId).getName();
 		CalibratedAxis[] axes = getAxes(spimData);
 		return new ImgPlus<>(img, name, axes);
 	}
