@@ -6,6 +6,7 @@ import com.google.gson.internal.LinkedTreeMap;
 import com.google.gson.reflect.TypeToken;
 import com.google.gson.stream.JsonReader;
 import com.google.gson.stream.JsonWriter;
+import gnu.trove.iterator.TIntIterator;
 import gnu.trove.set.TIntSet;
 import gnu.trove.set.hash.TIntHashSet;
 import io.scif.services.DatasetIOService;
@@ -47,6 +48,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
 /**
@@ -76,10 +78,10 @@ public class LabelingSerializer {
 	}
 
 	public Labeling open(String filename) throws IOException {
-		if (FilenameUtils.isExtension(filename, new String[] { "tif", "tiff" }))
+		if (FilenameUtils.isExtension(filename, "tif", "tiff"))
 			return openFromTiff(filename);
-		if (FilenameUtils.isExtension(filename, new String[] { "labeling",
-			"json" })) return openFromJson(filename);
+		if (FilenameUtils.isExtension(filename, "labeling", "json"))
+			return openFromJson(filename);
 		throw new IllegalArgumentException(
 			"Filename must have supported extension (*.labeling, *.tif, *.tiff)");
 	}
@@ -94,20 +96,18 @@ public class LabelingSerializer {
 	}
 
 	private Labeling openFromTiff(String filename) throws IOException {
-		ImgLabeling<String, ?> imgLabeling = openImgLabelingFromTiff(filename);
-		Labeling labeling = Labeling.fromImgLabeling(imgLabeling);
-		labeling.setLabelOrder(Comparator.comparing(Label::name, NumberAwareStringComparator
-			.getInstance()));
-		return labeling;
-	}
-
-	public ImgLabeling<String, ?> openImgLabelingFromTiff(String filename)
-		throws IOException
-	{
 		Img<? extends IntegerType<?>> img = openImageFromTiff(filename);
-		LabelsMetaData meta = (new File(filename + ".labels").exists())
-			? openMetaData(filename + ".labels") : new LabelsMetaData(img);
-		return ImgLabeling.fromImageAndLabelSets(Cast.unchecked(img), meta.asLabelSets());
+		if (new File(filename + ".labels").exists()) {
+			List<Set<String>> labelSets = openMetaData(filename + ".labels").asLabelSets();
+			ImgLabeling<String, ?> imgLabeling = ImgLabeling.fromImageAndLabelSets(Cast.unchecked(img),
+				labelSets);
+			Labeling labeling = Labeling.fromImgLabeling(imgLabeling);
+			labeling.setLabelOrder(Comparator.comparing(Label::name, NumberAwareStringComparator
+				.getInstance()));
+			return labeling;
+		}
+		else
+			return Labeling.fromImg(img);
 	}
 
 	private Img<? extends IntegerType<?>> openImageFromTiff(String filename)
@@ -124,10 +124,10 @@ public class LabelingSerializer {
 	}
 
 	public void save(Labeling labeling, String filename) throws IOException {
-		if (FilenameUtils.isExtension(filename, new String[] { "tif", "tiff" }))
+		if (FilenameUtils.isExtension(filename, "tif", "tiff"))
 			saveAsTiff(labeling, filename);
-		else if (FilenameUtils.isExtension(filename, new String[] { "labeling",
-			"json" })) saveAsJson(labeling, filename);
+		else if (FilenameUtils.isExtension(filename, "labeling",
+			"json")) saveAsJson(labeling, filename);
 		else throw new IllegalArgumentException(
 			"Filename must have supported extension (*.labeling, *.tif, *.tiff)");
 	}
@@ -161,19 +161,6 @@ public class LabelingSerializer {
 	private static class LabelsMetaData {
 
 		List<Set<String>> labelSets;
-
-		public LabelsMetaData(Img<? extends IntegerType<?>> img) {
-			TIntSet values = new TIntHashSet(100, 0.5f, 0);
-			img.forEach(x -> {
-				int integer = x.getInteger();
-				if (integer != 0)
-					values.add(integer);
-			});
-			labelSets = new ArrayList<>();
-			labelSets.add(Collections.emptySet());
-			for (int value : values.toArray())
-				labelSets.add(Collections.singleton(Integer.toString(value)));
-		}
 
 		public LabelsMetaData(List<Set<Label>> mapping) {
 			labelSets = mapping.stream().map(set -> set.stream().map(Label::name)

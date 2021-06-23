@@ -2,21 +2,28 @@
 package net.imglib2.labkit.labeling;
 
 import com.google.gson.internal.LinkedTreeMap;
+import io.scif.config.SCIFIOConfig;
+import io.scif.img.ImgSaver;
 import net.imglib2.FinalInterval;
 import net.imglib2.RandomAccess;
+import net.imglib2.RandomAccessibleInterval;
+import net.imglib2.img.Img;
+import net.imglib2.img.array.ArrayImgs;
 import net.imglib2.roi.IterableRegion;
 import net.imglib2.sparse.SparseIterableRegion;
 import net.imglib2.test.ImgLib2Assert;
+import net.imglib2.trainable_segmentation.utils.SingletonContext;
 import net.imglib2.type.logic.BitType;
 import net.imglib2.type.numeric.ARGBType;
+import net.imglib2.type.numeric.integer.UnsignedByteType;
 import org.junit.Test;
-import org.scijava.Context;
 
 import java.awt.*;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
-import java.nio.file.Paths;
+import java.nio.file.Path;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -24,12 +31,14 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
 
 /**
  * @author Matthias Arzt
  */
 public class LabelingSerializationTest {
+
+	private final LabelingSerializer serializer = new LabelingSerializer(SingletonContext
+		.getInstance());
 
 	@Test
 	public void testJson() throws IOException {
@@ -43,7 +52,6 @@ public class LabelingSerializationTest {
 		expected.getLabel("B").setColor(new ARGBType(Color.yellow.getRGB()));
 		expected.getLabel("A").setColor(new ARGBType(Color.green.getRGB()));
 		final String filename = tempFileWithExtension("json");
-		LabelingSerializer serializer = new LabelingSerializer(new Context());
 		serializer.save(expected, filename);
 		Labeling actual = serializer.open(filename);
 		assertColorsAndLabelOrderMatches(expected.getLabels(), actual.getLabels());
@@ -59,7 +67,6 @@ public class LabelingSerializationTest {
 		throws IOException
 	{
 		final String filename = tempFileWithExtension(extension);
-		LabelingSerializer serializer = new LabelingSerializer(new Context());
 		serializer.save(labeling, filename);
 		Labeling deserialized = serializer.open(filename);
 		ImgLib2Assert.assertImageEquals(labeling, deserialized, (a, b) -> setsEqual(toStrings(a),
@@ -114,5 +121,19 @@ public class LabelingSerializationTest {
 		ra.setPosition(position);
 		ra.get().set(true);
 		return roi;
+	}
+
+	@Test
+	public void testOpenFromTiff() throws IOException {
+		Img<UnsignedByteType> input = ArrayImgs.unsignedBytes(new byte[] { 10, 20, 0, 0 }, 2, 2);
+		Path file = Files.createTempFile("test", ".tif");
+		new ImgSaver(SingletonContext.getInstance()).saveImg(file.toString(), input, new SCIFIOConfig()
+			.writerSetFailIfOverwriting(false));
+		Labeling labeling = serializer.open(file.toString());
+		assertEquals(Arrays.asList("10", "20"), labeling.getLabels().stream().map(Label::name).collect(
+			Collectors.toList()));
+		RandomAccessibleInterval<BitType> a = labeling.getRegion(labeling.getLabel("10"));
+		ImgLib2Assert.assertImageEqualsRealType(ArrayImgs.unsignedBytes(new byte[] { 1, 0, 0, 0 }, 2,
+			2), a, 0.0);
 	}
 }

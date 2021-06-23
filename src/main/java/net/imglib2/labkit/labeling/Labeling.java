@@ -2,6 +2,8 @@
 package net.imglib2.labkit.labeling;
 
 import com.google.gson.annotations.JsonAdapter;
+import gnu.trove.set.TIntSet;
+import gnu.trove.set.hash.TIntHashSet;
 import net.imagej.axis.CalibratedAxis;
 import net.imagej.axis.DefaultLinearAxis;
 import net.imglib2.*;
@@ -18,6 +20,7 @@ import net.imglib2.sparse.SparseIterableRegion;
 import net.imglib2.sparse.SparseRandomAccessIntType;
 import net.imglib2.type.BooleanType;
 import net.imglib2.type.logic.BitType;
+import net.imglib2.type.numeric.ARGBType;
 import net.imglib2.type.numeric.IntegerType;
 import net.imglib2.type.numeric.integer.IntType;
 import net.imglib2.util.Cast;
@@ -65,6 +68,30 @@ public class Labeling extends AbstractWrappedInterval<Interval> implements
 			name -> new Label(name, colors.get()));
 		return new Labeling(new ArrayList<>(labelsImgLabeling.getMapping()
 			.getLabels()), labelsImgLabeling, colors);
+	}
+
+	public static Labeling fromImg(RandomAccessibleInterval<? extends IntegerType<?>> img) {
+		ColorSupplier colors = new ColorSupplier();
+		TIntSet values = new TIntHashSet(100, 0.5f, 0);
+		LoopBuilder.setImages(img).forEachPixel(x -> {
+			int integer = x.getInteger();
+			if (integer != 0)
+				values.add(integer);
+		});
+		int max = IntStream.of(values.toArray()).max().orElse(0);
+		List<Label> allLabels = new ArrayList<>(max);
+		List<Label> nonEmptyLabels = new ArrayList<>(values.size());
+		for (int i = 1; i <= max; i++) {
+			Label label = new Label(Integer.toString(i), new ARGBType(0xffffff));
+			if (values.contains(i)) {
+				nonEmptyLabels.add(label);
+				label.setColor(colors.get());
+			}
+			allLabels.add(label);
+		}
+		ImgLabeling<Label, ?> imgLabeling = ImgLabeling.fromImageAndLabels(Cast.unchecked(img),
+			allLabels);
+		return new Labeling(nonEmptyLabels, imgLabeling, colors);
 	}
 
 	public static Labeling fromMap(Map<String, IterableRegion<BitType>> regions) {
