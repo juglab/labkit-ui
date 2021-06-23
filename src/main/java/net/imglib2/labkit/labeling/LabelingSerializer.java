@@ -6,9 +6,6 @@ import com.google.gson.internal.LinkedTreeMap;
 import com.google.gson.reflect.TypeToken;
 import com.google.gson.stream.JsonReader;
 import com.google.gson.stream.JsonWriter;
-import gnu.trove.iterator.TIntIterator;
-import gnu.trove.set.TIntSet;
-import gnu.trove.set.hash.TIntHashSet;
 import io.scif.services.DatasetIOService;
 import net.imagej.DatasetService;
 import net.imagej.axis.Axes;
@@ -20,7 +17,9 @@ import net.imglib2.FinalInterval;
 import net.imglib2.Interval;
 import net.imglib2.Point;
 import net.imglib2.RandomAccessibleInterval;
+import net.imglib2.converter.RealTypeConverters;
 import net.imglib2.img.Img;
+import net.imglib2.img.array.ArrayImgs;
 import net.imglib2.labkit.utils.NumberAwareStringComparator;
 import net.imglib2.roi.IterableRegion;
 import net.imglib2.roi.labeling.ImgLabeling;
@@ -28,7 +27,10 @@ import net.imglib2.sparse.SparseIterableRegion;
 import net.imglib2.type.logic.BitType;
 import net.imglib2.type.numeric.ARGBType;
 import net.imglib2.type.numeric.IntegerType;
+import net.imglib2.type.numeric.RealType;
+import net.imglib2.type.numeric.integer.IntType;
 import net.imglib2.util.Cast;
+import net.imglib2.util.Intervals;
 import org.apache.commons.io.FilenameUtils;
 import org.scijava.Context;
 
@@ -41,14 +43,12 @@ import java.lang.reflect.Type;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
-import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
 /**
@@ -114,7 +114,19 @@ public class LabelingSerializer {
 		throws IOException
 	{
 		DatasetIOService io = context.service(DatasetIOService.class);
-		return Cast.unchecked(io.open(filename).getImgPlus().getImg());
+		return convertToIntegerType(io.open(filename).getImgPlus().getImg());
+	}
+
+	private Img<? extends IntegerType<? extends IntegerType<?>>> convertToIntegerType(
+		Img<? extends RealType<?>> img)
+	{
+		if (img.firstElement() instanceof IntegerType)
+			return Cast.unchecked(img);
+		else {
+			Img<IntType> result = ArrayImgs.ints(Intervals.dimensionsAsLongArray(img));
+			RealTypeConverters.copyFromTo(img, result);
+			return result;
+		}
 	}
 
 	private LabelsMetaData openMetaData(String filename) throws IOException {
