@@ -6,7 +6,7 @@ import org.scijava.command.Command;
 import org.scijava.plugin.Parameter;
 import org.scijava.plugin.Plugin;
 
-@Plugin(type = Command.class, menuPath = "Plugins > Segmentation > Labkit > Open Labkit Project...")
+@Plugin(type = Command.class, menuPath = "Plugins > Labkit > Project > Open Labkit Project...")
 public class OpenLabkitProjectPlugin implements Command {
 
 	@Parameter

@@ -29,7 +29,7 @@ import java.io.File;
  * @author Matthias Arzt
  */
 @Plugin(type = Command.class,
-	menuPath = "Plugins > Segmentation > Labkit > Macro Recordable > Segment Image with Labkit")
+	menuPath = "Plugins > Labkit > Macro Recordable > Segment Image With Labkit")
 public class SegmentImageWithLabkitPlugin implements Command, Cancelable {
 
 	@Parameter

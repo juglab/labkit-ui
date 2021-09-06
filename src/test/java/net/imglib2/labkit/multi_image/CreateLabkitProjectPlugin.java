@@ -7,7 +7,7 @@ import org.scijava.plugin.Parameter;
 import org.scijava.plugin.Plugin;
 
 @Plugin(type = Command.class,
-	menuPath = "Plugins > Segmentation > Labkit > Create New Labkit Project...")
+	menuPath = "Plugins > Labkit > Project > Create New Labkit Project...")
 public class CreateLabkitProjectPlugin implements Command {
 
 	@Parameter

@@ -2,7 +2,10 @@
 package net.imglib2.labkit.plugin;
 
 import bdv.img.imaris.Imaris;
+import io.scif.services.DatasetIOService;
+import net.imagej.Dataset;
 import net.imglib2.labkit.LabkitFrame;
+import net.imglib2.labkit.inputimage.DatasetInputImage;
 import net.imglib2.labkit.inputimage.InputImage;
 import net.imglib2.labkit.inputimage.SpimDataInputException;
 import net.imglib2.labkit.inputimage.SpimDataInputImage;
@@ -12,6 +15,7 @@ import org.scijava.Context;
 import org.scijava.app.StatusService;
 import org.scijava.command.Command;
 import org.scijava.command.CommandService;
+import org.scijava.io.location.FileLocation;
 import org.scijava.plugin.Parameter;
 import org.scijava.plugin.Plugin;
 import org.scijava.util.FileUtils;
@@ -25,7 +29,7 @@ import java.util.concurrent.CancellationException;
  * @author Matthias Arzt
  */
 @Plugin(type = Command.class,
-	menuPath = "Plugins > Segmentation > Labkit > Open CZI / HDF5 / IMS (experimental)")
+	menuPath = "Plugins > Labkit > Open Image File With Labkit")
 public class LabkitImportPlugin implements Command {
 
 	@Parameter
@@ -52,7 +56,7 @@ public class LabkitImportPlugin implements Command {
 		}
 	}
 
-	private static InputImage openImage(ProgressWriter progressWriter,
+	private static InputImage openImage(Context context, ProgressWriter progressWriter,
 		File file)
 	{
 		String filename = file.getAbsolutePath();
@@ -62,8 +66,14 @@ public class LabkitImportPlugin implements Command {
 			return new CziOpener(progressWriter).openWithDialog(file.getAbsolutePath());
 		if (filename.endsWith(".xml") || filename.endsWith(".ims"))
 			return SpimDataInputImage.openWithGuiForLevelSelection(filename);
-		throw new UnsupportedOperationException(
-			"Only files with extension czi / xml / ims are supported.");
+		try {
+			Dataset dataset = context.service(DatasetIOService.class).open(new FileLocation(file));
+			return new DatasetInputImage(dataset);
+		}
+		catch (IOException e) {
+			throw new UnsupportedOperationException(
+				"Could not open the image file: " + file);
+		}
 	}
 
 	public static void main(String... args) {

@@ -13,7 +13,7 @@ import org.scijava.plugin.Plugin;
  * @author Matthias Arzt
  */
 @Plugin(type = Command.class,
-	menuPath = "Plugins > Segmentation > Labkit > Open Current Image With Labkit")
+	menuPath = "Plugins > Labkit > Open Current Image With Labkit")
 public class LabkitPlugin implements Command {
 
 	@Parameter
