@@ -4,6 +4,7 @@ package net.imglib2.labkit.plugin;
 import bdv.img.imaris.Imaris;
 import net.imglib2.labkit.LabkitFrame;
 import net.imglib2.labkit.inputimage.InputImage;
+import net.imglib2.labkit.inputimage.SpimDataInputException;
 import net.imglib2.labkit.inputimage.SpimDataInputImage;
 import bdv.export.ProgressWriter;
 import net.imglib2.labkit.utils.progress.StatusServiceProgressWriter;
@@ -15,8 +16,10 @@ import org.scijava.plugin.Parameter;
 import org.scijava.plugin.Plugin;
 import org.scijava.util.FileUtils;
 
+import javax.swing.JOptionPane;
 import java.io.File;
 import java.io.IOException;
+import java.util.concurrent.CancellationException;
 
 /**
  * @author Matthias Arzt
@@ -37,10 +40,16 @@ public class LabkitImportPlugin implements Command {
 	}
 
 	private static void run(Context context, File file) {
-		ProgressWriter progressWriter = new StatusServiceProgressWriter(context
-			.service(StatusService.class));
-		InputImage image = openImage(progressWriter, file);
-		LabkitFrame.showForImage(context, image);
+		try {
+			ProgressWriter progressWriter = new StatusServiceProgressWriter(context
+				.service(StatusService.class));
+			InputImage image = openImage(context, progressWriter, file);
+			LabkitFrame.showForImage(context, image);
+		}
+		catch (SpimDataInputException e) {
+			JOptionPane.showMessageDialog(null, "There was an error when opening: " + file +
+				"\n\n" + e.getMessage(), "Problem", JOptionPane.ERROR_MESSAGE);
+		}
 	}
 
 	private static InputImage openImage(ProgressWriter progressWriter,
