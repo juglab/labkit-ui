@@ -6,6 +6,7 @@ import com.google.gson.internal.LinkedTreeMap;
 import com.google.gson.reflect.TypeToken;
 import com.google.gson.stream.JsonReader;
 import com.google.gson.stream.JsonWriter;
+import io.scif.config.SCIFIOConfig;
 import io.scif.services.DatasetIOService;
 import net.imagej.DatasetService;
 import net.imagej.axis.Axes;
@@ -167,7 +168,7 @@ public class LabelingSerializer {
 		DatasetIOService io = context.service(DatasetIOService.class);
 		DatasetService ds = context.service(DatasetService.class);
 		RandomAccessibleInterval<I> imgPlus = Cast.unchecked(labeling.getIndexImg());
-		io.save(ds.create(imgPlus), filename);
+		io.save(ds.create(imgPlus), filename, new SCIFIOConfig().writerSetFailIfOverwriting(false));
 	}
 
 	private static class LabelsMetaData {
