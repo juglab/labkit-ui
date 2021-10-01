@@ -5,7 +5,7 @@
 	<parent>
 		<groupId>org.scijava</groupId>
 		<artifactId>pom-scijava</artifactId>
-		<version>30.0.0</version>
+		<version>31.1.0</version>
 	</parent>
 
 	<groupId>net.imglib2</groupId>
@@ -97,12 +97,6 @@
 		<releaseProfiles>deploy-to-scijava</releaseProfiles>
 
 		<jackson-dataformat-yaml.version>2.11.1</jackson-dataformat-yaml.version>
-		<jackson-databind.version>2.11.1</jackson-databind.version>
-
-		<bigdataviewer-core.version>10.2.0</bigdataviewer-core.version>
-		<bigdataviewer-vistools.version>1.0.0-beta-28</bigdataviewer-vistools.version>
-
-		<imglib2-cache.version>1.0.0-beta-16</imglib2-cache.version>
 
 		<imglib2-trainable-segmentation.version>0.1.11</imglib2-trainable-segmentation.version>
 	</properties>
@@ -186,7 +180,6 @@
 		<dependency>
 			<groupId>com.fasterxml.jackson.core</groupId>
 			<artifactId>jackson-databind</artifactId>
-			<version>${jackson-databind.version}</version>
 		</dependency>
 		<!-- Test dependencies -->
 		<dependency>
