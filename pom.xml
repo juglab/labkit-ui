@@ -94,7 +94,7 @@
 		<license.licenseName>bsd_2</license.licenseName>
 		<license.copyrightOwners>Matthias Arzt, Philipp Hanslovsky</license.copyrightOwners>
 		<!-- NB: Deploy releases to the SciJava Maven repository. -->
-		<releaseProfiles>deploy-to-scijava</releaseProfiles>
+		<releaseProfiles>sign,deploy-to-scijava</releaseProfiles>
 
 		<jackson-dataformat-yaml.version>2.11.1</jackson-dataformat-yaml.version>
 
