@@ -1,4 +1,4 @@
-[![](https://travis-ci.org/maarzt/imglib2-labkit.svg?branch=master)](https://travis-ci.org/maarzt/imglib2-labkit)
+[![](https://github.com/maarzt/imglib2-labkit/actions/workflows/build-main.yml/badge.svg)](https://github.com/maarzt/imglib2-labkit/actions/workflows/build-main.yml)
 
 # Labkit
 
