@@ -85,8 +85,8 @@
 		<url>https://github.com/maarzt/imglib2-labkit/issues</url>
 	</issueManagement>
 	<ciManagement>
-		<system>Travis CI</system>
-		<url>https://travis-ci.org/maarzt/imglib2-labkit</url>
+		<system>GitHub Actions</system>
+		<url>https://github.com/maarzt/imglib2-labkit/actions</url>
 	</ciManagement>
 
 	<properties>
