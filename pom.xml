@@ -38,7 +38,7 @@
 		<developer>
 			<id>maarzt</id>
 			<name>Matthias Arzt</name>
-			<url>https://imagej.net/User:Maarzt</url>
+			<url>https://imagej.net/people/Maarzt</url>
 			<roles>
 				<role>lead</role>
 				<role>developer</role>
@@ -46,13 +46,6 @@
 				<role>reviewer</role>
 				<role>support</role>
 				<role>maintainer</role>
-			</roles>
-		</developer>
-		<developer>
-			<id>hanslovsky</id>
-			<name>Philipp Hanslovsky</name>
-			<url>https://imagej.net/User:Hanslovsky</url>
-			<roles>
 				<role>founder</role>
 			</roles>
 		</developer>
@@ -63,7 +56,16 @@
 		See: https://issues.apache.org/jira/browse/MNG-5220
 		-->
 		<contributor>
-			<name>None</name>
+			<name>Tobias Pietzsch</name>
+			<url>https://imagej.net/people/tpietzsch</url>
+		</contributor>
+        <contributor>
+			<name>Deborah Schmidt</name>
+			<url>https://imagej.net/people/frauzufall</url>
+		</contributor>
+		<contributor>
+			<name>Philipp Hanslovsky</name>
+            <url>https://imagej.net/people/hanslovsky</url>
 		</contributor>
 	</contributors>
 
