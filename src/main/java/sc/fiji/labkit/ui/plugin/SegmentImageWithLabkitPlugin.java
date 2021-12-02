@@ -6,13 +6,13 @@
  * %%
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
- * 
+ *
  * 1. Redistributions of source code must retain the above copyright notice,
  *    this list of conditions and the following disclaimer.
  * 2. Redistributions in binary form must reproduce the above copyright notice,
  *    this list of conditions and the following disclaimer in the documentation
  *    and/or other materials provided with the distribution.
- * 
+ *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
  * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
  * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
@@ -30,17 +30,15 @@
 package sc.fiji.labkit.ui.plugin;
 
 import bdv.export.ProgressWriterConsole;
+import java.io.File;
 import net.imagej.Dataset;
 import net.imagej.DatasetService;
 import net.imagej.ImgPlus;
+import net.imagej.axis.Axes;
+import net.imagej.axis.CalibratedAxis;
 import net.imglib2.Interval;
 import net.imglib2.img.Img;
 import net.imglib2.img.array.ArrayImgs;
-import sc.fiji.labkit.ui.inputimage.DatasetInputImage;
-import sc.fiji.labkit.ui.models.DefaultCachedImageFactory;
-import sc.fiji.labkit.ui.segmentation.SegmentationUtils;
-import sc.fiji.labkit.ui.segmentation.weka.TrainableSegmentationSegmenter;
-import sc.fiji.labkit.ui.utils.ParallelUtils;
 import net.imglib2.type.numeric.integer.ShortType;
 import net.imglib2.util.Intervals;
 import org.scijava.Cancelable;
@@ -49,8 +47,11 @@ import org.scijava.ItemIO;
 import org.scijava.command.Command;
 import org.scijava.plugin.Parameter;
 import org.scijava.plugin.Plugin;
-
-import java.io.File;
+import sc.fiji.labkit.ui.inputimage.DatasetInputImage;
+import sc.fiji.labkit.ui.inputimage.ImgPlusViewsOld;
+import sc.fiji.labkit.ui.segmentation.SegmentationUtils;
+import sc.fiji.labkit.ui.segmentation.weka.TrainableSegmentationSegmenter;
+import sc.fiji.labkit.ui.utils.ParallelUtils;
 
 /**
  * @author Robert Haase
@@ -87,6 +88,14 @@ public class SegmentImageWithLabkitPlugin implements Command, Cancelable {
 		Img<ShortType> outputImg = useCache(imgPlus) ? calculateOnCachedImg(segmenter, imgPlus)
 			: calculateOnArrayImg(segmenter, imgPlus);
 		output = datasetService.create(outputImg);
+
+		// copy input calibration to output
+		ImgPlus< ? > image = imgPlus;
+		if ( ImgPlusViewsOld.hasAxis( image, Axes.CHANNEL ) )
+			image = ImgPlusViewsOld.hyperSlice( image, Axes.CHANNEL, 0 );
+		final CalibratedAxis[] axes = new CalibratedAxis[image.numDimensions()];
+		image.axes( axes );
+		output.setAxes( axes );
 	}
 
 	private boolean useCache(ImgPlus<?> imgPlus) {
