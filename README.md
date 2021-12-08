@@ -1,3 +1,5 @@
+[![](https://github.com/juglab/labkit-ui/actions/workflows/build-main.yml/badge.svg)](https://github.com/juglab/labkit-ui/actions/workflows/build-main.yml)
+
 [![](https://github.com/maarzt/imglib2-labkit/actions/workflows/build-main.yml/badge.svg)](https://github.com/maarzt/imglib2-labkit/actions/workflows/build-main.yml)
 
 # Labkit
