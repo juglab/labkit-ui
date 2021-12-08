@@ -15,7 +15,7 @@ import net.imglib2.img.Img;
 import net.imglib2.img.array.ArrayImgs;
 import net.imglib2.img.display.imagej.ImageJFunctions;
 import net.imglib2.test.ImgLib2Assert;
-import net.imglib2.trainable_segmentation.utils.SingletonContext;
+import sc.fiji.labkit.pixel_classification.utils.SingletonContext;
 import net.imglib2.type.numeric.integer.UnsignedByteType;
 import net.imglib2.type.numeric.integer.UnsignedShortType;
 import net.imglib2.util.Cast;

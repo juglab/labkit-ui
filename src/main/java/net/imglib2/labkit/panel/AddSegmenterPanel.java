@@ -5,7 +5,7 @@ import net.imglib2.labkit.models.ExtensionPoints;
 import net.imglib2.labkit.models.SegmenterListModel;
 import net.imglib2.labkit.segmentation.SegmentationPlugin;
 import net.imglib2.labkit.segmentation.SegmentationPluginService;
-import net.imglib2.trainable_segmentation.utils.SingletonContext;
+import sc.fiji.labkit.pixel_classification.utils.SingletonContext;
 import net.miginfocom.swing.MigLayout;
 import org.scijava.Context;
 

@@ -3,7 +3,7 @@ package net.imglib2.labkit.segmentation.weka;
 
 import net.imglib2.labkit.segmentation.SegmentationPlugin;
 import net.imglib2.labkit.segmentation.Segmenter;
-import net.imglib2.trainable_segmentation.utils.SingletonContext;
+import sc.fiji.labkit.pixel_classification.utils.SingletonContext;
 import org.scijava.Context;
 import org.scijava.plugin.Parameter;
 import org.scijava.plugin.Plugin;

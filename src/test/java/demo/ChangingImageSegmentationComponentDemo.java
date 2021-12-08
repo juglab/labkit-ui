@@ -13,7 +13,7 @@ import net.imglib2.labkit.inputimage.DatasetInputImage;
 import net.imglib2.labkit.models.DefaultSegmentationModel;
 import net.imglib2.labkit.models.ImageLabelingModel;
 import net.imglib2.labkit.models.SegmentationModel;
-import net.imglib2.trainable_segmentation.utils.SingletonContext;
+import sc.fiji.labkit.pixel_classification.utils.SingletonContext;
 import net.imglib2.type.numeric.integer.UnsignedByteType;
 import net.imglib2.view.Views;
 import net.miginfocom.swing.MigLayout;

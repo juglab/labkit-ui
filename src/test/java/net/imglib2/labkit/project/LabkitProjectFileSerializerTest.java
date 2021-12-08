@@ -1,7 +1,7 @@
 
 package net.imglib2.labkit.project;
 
-import net.imglib2.trainable_segmentation.utils.SingletonContext;
+import sc.fiji.labkit.pixel_classification.utils.SingletonContext;
 import org.apache.commons.io.FileUtils;
 import org.junit.Test;
 

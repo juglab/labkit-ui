@@ -24,14 +24,14 @@ import net.imglib2.labkit.labeling.Labeling;
 import net.imglib2.labkit.utils.LabkitUtils;
 import net.imglib2.roi.labeling.LabelingType;
 import net.imglib2.sparse.SparseRandomAccessIntType;
-import net.imglib2.trainable_segmentation.classification.Training;
-import net.imglib2.trainable_segmentation.gson.GsonUtils;
-import net.imglib2.trainable_segmentation.pixel_feature.calculator.FeatureCalculator;
-import net.imglib2.trainable_segmentation.pixel_feature.filter.GroupedFeatures;
-import net.imglib2.trainable_segmentation.pixel_feature.filter.SingleFeatures;
-import net.imglib2.trainable_segmentation.pixel_feature.settings.ChannelSetting;
-import net.imglib2.trainable_segmentation.pixel_feature.settings.FeatureSettings;
-import net.imglib2.trainable_segmentation.pixel_feature.settings.GlobalSettings;
+import sc.fiji.labkit.pixel_classification.classification.Training;
+import sc.fiji.labkit.pixel_classification.gson.GsonUtils;
+import sc.fiji.labkit.pixel_classification.pixel_feature.calculator.FeatureCalculator;
+import sc.fiji.labkit.pixel_classification.pixel_feature.filter.GroupedFeatures;
+import sc.fiji.labkit.pixel_classification.pixel_feature.filter.SingleFeatures;
+import sc.fiji.labkit.pixel_classification.pixel_feature.settings.ChannelSetting;
+import sc.fiji.labkit.pixel_classification.pixel_feature.settings.FeatureSettings;
+import sc.fiji.labkit.pixel_classification.pixel_feature.settings.GlobalSettings;
 import net.imglib2.type.numeric.ARGBType;
 import net.imglib2.type.numeric.IntegerType;
 import net.imglib2.type.numeric.RealType;
@@ -67,7 +67,7 @@ public class TrainableSegmentationSegmenter implements Segmenter {
 
 	private FeatureSettings featureSettings;
 
-	private net.imglib2.trainable_segmentation.classification.Segmenter segmenter;
+	private sc.fiji.labkit.pixel_classification.classification.Segmenter segmenter;
 
 	public TrainableSegmentationSegmenter(Context context) {
 		this.context = Objects.requireNonNull(context);
@@ -132,8 +132,8 @@ public class TrainableSegmentationSegmenter implements Segmenter {
 			initFeatureSettings(trainingData);
 			List<String> classes = collectLabels(trainingData.stream().map(Pair::getB)
 				.collect(Collectors.toList()));
-			net.imglib2.trainable_segmentation.classification.Segmenter segmenter =
-				new net.imglib2.trainable_segmentation.classification.Segmenter(context,
+			sc.fiji.labkit.pixel_classification.classification.Segmenter segmenter =
+				new sc.fiji.labkit.pixel_classification.classification.Segmenter(context,
 					classes, featureSettings, new FastRandomForest());
 			segmenter.setUseGpu(useGpu);
 			Training training = segmenter.training();
@@ -277,7 +277,7 @@ public class TrainableSegmentationSegmenter implements Segmenter {
 
 	@Override
 	public void openModel(final String path) {
-		segmenter = net.imglib2.trainable_segmentation.classification.Segmenter
+		segmenter = sc.fiji.labkit.pixel_classification.classification.Segmenter
 			.fromJson(context, GsonUtils.read(path));
 		segmenter.setUseGpu(useGpu);
 		featureSettings = segmenter.features().settings();

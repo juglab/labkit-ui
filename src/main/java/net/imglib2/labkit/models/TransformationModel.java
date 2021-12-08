@@ -4,7 +4,7 @@ package net.imglib2.labkit.models;
 import bdv.viewer.ViewerPanel;
 import net.imglib2.Interval;
 import net.imglib2.realtransform.AffineTransform3D;
-import net.imglib2.trainable_segmentation.RevampUtils;
+import sc.fiji.labkit.pixel_classification.RevampUtils;
 
 import java.util.Arrays;
 import java.util.Collections;

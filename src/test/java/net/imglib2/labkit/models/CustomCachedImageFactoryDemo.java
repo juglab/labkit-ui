@@ -12,7 +12,7 @@ import net.imglib2.img.cell.CellGrid;
 import net.imglib2.labkit.LabkitFrame;
 import net.imglib2.labkit.inputimage.DatasetInputImage;
 import net.imglib2.labkit.segmentation.Segmenter;
-import net.imglib2.trainable_segmentation.utils.SingletonContext;
+import sc.fiji.labkit.pixel_classification.utils.SingletonContext;
 import net.imglib2.type.NativeType;
 
 import java.util.function.Consumer;

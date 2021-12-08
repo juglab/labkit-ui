@@ -1,10 +1,10 @@
 
 package net.imglib2.labkit.segmentation.weka;
 
-import net.imglib2.trainable_segmentation.gui.FeatureSettingsUI;
-import net.imglib2.trainable_segmentation.pixel_feature.filter.GroupedFeatures;
-import net.imglib2.trainable_segmentation.pixel_feature.settings.FeatureSettings;
-import net.imglib2.trainable_segmentation.pixel_feature.settings.GlobalSettings;
+import sc.fiji.labkit.pixel_classification.gui.FeatureSettingsUI;
+import sc.fiji.labkit.pixel_classification.pixel_feature.filter.GroupedFeatures;
+import sc.fiji.labkit.pixel_classification.pixel_feature.settings.FeatureSettings;
+import sc.fiji.labkit.pixel_classification.pixel_feature.settings.GlobalSettings;
 import net.miginfocom.swing.MigLayout;
 import org.scijava.Context;
 

@@ -12,7 +12,7 @@ import net.imglib2.img.array.ArrayImgs;
 import net.imglib2.roi.IterableRegion;
 import net.imglib2.sparse.SparseIterableRegion;
 import net.imglib2.test.ImgLib2Assert;
-import net.imglib2.trainable_segmentation.utils.SingletonContext;
+import sc.fiji.labkit.pixel_classification.utils.SingletonContext;
 import net.imglib2.type.logic.BitType;
 import net.imglib2.type.numeric.ARGBType;
 import net.imglib2.type.numeric.integer.UnsignedByteType;
