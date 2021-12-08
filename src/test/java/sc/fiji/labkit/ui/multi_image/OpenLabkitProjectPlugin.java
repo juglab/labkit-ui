@@ -1,0 +1,19 @@
+
+package sc.fiji.labkit.ui.multi_image;
+
+import org.scijava.Context;
+import org.scijava.command.Command;
+import org.scijava.plugin.Parameter;
+import org.scijava.plugin.Plugin;
+
+@Plugin(type = Command.class, menuPath = "Plugins > Labkit > Project > Open Labkit Project...")
+public class OpenLabkitProjectPlugin implements Command {
+
+	@Parameter
+	private Context context;
+
+	@Override
+	public void run() {
+		LabkitProjectFrame.onOpenProjectClicked(context);
+	}
+}

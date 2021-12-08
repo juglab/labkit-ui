@@ -5,10 +5,10 @@ import ij.ImagePlus;
 import net.imagej.patcher.LegacyInjector;
 import net.imglib2.img.Img;
 import net.imglib2.img.display.imagej.ImageJFunctions;
-import net.imglib2.labkit.LabkitFrame;
-import net.imglib2.labkit.inputimage.DatasetInputImage;
-import net.imglib2.labkit.segmentation.SegmentationPlugin;
-import net.imglib2.labkit.segmentation.Segmenter;
+import sc.fiji.labkit.ui.LabkitFrame;
+import sc.fiji.labkit.ui.inputimage.DatasetInputImage;
+import sc.fiji.labkit.ui.segmentation.SegmentationPlugin;
+import sc.fiji.labkit.ui.segmentation.Segmenter;
 import net.imglib2.type.numeric.NumericType;
 import org.scijava.plugin.Plugin;
 

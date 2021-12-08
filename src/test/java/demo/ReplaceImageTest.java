@@ -10,10 +10,10 @@ import bdv.viewer.ViewerStateChange;
 import ij.ImagePlus;
 import net.imagej.ImgPlus;
 import net.imglib2.img.VirtualStackAdapter;
-import net.imglib2.labkit.bdv.BdvShowable;
-import net.imglib2.labkit.inputimage.SpimDataInputImage;
-import net.imglib2.labkit.models.DefaultHolder;
-import net.imglib2.labkit.models.Holder;
+import sc.fiji.labkit.ui.bdv.BdvShowable;
+import sc.fiji.labkit.ui.inputimage.SpimDataInputImage;
+import sc.fiji.labkit.ui.models.DefaultHolder;
+import sc.fiji.labkit.ui.models.Holder;
 import net.miginfocom.swing.MigLayout;
 
 import javax.swing.*;

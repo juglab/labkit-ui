@@ -1,8 +1,8 @@
 
 package demo.custom_segmenter;
 
-import net.imglib2.labkit.segmentation.SegmentationPlugin;
-import net.imglib2.labkit.segmentation.Segmenter;
+import sc.fiji.labkit.ui.segmentation.SegmentationPlugin;
+import sc.fiji.labkit.ui.segmentation.Segmenter;
 import org.scijava.plugin.Plugin;
 
 /**

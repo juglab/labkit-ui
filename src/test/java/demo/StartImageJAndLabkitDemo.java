@@ -2,7 +2,7 @@
 package demo;
 
 import net.imagej.ImageJ;
-import net.imglib2.labkit.plugin.LabkitPlugin;
+import sc.fiji.labkit.ui.plugin.LabkitPlugin;
 
 import java.io.IOException;
 

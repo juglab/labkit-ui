@@ -92,7 +92,7 @@
 	</ciManagement>
 
 	<properties>
-		<package-name>net.imglib2.labkit</package-name>
+		<package-name>sc.fiji.labkit.ui</package-name>
 		<license.licenseName>bsd_2</license.licenseName>
 		<license.copyrightOwners>Matthias Arzt, Philipp Hanslovsky</license.copyrightOwners>
 		<!-- NB: Deploy releases to the SciJava Maven repository. -->

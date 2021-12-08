@@ -1,0 +1,83 @@
+
+package sc.fiji.labkit.ui.segmentation;
+
+import net.imagej.ImgPlus;
+import net.imglib2.RandomAccessibleInterval;
+import sc.fiji.labkit.ui.labeling.Labeling;
+import net.imglib2.type.numeric.IntegerType;
+import net.imglib2.type.numeric.RealType;
+import net.imglib2.util.Pair;
+
+import javax.swing.*;
+import java.util.List;
+
+/**
+ * Simple implementation of a {@link Segmenter}, that forwards every method call
+ * to a "source" Segmenter.
+ */
+public class ForwardingSegmenter implements Segmenter {
+
+	private final Segmenter source;
+
+	public ForwardingSegmenter(Segmenter source) {
+		this.source = source;
+	}
+
+	protected Segmenter getSourceSegmenter() {
+		return source;
+	}
+
+	@Override
+	public void editSettings(JFrame dialogParent, List<Pair<ImgPlus<?>, Labeling>> trainingData) {
+		source.editSettings(dialogParent, trainingData);
+	}
+
+	@Override
+	public void train(List<Pair<ImgPlus<?>, Labeling>> trainingData) {
+		source.train(trainingData);
+	}
+
+	@Override
+	public void segment(ImgPlus<?> image,
+		RandomAccessibleInterval<? extends IntegerType<?>> outputSegmentation)
+	{
+		source.segment(image, outputSegmentation);
+	}
+
+	@Override
+	public void predict(ImgPlus<?> image,
+		RandomAccessibleInterval<? extends RealType<?>> outputProbabilityMap)
+	{
+		source.predict(image, outputProbabilityMap);
+	}
+
+	@Override
+	public boolean isTrained() {
+		return source.isTrained();
+	}
+
+	@Override
+	public void saveModel(String path) {
+		source.saveModel(path);
+	}
+
+	@Override
+	public void openModel(String path) {
+		source.openModel(path);
+	}
+
+	@Override
+	public List<String> classNames() {
+		return source.classNames();
+	}
+
+	@Override
+	public int[] suggestCellSize(ImgPlus<?> image) {
+		return source.suggestCellSize(image);
+	}
+
+	@Override
+	public boolean requiresFixedCellSize() {
+		return source.requiresFixedCellSize();
+	}
+}

@@ -7,35 +7,35 @@ import net.imagej.ImgPlus;
 import net.imagej.patcher.LegacyInjector;
 import net.imglib2.RandomAccessibleInterval;
 import net.imglib2.img.VirtualStackAdapter;
-import net.imglib2.labkit.BasicLabelingComponent;
-import net.imglib2.labkit.DefaultExtensible;
-import net.imglib2.labkit.MenuBar;
-import net.imglib2.labkit.actions.AddLabelingIoAction;
-import net.imglib2.labkit.actions.BatchSegmentAction;
-import net.imglib2.labkit.actions.BitmapImportExportAction;
-import net.imglib2.labkit.actions.ClassifierIoAction;
-import net.imglib2.labkit.actions.ClassifierSettingsAction;
-import net.imglib2.labkit.actions.LabelEditAction;
-import net.imglib2.labkit.actions.LabelingIoAction;
-import net.imglib2.labkit.actions.ResetViewAction;
-import net.imglib2.labkit.actions.SegmentationAsLabelAction;
-import net.imglib2.labkit.actions.SegmentationExportAction;
-import net.imglib2.labkit.inputimage.DatasetInputImage;
-import net.imglib2.labkit.menu.MenuKey;
-import net.imglib2.labkit.models.ColoredLabelsModel;
-import net.imglib2.labkit.models.DefaultSegmentationModel;
-import net.imglib2.labkit.models.Holder;
-import net.imglib2.labkit.models.ImageLabelingModel;
-import net.imglib2.labkit.models.SegmentationItem;
-import net.imglib2.labkit.models.SegmentationModel;
-import net.imglib2.labkit.panel.ImageInfoPanel;
-import net.imglib2.labkit.panel.LabelPanel;
-import net.imglib2.labkit.panel.SegmenterPanel;
-import net.imglib2.labkit.plugin.MeasureConnectedComponents;
-import net.imglib2.labkit.segmentation.PredictionLayer;
-import net.imglib2.labkit.segmentation.TrainClassifier;
-import net.imglib2.labkit.utils.ParallelUtils;
-import net.imglib2.labkit.utils.progress.SwingProgressWriter;
+import sc.fiji.labkit.ui.BasicLabelingComponent;
+import sc.fiji.labkit.ui.DefaultExtensible;
+import sc.fiji.labkit.ui.MenuBar;
+import sc.fiji.labkit.ui.actions.AddLabelingIoAction;
+import sc.fiji.labkit.ui.actions.BatchSegmentAction;
+import sc.fiji.labkit.ui.actions.BitmapImportExportAction;
+import sc.fiji.labkit.ui.actions.ClassifierIoAction;
+import sc.fiji.labkit.ui.actions.ClassifierSettingsAction;
+import sc.fiji.labkit.ui.actions.LabelEditAction;
+import sc.fiji.labkit.ui.actions.LabelingIoAction;
+import sc.fiji.labkit.ui.actions.ResetViewAction;
+import sc.fiji.labkit.ui.actions.SegmentationAsLabelAction;
+import sc.fiji.labkit.ui.actions.SegmentationExportAction;
+import sc.fiji.labkit.ui.inputimage.DatasetInputImage;
+import sc.fiji.labkit.ui.menu.MenuKey;
+import sc.fiji.labkit.ui.models.ColoredLabelsModel;
+import sc.fiji.labkit.ui.models.DefaultSegmentationModel;
+import sc.fiji.labkit.ui.models.Holder;
+import sc.fiji.labkit.ui.models.ImageLabelingModel;
+import sc.fiji.labkit.ui.models.SegmentationItem;
+import sc.fiji.labkit.ui.models.SegmentationModel;
+import sc.fiji.labkit.ui.panel.ImageInfoPanel;
+import sc.fiji.labkit.ui.panel.LabelPanel;
+import sc.fiji.labkit.ui.panel.SegmenterPanel;
+import sc.fiji.labkit.ui.plugin.MeasureConnectedComponents;
+import sc.fiji.labkit.ui.segmentation.PredictionLayer;
+import sc.fiji.labkit.ui.segmentation.TrainClassifier;
+import sc.fiji.labkit.ui.utils.ParallelUtils;
+import sc.fiji.labkit.ui.utils.progress.SwingProgressWriter;
 import net.imglib2.type.numeric.integer.ShortType;
 import net.miginfocom.swing.MigLayout;
 import org.scijava.Context;
@@ -56,7 +56,7 @@ import java.awt.event.ActionEvent;
  * This example is intended to show haw Labkit could be integrated into other
  * tools. An example on how to reuse Labkit components with small modification.
  * This CustomizedSegmentationComponent is very similar to the standard Labkit
- * {@link net.imglib2.labkit.SegmentationComponent}. Only the "Show results in
+ * {@link sc.fiji.labkit.ui.SegmentationComponent}. Only the "Show results in
  * ImageJ" functionality has been removed. And a button which shows the result
  * in Big Data Viewer has been added.
  */
@@ -154,7 +154,7 @@ public class CustomizedSegmentationComponentDemo extends JPanel implements AutoC
 	}
 
 	public JMenu createMenu(MenuKey<Void> key) {
-		if (key == net.imglib2.labkit.MenuBar.SEGMENTER_MENU)
+		if (key == sc.fiji.labkit.ui.MenuBar.SEGMENTER_MENU)
 			return extensible.createMenu(
 				SegmentationItem.SEGMENTER_MENU, segmentationModel
 					.segmenterList().selectedSegmenter()::get);

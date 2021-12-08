@@ -4,9 +4,9 @@ package demo;
 import ij.ImagePlus;
 import net.imagej.ImgPlus;
 import net.imglib2.img.VirtualStackAdapter;
-import net.imglib2.labkit.LabelingComponent;
-import net.imglib2.labkit.inputimage.DatasetInputImage;
-import net.imglib2.labkit.models.ImageLabelingModel;
+import sc.fiji.labkit.ui.LabelingComponent;
+import sc.fiji.labkit.ui.inputimage.DatasetInputImage;
+import sc.fiji.labkit.ui.models.ImageLabelingModel;
 
 import javax.swing.*;
 import java.awt.event.WindowAdapter;
