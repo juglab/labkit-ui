@@ -27,6 +27,17 @@ public class PixelClassificationPlugin implements SegmentationPlugin {
 		return new TrainableSegmentationSegmenter(context);
 	}
 
+	@Override
+	public boolean canOpenFile(String filename) {
+		try {
+			new TrainableSegmentationSegmenter(context).openModel(filename);
+			return true;
+		}
+		catch (Exception e) {
+			return false;
+		}
+	}
+
 	public static SegmentationPlugin create() {
 		Context context = SingletonContext.getInstance();
 		PixelClassificationPlugin plugin = new PixelClassificationPlugin();

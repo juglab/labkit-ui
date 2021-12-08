@@ -2,8 +2,11 @@
 package net.imglib2.labkit.actions;
 
 import net.imglib2.labkit.Extensible;
-import net.imglib2.labkit.models.Holder;
 import net.imglib2.labkit.models.SegmentationItem;
+import net.imglib2.labkit.models.SegmenterListModel;
+import net.imglib2.labkit.segmentation.SegmentationPlugin;
+import net.imglib2.labkit.segmentation.SegmentationPluginService;
+import org.scijava.Context;
 
 import javax.swing.filechooser.FileNameExtensionFilter;
 
@@ -14,13 +17,16 @@ import javax.swing.filechooser.FileNameExtensionFilter;
  */
 public class ClassifierIoAction extends AbstractFileIoAction {
 
-	private final Holder<SegmentationItem> selectedSegmenter;
+	private final SegmenterListModel segmenterListModel;
+
+	private final Context context;
 
 	public ClassifierIoAction(Extensible extensible,
-		final Holder<SegmentationItem> selectedSegmenter)
+		final SegmenterListModel selectedSegmenter)
 	{
 		super(extensible, new FileNameExtensionFilter("Classifier", "classifier"));
-		this.selectedSegmenter = selectedSegmenter;
+		this.context = extensible.context();
+		this.segmenterListModel = selectedSegmenter;
 		initSaveAction(SegmentationItem.SEGMENTER_MENU, "Save Classifier ...", 101,
 			this::save, "");
 		initOpenAction(SegmentationItem.SEGMENTER_MENU, "Open Classifier ...", 100,
@@ -32,7 +38,17 @@ public class ClassifierIoAction extends AbstractFileIoAction {
 	}
 
 	private void open(SegmentationItem item, String filename) {
+		item = addMatchingSegmentationItem(filename);
 		item.openModel(filename);
-		selectedSegmenter.set(item);
+		segmenterListModel.selectedSegmenter().set(item);
+	}
+
+	private SegmentationItem addMatchingSegmentationItem(String filename) {
+		SegmentationPluginService pluginService = context.service(SegmentationPluginService.class);
+		for (SegmentationPlugin plugin : pluginService.getSegmentationPlugins())
+			if (plugin.canOpenFile(filename))
+				return segmenterListModel.addSegmenter(plugin);
+		throw new IllegalArgumentException("No suitable plugin found for opening: \"" + filename +
+			"\"");
 	}
 }

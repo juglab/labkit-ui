@@ -11,4 +11,6 @@ public interface SegmentationPlugin extends SciJavaPlugin {
 	String getTitle();
 
 	Segmenter createSegmenter();
+
+	boolean canOpenFile(String filename);
 }

@@ -21,4 +21,9 @@ public class CustomSegmenterPlugin implements SegmentationPlugin {
 	public Segmenter createSegmenter() {
 		return new CustomSegmenter();
 	}
+
+	@Override
+	public boolean canOpenFile(String filename) {
+		return false;
+	}
 }
