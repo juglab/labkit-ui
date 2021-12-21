@@ -1,4 +1,4 @@
-package sc.fiji.labkit.ui.plugin.imaris;
+package net.imglib2.labkit.imaris;
 
 import bdv.export.ProgressWriter;
 import bdv.export.ProgressWriterNull;
@@ -19,6 +19,9 @@ import sc.fiji.labkit.ui.models.DefaultSegmentationModel;
 import sc.fiji.labkit.ui.models.ImageLabelingModel;
 import sc.fiji.labkit.ui.models.SegmentationItem;
 import sc.fiji.labkit.ui.models.SegmenterListModel;
+import sc.fiji.labkit.ui.plugin.imaris.ImarisExtensionPoints;
+import sc.fiji.labkit.ui.plugin.imaris.ImarisInputImage;
+import sc.fiji.labkit.ui.plugin.imaris.ImarisSegmentationComponent;
 import sc.fiji.labkit.ui.segmentation.weka.PixelClassificationPlugin;
 import sc.fiji.labkit.ui.utils.ParallelUtils;
 
