@@ -100,7 +100,7 @@
 
 		<jackson-dataformat-yaml.version>2.11.1</jackson-dataformat-yaml.version>
 
-		<imglib2-trainable-segmentation.version>0.1.11</imglib2-trainable-segmentation.version>
+		<labkit-pixel-classification.version>0.1.13</labkit-pixel-classification.version>
 	</properties>
 
 	<build>
@@ -142,7 +142,7 @@
 		<dependency>
 			<groupId>sc.fiji</groupId>
 			<artifactId>labkit-pixel-classification</artifactId>
-			<version>0.1.13</version>
+			<version>${labkit-pixel-classification.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>net.imagej</groupId>
