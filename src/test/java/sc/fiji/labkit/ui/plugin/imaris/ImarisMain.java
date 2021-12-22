@@ -2,7 +2,6 @@ package sc.fiji.labkit.ui.plugin.imaris;
 
 import net.imagej.ImageJ;
 import net.imagej.patcher.LegacyInjector;
-import net.imglib2.labkit.imaris.LabkitImarisPlugin;
 
 public class ImarisMain {
 	static {
