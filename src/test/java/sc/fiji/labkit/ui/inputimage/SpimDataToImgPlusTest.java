@@ -29,10 +29,12 @@
 
 package sc.fiji.labkit.ui.inputimage;
 
+import mpicbg.spim.data.SpimDataException;
 import net.imagej.ImgPlus;
 import net.imagej.axis.Axes;
 import net.imglib2.img.Img;
 import net.imglib2.img.array.ArrayImgs;
+import net.imglib2.realtransform.AffineTransform3D;
 import net.imglib2.test.ImgLib2Assert;
 import net.imglib2.type.numeric.integer.IntType;
 import net.imglib2.type.numeric.integer.UnsignedShortType;
@@ -42,7 +44,7 @@ import org.junit.Test;
 import java.util.Arrays;
 import java.util.stream.IntStream;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.*;
 
 public class SpimDataToImgPlusTest {
 
@@ -55,4 +57,28 @@ public class SpimDataToImgPlusTest {
 		Img<IntType> expected = ArrayImgs.ints(IntStream.range(1, 33).toArray(), 2, 2, 2, 2, 2);
 		ImgLib2Assert.assertImageEqualsRealType(expected, result, 0.0);
 	}
+
+	@Test(expected = SpimDataInputException.class)
+	public void testExceptionForMultipleAngles() {
+		String filename = SpimDataToImgPlusTest.class.getResource("/multi-angle-dataset.xml").getPath();
+		SpimDataToImgPlus.open(filename, 0);
+	}
+
+	@Test(expected = SpimDataInputException.class)
+	public void testExceptionForSizeMismatch() {
+		String filename = SpimDataToImgPlusTest.class.getResource("/size-mismatch-dataset.xml")
+			.getPath();
+		SpimDataToImgPlus.open(filename, 0);
+	}
+
+	@Test
+	public void testTransformationEquals() {
+		AffineTransform3D a = new AffineTransform3D();
+		a.set(0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0, 1.1, 1.2);
+		AffineTransform3D b = new AffineTransform3D();
+		a.set(0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7001, 0.8, 0.9, 1.0, 1.1, 1.2);
+		assertTrue(SpimDataToImgPlus.transformationEquals(a, a));
+		assertFalse(SpimDataToImgPlus.transformationEquals(a, b));
+	}
+
 }

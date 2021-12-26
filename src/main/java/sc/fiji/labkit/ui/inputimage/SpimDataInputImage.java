@@ -55,11 +55,6 @@ public class SpimDataInputImage implements InputImage {
 
 	public SpimDataInputImage(String filename, Integer level) {
 		this.spimData = openSpimData(filename);
-		if (spimData.getSequenceDescription().getViewSetupsOrdered().size() != 1)
-			throw new SpimDataInputException(
-				"The image can not be processed because it contains multiple views / angles." +
-					"\nLabkit only supports Big Data Viewer XML + HDF5 files with a single view / angle / setup." +
-					"\nYou may use BigStitcher to merge the multiple views into one image before opening it with Labkit.");
 		this.imageForSegmentation = Cast.unchecked(SpimDataToImgPlus.wrap(spimData, level));
 		imageForSegmentation.setName(FilenameUtils.getName(filename));
 		this.defaultLabelingFilename = filename + ".labeling";
