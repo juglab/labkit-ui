@@ -63,10 +63,9 @@ public class SegmentationUtils {
 		int[] cellSize = segmenter.suggestCellSize(image);
 		Interval interval = intervalNoChannels(image);
 		int count = segmenter.classNames().size();
-		CellGrid gridWithoutChannels = new CellGrid(Intervals.dimensionsAsLongArray(interval),
-			cellSize);
-		CellGrid gridWithChannel = addDimensionToGrid(count, gridWithoutChannels);
-		int[] cellSizeWithChannel = DimensionUtils.extend(cellSize, count);
+		CellGrid grid = new CellGrid(Intervals.dimensionsAsLongArray(interval), cellSize);
+		CellGrid gridWithChannel = addDimensionToGrid(count, grid);
+		int[] cellSizeWithChannel = getCellDimensions(gridWithChannel);
 		return cachedImageFactory.setupCachedImage(segmenter,
 			target -> segmenter.predict(image, ensureCellSize(segmenter, cellSizeWithChannel, target)),
 			gridWithChannel, new FloatType());
