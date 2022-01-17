@@ -62,7 +62,7 @@ public class ImageInfoPanel {
 	{
 		Color background = UIManager.getColor("List.background");
 		JPanel panel = new JPanel();
-		panel.setLayout(new MigLayout("insets 8, gap 8", "10[grow]", ""));
+		panel.setLayout(new MigLayout("insets 8, gap 8", "10[grow][grow]", ""));
 		panel.setBackground(background);
 		JLabel label = new JLabel("Dimensions: " + Arrays.toString(Intervals
 			.dimensionsAsLongArray(interval)));
@@ -70,7 +70,10 @@ public class ImageInfoPanel {
 		if (labelingComponent != null) {
 			final JButton button = new JButton("auto contrast");
 			button.addActionListener(ignore -> labelingComponent.autoContrast());
-			panel.add(button, "grow, span");
+			panel.add(button, "grow");
+			final JButton settingsButton = new JButton("settings");
+			settingsButton.addActionListener(ignore -> labelingComponent.toggleContrastSettings());
+			panel.add(settingsButton, "grow, wrap");
 		}
 		return panel;
 	}

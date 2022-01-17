@@ -29,6 +29,7 @@
 
 package sc.fiji.labkit.ui;
 
+import bdv.ui.splitpanel.SplitPanel;
 import bdv.util.BdvHandle;
 import bdv.util.BdvHandlePanel;
 import bdv.util.BdvOptions;
@@ -135,6 +136,11 @@ public class BasicLabelingComponent extends JPanel implements AutoCloseable {
 
 	public void autoContrast() {
 		BdvAutoContrast.autoContrast(imageSource.get());
+	}
+
+	public void toggleContrastSettings() {
+		SplitPanel splitPanel = bdvHandle.getSplitPanel();
+		splitPanel.setCollapsed(!splitPanel.isCollapsed());
 	}
 
 }
