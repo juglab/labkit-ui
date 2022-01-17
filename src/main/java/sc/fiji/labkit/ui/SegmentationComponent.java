@@ -29,16 +29,7 @@
 
 package sc.fiji.labkit.ui;
 
-import sc.fiji.labkit.ui.actions.AddLabelingIoAction;
-import sc.fiji.labkit.ui.actions.BatchSegmentAction;
-import sc.fiji.labkit.ui.actions.BitmapImportExportAction;
-import sc.fiji.labkit.ui.actions.ClassifierIoAction;
-import sc.fiji.labkit.ui.actions.ClassifierSettingsAction;
-import sc.fiji.labkit.ui.actions.LabelEditAction;
-import sc.fiji.labkit.ui.actions.LabelingIoAction;
-import sc.fiji.labkit.ui.actions.ResetViewAction;
-import sc.fiji.labkit.ui.actions.SegmentationAsLabelAction;
-import sc.fiji.labkit.ui.actions.SegmentationExportAction;
+import sc.fiji.labkit.ui.actions.*;
 import sc.fiji.labkit.ui.menu.MenuKey;
 import sc.fiji.labkit.ui.models.ColoredLabelsModel;
 import sc.fiji.labkit.ui.models.Holder;
@@ -109,6 +100,7 @@ public class SegmentationComponent extends JPanel implements AutoCloseable {
 		new LabelEditAction(extensible, unmodifiableLabels, new ColoredLabelsModel(
 			labelingModel));
 		MeasureConnectedComponents.addAction(extensible, labelingModel);
+		new ShowHelpAction(extensible);
 		labelingComponent.addShortcuts(extensible.getShortCuts());
 	}
 
