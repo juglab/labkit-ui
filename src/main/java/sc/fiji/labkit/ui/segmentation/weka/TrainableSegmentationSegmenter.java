@@ -42,6 +42,7 @@ import net.imglib2.cache.img.DiskCachedCellImg;
 import net.imglib2.cache.img.DiskCachedCellImgFactory;
 import net.imglib2.cache.img.DiskCachedCellImgOptions;
 import net.imglib2.img.display.imagej.ImgPlusViews;
+import org.scijava.prefs.PrefService;
 import sc.fiji.labkit.ui.inputimage.ImgPlusViewsOld;
 import sc.fiji.labkit.ui.labeling.Label;
 import sc.fiji.labkit.ui.labeling.Labelings;
@@ -96,7 +97,7 @@ public class TrainableSegmentationSegmenter implements Segmenter {
 
 	public TrainableSegmentationSegmenter(Context context) {
 		this.context = Objects.requireNonNull(context);
-		this.useGpu = false;
+		this.useGpu = getUseGpuPreference();
 		this.segmenter = null;
 		this.featureSettings = null;
 	}
@@ -115,7 +116,10 @@ public class TrainableSegmentationSegmenter implements Segmenter {
 		dialog.show();
 		if (dialog.okClicked()) {
 			featureSettings = dialog.featureSettings();
-			setUseGpu(dialog.useGpu());
+			boolean newUseGpu = dialog.useGpu();
+			if (this.useGpu != newUseGpu)
+				setUseGpuPreference(newUseGpu);
+			setUseGpu(newUseGpu);
 		}
 	}
 
@@ -396,5 +400,17 @@ public class TrainableSegmentationSegmenter implements Segmenter {
 
 	public void setFeatureSettings(FeatureSettings featureSettings) {
 		this.featureSettings = featureSettings;
+	}
+
+	// -- Helper methods --
+
+	private boolean getUseGpuPreference() {
+		PrefService prefService = context.service(PrefService.class);
+		return prefService.getBoolean(TrainableSegmentationSegmenter.class, "USE_GPU", false);
+	}
+
+	private void setUseGpuPreference(boolean useGpu) {
+		PrefService prefService = context.service(PrefService.class);
+		prefService.put(TrainableSegmentationSegmenter.class, "USE_GPU", useGpu);
 	}
 }
