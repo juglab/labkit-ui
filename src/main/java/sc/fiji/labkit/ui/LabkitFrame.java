@@ -31,6 +31,10 @@ package sc.fiji.labkit.ui;
 
 import io.scif.services.DatasetIOService;
 import net.imagej.Dataset;
+import net.imagej.legacy.ui.LegacyApplicationFrame;
+import org.scijava.ui.ApplicationFrame;
+import org.scijava.ui.UIService;
+import org.scijava.widget.UIComponent;
 import sc.fiji.labkit.ui.inputimage.DatasetInputImage;
 import sc.fiji.labkit.ui.inputimage.InputImage;
 import sc.fiji.labkit.ui.models.DefaultSegmentationModel;
@@ -40,6 +44,7 @@ import sc.fiji.labkit.pixel_classification.utils.SingletonContext;
 import org.scijava.Context;
 
 import javax.swing.*;
+import java.awt.*;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.io.IOException;
@@ -98,8 +103,25 @@ public class LabkitFrame {
 		SegmentationComponent segmentationComponent = initSegmentationComponent(
 			model);
 		setTitle(title);
+		frame.setIconImage(getImageJIcon(model.context()));
 		frame.setJMenuBar(new MenuBar(segmentationComponent::createMenu));
 		frame.setVisible(true);
+	}
+
+	private Image getImageJIcon(Context context) {
+		try {
+			// NB: get ImageJ icon form the main UI window
+			UIService uiService = context.service(UIService.class);
+			ApplicationFrame applicationFrame = uiService.getDefaultUI().getApplicationFrame();
+			if (applicationFrame instanceof LegacyApplicationFrame)
+				return ((LegacyApplicationFrame) applicationFrame).getComponent().getIconImage();
+			if (applicationFrame instanceof Frame)
+				return ((Frame) applicationFrame).getIconImage();
+			return null;
+		}
+		catch (Exception e) {
+			return null;
+		}
 	}
 
 	private SegmentationComponent initSegmentationComponent(
