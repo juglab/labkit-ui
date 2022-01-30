@@ -2,6 +2,7 @@
 package sc.fiji.labkit.ui.plugin.imaris;
 
 import java.awt.BorderLayout;
+import java.awt.event.WindowEvent;
 import java.util.ArrayList;
 import javax.swing.BorderFactory;
 import javax.swing.JButton;
@@ -12,6 +13,7 @@ import javax.swing.JMenuBar;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JSplitPane;
+import javax.swing.SwingUtilities;
 import net.imglib2.RandomAccessibleInterval;
 import net.imglib2.type.numeric.real.FloatType;
 import net.miginfocom.swing.MigLayout;
@@ -67,12 +69,16 @@ public class ImarisSegmentationComponent extends JPanel implements AutoCloseable
 
 	private final ImarisExtensionPoints extensionPoints;
 
+	private final boolean closeLabkitAfterCalculatingResult;
+
 	public ImarisSegmentationComponent(
 			final JFrame dialogBoxOwner,
 			final SegmentationModel segmentationModel,
-			final ImarisExtensionPoints extensionPoints )
+			final ImarisExtensionPoints extensionPoints,
+			final boolean closeLabkitAfterCalculatingResult)
 	{
 		this.extensionPoints = extensionPoints;
+		this.closeLabkitAfterCalculatingResult = closeLabkitAfterCalculatingResult;
 		this.extensible = new DefaultExtensible(segmentationModel.context(),
 			dialogBoxOwner);
 		this.segmentationModel = segmentationModel;
@@ -139,6 +145,17 @@ public class ImarisSegmentationComponent extends JPanel implements AutoCloseable
 			final SwingProgressWriter progress = new SwingProgressWriter(null, "Calculate Entire Segmentation");
 			ParallelUtils.populateCachedImg(prediction, progress);
 			extensionPoints.setImarisImage(prediction);
+
+			SwingUtilities.invokeLater(() -> {
+				// hide progress bar
+				progress.setVisible(false);
+
+				if (closeLabkitAfterCalculatingResult) {
+					// Close Labkit window
+					final JFrame frame = extensible.dialogParent();
+					frame.dispatchEvent(new WindowEvent(frame, WindowEvent.WINDOW_CLOSING));
+				}
+			});
 		} );
 
 	}

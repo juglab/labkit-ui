@@ -1,13 +1,21 @@
 package sc.fiji.labkit.ui.plugin.imaris;
 
+import Imaris.Error;
 import bdv.export.ProgressWriter;
 import bdv.export.ProgressWriterNull;
 import com.bitplane.xt.ImarisApplication;
 import com.bitplane.xt.ImarisDataset;
 import com.bitplane.xt.ImarisService;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
+import java.lang.ref.WeakReference;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
+import java.util.WeakHashMap;
+import java.util.concurrent.ConcurrentHashMap;
 import javax.swing.JFrame;
+import javax.swing.SwingUtilities;
 import net.imglib2.RandomAccessibleInterval;
 import net.imglib2.type.numeric.real.FloatType;
 import org.scijava.Context;
@@ -50,10 +58,35 @@ public class LabkitImarisPlugin implements Command
 		ext.registerImageFactories();
 
 		final String title = input.imageForSegmentation().getName();
-		show( model, ext, title, null );
+		show( model, ext, title, null, false, notifyOnWindowClosing( dataset ), imaris );
 	}
 
-	private void run( final Context context, final ImarisApplication imaris, final String classifier, final boolean headless, final String storeClassifiersPath )
+	/**
+	 * @param context
+	 * @param imaris
+	 * @param classifier
+	 * @param headless
+	 * 		whether to run headless
+	 * 		If {@code headless == true}, load the given {@code classifier}, run
+	 * 		segmentation on the current image from {@code imaris}, and send back the
+	 * 		results.
+	 * 		If {@code headless == false}, load the given classifier, and open the
+	 * 		the current image from {@code imaris} in the Labkit window.
+	 * @param storeClassifiersPath
+	 * 		if {@code != null}, store each trained classifiers to the given path and
+	 * 		notify Imaris by calling {@code dataset.SetParameter( "Labkit",
+	 * 		"ClassifierFile", classifierFilename );}.
+	 * @param closeLabkitAfterCalculatingResult
+	 * 		if (@code true}, the Labkit window is closed after "Compute result
+	 * 		and send it to Imaris" is done.
+	 */
+	private void run(
+			final Context context,
+			final ImarisApplication imaris,
+			final String classifier,
+			final boolean headless,
+			final String storeClassifiersPath,
+			final boolean closeLabkitAfterCalculatingResult)
 	{
 		final ImarisDataset< ? > dataset = imaris.getDataset();
 		final ImarisInputImage< ? > input = new ImarisInputImage<>( dataset );
@@ -68,8 +101,24 @@ public class LabkitImarisPlugin implements Command
 			segmentHeadless( model, ext, classifier );
 		} else {
 			final String title = input.imageForSegmentation().getName();
-			show( model, ext, title, classifier );
+			show( model, ext, title, classifier, closeLabkitAfterCalculatingResult, notifyOnWindowClosing( dataset ), imaris );
 		}
+	}
+
+	private static final Map< Integer, WeakReference< JFrame > > applicationIdToLabkitFrame = new ConcurrentHashMap<>();
+
+	private static Runnable notifyOnWindowClosing( final ImarisDataset< ? > dataset )
+	{
+		return () -> {
+			try
+			{
+				dataset.getIDataSetPrx().SetParameter( "Labkit", "LabkitWindowClosed", "true" );
+			}
+			catch ( Error error )
+			{
+				throw new RuntimeException( error );
+			}
+		};
 	}
 
 	private static void segmentHeadless( final DefaultSegmentationModel segmentationModel, final ImarisExtensionPoints ext, final String classifier )
@@ -94,18 +143,37 @@ public class LabkitImarisPlugin implements Command
 		} );
 	}
 
-	private static void show( final DefaultSegmentationModel model, final ImarisExtensionPoints ext, final String title, final String classifier )
+	private static void show(
+			final DefaultSegmentationModel model,
+			final ImarisExtensionPoints ext,
+			final String title,
+			final String classifier,
+			final boolean closeLabkitAfterCalculatingResult,
+			final Runnable onClose,
+			final ImarisApplication imaris )
 	{
 		JFrame frame = new JFrame( frameTitle( title ) );
 		frame.setBounds( 50, 50, 1200, 900 );
 		frame.setDefaultCloseOperation( JFrame.DISPOSE_ON_CLOSE );
 
-		ImarisSegmentationComponent component = new ImarisSegmentationComponent( frame, model, ext );
+		ImarisSegmentationComponent component = new ImarisSegmentationComponent( frame, model, ext, closeLabkitAfterCalculatingResult );
 		if ( classifier != null )
 			component.loadClassifier( classifier );
 
 		frame.setJMenuBar( component.getMenuBar() );
 		frame.add( component );
+
+		frame.addWindowListener( new WindowAdapter()
+		{
+			@Override
+			public void windowClosing( final WindowEvent e )
+			{
+				if ( onClose != null )
+					onClose.run();
+			}
+		} );
+
+		applicationIdToLabkitFrame.put( imaris.getApplicationID(), new WeakReference<>( frame ) );
 		frame.setVisible( true );
 	}
 
@@ -117,7 +185,6 @@ public class LabkitImarisPlugin implements Command
 			return "Labkit - " + title;
 
 	}
-
 
 	/**
 	 * Entry point for starting Labkit directly from Imaris.
@@ -132,7 +199,8 @@ public class LabkitImarisPlugin implements Command
 		String endPoints = "default -p 4029";
 		String classifier = null;
 		boolean headless = false;
-		String storeClssifiersPath = null;
+		String storeClassifiersPath = null;
+		boolean closeLabkitAfterCalculatingResult = true;
 		for ( cCommand aCommand : commands )
 		{
 			if ( aCommand.mName == "EndPoints" )
@@ -153,13 +221,45 @@ public class LabkitImarisPlugin implements Command
 			}
 			else if ( aCommand.mName == "StoreClassifiersPath" )
 			{
-				storeClssifiersPath = aCommand.mParams;
+				storeClassifiersPath = aCommand.mParams;
+			}
+			else if ( aCommand.mName == "CloseLabkitAfterCalculatingResult" )
+			{
+				closeLabkitAfterCalculatingResult = Boolean.parseBoolean(aCommand.mParams.trim());
 			}
 		}
 		final ImarisApplication app = ( applicationId == -1 )
 				? imaris.getApplication()
 				: imaris.getApplicationByID( applicationId );
-		new LabkitImarisPlugin().run( context, app, classifier, headless, storeClssifiersPath );
+		new LabkitImarisPlugin().run( context, app, classifier, headless, storeClassifiersPath, closeLabkitAfterCalculatingResult );
+	}
+
+	/**
+	 * Entry point for closing Labkit from Imaris.
+	 */
+	public static void closeLabkitWindow( final String args )
+	{
+		final Context context = new Context();
+		final ImarisService imaris = context.getService( ImarisService.class );
+
+		List< cCommand > commands = CommandsFromString( args );
+		int applicationId = -1;
+		for ( cCommand aCommand : commands )
+		{
+			if ( aCommand.mName == "ApplicationID" )
+			{
+				applicationId = Integer.parseInt( aCommand.mParams );
+			}
+		}
+		final WeakReference< JFrame > frameRef = applicationIdToLabkitFrame.get( applicationId );
+		if ( frameRef != null )
+		{
+			final JFrame frame = frameRef.get();
+			if ( frame != null )
+				SwingUtilities.invokeLater( () -> {
+					frame.dispatchEvent( new WindowEvent( frame, WindowEvent.WINDOW_CLOSING ) );
+				} );
+		}
 	}
 
 	// -- Code below is copied from Imaris_Bridge --
