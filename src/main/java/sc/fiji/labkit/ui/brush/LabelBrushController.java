@@ -39,6 +39,9 @@ import net.imglib2.RandomAccessibleInterval;
 import net.imglib2.RealLocalizable;
 import net.imglib2.RealPoint;
 import net.imglib2.algorithm.neighborhood.Neighborhood;
+import net.imglib2.roi.IterableRegion;
+import net.imglib2.roi.Regions;
+import net.imglib2.type.logic.BitType;
 import sc.fiji.labkit.ui.ActionsAndBehaviours;
 import sc.fiji.labkit.ui.brush.neighborhood.TransformedSphere;
 import sc.fiji.labkit.ui.labeling.Label;
@@ -151,9 +154,10 @@ public class LabelBrushController {
 				AffineTransform3D D = brushMatrix(coords, brushWidth, brushWidth);
 				AffineTransform3D m = displayToImageTransformation();
 				m.concatenate(D);
-				Neighborhood<LabelingType<Label>> neighborhood = TransformedSphere
-					.asNeighborhood(new long[3], m, extended.randomAccess());
-				neighborhood.forEach(pixelOperation());
+				TransformedSphere sphere = new TransformedSphere(m);
+				IterableRegion<BitType> region = TransformedSphere.iterableRegion(sphere, extended
+					.numDimensions());
+				Regions.sample(region, extended).forEach(pixelOperation());
 			}
 
 		}

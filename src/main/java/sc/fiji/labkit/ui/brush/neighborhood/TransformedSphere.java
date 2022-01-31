@@ -65,8 +65,10 @@ public class TransformedSphere {
 		double[] min = new double[3];
 		double[] max = new double[3];
 		for (int d = 0; d < 3; d++) {
-			double halfLength = Math.abs(transform.get(d, 0)) + Math.abs(transform
-				.get(d, 1)) + Math.abs(transform.get(d, 2));
+			double halfLength = Math.abs(transform.get(d, 0)) +
+				Math.abs(transform.get(d, 1)) +
+				Math.abs(transform.get(d, 2)) +
+				0.5;
 			double center = transform.get(d, 3);
 			min[d] = center - halfLength;
 			max[d] = center + halfLength;
@@ -100,7 +102,7 @@ public class TransformedSphere {
 		return neighborhood;
 	}
 
-	static IterableRegion<BitType> iterableRegion(TransformedSphere sphere,
+	public static IterableRegion<BitType> iterableRegion(TransformedSphere sphere,
 		int numDimensions)
 	{
 		return iterableRegion(sphere, intervalChangeNumDimensions(sphere
