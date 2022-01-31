@@ -45,6 +45,9 @@ public class PixelClassificationPlugin implements SegmentationPlugin {
 	@Parameter
 	Context context;
 
+	@Parameter(required = false)
+	Boolean useGpu = false;
+
 	@Override
 	public String getTitle() {
 		return "Labkit Pixel Classification";
@@ -52,7 +55,9 @@ public class PixelClassificationPlugin implements SegmentationPlugin {
 
 	@Override
 	public Segmenter createSegmenter() {
-		return new TrainableSegmentationSegmenter(context);
+		TrainableSegmentationSegmenter segmenter = new TrainableSegmentationSegmenter(context);
+		segmenter.setUseGpu( useGpu );
+		return segmenter;
 	}
 
 	@Override
@@ -67,8 +72,13 @@ public class PixelClassificationPlugin implements SegmentationPlugin {
 	}
 
 	public static SegmentationPlugin create() {
+		return create( false );
+	}
+
+	public static SegmentationPlugin create( boolean useGpu ) {
 		Context context = SingletonContext.getInstance();
 		PixelClassificationPlugin plugin = new PixelClassificationPlugin();
+		plugin.useGpu = useGpu;
 		context.inject(plugin);
 		return plugin;
 	}

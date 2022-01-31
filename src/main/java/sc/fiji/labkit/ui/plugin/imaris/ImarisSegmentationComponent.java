@@ -195,9 +195,9 @@ public class ImarisSegmentationComponent extends JPanel implements AutoCloseable
 		labelingComponent.autoContrast();
 	}
 
-	public void loadClassifier(final String classifier) {
+	public void loadClassifier(final String classifier, final boolean useGpu) {
 		final SegmenterListModel segmenterList = segmentationModel.segmenterList();
-		final SegmentationItem item = segmenterList.addSegmenter(PixelClassificationPlugin.create());
+		final SegmentationItem item = segmenterList.addSegmenter(PixelClassificationPlugin.create(useGpu));
 		item.openModel(classifier);
 
 		final Labeling labeling = segmentationModel.imageLabelingModel().labeling().get();

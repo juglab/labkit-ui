@@ -27,7 +27,10 @@ import sc.fiji.labkit.ui.models.DefaultSegmentationModel;
 import sc.fiji.labkit.ui.models.ImageLabelingModel;
 import sc.fiji.labkit.ui.models.SegmentationItem;
 import sc.fiji.labkit.ui.models.SegmenterListModel;
+import sc.fiji.labkit.ui.segmentation.ForwardingSegmenter;
+import sc.fiji.labkit.ui.segmentation.Segmenter;
 import sc.fiji.labkit.ui.segmentation.weka.PixelClassificationPlugin;
+import sc.fiji.labkit.ui.segmentation.weka.TrainableSegmentationSegmenter;
 import sc.fiji.labkit.ui.utils.ParallelUtils;
 
 /**
@@ -58,7 +61,7 @@ public class LabkitImarisPlugin implements Command
 		ext.registerImageFactories();
 
 		final String title = input.imageForSegmentation().getName();
-		show( model, ext, title, null, false, notifyOnWindowClosing( dataset ), imaris );
+		show( model, ext, title, null, false, false, notifyOnWindowClosing( dataset ), imaris );
 	}
 
 	/**
@@ -79,6 +82,8 @@ public class LabkitImarisPlugin implements Command
 	 * @param closeLabkitAfterCalculatingResult
 	 * 		if (@code true}, the Labkit window is closed after "Compute result
 	 * 		and send it to Imaris" is done.
+	 * @param useGpu
+	 * 		if (@code true}, segmentation will use GPU.
 	 */
 	private void run(
 			final Context context,
@@ -86,7 +91,8 @@ public class LabkitImarisPlugin implements Command
 			final String classifier,
 			final boolean headless,
 			final String storeClassifiersPath,
-			final boolean closeLabkitAfterCalculatingResult)
+			final boolean closeLabkitAfterCalculatingResult,
+			final boolean useGpu)
 	{
 		final ImarisDataset< ? > dataset = imaris.getDataset();
 		final ImarisInputImage< ? > input = new ImarisInputImage<>( dataset );
@@ -98,10 +104,10 @@ public class LabkitImarisPlugin implements Command
 		ext.registerImageFactories();
 
 		if (headless) {
-			segmentHeadless( model, ext, classifier );
+			segmentHeadless( model, ext, classifier, useGpu );
 		} else {
 			final String title = input.imageForSegmentation().getName();
-			show( model, ext, title, classifier, closeLabkitAfterCalculatingResult, notifyOnWindowClosing( dataset ), imaris );
+			show( model, ext, title, classifier, useGpu, closeLabkitAfterCalculatingResult, notifyOnWindowClosing( dataset ), imaris );
 		}
 	}
 
@@ -121,10 +127,10 @@ public class LabkitImarisPlugin implements Command
 		};
 	}
 
-	private static void segmentHeadless( final DefaultSegmentationModel segmentationModel, final ImarisExtensionPoints ext, final String classifier )
+	private static void segmentHeadless( final DefaultSegmentationModel segmentationModel, final ImarisExtensionPoints ext, final String classifier, final boolean useGpu )
 	{
 		final SegmenterListModel segmenterList = segmentationModel.segmenterList();
-		final SegmentationItem item = segmenterList.addSegmenter( PixelClassificationPlugin.create() );
+		final SegmentationItem item = segmenterList.addSegmenter( PixelClassificationPlugin.create( useGpu ) );
 		item.openModel( classifier );
 
 		final ImageLabelingModel imageLabeling = segmentationModel.imageLabelingModel();
@@ -148,6 +154,7 @@ public class LabkitImarisPlugin implements Command
 			final ImarisExtensionPoints ext,
 			final String title,
 			final String classifier,
+			final boolean useGpu,
 			final boolean closeLabkitAfterCalculatingResult,
 			final Runnable onClose,
 			final ImarisApplication imaris )
@@ -158,7 +165,7 @@ public class LabkitImarisPlugin implements Command
 
 		ImarisSegmentationComponent component = new ImarisSegmentationComponent( frame, model, ext, closeLabkitAfterCalculatingResult );
 		if ( classifier != null )
-			component.loadClassifier( classifier );
+			component.loadClassifier( classifier, useGpu );
 
 		frame.setJMenuBar( component.getMenuBar() );
 		frame.add( component );
@@ -201,6 +208,7 @@ public class LabkitImarisPlugin implements Command
 		boolean headless = false;
 		String storeClassifiersPath = null;
 		boolean closeLabkitAfterCalculatingResult = true;
+		boolean useGpu = false;
 		for ( cCommand aCommand : commands )
 		{
 			if ( aCommand.mName == "EndPoints" )
@@ -227,11 +235,16 @@ public class LabkitImarisPlugin implements Command
 			{
 				closeLabkitAfterCalculatingResult = Boolean.parseBoolean(aCommand.mParams.trim());
 			}
+			else if ( aCommand.mName == "UseGPU" )
+			{
+				useGpu = Boolean.parseBoolean(aCommand.mParams.trim());
+			}
 		}
+
 		final ImarisApplication app = ( applicationId == -1 )
 				? imaris.getApplication()
 				: imaris.getApplicationByID( applicationId );
-		new LabkitImarisPlugin().run( context, app, classifier, headless, storeClassifiersPath, closeLabkitAfterCalculatingResult );
+		new LabkitImarisPlugin().run( context, app, classifier, headless, storeClassifiersPath, closeLabkitAfterCalculatingResult, useGpu );
 	}
 
 	/**
@@ -264,7 +277,7 @@ public class LabkitImarisPlugin implements Command
 
 	// -- Code below is copied from Imaris_Bridge --
 
-	private static final String[] mCommandsString = { "EndPoints", "ApplicationID", "Classifier", "Headless", "StoreClassifiersPath" };
+	private static final String[] mCommandsString = { "EndPoints", "ApplicationID", "Classifier", "Headless", "StoreClassifiersPath", "UseGPU" };
 
 	private static class cCommand {
 		public cCommand(String aName) {
