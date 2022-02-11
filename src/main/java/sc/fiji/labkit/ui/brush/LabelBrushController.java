@@ -31,14 +31,11 @@ package sc.fiji.labkit.ui.brush;
 
 import bdv.util.Affine3DHelpers;
 import bdv.viewer.ViewerPanel;
-import gnu.trove.map.TIntIntMap;
-import gnu.trove.map.hash.TIntIntHashMap;
 import net.imglib2.FinalInterval;
 import net.imglib2.RandomAccessible;
 import net.imglib2.RandomAccessibleInterval;
 import net.imglib2.RealLocalizable;
 import net.imglib2.RealPoint;
-import net.imglib2.algorithm.neighborhood.Neighborhood;
 import net.imglib2.roi.IterableRegion;
 import net.imglib2.roi.Regions;
 import net.imglib2.type.logic.BitType;
@@ -81,7 +78,7 @@ public class LabelBrushController {
 
 	private final PaintBehavior eraseBehavior = new PaintBehavior(false);
 
-	private double brushRadius = 1;
+	private double brushDiameter = 1;
 
 	private boolean overlapping = false;
 
@@ -91,7 +88,7 @@ public class LabelBrushController {
 		this.viewer = viewer;
 		this.brushOverlay = new BrushOverlay(viewer, model);
 		this.model = model;
-		brushOverlay.setRadius((int) getTransformedBrushRadius());
+		brushOverlay.setRadius(getTransformedBrushRadius());
 		viewer.getDisplay().addOverlayRenderer(brushOverlay);
 		installDefaultBehaviors(behaviors);
 	}
@@ -122,14 +119,14 @@ public class LabelBrushController {
 		return eraseBehavior;
 	}
 
-	public void setBrushRadius(double brushRadius) {
-		this.brushRadius = brushRadius;
+	public void setBrushDiameter(double brushDiameter) {
+		this.brushDiameter = brushDiameter;
 		brushOverlay.setRadius(getTransformedBrushRadius());
 		brushOverlay.requestRepaint();
 	}
 
-	public double getBrushRadius() {
-		return brushRadius;
+	public double getBrushDiameter() {
+		return brushDiameter;
 	}
 
 	public void setOverlapping(boolean overlapping) {
@@ -150,7 +147,7 @@ public class LabelBrushController {
 			synchronized (viewer) {
 				final RandomAccessible<LabelingType<Label>> extended =
 					extendLabelingType(slice());
-				double brushWidth = brushSizeInScreenPixel();
+				double brushWidth = getTransformedBrushRadius();
 				AffineTransform3D D = brushMatrix(coords, brushWidth, brushWidth);
 				AffineTransform3D m = displayToImageTransformation();
 				m.concatenate(D);
@@ -160,10 +157,6 @@ public class LabelBrushController {
 				Regions.sample(region, extended).forEach(pixelOperation());
 			}
 
-		}
-
-		private double brushSizeInScreenPixel() {
-			return getTransformedBrushRadius() * getScale(viewerTransformation());
 		}
 
 		private Consumer<LabelingType<Label>> pixelOperation() {
@@ -229,7 +222,7 @@ public class LabelBrushController {
 
 		private void paint(RealLocalizable a, RealLocalizable b) {
 			long distance = (long) distance(a, b) + 1;
-			double step = Math.max(brushRadius * 0.5, 1.0);
+			double step = Math.max(brushDiameter * 0.5, 1.0);
 			for (long i = 0; i < distance; i += step)
 				paint(interpolate((double) i / (double) distance, a, b));
 		}
@@ -260,17 +253,21 @@ public class LabelBrushController {
 			RealPoint coords = new RealPoint(x, y);
 			this.before = coords;
 			paint(coords);
+			double radius = getTransformedBrushRadius();
+			brushOverlay.setRadius(radius);
 			brushOverlay.setPosition(x, y);
 			brushOverlay.setFontVisible(false);
-			fireBitmapChanged(coords, coords, brushSizeInScreenPixel());
+			fireBitmapChanged(coords, coords, radius);
 		}
 
 		@Override
 		public void drag(final int x, final int y) {
 			RealPoint coords = new RealPoint(x, y);
 			paint(before, coords);
-			fireBitmapChanged(before, coords, brushSizeInScreenPixel());
+			double radius = getTransformedBrushRadius();
+			fireBitmapChanged(before, coords, radius);
 			this.before = coords;
+			brushOverlay.setRadius(radius);
 			brushOverlay.setPosition(x, y);
 		}
 
@@ -290,7 +287,8 @@ public class LabelBrushController {
 	}
 
 	private double getTransformedBrushRadius() {
-		return brushRadius * getScale(model.labelTransformation());
+		return brushDiameter * 0.5 * getScale(model.labelTransformation()) *
+			getScale(paintBehavior.viewerTransformation());
 	}
 
 	// TODO: find a good place
@@ -326,8 +324,8 @@ public class LabelBrushController {
 		{
 			if (!isHorizontal) {
 				int sign = (wheelRotation < 0) ? 1 : -1;
-				double distance = Math.max(1, brushRadius * 0.1);
-				setBrushRadius(Math.min(Math.max(1, brushRadius + sign * distance), 50));
+				double distance = Math.max(1, brushDiameter * 0.1);
+				setBrushDiameter(Math.min(Math.max(1, brushDiameter + sign * distance), 50));
 			}
 		}
 	}
@@ -337,6 +335,7 @@ public class LabelBrushController {
 		@Override
 		public void init(final int x, final int y) {
 			brushOverlay.setPosition(x, y);
+			brushOverlay.setRadius(getTransformedBrushRadius());
 			brushOverlay.setVisible(true);
 			viewer.setCursor(Cursor.getPredefinedCursor(Cursor.CROSSHAIR_CURSOR));
 			brushOverlay.requestRepaint();
@@ -345,6 +344,7 @@ public class LabelBrushController {
 		@Override
 		public void drag(final int x, final int y) {
 			brushOverlay.setPosition(x, y);
+			brushOverlay.setRadius(getTransformedBrushRadius());
 		}
 
 		@Override

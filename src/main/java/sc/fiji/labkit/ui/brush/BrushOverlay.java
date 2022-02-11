@@ -32,7 +32,6 @@
 
 package sc.fiji.labkit.ui.brush;
 
-import bdv.util.Affine3DHelpers;
 import bdv.viewer.OverlayRenderer;
 import bdv.viewer.ViewerPanel;
 import sc.fiji.labkit.ui.labeling.Label;
@@ -52,7 +51,7 @@ public class BrushOverlay implements OverlayRenderer {
 	private final ViewerPanel viewer;
 	private final LabelingModel model;
 	private int x, y;
-	private double radius = 5;
+	private int radius = 5;
 	private boolean visible = false;
 	private boolean fontVisible = true;
 	final AffineTransform3D viewerTransform = new AffineTransform3D();
@@ -68,7 +67,7 @@ public class BrushOverlay implements OverlayRenderer {
 	}
 
 	public void setRadius(final double radius) {
-		this.radius = radius;
+		this.radius = (int) Math.round(radius);
 	}
 
 	public void setVisible(final boolean visible) {
@@ -90,13 +89,12 @@ public class BrushOverlay implements OverlayRenderer {
 			g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING,
 				RenderingHints.VALUE_ANTIALIAS_ON);
 			g2d.setComposite(AlphaComposite.SrcOver);
-			final int roundScaledRadius = (int) Math.round(getScale() * radius);
 			Label label = model.selectedLabel().get();
 			if (label != null) {
 				Color color = new Color(label.color().get());
 				String title = label.name();
-				if (fontVisible) drawTitle(g2d, color, title, roundScaledRadius);
-				drawCircle(g2d, color, roundScaledRadius);
+				if (fontVisible) drawTitle(g2d, color, title);
+				drawCircle(g2d, color);
 			}
 		}
 	}
@@ -106,25 +104,15 @@ public class BrushOverlay implements OverlayRenderer {
 
 	}
 
-	private double getScale() {
-		synchronized (viewer) {
-			viewer.state().getViewerTransform(viewerTransform);
-			return Affine3DHelpers.extractScale(viewerTransform, 0);
-		}
-	}
-
-	private void drawCircle(Graphics2D g2d, Color color, int roundScaledRadius) {
+	private void drawCircle(Graphics2D g2d, Color color) {
 		g2d.setColor(color);
 		g2d.setStroke(new BasicStroke(1));
-		g2d.drawOval(x - roundScaledRadius, y - roundScaledRadius, 2 *
-			roundScaledRadius + 1, 2 * roundScaledRadius + 1);
+		g2d.drawOval(x - radius, y - radius, 2 * radius + 1, 2 * radius + 1);
 	}
 
-	private void drawTitle(Graphics2D g2d, Color color, String title,
-		int roundScaledRadius)
-	{
+	private void drawTitle(Graphics2D g2d, Color color, String title) {
 		g2d.setColor(color);
-		g2d.drawString(title, x + roundScaledRadius + 20, y + roundScaledRadius +
+		g2d.drawString(title, x + radius + 20, y + radius +
 			20);
 	}
 }

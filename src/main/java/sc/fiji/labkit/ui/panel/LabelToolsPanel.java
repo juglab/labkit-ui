@@ -189,10 +189,10 @@ public class LabelToolsPanel extends JPanel {
 
 	private JSlider initBrushSizeSlider() {
 		JSlider brushSize = new JSlider(1, 50, (int) brushController
-			.getBrushRadius());
+			.getBrushDiameter());
 		brushSize.setPaintTrack(true);
 		brushSize.addChangeListener(e -> {
-			brushController.setBrushRadius(brushSize.getValue());
+			brushController.setBrushDiameter(brushSize.getValue());
 		});
 		brushSize.setOpaque(false);
 		return brushSize;
