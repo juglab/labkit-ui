@@ -40,7 +40,8 @@ import net.imglib2.roi.IterableRegion;
 import net.imglib2.roi.Regions;
 import net.imglib2.type.logic.BitType;
 import sc.fiji.labkit.ui.ActionsAndBehaviours;
-import sc.fiji.labkit.ui.brush.neighborhood.TransformedSphere;
+import sc.fiji.labkit.ui.brush.neighborhood.Ellipsoid;
+import sc.fiji.labkit.ui.brush.neighborhood.RealPoints;
 import sc.fiji.labkit.ui.labeling.Label;
 import sc.fiji.labkit.ui.models.LabelingModel;
 import net.imglib2.realtransform.AffineTransform3D;
@@ -54,6 +55,7 @@ import org.scijava.ui.behaviour.util.RunnableAction;
 
 import javax.swing.*;
 import java.awt.*;
+import java.util.Arrays;
 import java.util.List;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
@@ -143,17 +145,24 @@ public class LabelBrushController {
 			this.value = value;
 		}
 
-		private void paint(RealLocalizable coords) {
+		private void paint(RealLocalizable screenCoordinates) {
 			synchronized (viewer) {
-				final RandomAccessible<LabelingType<Label>> extended =
-					extendLabelingType(slice());
-				double brushWidth = getTransformedBrushRadius();
-				AffineTransform3D D = brushMatrix(coords, brushWidth, brushWidth);
+				final RandomAccessible<LabelingType<Label>> extended = extendLabelingType(slice());
+				double radius = Math.max(0, (brushDiameter - 1) * 0.5);
 				AffineTransform3D m = displayToImageTransformation();
-				m.concatenate(D);
-				TransformedSphere sphere = new TransformedSphere(m);
-				IterableRegion<BitType> region = TransformedSphere.iterableRegion(sphere, extended
-					.numDimensions());
+				double[] screen = { screenCoordinates.getDoublePosition(0), screenCoordinates
+					.getDoublePosition(1), 0 };
+				double[] center = new double[3];
+				m.apply(screen, center);
+				AffineTransform3D imageTransform = model.labelTransformation();
+				double pixelWidth = RealPoints.length(imageTransform.d(0));
+				double pixelHeight = RealPoints.length(imageTransform.d(1));
+				double pixelDepth = RealPoints.length(imageTransform.d(2));
+				double[] axes = { radius, radius * pixelWidth / pixelHeight, radius * pixelWidth /
+					pixelDepth };
+				IterableRegion<BitType> region = extended.numDimensions() == 2 ? Ellipsoid.asIterableRegion(
+					Arrays.copyOf(center, 2), Arrays.copyOf(axes, 2)) : Ellipsoid.asIterableRegion(center,
+						axes);
 				Regions.sample(region, extended).forEach(pixelOperation());
 			}
 
@@ -198,15 +207,6 @@ public class LabelBrushController {
 			return Views.extendValue(slice, variable);
 		}
 
-		private AffineTransform3D brushMatrix(RealLocalizable coords,
-			double brushWidth, double brushDepth)
-		{
-			AffineTransform3D D = new AffineTransform3D();
-			D.set(brushWidth, 0.0, 0.0, coords.getDoublePosition(0), 0.0, brushWidth,
-				0.0, coords.getDoublePosition(1), 0.0, 0.0, brushDepth, 0.0);
-			return D;
-		}
-
 		private AffineTransform3D displayToImageTransformation() {
 			AffineTransform3D m = new AffineTransform3D();
 			m.concatenate(model.labelTransformation().inverse());
@@ -221,8 +221,8 @@ public class LabelBrushController {
 		}
 
 		private void paint(RealLocalizable a, RealLocalizable b) {
-			long distance = (long) distance(a, b) + 1;
-			double step = Math.max(brushDiameter * 0.5, 1.0);
+			long distance = (long) (4 * (distance(a, b) + 1));
+			long step = (long) Math.max(brushDiameter, 1.0);
 			for (long i = 0; i < distance; i += step)
 				paint(interpolate((double) i / (double) distance, a, b));
 		}
@@ -305,6 +305,7 @@ public class LabelBrushController {
 	}
 
 	private void fireBitmapChanged(RealPoint a, RealPoint b, double radius) {
+		radius = radius * (brushDiameter + 2) / brushDiameter;
 		long[] min = new long[2];
 		long[] max = new long[2];
 		for (int d = 0; d < 2; d++) {
