@@ -159,6 +159,10 @@ public class LabelToolsPanel extends JPanel {
 			brushController.setBrushDiameter(brushSize.getValue());
 		});
 		brushSize.setOpaque(false);
+		brushController.brushDiameterListeners().addListener(() -> {
+			double diameter = brushController.getBrushDiameter();
+			brushSize.setValue((int) diameter);
+		});
 		return brushSize;
 	}
 

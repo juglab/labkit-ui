@@ -53,6 +53,7 @@ import net.imglib2.util.Util;
 import net.imglib2.view.Views;
 import org.scijava.ui.behaviour.util.RunnableAction;
 import sc.fiji.labkit.ui.panel.GuiUtils;
+import sc.fiji.labkit.ui.utils.Notifier;
 
 import javax.swing.*;
 import java.awt.*;
@@ -87,6 +88,8 @@ public class LabelBrushController {
 	private final PaintBehavior eraseBehaviour = new PaintBehavior(false);
 
 	private double brushDiameter = 1;
+
+	private final Notifier brushDiameterListeners = new Notifier();
 
 	private boolean overlapping = false;
 
@@ -146,18 +149,23 @@ public class LabelBrushController {
 		this.brushDiameter = brushDiameter;
 		updateBrushOverlayRadius();
 		triggerBrushOverlayRepaint();
+		brushDiameterListeners.notifyListeners();
 	}
 
-	public void updateBrushOverlayRadius() {
-		brushCursor.setRadius(getTransformedBrushRadius());
+	private void updateBrushOverlayRadius() {
+		brushCursor.setRadius(getBrushDisplayRadius());
 	}
 
-	public void triggerBrushOverlayRepaint() {
+	private void triggerBrushOverlayRepaint() {
 		viewer.getDisplay().repaint();
 	}
 
 	public double getBrushDiameter() {
 		return brushDiameter;
+	}
+
+	public Notifier brushDiameterListeners() {
+		return brushDiameterListeners;
 	}
 
 	public void setOverlapping(boolean overlapping) {
@@ -284,7 +292,7 @@ public class LabelBrushController {
 			RealPoint coords = new RealPoint(x, y);
 			this.before = coords;
 			paint(coords);
-			double radius = getTransformedBrushRadius();
+			double radius = getBrushDisplayRadius();
 			fireBitmapChanged(coords, coords, radius);
 		}
 
@@ -293,7 +301,7 @@ public class LabelBrushController {
 			brushCursor.setPosition(x, y);
 			RealPoint coords = new RealPoint(x, y);
 			paint(before, coords);
-			double radius = getTransformedBrushRadius();
+			double radius = getBrushDisplayRadius();
 			fireBitmapChanged(before, coords, radius);
 			this.before = coords;
 		}
@@ -314,7 +322,7 @@ public class LabelBrushController {
 		model.labeling().notifier().notifyListeners();
 	}
 
-	private double getTransformedBrushRadius() {
+	private double getBrushDisplayRadius() {
 		return brushDiameter * 0.5 * getScale(model.labelTransformation()) *
 			getScale(paintBehaviour.viewerTransformation());
 	}
