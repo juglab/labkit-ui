@@ -88,10 +88,11 @@ public class LabelBrushController {
 		final LabelingModel model, final ActionsAndBehaviours behaviors)
 	{
 		this.viewer = viewer;
-		this.brushOverlay = new BrushOverlay(viewer, model);
+		this.brushOverlay = new BrushOverlay(model);
 		this.model = model;
-		brushOverlay.setRadius(getTransformedBrushRadius());
+		updateBrushOverlayRadius();
 		viewer.getDisplay().addOverlayRenderer(brushOverlay);
+		viewer.addTransformListener(affineTransform3D -> updateBrushOverlayRadius());
 		installDefaultBehaviors(behaviors);
 	}
 
@@ -123,8 +124,16 @@ public class LabelBrushController {
 
 	public void setBrushDiameter(double brushDiameter) {
 		this.brushDiameter = brushDiameter;
+		updateBrushOverlayRadius();
+		triggerBrushOverlayRepaint();
+	}
+
+	public void updateBrushOverlayRadius() {
 		brushOverlay.setRadius(getTransformedBrushRadius());
-		brushOverlay.requestRepaint();
+	}
+
+	public void triggerBrushOverlayRepaint() {
+		viewer.getDisplay().repaint();
 	}
 
 	public double getBrushDiameter() {
@@ -249,30 +258,29 @@ public class LabelBrushController {
 
 		@Override
 		public void init(final int x, final int y) {
+			brushOverlay.setPosition(x, y);
+			brushOverlay.setFontVisible(false);
 			makeLabelVisible();
 			RealPoint coords = new RealPoint(x, y);
 			this.before = coords;
 			paint(coords);
 			double radius = getTransformedBrushRadius();
-			brushOverlay.setRadius(radius);
-			brushOverlay.setPosition(x, y);
-			brushOverlay.setFontVisible(false);
 			fireBitmapChanged(coords, coords, radius);
 		}
 
 		@Override
 		public void drag(final int x, final int y) {
+			brushOverlay.setPosition(x, y);
 			RealPoint coords = new RealPoint(x, y);
 			paint(before, coords);
 			double radius = getTransformedBrushRadius();
 			fireBitmapChanged(before, coords, radius);
 			this.before = coords;
-			brushOverlay.setRadius(radius);
-			brushOverlay.setPosition(x, y);
 		}
 
 		@Override
 		public void end(final int x, final int y) {
+			brushOverlay.setPosition(x, y);
 			brushOverlay.setFontVisible(true);
 		}
 	}
@@ -336,23 +344,22 @@ public class LabelBrushController {
 		@Override
 		public void init(final int x, final int y) {
 			brushOverlay.setPosition(x, y);
-			brushOverlay.setRadius(getTransformedBrushRadius());
 			brushOverlay.setVisible(true);
 			viewer.setCursor(Cursor.getPredefinedCursor(Cursor.CROSSHAIR_CURSOR));
-			brushOverlay.requestRepaint();
+			triggerBrushOverlayRepaint();
 		}
 
 		@Override
 		public void drag(final int x, final int y) {
 			brushOverlay.setPosition(x, y);
-			brushOverlay.setRadius(getTransformedBrushRadius());
 		}
 
 		@Override
 		public void end(final int x, final int y) {
+			brushOverlay.setPosition(x, y);
 			brushOverlay.setVisible(false);
 			viewer.setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
-			brushOverlay.requestRepaint();
+			triggerBrushOverlayRepaint();
 		}
 	}
 }

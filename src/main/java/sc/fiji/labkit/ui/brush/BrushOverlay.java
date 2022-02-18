@@ -33,10 +33,8 @@
 package sc.fiji.labkit.ui.brush;
 
 import bdv.viewer.OverlayRenderer;
-import bdv.viewer.ViewerPanel;
 import sc.fiji.labkit.ui.labeling.Label;
 import sc.fiji.labkit.ui.models.LabelingModel;
-import net.imglib2.realtransform.AffineTransform3D;
 
 import java.awt.*;
 
@@ -48,16 +46,13 @@ import java.awt.*;
  */
 public class BrushOverlay implements OverlayRenderer {
 
-	private final ViewerPanel viewer;
 	private final LabelingModel model;
 	private int x, y;
 	private int radius = 5;
 	private boolean visible = false;
 	private boolean fontVisible = true;
-	final AffineTransform3D viewerTransform = new AffineTransform3D();
 
-	public BrushOverlay(ViewerPanel viewer, LabelingModel model) {
-		this.viewer = viewer;
+	public BrushOverlay(LabelingModel model) {
 		this.model = model;
 	}
 
@@ -76,10 +71,6 @@ public class BrushOverlay implements OverlayRenderer {
 
 	public void setFontVisible(final boolean visible) {
 		this.fontVisible = visible;
-	}
-
-	public void requestRepaint() {
-		viewer.getDisplay().repaint();
 	}
 
 	@Override
