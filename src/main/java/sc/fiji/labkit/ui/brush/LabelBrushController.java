@@ -90,6 +90,8 @@ public class LabelBrushController {
 
 	private boolean overlapping = false;
 
+	private boolean keepBrushCursorVisible = false;
+
 	public LabelBrushController(final BdvHandle bdv,
 		final LabelingModel model, final ActionsAndBehaviours behaviors)
 	{
@@ -119,15 +121,17 @@ public class LabelBrushController {
 
 	public void setBrushActive(boolean active) {
 		BdvMouseBehaviourUtils.setMouseBehaviourActive(bdv, paintBehaviour, active);
-		setLabelCursorVisible(active);
+		setBrushCursorActive(active);
+		keepBrushCursorVisible = active;
 	}
 
 	public void setEraserActive(boolean active) {
 		BdvMouseBehaviourUtils.setMouseBehaviourActive(bdv, eraseBehaviour, active);
-		setLabelCursorVisible(active);
+		setBrushCursorActive(active);
+		keepBrushCursorVisible = active;
 	}
 
-	private void setLabelCursorVisible(boolean visible) {
+	private void setBrushCursorActive(boolean visible) {
 		if (visible) {
 			viewer.getDisplay().addMouseListener(moveBrushAdapter);
 			viewer.getDisplay().addMouseMotionListener(moveBrushAdapter);
@@ -373,8 +377,10 @@ public class LabelBrushController {
 		@Override
 		public void end(final int x, final int y) {
 			brushCursor.setPosition(x, y);
-			brushCursor.setVisible(false);
-			viewer.setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
+			if (!keepBrushCursorVisible) {
+				brushCursor.setVisible(false);
+				viewer.setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
+			}
 			triggerBrushOverlayRepaint();
 		}
 	}
