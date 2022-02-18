@@ -111,13 +111,12 @@ public class BasicLabelingComponent extends JPanel implements AutoCloseable {
 
 	private JPanel initBrushLayer() {
 		final LabelBrushController brushController = new LabelBrushController(
-			bdvHandle.getViewerPanel(), model, actionsAndBehaviours);
+			bdvHandle, model, actionsAndBehaviours);
 		final FloodFillController floodFillController = new FloodFillController(
-			bdvHandle.getViewerPanel(), model, actionsAndBehaviours);
+			bdvHandle, model, actionsAndBehaviours);
 		final SelectLabelController selectLabelController =
-			new SelectLabelController(bdvHandle.getViewerPanel(), model,
-				actionsAndBehaviours);
-		JPanel toolsPanel = new LabelToolsPanel(bdvHandle, brushController,
+			new SelectLabelController(bdvHandle, model, actionsAndBehaviours);
+		JPanel toolsPanel = new LabelToolsPanel(brushController,
 			floodFillController, selectLabelController);
 		actionsAndBehaviours.addAction(new ChangeLabel(model));
 		return toolsPanel;

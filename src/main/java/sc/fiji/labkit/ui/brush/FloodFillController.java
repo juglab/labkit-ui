@@ -29,17 +29,18 @@
 
 package sc.fiji.labkit.ui.brush;
 
+import bdv.util.BdvHandle;
 import bdv.viewer.ViewerPanel;
 import net.imglib2.Point;
 import net.imglib2.RandomAccessibleInterval;
 import net.imglib2.RealLocalizable;
 import net.imglib2.RealPoint;
+import org.scijava.ui.behaviour.*;
 import sc.fiji.labkit.ui.ActionsAndBehaviours;
 import sc.fiji.labkit.ui.labeling.Label;
 import sc.fiji.labkit.ui.models.LabelingModel;
 import net.imglib2.roi.labeling.LabelingType;
 import net.imglib2.view.Views;
-import org.scijava.ui.behaviour.ClickBehaviour;
 import org.scijava.ui.behaviour.util.RunnableAction;
 
 import javax.swing.*;
@@ -59,6 +60,8 @@ public class FloodFillController {
 	private final ViewerPanel viewer;
 
 	private final LabelingModel model;
+
+	private final BdvHandle bdv;
 
 	private boolean overlapping = false;
 
@@ -91,10 +94,11 @@ public class FloodFillController {
 		}
 	});
 
-	public FloodFillController(final ViewerPanel viewer,
+	public FloodFillController(final BdvHandle bdv,
 		final LabelingModel model, final ActionsAndBehaviours behaviors)
 	{
-		this.viewer = viewer;
+		this.bdv = bdv;
+		this.viewer = bdv.getViewerPanel();
 		this.model = model;
 
 		RunnableAction nop = new RunnableAction("nop", () -> {});
@@ -107,14 +111,6 @@ public class FloodFillController {
 
 	private Label selectedLabel() {
 		return model.selectedLabel().get();
-	}
-
-	public ClickBehaviour floodEraseBehaviour() {
-		return floodEraseBehaviour;
-	}
-
-	public ClickBehaviour floodFillBehaviour() {
-		return floodFillBehaviour;
 	}
 
 	private RealPoint displayToImageCoordinates(final int x, final int y) {
@@ -130,6 +126,14 @@ public class FloodFillController {
 
 	public void setOverlapping(boolean override) {
 		this.overlapping = override;
+	}
+
+	public void setFloodFillActive(boolean active) {
+		BdvMouseBehaviourUtils.setMouseBehaviourActive(bdv, floodFillBehaviour, active);
+	}
+
+	public void setRemoveBlobActive(boolean active) {
+		BdvMouseBehaviourUtils.setMouseBehaviourActive(bdv, floodEraseBehaviour, active);
 	}
 
 	private class FloodFillClick implements ClickBehaviour {

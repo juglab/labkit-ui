@@ -44,7 +44,7 @@ import java.awt.*;
  *
  * @author Stephan Saalfeld &lt;saalfelds@janelia.hhmi.org&gt;
  */
-public class BrushOverlay implements OverlayRenderer {
+public class BrushCursor implements OverlayRenderer {
 
 	private final LabelingModel model;
 	private int x, y;
@@ -52,7 +52,7 @@ public class BrushOverlay implements OverlayRenderer {
 	private boolean visible = false;
 	private boolean fontVisible = true;
 
-	public BrushOverlay(LabelingModel model) {
+	public BrushCursor(LabelingModel model) {
 		this.model = model;
 	}
 

@@ -30,6 +30,7 @@
 package sc.fiji.labkit.ui.brush;
 
 import bdv.util.Affine3DHelpers;
+import bdv.util.BdvHandle;
 import bdv.viewer.ViewerPanel;
 import net.imglib2.FinalInterval;
 import net.imglib2.RandomAccessible;
@@ -39,6 +40,7 @@ import net.imglib2.RealPoint;
 import net.imglib2.roi.IterableRegion;
 import net.imglib2.roi.Regions;
 import net.imglib2.type.logic.BitType;
+import org.scijava.ui.behaviour.*;
 import sc.fiji.labkit.ui.ActionsAndBehaviours;
 import sc.fiji.labkit.ui.brush.neighborhood.Ellipsoid;
 import sc.fiji.labkit.ui.brush.neighborhood.RealPoints;
@@ -49,12 +51,12 @@ import net.imglib2.roi.labeling.LabelingType;
 import net.imglib2.util.LinAlgHelpers;
 import net.imglib2.util.Util;
 import net.imglib2.view.Views;
-import org.scijava.ui.behaviour.DragBehaviour;
-import org.scijava.ui.behaviour.ScrollBehaviour;
 import org.scijava.ui.behaviour.util.RunnableAction;
+import sc.fiji.labkit.ui.panel.GuiUtils;
 
 import javax.swing.*;
 import java.awt.*;
+import java.awt.event.MouseAdapter;
 import java.util.Arrays;
 import java.util.List;
 import java.util.function.Consumer;
@@ -68,58 +70,72 @@ import java.util.stream.Collectors;
  */
 public class LabelBrushController {
 
+	private final BdvHandle bdv;
+
 	private final ViewerPanel viewer;
 
 	private final LabelingModel model;
 
-	private final BrushOverlay brushOverlay;
+	private final BrushCursor brushCursor;
 
 	private final MoveBrush moveBrushBehaviour = new MoveBrush();
 
-	private final PaintBehavior paintBehavior = new PaintBehavior(true);
+	private final MouseAdapter moveBrushAdapter = GuiUtils.toMouseListener(moveBrushBehaviour);
 
-	private final PaintBehavior eraseBehavior = new PaintBehavior(false);
+	private final PaintBehavior paintBehaviour = new PaintBehavior(true);
+
+	private final PaintBehavior eraseBehaviour = new PaintBehavior(false);
 
 	private double brushDiameter = 1;
 
 	private boolean overlapping = false;
 
-	public LabelBrushController(final ViewerPanel viewer,
+	public LabelBrushController(final BdvHandle bdv,
 		final LabelingModel model, final ActionsAndBehaviours behaviors)
 	{
-		this.viewer = viewer;
-		this.brushOverlay = new BrushOverlay(model);
+		this.bdv = bdv;
+		this.viewer = bdv.getViewerPanel();
+		this.brushCursor = new BrushCursor(model);
 		this.model = model;
 		updateBrushOverlayRadius();
-		viewer.getDisplay().addOverlayRenderer(brushOverlay);
+		viewer.getDisplay().addOverlayRenderer(brushCursor);
 		viewer.addTransformListener(affineTransform3D -> updateBrushOverlayRadius());
 		installDefaultBehaviors(behaviors);
 	}
 
 	private void installDefaultBehaviors(ActionsAndBehaviours behaviors) {
-		behaviors.addBehaviour(paintBehaviour(), "paint", "D button1",
+		behaviors.addBehaviour(paintBehaviour, "paint", "D button1",
 			"SPACE button1");
 		RunnableAction nop = new RunnableAction("nop", () -> {});
 		nop.putValue(Action.ACCELERATOR_KEY, KeyStroke.getKeyStroke("F"));
 		behaviors.addAction(nop);
-		behaviors.addBehaviour(eraseBehaviour(), "erase", "E button1",
+		behaviors.addBehaviour(eraseBehaviour, "erase", "E button1",
 			"SPACE button2", "SPACE button3");
 		behaviors.addBehaviour(new ChangeBrushRadius(), "change brush radius",
 			"D scroll", "E scroll", "SPACE scroll");
-		behaviors.addBehaviour(drawBrushBehaviour(), "move brush", "E", "D",
+		behaviors.addBehaviour(moveBrushBehaviour, "move brush", "E", "D",
 			"SPACE");
 	}
 
-	public DragBehaviour drawBrushBehaviour() {
-		return moveBrushBehaviour;
+	public void setBrushActive(boolean active) {
+		BdvMouseBehaviourUtils.setMouseBehaviourActive(bdv, paintBehaviour, active);
+		setLabelCursorVisible(active);
 	}
 
-	public DragBehaviour paintBehaviour() {
-		return paintBehavior;
+	public void setEraserActive(boolean active) {
+		BdvMouseBehaviourUtils.setMouseBehaviourActive(bdv, eraseBehaviour, active);
+		setLabelCursorVisible(active);
 	}
 
-	public DragBehaviour eraseBehaviour() {
-		return eraseBehavior;
+	private void setLabelCursorVisible(boolean visible) {
+		if (visible) {
+			viewer.getDisplay().addMouseListener(moveBrushAdapter);
+			viewer.getDisplay().addMouseMotionListener(moveBrushAdapter);
+		}
+		else {
+			viewer.getDisplay().removeMouseListener(moveBrushAdapter);
+			viewer.getDisplay().removeMouseMotionListener(moveBrushAdapter);
+		}
 	}
 
 	public void setBrushDiameter(double brushDiameter) {
@@ -129,7 +145,7 @@ public class LabelBrushController {
 	}
 
 	public void updateBrushOverlayRadius() {
-		brushOverlay.setRadius(getTransformedBrushRadius());
+		brushCursor.setRadius(getTransformedBrushRadius());
 	}
 
 	public void triggerBrushOverlayRepaint() {
@@ -258,8 +274,8 @@ public class LabelBrushController {
 
 		@Override
 		public void init(final int x, final int y) {
-			brushOverlay.setPosition(x, y);
-			brushOverlay.setFontVisible(false);
+			brushCursor.setPosition(x, y);
+			brushCursor.setFontVisible(false);
 			makeLabelVisible();
 			RealPoint coords = new RealPoint(x, y);
 			this.before = coords;
@@ -270,7 +286,7 @@ public class LabelBrushController {
 
 		@Override
 		public void drag(final int x, final int y) {
-			brushOverlay.setPosition(x, y);
+			brushCursor.setPosition(x, y);
 			RealPoint coords = new RealPoint(x, y);
 			paint(before, coords);
 			double radius = getTransformedBrushRadius();
@@ -280,8 +296,8 @@ public class LabelBrushController {
 
 		@Override
 		public void end(final int x, final int y) {
-			brushOverlay.setPosition(x, y);
-			brushOverlay.setFontVisible(true);
+			brushCursor.setPosition(x, y);
+			brushCursor.setFontVisible(true);
 		}
 	}
 
@@ -296,7 +312,7 @@ public class LabelBrushController {
 
 	private double getTransformedBrushRadius() {
 		return brushDiameter * 0.5 * getScale(model.labelTransformation()) *
-			getScale(paintBehavior.viewerTransformation());
+			getScale(paintBehaviour.viewerTransformation());
 	}
 
 	// TODO: find a good place
@@ -343,21 +359,21 @@ public class LabelBrushController {
 
 		@Override
 		public void init(final int x, final int y) {
-			brushOverlay.setPosition(x, y);
-			brushOverlay.setVisible(true);
+			brushCursor.setPosition(x, y);
+			brushCursor.setVisible(true);
 			viewer.setCursor(Cursor.getPredefinedCursor(Cursor.CROSSHAIR_CURSOR));
 			triggerBrushOverlayRepaint();
 		}
 
 		@Override
 		public void drag(final int x, final int y) {
-			brushOverlay.setPosition(x, y);
+			brushCursor.setPosition(x, y);
 		}
 
 		@Override
 		public void end(final int x, final int y) {
-			brushOverlay.setPosition(x, y);
-			brushOverlay.setVisible(false);
+			brushCursor.setPosition(x, y);
+			brushCursor.setVisible(false);
 			viewer.setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
 			triggerBrushOverlayRepaint();
 		}
