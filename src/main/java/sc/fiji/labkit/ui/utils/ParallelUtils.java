@@ -68,7 +68,8 @@ public class ParallelUtils {
 	 * used to parallelize this process. The {@link ProgressWriter} can be used to
 	 * visualize the progress or cancel the operation.
 	 */
-	public static <T> void applyOperationOnCells(Img<T> image, int[] cellDimensions,
+	public static <T> void applyOperationOnCells(RandomAccessibleInterval<T> image,
+		int[] cellDimensions,
 		Consumer<RandomAccessibleInterval<T>> operation, ProgressWriter progressWriter)
 	{
 		List<Interval> cells = getCells(new CellGrid(Intervals.dimensionsAsLongArray(image),
