@@ -29,19 +29,19 @@
 
 package sc.fiji.labkit.ui.brush;
 
+import bdv.util.BdvHandle;
 import bdv.viewer.ViewerPanel;
 import net.imglib2.Point;
 import net.imglib2.RandomAccess;
 import net.imglib2.RandomAccessibleInterval;
 import net.imglib2.RealLocalizable;
 import net.imglib2.RealPoint;
+import org.scijava.ui.behaviour.*;
 import sc.fiji.labkit.ui.ActionsAndBehaviours;
 import sc.fiji.labkit.ui.labeling.Label;
 import sc.fiji.labkit.ui.models.ImageLabelingModel;
 import net.imglib2.roi.labeling.LabelingType;
 import net.imglib2.view.Views;
-import org.scijava.ui.behaviour.Behaviour;
-import org.scijava.ui.behaviour.ClickBehaviour;
 
 import java.util.Comparator;
 import java.util.List;
@@ -56,16 +56,25 @@ public class SelectLabelController {
 	private static final double[] PIXEL_CENTER_OFFSET = { 0.5, 0.5, 0.5 };
 
 	private final ClickBehaviour behaviour = this::click;
+
+	private final BdvHandle bdv;
+
 	private final ViewerPanel viewer;
+
 	private final ImageLabelingModel model;
 
-	public SelectLabelController(ViewerPanel viewer, ImageLabelingModel model,
+	public SelectLabelController(BdvHandle bdv, ImageLabelingModel model,
 		ActionsAndBehaviours actionsAndBehaviours)
 	{
-		this.viewer = viewer;
+		this.bdv = bdv;
+		this.viewer = bdv.getViewerPanel();
 		this.model = model;
 		actionsAndBehaviours.addBehaviour(behaviour, "select_label",
 			"shift button1");
+	}
+
+	public void setActive(boolean active) {
+		BdvMouseBehaviourUtils.setMouseBehaviourActive(bdv, behaviour, active);
 	}
 
 	private void click(int x, int y) {
@@ -89,10 +98,6 @@ public class SelectLabelController {
 			return Optional.of(visibleLabels.get((index + 1) % visibleLabels.size()));
 		}
 		return visibleLabels.stream().findFirst();
-	}
-
-	public Behaviour behaviour() {
-		return behaviour;
 	}
 
 	private RandomAccessibleInterval<LabelingType<Label>> labeling() {

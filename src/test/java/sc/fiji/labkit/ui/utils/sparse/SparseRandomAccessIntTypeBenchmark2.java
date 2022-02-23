@@ -29,23 +29,17 @@
 
 package sc.fiji.labkit.ui.utils.sparse;
 
-import net.imglib2.FinalInterval;
 import net.imglib2.Point;
 import net.imglib2.algorithm.fill.FloodFill;
 import net.imglib2.algorithm.neighborhood.DiamondShape;
-import net.imglib2.img.sparse.NtreeImgFactory;
-import net.imglib2.type.numeric.IntegerType;
 import net.imglib2.type.numeric.integer.IntType;
 import net.imglib2.util.Intervals;
+import net.imglib2.view.Views;
 import org.openjdk.jmh.annotations.*;
 import org.openjdk.jmh.runner.Runner;
 import org.openjdk.jmh.runner.RunnerException;
 import org.openjdk.jmh.runner.options.Options;
 import org.openjdk.jmh.runner.options.OptionsBuilder;
-import org.openjdk.jmh.runner.options.TimeValue;
-
-import net.imglib2.RandomAccessibleInterval;
-import net.imglib2.view.Views;
 
 import java.util.concurrent.TimeUnit;
 
@@ -55,31 +49,47 @@ import java.util.concurrent.TimeUnit;
 @State(Scope.Benchmark)
 @BenchmarkMode(Mode.AverageTime)
 @OutputTimeUnit(TimeUnit.MILLISECONDS)
-@Warmup(iterations = 5, time = 1)
-@Measurement(iterations = 5, time = 1)
+@Warmup(iterations = 10, time = 100, timeUnit = TimeUnit.MILLISECONDS)
+@Measurement(iterations = 10, time = 100, timeUnit = TimeUnit.MILLISECONDS)
 @Fork(1)
-public class SparseRandomAccessIntTypeBenchmark {
+public class SparseRandomAccessIntTypeBenchmark2 {
 
-	RandomAccessibleInterval<IntType> ntree = new NtreeImgFactory<>(new IntType())
-		.create(100, 100, 100);
 	SparseRandomAccessIntType sparse = new SparseRandomAccessIntType(
-		Intervals.createMinSize(0, 0, 0, 100, 100, 100));
+		Intervals.createMinSize(0, 0, 0, 50, 50, 50));
 
-	@Benchmark
-	public void fillNtree() {
-		for (IntegerType<?> pixel : Views.iterable(ntree))
-			pixel.setOne();
+	private volatile boolean stop = false;
+
+	private volatile int dummyResult;
+
+	@Setup
+	public void setup() {
+		Thread thread = new Thread(this::readThread);
+		thread.start();
+	}
+
+	private void readThread() {
+		while (!stop) {
+			for (IntType pixel : Views.iterable(sparse))
+				dummyResult += pixel.getInteger();
+		}
+	}
+
+	@TearDown
+	public void tearDown() {
+		stop = true;
 	}
 
 	@Benchmark
-	public void fillSparse() {
-		for (IntegerType<?> pixel : Views.iterable(sparse))
-			pixel.setOne();
+	public int floodfill() {
+		sparse.clear();
+		FloodFill.fill(Views.extendValue(sparse, 255), sparse, new Point(10, 10, 10), new IntType(7),
+			new DiamondShape(1));
+		return dummyResult;
 	}
 
 	public static void main(final String... args) throws RunnerException {
 		final Options opt = new OptionsBuilder()
-			.include(SparseRandomAccessIntTypeBenchmark.class.getSimpleName())
+			.include(SparseRandomAccessIntTypeBenchmark2.class.getSimpleName())
 			.build();
 		new Runner(opt).run();
 	}

@@ -51,6 +51,7 @@ public class SparseRandomAccessIntType extends AbstractWrappedInterval<Interval>
 	implements RandomAccessibleInterval<IntType>
 {
 
+	private final ReadRetryWriteLock lock = new ReadRetryWriteLock();
 	private final IntervalIndexer2 indexer;
 	private final TLongIntHashMap values;
 	private final int noEntryValue;
@@ -87,14 +88,35 @@ public class SparseRandomAccessIntType extends AbstractWrappedInterval<Interval>
 
 	// -- Helper methods --
 
+	public void clear() {
+		values.clear();
+	}
+
 	private int get(MyRandomAccess position) {
-		return values.get(indexer.positionToIndex(position));
+		long index = indexer.positionToIndex(position);
+		while (true) {
+			long readId = lock.startRead();
+			int value = values.get(index);
+			if (lock.isReadValid(readId))
+				return value;
+		}
 	}
 
 	private void set(MyRandomAccess position, int value) {
-		Long index = indexer.positionToIndex(position);
-		if (value == noEntryValue) values.remove(index);
-		else values.put(index, value);
+		long index = indexer.positionToIndex(position);
+
+		synchronized (lock) {
+			lock.writeLock();
+			try {
+				if (value == noEntryValue)
+					values.remove(index);
+				else
+					values.put(index, value);
+			}
+			finally {
+				lock.writeUnlock();
+			}
+		}
 	}
 
 	// -- Helper classes --
