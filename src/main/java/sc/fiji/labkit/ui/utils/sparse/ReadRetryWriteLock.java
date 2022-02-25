@@ -5,8 +5,9 @@ import java.util.concurrent.locks.ReadWriteLock;
 
 /**
  * The {@link ReadRetryWriteLock} is used in {@link SparseRandomAccessIntType}
- * to make the read & write access to {@link gnu.trove.map.hash.TLongIntHashMap}
- * thread safe, while maintaining good performance.
+ * to make the read and write access to
+ * {@link gnu.trove.map.hash.TLongIntHashMap} thread safe, while maintaining
+ * good performance.
  * <p>
  * The {@link ReadRetryWriteLock} can be used to make a data structure thread
  * safe, that fails to read correctly during an ongoing write operation. It is
