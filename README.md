@@ -14,7 +14,7 @@ An advanced Fiji plugin for image segmentation.
 ## How to cite
 
 ```
-@article{arzt2021labkit
+@article{arzt2022labkit
   author={Arzt, Matthias and Deschamps, Joran and Schmied, Christopher and Pietzsch, Tobias and Schmidt, Deborah and Tomancak, Pavel and Haase, Robert and Jug, Florian},   
   title={LABKIT: Labeling and Segmentation Toolkit for Big Image Data},      
   journal={Frontiers in Computer Science},      
