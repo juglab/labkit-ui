@@ -2,16 +2,35 @@
 
 # Labkit (UI)
 
-An advanced Fiji plugin for image segmentation. 
+An advanced Fiji plugin for image segmentation.
 
-**Tutorials, installation instructions and documentation can be found on https://imagej.net/plugins/labkit.**
+![](https://user-images.githubusercontent.com/24407711/133519201-67d6e29f-f024-4803-8eee-75831a996952.gif)
+
+## Tutorials, installation instructions and documentation
+
+**>> Can be found on: https://imagej.net/plugins/labkit.**
+
+
+## How to cite
+
+```
+@article{arzt2021labkit
+  author={Arzt, Matthias and Deschamps, Joran and Schmied, Christopher and Pietzsch, Tobias and Schmidt, Deborah and Tomancak, Pavel and Haase, Robert and Jug, Florian},   
+  title={LABKIT: Labeling and Segmentation Toolkit for Big Image Data},      
+  journal={Frontiers in Computer Science},      
+  volume={4},      
+  year={2022},      
+  url={https://www.frontiersin.org/article/10.3389/fcomp.2022.777728},       
+  doi={10.3389/fcomp.2022.777728},      
+  issn={2624-9898},   
+}
+```
 
 ## Project Structure
 
-This github repository contains the Labkit user interface / Fiji plugin. There are two other repositories that are related to Labkit:
-
-* https://github.com/juglab/labkit-pixel-classification contains the implementation of the pixel classification algorithm that Labkit uses for automatic segmentation.
-* https://github.com/juglab/labkit-command-line contains a command line interface, that can be used to execute the Labkit pixel classification algorithm on the command line.
+* This github repository contains the Labkit user interface / Fiji plugin.
+* https://github.com/juglab/labkit-pixel-classification contains the implementation of the pixel classification algorithm.
+* https://github.com/juglab/labkit-command-line contains a command line interface, that can be used to execute the Labkit pixel classification algorithm on the command line and HPC clusters.
 
 ## Software Developement
 
