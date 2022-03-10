@@ -13,6 +13,8 @@ An advanced Fiji plugin for image segmentation.
 
 ## How to cite
 
+Please cite our paper: [LABKIT: Labeling and Segmentation Toolkit for Big Image Data](https://www.frontiersin.org/article/10.3389/fcomp.2022.777728)
+
 ```
 @article{arzt2022labkit
   author={Arzt, Matthias and Deschamps, Joran and Schmied, Christopher and Pietzsch, Tobias and Schmidt, Deborah and Tomancak, Pavel and Haase, Robert and Jug, Florian},   
