@@ -118,6 +118,7 @@ public class LabelToolsPanel extends JPanel {
 		button.setIcon(new ImageIcon(this.getClass().getResource(iconPath)));
 		button.setToolTipText(toolTipText);
 		button.setMargin(new Insets(0, 0, 0, 0));
+		button.setFocusable(false);
 		button.addItemListener(ev -> {
 			if (ev.getStateChange() == ItemEvent.SELECTED) {
 				setMode(mode);
@@ -154,6 +155,7 @@ public class LabelToolsPanel extends JPanel {
 	private JSlider initBrushSizeSlider() {
 		JSlider brushSize = new JSlider(1, 50, (int) brushController
 			.getBrushDiameter());
+		brushSize.setFocusable(false);
 		brushSize.setPaintTrack(true);
 		brushSize.addChangeListener(e -> {
 			brushController.setBrushDiameter(brushSize.getValue());

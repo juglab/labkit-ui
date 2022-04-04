@@ -69,9 +69,11 @@ public class ImageInfoPanel {
 		panel.add(label, "grow, span, wrap");
 		if (labelingComponent != null) {
 			final JButton button = new JButton("auto contrast");
+			button.setFocusable(false);
 			button.addActionListener(ignore -> labelingComponent.autoContrast());
 			panel.add(button, "grow");
 			final JButton settingsButton = new JButton("settings");
+			settingsButton.setFocusable(false);
 			settingsButton.addActionListener(ignore -> labelingComponent.toggleContrastSettings());
 			panel.add(settingsButton, "grow, wrap");
 		}

@@ -184,6 +184,7 @@ public class LabelPanel {
 
 		private JButton initPopupMenuButton(JPopupMenu menu) {
 			JButton button = new BasicArrowButton(BasicArrowButton.SOUTH);
+			button.setFocusable(false);
 			button.addActionListener(actionEvent -> {
 				menu.show(button, 0, button.getHeight());
 			});
@@ -201,6 +202,7 @@ public class LabelPanel {
 
 		private JButton initColorButton() {
 			JButton colorButton = new JButton();
+			colorButton.setFocusable(false);
 			colorButton.setBorder(new EmptyBorder(1, 1, 1, 1));
 			colorButton.setIcon(GuiUtils.createIcon(new Color(label.color().get())));
 			colorButton.addActionListener(l -> changeColor(label));
