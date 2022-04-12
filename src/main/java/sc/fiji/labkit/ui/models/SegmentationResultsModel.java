@@ -36,6 +36,7 @@ import net.imglib2.RandomAccessibleInterval;
 import net.imglib2.cache.img.CellLoader;
 import net.imglib2.img.cell.CellGrid;
 import sc.fiji.labkit.ui.inputimage.ImgPlusViewsOld;
+import sc.fiji.labkit.ui.labeling.Label;
 import sc.fiji.labkit.ui.labeling.Labeling;
 import sc.fiji.labkit.ui.segmentation.SegmentationUtils;
 import sc.fiji.labkit.ui.segmentation.Segmenter;
@@ -103,7 +104,11 @@ public class SegmentationResultsModel {
 			return labeling.getLabel(name).color();
 		}
 		catch (NoSuchElementException e) {
-			return labeling.addLabel(name).color();
+			// NB: Catching this exception is an ugly bugfix, a cleaner solution
+			// would be better.
+			Label label = labeling.addLabel(name);
+			model.labeling().notifier().notifyListeners();
+			return label.color();
 		}
 	}
 
