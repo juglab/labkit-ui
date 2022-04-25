@@ -31,28 +31,9 @@ package sc.fiji.labkit.ui.plugin;
 
 import net.imagej.Dataset;
 import net.imagej.ImageJ;
-import net.imglib2.RandomAccessibleInterval;
-import net.imglib2.algorithm.labeling.ConnectedComponents;
-import net.imglib2.algorithm.morphology.Dilation;
-import net.imglib2.algorithm.neighborhood.DiamondShape;
-import net.imglib2.algorithm.neighborhood.Shape;
-import net.imglib2.cache.img.DiskCachedCellImgFactory;
-import net.imglib2.cache.img.DiskCachedCellImgOptions;
-import net.imglib2.converter.RealTypeConverters;
-import net.imglib2.img.Img;
-import net.imglib2.img.array.ArrayImgs;
-import net.imglib2.img.display.imagej.ImageJFunctions;
 import net.imglib2.test.ImgLib2Assert;
-import sc.fiji.labkit.pixel_classification.utils.SingletonContext;
-import net.imglib2.type.numeric.integer.UnsignedByteType;
-import net.imglib2.type.numeric.integer.UnsignedShortType;
-import net.imglib2.util.Cast;
-import net.imglib2.util.Intervals;
 import org.junit.Test;
-
-import java.util.Arrays;
-import java.util.List;
-import java.util.concurrent.Executors;
+import sc.fiji.labkit.pixel_classification.utils.SingletonContext;
 
 public class SegmentImageWithLabkitPluginTest {
 
