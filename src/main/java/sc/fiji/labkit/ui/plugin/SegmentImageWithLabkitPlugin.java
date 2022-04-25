@@ -33,11 +33,8 @@ import bdv.export.ProgressWriterConsole;
 import net.imagej.Dataset;
 import net.imagej.DatasetService;
 import net.imagej.ImgPlus;
-import net.imglib2.Interval;
 import net.imglib2.img.Img;
-import net.imglib2.img.array.ArrayImgs;
 import sc.fiji.labkit.ui.inputimage.DatasetInputImage;
-import sc.fiji.labkit.ui.models.DefaultCachedImageFactory;
 import sc.fiji.labkit.ui.segmentation.SegmentationUtils;
 import sc.fiji.labkit.ui.segmentation.weka.TrainableSegmentationSegmenter;
 import sc.fiji.labkit.ui.utils.ParallelUtils;
@@ -85,7 +82,7 @@ public class SegmentImageWithLabkitPlugin implements Command, Cancelable {
 		segmenter.openModel(segmenter_file.getAbsolutePath());
 		ImgPlus<?> imgPlus = new DatasetInputImage(input).imageForSegmentation();
 		Img<ShortType> outputImg = useCache(imgPlus) ? calculateOnCachedImg(segmenter, imgPlus)
-			: calculateOnArrayImg(segmenter, imgPlus);
+			: SegmentationUtils.calculateSegmentation(segmenter, imgPlus);
 		output = datasetService.create(outputImg);
 	}
 
@@ -98,17 +95,6 @@ public class SegmentImageWithLabkitPlugin implements Command, Cancelable {
 	{
 		Img<ShortType> outputImg = SegmentationUtils.createCachedSegmentation(segmenter, imgPlus, null);
 		ParallelUtils.populateCachedImg(outputImg, new ProgressWriterConsole());
-		return outputImg;
-	}
-
-	private Img<ShortType> calculateOnArrayImg(TrainableSegmentationSegmenter segmenter,
-		ImgPlus<?> imgPlus)
-	{
-		Interval outputInterval = SegmentationUtils.intervalNoChannels(imgPlus);
-		int[] cellSize = segmenter.suggestCellSize(imgPlus);
-		Img<ShortType> outputImg = ArrayImgs.shorts(Intervals.dimensionsAsLongArray(outputInterval));
-		ParallelUtils.applyOperationOnCells(outputImg, cellSize,
-			outputCell -> segmenter.segment(imgPlus, outputCell), new ProgressWriterConsole());
 		return outputImg;
 	}
 

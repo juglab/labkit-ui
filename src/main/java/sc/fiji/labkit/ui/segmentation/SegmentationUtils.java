@@ -29,12 +29,14 @@
 
 package sc.fiji.labkit.ui.segmentation;
 
+import bdv.export.ProgressWriterConsole;
 import net.imagej.ImgPlus;
 import net.imagej.axis.Axes;
 import net.imglib2.FinalInterval;
 import net.imglib2.Interval;
 import net.imglib2.RandomAccessibleInterval;
 import net.imglib2.img.Img;
+import net.imglib2.img.array.ArrayImgs;
 import net.imglib2.img.cell.CellGrid;
 import org.apache.commons.lang3.ArrayUtils;
 import sc.fiji.labkit.ui.inputimage.ImgPlusViewsOld;
@@ -46,6 +48,8 @@ import net.imglib2.type.numeric.integer.ShortType;
 import net.imglib2.type.numeric.real.FloatType;
 import net.imglib2.util.Intervals;
 import net.imglib2.view.Views;
+import sc.fiji.labkit.ui.segmentation.weka.TrainableSegmentationSegmenter;
+import sc.fiji.labkit.ui.utils.ParallelUtils;
 
 import java.util.Arrays;
 
@@ -84,7 +88,29 @@ public class SegmentationUtils {
 			grid, new ShortType());
 	}
 
-	public static CellGrid addDimensionToGrid(int size, CellGrid grid) {
+	public static Img<FloatType> calculateProbabilityMap(Segmenter segmenter, ImgPlus<?> imgPlus) {
+		int numberOfChannels = segmenter.classNames().size();
+		long[] imageSize = ArrayUtils.add(Intervals.dimensionsAsLongArray(intervalNoChannels(imgPlus)),
+			numberOfChannels);
+		int[] cellSize = ArrayUtils.add(segmenter.suggestCellSize(imgPlus), numberOfChannels);
+		Img<FloatType> outputImg = ArrayImgs.floats(imageSize);
+		ParallelUtils.applyOperationOnCells(outputImg, cellSize,
+			outputCell -> segmenter.predict(imgPlus, outputCell), new ProgressWriterConsole());
+		return outputImg;
+	}
+
+	public static Img<ShortType> calculateSegmentation(TrainableSegmentationSegmenter segmenter,
+		ImgPlus<?> imgPlus)
+	{
+		Interval outputInterval = intervalNoChannels(imgPlus);
+		int[] cellSize = segmenter.suggestCellSize(imgPlus);
+		Img<ShortType> outputImg = ArrayImgs.shorts(Intervals.dimensionsAsLongArray(outputInterval));
+		ParallelUtils.applyOperationOnCells(outputImg, cellSize,
+			outputCell -> segmenter.segment(imgPlus, outputCell), new ProgressWriterConsole());
+		return outputImg;
+	}
+
+	private static CellGrid addDimensionToGrid(int size, CellGrid grid) {
 		long[] dimensions = ArrayUtils.add(grid.getImgDimensions(), size);
 		int[] cellDimensions = ArrayUtils.add(getCellDimensions(grid), size);
 		return new CellGrid(dimensions, cellDimensions);

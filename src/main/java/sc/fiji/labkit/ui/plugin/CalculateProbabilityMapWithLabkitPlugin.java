@@ -34,7 +34,6 @@ import net.imagej.Dataset;
 import net.imagej.DatasetService;
 import net.imagej.ImgPlus;
 import net.imglib2.img.Img;
-import net.imglib2.img.array.ArrayImgs;
 import net.imglib2.type.numeric.real.FloatType;
 import net.imglib2.util.Intervals;
 import org.scijava.Cancelable;
@@ -43,7 +42,6 @@ import org.scijava.ItemIO;
 import org.scijava.command.Command;
 import org.scijava.plugin.Parameter;
 import org.scijava.plugin.Plugin;
-import sc.fiji.labkit.pixel_classification.RevampUtils;
 import sc.fiji.labkit.ui.inputimage.DatasetInputImage;
 import sc.fiji.labkit.ui.segmentation.SegmentationUtils;
 import sc.fiji.labkit.ui.segmentation.Segmenter;
@@ -86,7 +84,7 @@ public class CalculateProbabilityMapWithLabkitPlugin implements Command, Cancela
 		ImgPlus<?> imgPlus = new DatasetInputImage(input).imageForSegmentation();
 		Img<FloatType> outputImg = useCache(imgPlus, segmenter) ? calculateOnCachedImg(segmenter,
 			imgPlus)
-			: calculateOnArrayImg(segmenter, imgPlus);
+			: SegmentationUtils.calculateProbabilityMap(segmenter, imgPlus);
 		output = datasetService.create(outputImg);
 	}
 
@@ -102,19 +100,6 @@ public class CalculateProbabilityMapWithLabkitPlugin implements Command, Cancela
 		Img<FloatType> outputImg = SegmentationUtils.createCachedProbabilityMap(segmenter, imgPlus,
 			null);
 		ParallelUtils.populateCachedImg(outputImg, new ProgressWriterConsole());
-		return outputImg;
-	}
-
-	private Img<FloatType> calculateOnArrayImg(TrainableSegmentationSegmenter segmenter,
-		ImgPlus<?> imgPlus)
-	{
-		int numberOfChannels = segmenter.classNames().size();
-		long[] imageSize = RevampUtils.extend(Intervals.dimensionsAsLongArray(SegmentationUtils
-			.intervalNoChannels(imgPlus)), numberOfChannels);
-		int[] cellSize = RevampUtils.extend(segmenter.suggestCellSize(imgPlus), numberOfChannels);
-		Img<FloatType> outputImg = ArrayImgs.floats(imageSize);
-		ParallelUtils.applyOperationOnCells(outputImg, cellSize,
-			outputCell -> segmenter.predict(imgPlus, outputCell), new ProgressWriterConsole());
 		return outputImg;
 	}
 
