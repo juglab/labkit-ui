@@ -36,10 +36,10 @@ import net.imglib2.Interval;
 import net.imglib2.RandomAccessibleInterval;
 import net.imglib2.img.Img;
 import net.imglib2.img.cell.CellGrid;
+import org.apache.commons.lang3.ArrayUtils;
 import sc.fiji.labkit.ui.inputimage.ImgPlusViewsOld;
 import sc.fiji.labkit.ui.models.CachedImageFactory;
 import sc.fiji.labkit.ui.models.DefaultCachedImageFactory;
-import sc.fiji.labkit.ui.utils.DimensionUtils;
 import net.imglib2.type.NativeType;
 import net.imglib2.type.numeric.NumericType;
 import net.imglib2.type.numeric.integer.ShortType;
@@ -85,9 +85,9 @@ public class SegmentationUtils {
 	}
 
 	public static CellGrid addDimensionToGrid(int size, CellGrid grid) {
-		return new CellGrid(DimensionUtils.extend(grid
-			.getImgDimensions(), size), DimensionUtils.extend(getCellDimensions(
-				grid), size));
+		long[] dimensions = ArrayUtils.add(grid.getImgDimensions(), size);
+		int[] cellDimensions = ArrayUtils.add(getCellDimensions(grid), size);
+		return new CellGrid(dimensions, cellDimensions);
 	}
 
 	/**

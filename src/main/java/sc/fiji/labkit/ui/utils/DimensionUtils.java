@@ -34,6 +34,7 @@ import net.imglib2.Interval;
 import net.imglib2.RandomAccessibleInterval;
 import net.imglib2.util.Intervals;
 import net.imglib2.view.Views;
+import org.apache.commons.lang3.ArrayUtils;
 
 import java.util.Arrays;
 import java.util.List;
@@ -51,20 +52,6 @@ public class DimensionUtils {
 		int axis = output.numDimensions() - 1;
 		return LongStream.range(output.min(axis), output.max(axis) + 1).mapToObj(
 			pos -> Views.hyperSlice(output, axis, pos)).collect(Collectors.toList());
-	}
-
-	public static long[] extend(long[] in, long elem) {
-		long result[] = new long[in.length + 1];
-		System.arraycopy(in, 0, result, 0, in.length);
-		result[in.length] = elem;
-		return result;
-	}
-
-	public static int[] extend(int[] in, int elem) {
-		int result[] = new int[in.length + 1];
-		System.arraycopy(in, 0, result, 0, in.length);
-		result[in.length] = elem;
-		return result;
 	}
 
 	// TODO: move to Intervals?
