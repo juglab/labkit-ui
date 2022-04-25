@@ -84,7 +84,7 @@ public class SegmentationUtils {
 			grid, new ShortType());
 	}
 
-	private static CellGrid addDimensionToGrid(int size, CellGrid grid) {
+	public static CellGrid addDimensionToGrid(int size, CellGrid grid) {
 		return new CellGrid(DimensionUtils.extend(grid
 			.getImgDimensions(), size), DimensionUtils.extend(getCellDimensions(
 				grid), size));
