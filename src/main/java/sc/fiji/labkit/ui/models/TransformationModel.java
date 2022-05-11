@@ -29,7 +29,9 @@
 
 package sc.fiji.labkit.ui.models;
 
+import bdv.viewer.Source;
 import bdv.viewer.ViewerPanel;
+import net.imglib2.FinalInterval;
 import net.imglib2.Interval;
 import net.imglib2.realtransform.AffineTransform3D;
 import sc.fiji.labkit.pixel_classification.RevampUtils;
@@ -55,39 +57,48 @@ public class TransformationModel {
 		this.viewerPanel = viewerPanel;
 	}
 
-	private int width() {
-		return viewerPanel == null ? 100 : viewerPanel.getWidth();
-	}
-
-	private int height() {
-		return viewerPanel == null ? 100 : viewerPanel.getHeight();
-	}
-
-	private void setTransformation(AffineTransform3D transformation) {
-		if (viewerPanel != null) viewerPanel.setCurrentViewerTransform(
-			transformation);
-	}
-
 	public void transformToShowInterval(Interval interval,
 		AffineTransform3D transformation)
 	{
+		if (viewerPanel == null)
+			return;
 		if (isTimeSeries) {
 			int lastDim = interval.numDimensions() - 1;
 			long meanTimePoint = (interval.min(lastDim) + interval.max(lastDim)) / 2;
 			if (viewerPanel != null) viewerPanel.setTimepoint((int) meanTimePoint);
 			interval = RevampUtils.removeLastDimension(interval);
 		}
-		final double[] screenSize = { width(), height() };
-		AffineTransform3D concat = new AffineTransform3D();
-		concat.set(getTransformation(interval, screenSize));
-		concat.concatenate(transformation.inverse());
-		setTransformation(concat);
+		extracted(0.5, viewerPanel, interval, transformation);
 	}
 
-	private static AffineTransform3D getTransformation(Interval interval,
+	/**
+	 * Change BigDataViewer's viewer transform such that the view is aligned with
+	 * the XY plane, the image (source 0) is fitted into the screen, and the center
+	 * pixel of the image is visible.
+	 */
+	public static void resetView(ViewerPanel viewerPanel) {
+		Source<?> spimSource = viewerPanel.state().getSources().get(0).getSpimSource();
+		AffineTransform3D transform = new AffineTransform3D();
+		int timePoint = viewerPanel.state().getCurrentTimepoint();
+		spimSource.getSourceTransform(timePoint, 0, transform);
+		Interval interval = new FinalInterval(spimSource.getSource(timePoint, 0));
+		extracted(1.0, viewerPanel, interval, transform);
+	}
+
+	private static void extracted(double scaleFactor, ViewerPanel viewerPanel, Interval interval,
+		AffineTransform3D transformation)
+	{
+		final double[] screenSize = { viewerPanel.getWidth(), viewerPanel.getHeight() };
+		AffineTransform3D concat = new AffineTransform3D();
+		concat.set(getTransformation(scaleFactor, interval, screenSize));
+		concat.concatenate(transformation.inverse());
+		viewerPanel.state().setViewerTransform(concat);
+	}
+
+	private static AffineTransform3D getTransformation(double scaleFactor, Interval interval,
 		double[] screenSize)
 	{
-		final double scale = 0.5 * getBiggestScaleFactor(screenSize, interval);
+		final double scale = scaleFactor * getBiggestScaleFactor(screenSize, interval);
 		final double[] translate = getTranslation(screenSize, interval, scale);
 		final AffineTransform3D transform = new AffineTransform3D();
 		transform.scale(scale);
