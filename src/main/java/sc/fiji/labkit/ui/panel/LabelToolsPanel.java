@@ -31,6 +31,7 @@ package sc.fiji.labkit.ui.panel;
 
 import sc.fiji.labkit.ui.brush.FloodFillController;
 import sc.fiji.labkit.ui.brush.LabelBrushController;
+import sc.fiji.labkit.ui.brush.PlanarModeController;
 import sc.fiji.labkit.ui.brush.SelectLabelController;
 import net.miginfocom.swing.MigLayout;
 
@@ -50,6 +51,7 @@ public class LabelToolsPanel extends JPanel {
 	private final FloodFillController floodFillController;
 	private final LabelBrushController brushController;
 	private final SelectLabelController selectLabelController;
+	private final PlanarModeController planarModeController;
 
 	private JPanel brushOptionsPanel;
 	private final ButtonGroup group = new ButtonGroup();
@@ -57,17 +59,20 @@ public class LabelToolsPanel extends JPanel {
 	private Mode mode = ignore -> {};
 
 	public LabelToolsPanel(LabelBrushController brushController,
-		FloodFillController floodFillController, SelectLabelController selectLabelController)
+		FloodFillController floodFillController, SelectLabelController selectLabelController,
+		PlanarModeController planarModeController)
 	{
 		this.brushController = brushController;
 		this.floodFillController = floodFillController;
 		this.selectLabelController = selectLabelController;
+		this.planarModeController = planarModeController;
 
 		setLayout(new MigLayout("flowy, insets 0, gap 4pt, top", "[][][][][]",
 			"[]push"));
 		setBorder(BorderFactory.createEmptyBorder(0, 0, 4, 0));
 		initActionButtons();
 		add(initOptionPanel(), "wrap, growy");
+		add(initPlanarModeButton(), "growy");
 	}
 
 	private void setMode(Mode mode) {
@@ -111,11 +116,28 @@ public class LabelToolsPanel extends JPanel {
 		return optionPane;
 	}
 
+	private JToggleButton initPlanarModeButton() {
+		JToggleButton button = new JToggleButton();
+		ImageIcon rotateIcon = getIcon("/images/rotate.png");
+		ImageIcon planarIcon = getIcon("/images/planes.png");
+		button.setIcon(rotateIcon);
+		button.setFocusable(false);
+		button.addActionListener(ignore -> {
+			boolean selected = button.isSelected();
+			button.setIcon(selected ? planarIcon : rotateIcon);
+			planarModeController.setActive(selected);
+			floodFillController.setPlanarMode(selected);
+			brushController.setPlanarMode(selected);
+		});
+		button.setToolTipText("Enable slice by slice editing of 3d images.");
+		return button;
+	}
+
 	private JToggleButton addActionButton(String toolTipText, Mode mode, boolean visibility,
 		String iconPath)
 	{
 		JToggleButton button = new JToggleButton();
-		button.setIcon(new ImageIcon(this.getClass().getResource(iconPath)));
+		button.setIcon(getIcon(iconPath));
 		button.setToolTipText(toolTipText);
 		button.setMargin(new Insets(0, 0, 0, 0));
 		button.setFocusable(false);
@@ -128,6 +150,10 @@ public class LabelToolsPanel extends JPanel {
 		group.add(button);
 		add(button, "wrap, top");
 		return button;
+	}
+
+	private ImageIcon getIcon(String iconPath) {
+		return new ImageIcon(this.getClass().getResource(iconPath));
 	}
 
 	private JPanel initBrushOptionPanel() {
