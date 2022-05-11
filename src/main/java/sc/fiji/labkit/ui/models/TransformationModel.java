@@ -65,8 +65,6 @@ public class TransformationModel {
 			if (viewerPanel != null) viewerPanel.setTimepoint((int) meanTimePoint);
 			interval = RevampUtils.removeLastDimension(interval);
 		}
-		interval = Intervals.expand(interval, Math.min(interval.dimension(0), 20), 0);
-		interval = Intervals.expand(interval, Math.min(interval.dimension(1), 20), 1);
 		BdvUtils.resetView(viewerPanel, interval, transformation);
 	}
 }
