@@ -77,7 +77,7 @@
 	</repositories>
 
 	<scm>
-		<connection>scm:git:git://github.com/juglab/labkit-ui</connection>
+		<connection>scm:git:https://github.com/juglab/labkit-ui</connection>
 		<developerConnection>scm:git:git@github.com:juglab/labkit-ui</developerConnection>
 		<tag>HEAD</tag>
 		<url>https://github.com/juglab/labkit-ui</url>
