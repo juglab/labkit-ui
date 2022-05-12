@@ -95,6 +95,8 @@ public class LabelBrushController {
 
 	private boolean keepBrushCursorVisible = false;
 
+	private boolean planarMode = false;
+
 	public LabelBrushController(final BdvHandle bdv,
 		final LabelingModel model, final ActionsAndBehaviours behaviors)
 	{
@@ -172,6 +174,10 @@ public class LabelBrushController {
 		this.overlapping = overlapping;
 	}
 
+	public void setPlanarMode(boolean planarMode) {
+		this.planarMode = planarMode;
+	}
+
 	private class PaintBehavior implements DragBehaviour {
 
 		private boolean value;
@@ -184,22 +190,26 @@ public class LabelBrushController {
 
 		private void paint(RealLocalizable screenCoordinates) {
 			synchronized (viewer) {
-				final RandomAccessible<LabelingType<Label>> extended = extendLabelingType(slice());
+				RandomAccessible<LabelingType<Label>> extended = extendLabelingType(getFrame());
 				double radius = Math.max(0, (brushDiameter - 1) * 0.5);
 				AffineTransform3D m = displayToImageTransformation();
 				double[] screen = { screenCoordinates.getDoublePosition(0), screenCoordinates
 					.getDoublePosition(1), 0 };
 				double[] center = new double[3];
 				m.apply(screen, center);
-				AffineTransform3D imageTransform = model.labelTransformation();
-				double pixelWidth = RealPoints.length(imageTransform.d(0));
-				double pixelHeight = RealPoints.length(imageTransform.d(1));
-				double pixelDepth = RealPoints.length(imageTransform.d(2));
+				if (extended.numDimensions() == 3 && planarMode)
+					extended = Views.hyperSlice(extended, 2, Math.round(center[2]));
+				AffineTransform3D labelTransform = model.labelTransformation();
+				double pixelWidth = RealPoints.length(labelTransform.d(0));
+				double pixelHeight = RealPoints.length(labelTransform.d(1));
+				double pixelDepth = RealPoints.length(labelTransform.d(2));
 				double[] axes = { radius, radius * pixelWidth / pixelHeight, radius * pixelWidth /
 					pixelDepth };
-				IterableRegion<BitType> region = extended.numDimensions() == 2 ? Ellipsoid.asIterableRegion(
-					Arrays.copyOf(center, 2), Arrays.copyOf(axes, 2)) : Ellipsoid.asIterableRegion(center,
-						axes);
+				if (extended.numDimensions() == 2) {
+					center = Arrays.copyOf(center, 2);
+					axes = Arrays.copyOf(axes, 2);
+				}
+				IterableRegion<BitType> region = Ellipsoid.asIterableRegion(center, axes);
 				Regions.sample(region, extended).forEach(pixelOperation());
 			}
 
@@ -332,12 +342,12 @@ public class LabelBrushController {
 		return Affine3DHelpers.extractScale(transformation, 0);
 	}
 
-	private RandomAccessibleInterval<LabelingType<Label>> slice() {
-		RandomAccessibleInterval<LabelingType<Label>> slice = model.labeling()
+	private RandomAccessibleInterval<LabelingType<Label>> getFrame() {
+		RandomAccessibleInterval<LabelingType<Label>> frame = model.labeling()
 			.get();
-		if (this.model.isTimeSeries()) return Views.hyperSlice(slice, slice
+		if (this.model.isTimeSeries()) return Views.hyperSlice(frame, frame
 			.numDimensions() - 1, viewer.state().getCurrentTimepoint());
-		return slice;
+		return frame;
 	}
 
 	private void fireBitmapChanged(RealPoint a, RealPoint b, double radius) {

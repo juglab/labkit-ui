@@ -38,10 +38,7 @@ import bdv.viewer.DisplayMode;
 import sc.fiji.labkit.ui.bdv.BdvAutoContrast;
 import sc.fiji.labkit.ui.bdv.BdvLayer;
 import sc.fiji.labkit.ui.bdv.BdvLayerLink;
-import sc.fiji.labkit.ui.brush.ChangeLabel;
-import sc.fiji.labkit.ui.brush.FloodFillController;
-import sc.fiji.labkit.ui.brush.LabelBrushController;
-import sc.fiji.labkit.ui.brush.SelectLabelController;
+import sc.fiji.labkit.ui.brush.*;
 import sc.fiji.labkit.ui.labeling.LabelsLayer;
 import sc.fiji.labkit.ui.models.Holder;
 import sc.fiji.labkit.ui.models.ImageLabelingModel;
@@ -50,6 +47,7 @@ import net.miginfocom.swing.MigLayout;
 import org.scijava.ui.behaviour.util.AbstractNamedAction;
 
 import javax.swing.*;
+import java.awt.*;
 import java.util.Collection;
 
 /**
@@ -68,6 +66,8 @@ public class BasicLabelingComponent extends JPanel implements AutoCloseable {
 
 	private ImageLabelingModel model;
 
+	private JSlider zSlider;
+
 	public BasicLabelingComponent(final JFrame dialogBoxOwner,
 		final ImageLabelingModel model)
 	{
@@ -78,8 +78,7 @@ public class BasicLabelingComponent extends JPanel implements AutoCloseable {
 		actionsAndBehaviours = new ActionsAndBehaviours(bdvHandle);
 		this.imageSource = initImageLayer();
 		initLabelsLayer();
-		JPanel toolsPanel = initBrushLayer();
-		initPanel(toolsPanel);
+		initPanel();
 		this.model.transformationModel().initialize(bdvHandle.getViewerPanel());
 	}
 
@@ -90,10 +89,16 @@ public class BasicLabelingComponent extends JPanel implements AutoCloseable {
 		bdvHandle.getViewerPanel().setDisplayMode(DisplayMode.FUSED);
 	}
 
-	private void initPanel(JPanel toolsPanel) {
+	private void initPanel() {
 		setLayout(new MigLayout("", "[grow]", "[][grow]"));
-		add(toolsPanel, "wrap, growx");
-		add(bdvHandle.getSplitPanel(), "grow");
+		zSlider = new JSlider(Adjustable.VERTICAL);
+		zSlider.setFocusable(false);
+		add(initToolsPanel(), "wrap, growx");
+		JPanel bdvAndZSlider = new JPanel();
+		bdvAndZSlider.setLayout(new BorderLayout());
+		bdvAndZSlider.add(bdvHandle.getSplitPanel());
+		bdvAndZSlider.add(zSlider, BorderLayout.LINE_END);
+		add(bdvAndZSlider, "grow");
 	}
 
 	private Holder<BdvStackSource<?>> initImageLayer() {
@@ -109,15 +114,17 @@ public class BasicLabelingComponent extends JPanel implements AutoCloseable {
 		return new BdvLayerLink(layer, bdvHandle);
 	}
 
-	private JPanel initBrushLayer() {
+	private JPanel initToolsPanel() {
+		final PlanarModeController planarModeController = new PlanarModeController(
+			bdvHandle, model, zSlider);
 		final LabelBrushController brushController = new LabelBrushController(
 			bdvHandle, model, actionsAndBehaviours);
 		final FloodFillController floodFillController = new FloodFillController(
 			bdvHandle, model, actionsAndBehaviours);
 		final SelectLabelController selectLabelController =
 			new SelectLabelController(bdvHandle, model, actionsAndBehaviours);
-		JPanel toolsPanel = new LabelToolsPanel(brushController,
-			floodFillController, selectLabelController);
+		final JPanel toolsPanel = new LabelToolsPanel(brushController,
+			floodFillController, selectLabelController, planarModeController);
 		actionsAndBehaviours.addAction(new ChangeLabel(model));
 		return toolsPanel;
 	}

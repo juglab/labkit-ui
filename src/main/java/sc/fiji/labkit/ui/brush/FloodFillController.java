@@ -55,8 +55,6 @@ import java.util.stream.Collectors;
  */
 public class FloodFillController {
 
-	private static final double[] PIXEL_CENTER_OFFSET = { 0.5, 0.5, 0.5 };
-
 	private final ViewerPanel viewer;
 
 	private final LabelingModel model;
@@ -64,6 +62,8 @@ public class FloodFillController {
 	private final BdvHandle bdv;
 
 	private boolean overlapping = false;
+
+	private boolean planarMode = false;
 
 	private Collection<Label> visibleLabels() {
 		return model.labeling().get().getLabels().stream().filter(Label::isVisible)
@@ -120,7 +120,6 @@ public class FloodFillController {
 		labelLocation.setPosition(0, 2);
 		viewer.displayToGlobalCoordinates(labelLocation);
 		model.labelTransformation().applyInverse(labelLocation, labelLocation);
-		labelLocation.move(PIXEL_CENTER_OFFSET);
 		return labelLocation;
 	}
 
@@ -136,6 +135,10 @@ public class FloodFillController {
 		BdvMouseBehaviourUtils.setMouseBehaviourActive(bdv, floodEraseBehaviour, active);
 	}
 
+	public void setPlanarMode(boolean planarMode) {
+		this.planarMode = planarMode;
+	}
+
 	private class FloodFillClick implements ClickBehaviour {
 
 		private final Supplier<Consumer<Set<Label>>> operationFactory;
@@ -144,11 +147,15 @@ public class FloodFillController {
 			this.operationFactory = operationFactory;
 		}
 
-		protected void floodFill(final RealLocalizable coords) {
+		protected void floodFill(final RealLocalizable imageCoordinates) {
 			synchronized (viewer) {
-				RandomAccessibleInterval<LabelingType<Label>> labeling1 = labeling();
-				Point seed = roundAndReduceDimension(coords, labeling1.numDimensions());
-				FloodFill.doFloodFillOnActiveLabels(labeling1, seed, operationFactory
+				RandomAccessibleInterval<LabelingType<Label>> frame = labeling();
+				if (frame.numDimensions() == 3 && planarMode) {
+					long z = Math.round(imageCoordinates.getDoublePosition(2));
+					frame = Views.hyperSlice(frame, 2, z);
+				}
+				Point seed = roundAndReduceDimension(imageCoordinates, frame.numDimensions());
+				FloodFill.doFloodFillOnActiveLabels(frame, seed, operationFactory
 					.get());
 			}
 		}
@@ -158,7 +165,7 @@ public class FloodFillController {
 		{
 			Point point = new Point(numDimesions);
 			for (int i = 0; i < point.numDimensions(); i++)
-				point.setPosition((long) realLocalizable.getDoublePosition(i), i);
+				point.setPosition(Math.round(realLocalizable.getDoublePosition(i)), i);
 			return point;
 		}
 
