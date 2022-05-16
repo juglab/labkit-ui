@@ -10,7 +10,7 @@
 
 	<groupId>sc.fiji</groupId>
 	<artifactId>labkit-ui</artifactId>
-	<version>0.3.4-SNAPSHOT</version>
+	<version>0.3.5-SNAPSHOT</version>
 
 	<name>Labkit</name>
 	<description>The Labkit image segmentation tool for Fiji.</description>
