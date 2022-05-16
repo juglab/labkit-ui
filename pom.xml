@@ -10,7 +10,7 @@
 
 	<groupId>sc.fiji</groupId>
 	<artifactId>labkit-ui</artifactId>
-	<version>0.3.4-SNAPSHOT</version>
+	<version>0.3.4</version>
 
 	<name>Labkit</name>
 	<description>The Labkit image segmentation tool for Fiji.</description>
@@ -79,7 +79,7 @@
 	<scm>
 		<connection>scm:git:https://github.com/juglab/labkit-ui</connection>
 		<developerConnection>scm:git:git@github.com:juglab/labkit-ui</developerConnection>
-		<tag>HEAD</tag>
+		<tag>labkit-ui-0.3.4</tag>
 		<url>https://github.com/juglab/labkit-ui</url>
 	</scm>
 	<issueManagement>
