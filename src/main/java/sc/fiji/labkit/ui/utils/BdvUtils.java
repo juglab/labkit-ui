@@ -40,7 +40,9 @@ import net.imglib2.Interval;
 import net.imglib2.realtransform.AffineTransform3D;
 import org.scijava.ui.behaviour.Behaviour;
 import org.scijava.ui.behaviour.BehaviourMap;
+import org.scijava.ui.behaviour.util.RunnableAction;
 
+import javax.swing.*;
 import java.util.Arrays;
 import java.util.Collections;
 
@@ -65,22 +67,42 @@ public class BdvUtils {
 		TransformEventHandler2D.ROTATE_LEFT_SLOW,
 		TransformEventHandler2D.ROTATE_RIGHT,
 		TransformEventHandler2D.ROTATE_RIGHT_FAST,
-		TransformEventHandler2D.ROTATE_RIGHT_SLOW,
+		TransformEventHandler2D.ROTATE_RIGHT_SLOW
+	};
+
+	private static final String[] ROTATE_ACTIONS = {
 		NavigationActions.ALIGN_XY_PLANE,
 		NavigationActions.ALIGN_XZ_PLANE,
 		NavigationActions.ALIGN_ZY_PLANE
 	};
 
-	public static void blockRotateBehaviours(BdvHandle bdv) {
+	private static final String BLOCK_ROTATE_BEHAVIOURS_ID = "block_rotate_behaviours";
+	private static final String BLOCK_ROTATE_ACTIONS_ID = "block_rotate_actions";
+
+	public static void blockRotation(BdvHandle bdv) {
+		blockRotateBehaviors(bdv);
+		blockRotateActions(bdv);
+	}
+
+	private static void blockRotateBehaviors(BdvHandle bdv) {
 		final BehaviourMap behaviourMap = new BehaviourMap();
 		Behaviour do_nothing = new Behaviour() {};
 		for (String id : ROTATE_BEHAVIOURS)
 			behaviourMap.put(id, do_nothing);
-		bdv.getTriggerbindings().addBehaviourMap("override_rotate", behaviourMap);
+		bdv.getTriggerbindings().addBehaviourMap(BLOCK_ROTATE_BEHAVIOURS_ID, behaviourMap);
 	}
 
-	public static void unblockRotateBehaviours(BdvHandle bdv) {
-		bdv.getTriggerbindings().removeBehaviourMap("override_rotate");
+	private static void blockRotateActions(BdvHandle bdv) {
+		final ActionMap actionMap = new ActionMap();
+		Action do_nothing = new RunnableAction("nop", () -> {});
+		for (String id : ROTATE_ACTIONS)
+			actionMap.put(id, do_nothing);
+		bdv.getKeybindings().addActionMap(BLOCK_ROTATE_ACTIONS_ID, actionMap);
+	}
+
+	public static void unblockRotation(BdvHandle bdv) {
+		bdv.getTriggerbindings().removeBehaviourMap(BLOCK_ROTATE_BEHAVIOURS_ID);
+		bdv.getKeybindings().removeActionMap(BLOCK_ROTATE_ACTIONS_ID);
 	}
 
 	/**

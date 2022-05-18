@@ -61,11 +61,11 @@ public class PlanarModeController {
 
 	public void setActive(boolean active) {
 		if (active) {
-			BdvUtils.blockRotateBehaviours(bdvHandle);
+			BdvUtils.blockRotation(bdvHandle);
 			BdvUtils.resetView(bdvHandle.getViewerPanel());
 		}
 		else {
-			BdvUtils.unblockRotateBehaviours(bdvHandle);
+			BdvUtils.unblockRotation(bdvHandle);
 		}
 		zSlider.setVisible(active);
 	}
