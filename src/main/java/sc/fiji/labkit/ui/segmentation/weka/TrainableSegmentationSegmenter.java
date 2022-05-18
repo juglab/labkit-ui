@@ -410,6 +410,10 @@ public class TrainableSegmentationSegmenter implements Segmenter {
 	}
 
 	private void setUseGpuPreference(boolean useGpu) {
+		setUseGpuPreference(context, useGpu);
+	}
+
+	public static void setUseGpuPreference(Context context, boolean useGpu) {
 		PrefService prefService = context.service(PrefService.class);
 		prefService.put(TrainableSegmentationSegmenter.class, "USE_GPU", useGpu);
 	}

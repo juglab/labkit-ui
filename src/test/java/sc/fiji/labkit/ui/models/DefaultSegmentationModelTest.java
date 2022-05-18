@@ -39,6 +39,7 @@ import net.imglib2.util.ValuePair;
 import net.imglib2.view.Views;
 import org.junit.Test;
 import org.scijava.Context;
+import sc.fiji.labkit.ui.segmentation.weka.TrainableSegmentationSegmenter;
 
 import java.io.File;
 import java.io.IOException;
@@ -82,6 +83,7 @@ public class DefaultSegmentationModelTest {
 		Labeling labeling = model.imageLabelingModel().labeling().get();
 		List<Label> labels = labeling.getLabels();
 		Views.iterable(labeling.getRegion(labels.get(0))).forEach(BitType::setOne);
+		TrainableSegmentationSegmenter.setUseGpuPreference(model.context(), false);
 		SegmentationItem item = model.segmenterList().addSegmenter(PixelClassificationPlugin.create());
 		item.train(Collections.singletonList(new ValuePair<>(image
 			.imageForSegmentation(), labeling)));

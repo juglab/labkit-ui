@@ -58,6 +58,7 @@ public class TrainableSegmentationSegmenterTest {
 	public void testClassify3DStackInSlices() {
 		Context context = SingletonContext.getInstance();
 		TrainableSegmentationSegmenter segmenter = new TrainableSegmentationSegmenter(context);
+		segmenter.setUseGpu(false);
 		// Settings to 2D
 		segmenter.setFeatureSettings(new FeatureSettings(GlobalSettings.default2d().build(),
 			SingleFeatures.identity()));
