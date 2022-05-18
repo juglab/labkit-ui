@@ -122,14 +122,17 @@ public class LabelToolsPanel extends JPanel {
 		ImageIcon planarIcon = getIcon("/images/planes.png");
 		button.setIcon(rotateIcon);
 		button.setFocusable(false);
+		String ENABLE_TEXT = "Click to: Enable slice by slice editing of 3d images.";
+		String DISABLE_TEXT = "Click to: Disable slice by slice editing and freely rotate 3d images.";
 		button.addActionListener(ignore -> {
 			boolean selected = button.isSelected();
 			button.setIcon(selected ? planarIcon : rotateIcon);
+			button.setToolTipText(selected ? DISABLE_TEXT : ENABLE_TEXT);
 			planarModeController.setActive(selected);
 			floodFillController.setPlanarMode(selected);
 			brushController.setPlanarMode(selected);
 		});
-		button.setToolTipText("Enable slice by slice editing of 3d images.");
+		button.setToolTipText(ENABLE_TEXT);
 		return button;
 	}
 
