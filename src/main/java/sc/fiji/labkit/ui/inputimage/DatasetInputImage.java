@@ -71,7 +71,7 @@ public class DatasetInputImage implements InputImage {
 	{
 		List<AxisType> order = Arrays.asList(Axes.X, Axes.Y, Axes.Z, Axes.CHANNEL,
 			Axes.TIME);
-		return ImgPlusViewsOld.sortAxes(tryFuseColor(labelAxes(image)), order);
+		return ImgPlusViewsOld.sortAxes(labelAxes(image), order);
 	}
 
 	private static ImgPlus<? extends NumericType<?>> labelAxes(
@@ -92,26 +92,11 @@ public class DatasetInputImage implements InputImage {
 	public static BdvShowable initializeShowable(
 		ImgPlus<? extends NumericType<?>> image)
 	{
-		final BdvShowable showable = BdvShowable.wrap(prepareImage(image));
-		final double min = ContrastUtils.getMin(image);
-		final double max = ContrastUtils.getMax(image);
-		return (min < max) ? ContrastUtils.showableAddSetDisplayRange(showable, min,
-			max) : showable;
+		return BdvShowable.wrap(prepareImage(image));
 	}
 
 	public DatasetInputImage(Dataset image) {
 		this(image.getImgPlus());
-	}
-
-	private static ImgPlus<? extends NumericType<?>> tryFuseColor(
-		ImgPlus<? extends NumericType<?>> image)
-	{
-		if (!(image.randomAccess().get() instanceof UnsignedByteType)) return image;
-		@SuppressWarnings("unchecked")
-		ImgPlus<RealType<?>> image1 = (ImgPlus<RealType<?>>) image;
-		if (ImgPlusViews.canFuseColor(image1)) return ImgPlusViews.fuseColor(
-			image1);
-		return image1;
 	}
 
 	@Override

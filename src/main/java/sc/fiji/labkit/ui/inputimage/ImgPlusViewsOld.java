@@ -58,19 +58,22 @@ public class ImgPlusViewsOld {
 		final List<AxisType> order)
 	{
 		if (in.numDimensions() == 0) return in;
+		ImgPlus<T> out = in;
 		boolean changend = true;
 		while (changend) {
 			changend = false;
-			for (int i = 0; i < in.numDimensions() - 1; i++) {
-				if (order.indexOf(in.axis(i).type()) > order.indexOf(in.axis(i + 1)
+			for (int i = 0; i < out.numDimensions() - 1; i++) {
+				if (order.indexOf(out.axis(i).type()) > order.indexOf(out.axis(i + 1)
 					.type()))
 				{
-					in = ImgPlusViews.permute((ImgPlus) in, i, i + 1);
+					out = ImgPlusViews.permute((ImgPlus) out, i, i + 1);
 					changend = true;
 				}
 			}
 		}
-		return in;
+		if (out != in)
+			copyMetadataFromTo(in, out);
+		return out;
 	}
 
 	/**
@@ -88,7 +91,22 @@ public class ImgPlusViewsOld {
 				newAxis.setType(newAxisTypes.get(i));
 				return newAxis;
 			}).toArray(CalibratedAxis[]::new);
-		return new ImgPlus<>(in.getImg(), in.getName(), newAxes);
+		ImgPlus<T> out = new ImgPlus<>(in.getImg(), in.getName(), newAxes);
+		copyMetadataFromTo(in, out);
+		return out;
+	}
+
+	private static <T> void copyMetadataFromTo(ImgPlus<T> in, ImgPlus<T> out) {
+		out.setCompositeChannelCount(in.getCompositeChannelCount());
+		int d = in.dimensionIndex(Axes.CHANNEL);
+		long channelCount = d < 0 ? 1 : in.dimension(d);
+		for (int i = 0; i < channelCount; i++) {
+			out.setChannelMinimum(i, in.getChannelMinimum(i));
+			out.setChannelMaximum(i, in.getChannelMaximum(i));
+		}
+		out.initializeColorTables(in.getColorTableCount());
+		for (int i = 0; i < in.getColorTableCount(); i++)
+			out.setColorTable(in.getColorTable(i), i);
 	}
 
 	// -- Helper methods --

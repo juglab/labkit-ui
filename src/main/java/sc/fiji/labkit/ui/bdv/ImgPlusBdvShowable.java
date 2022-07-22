@@ -29,6 +29,7 @@
 
 package sc.fiji.labkit.ui.bdv;
 
+import bdv.tools.brightness.ConverterSetup;
 import bdv.util.AxisOrder;
 import bdv.util.BdvFunctions;
 import bdv.util.BdvOptions;
@@ -38,10 +39,14 @@ import net.imagej.axis.Axes;
 import net.imagej.axis.AxisType;
 import net.imglib2.Interval;
 import net.imglib2.realtransform.AffineTransform3D;
+import net.imglib2.type.numeric.ARGBType;
 import net.imglib2.type.numeric.NumericType;
 
+import java.awt.Color;
+import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
+import java.util.stream.Stream;
 
 /**
  * Implementation of {@link BdvShowable} that wraps around {@link ImgPlus}.
@@ -49,6 +54,11 @@ import java.util.stream.IntStream;
 class ImgPlusBdvShowable implements BdvShowable {
 
 	private final ImgPlus<? extends NumericType<?>> image;
+
+	private static final List<ARGBType> CHANNEL_COLORS = Stream.of(Color.red, Color.green, Color.blue,
+		Color.white, Color.cyan, Color.magenta, Color.yellow)
+		.mapToInt(Color::getRGB).mapToObj(ARGBType::new)
+		.collect(Collectors.toList());
 
 	ImgPlusBdvShowable(ImgPlus<? extends NumericType<?>> image) {
 		this.image = image;
@@ -73,7 +83,31 @@ class ImgPlusBdvShowable implements BdvShowable {
 	public BdvStackSource<?> show(String title, BdvOptions options) {
 		String name = image.getName();
 		BdvOptions options1 = options.axisOrder(getAxisOrder()).sourceTransform(transformation());
-		return BdvFunctions.show(image, name == null ? title : name, options1);
+		BdvStackSource<? extends NumericType<?>> stackSource = BdvFunctions.show(image, name == null
+			? title : name, options1);
+		List<ConverterSetup> converterSetups = stackSource.getConverterSetups();
+		setChannelMinMax(converterSetups);
+		setChannelColors(converterSetups);
+		return stackSource;
+	}
+
+	private void setChannelColors(List<ConverterSetup> converterSetups) {
+		if (converterSetups.size() == 1)
+			return;
+		for (int i = 0; i < Math.min(converterSetups.size(), CHANNEL_COLORS.size()); i++)
+			converterSetups.get(i).setColor(CHANNEL_COLORS.get(i));
+	}
+
+	private void setChannelMinMax(List<ConverterSetup> converterSetups) {
+		if (converterSetups.size() != image.dimension(image.dimensionIndex(Axes.CHANNEL)))
+			return;
+		for (int i = 0; i < converterSetups.size(); i++) {
+			ConverterSetup converterSetup = converterSetups.get(i);
+			double channelMinimum = image.getChannelMinimum(i);
+			double channelMaximum = image.getChannelMaximum(i);
+			if (!Double.isNaN(channelMinimum) && !Double.isNaN(channelMaximum))
+				converterSetup.setDisplayRange(channelMinimum, channelMaximum);
+		}
 	}
 
 	private AxisOrder getAxisOrder() {
