@@ -39,14 +39,17 @@ import net.imglib2.util.Intervals;
 import org.scijava.Cancelable;
 import org.scijava.Context;
 import org.scijava.ItemIO;
+import org.scijava.app.StatusService;
 import org.scijava.command.Command;
 import org.scijava.plugin.Parameter;
 import org.scijava.plugin.Plugin;
 import sc.fiji.labkit.ui.inputimage.DatasetInputImage;
+import sc.fiji.labkit.ui.segmentation.SegmentationTool;
 import sc.fiji.labkit.ui.segmentation.SegmentationUtils;
 import sc.fiji.labkit.ui.segmentation.Segmenter;
 import sc.fiji.labkit.ui.segmentation.weka.TrainableSegmentationSegmenter;
 import sc.fiji.labkit.ui.utils.ParallelUtils;
+import sc.fiji.labkit.ui.utils.progress.StatusServiceProgressWriter;
 
 import java.io.File;
 
@@ -65,6 +68,9 @@ public class CalculateProbabilityMapWithLabkitPlugin implements Command, Cancela
 	private DatasetService datasetService;
 
 	@Parameter
+	private StatusService statusService;
+
+	@Parameter
 	private Dataset input;
 
 	@Parameter
@@ -78,29 +84,12 @@ public class CalculateProbabilityMapWithLabkitPlugin implements Command, Cancela
 
 	@Override
 	public void run() {
-		TrainableSegmentationSegmenter segmenter = new TrainableSegmentationSegmenter(context);
-		segmenter.setUseGpu(use_gpu);
+		SegmentationTool segmenter = new SegmentationTool();
+		segmenter.setContext(context);
 		segmenter.openModel(segmenter_file.getAbsolutePath());
-		ImgPlus<?> imgPlus = new DatasetInputImage(input).imageForSegmentation();
-		Img<FloatType> outputImg = useCache(imgPlus, segmenter) ? calculateOnCachedImg(segmenter,
-			imgPlus)
-			: SegmentationUtils.calculateProbabilityMap(segmenter, imgPlus);
-		output = datasetService.create(outputImg);
-	}
-
-	private boolean useCache(ImgPlus<?> imgPlus, Segmenter segmenter) {
-		int numberOfChannels = segmenter.classNames().size();
-		return Intervals.numElements(SegmentationUtils.intervalNoChannels(imgPlus)) *
-			numberOfChannels > 100_000_000;
-	}
-
-	private Img<FloatType> calculateOnCachedImg(TrainableSegmentationSegmenter segmenter,
-		ImgPlus<?> imgPlus)
-	{
-		Img<FloatType> outputImg = SegmentationUtils.createCachedProbabilityMap(segmenter, imgPlus,
-			null);
-		ParallelUtils.populateCachedImg(outputImg, new ProgressWriterConsole());
-		return outputImg;
+		segmenter.setUseGpu(use_gpu);
+		segmenter.setProgressWriter(new StatusServiceProgressWriter(statusService));
+		output = datasetService.create(segmenter.probabilityMap(input.getImgPlus()));
 	}
 
 	@Override

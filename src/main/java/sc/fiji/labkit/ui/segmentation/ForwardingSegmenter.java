@@ -80,6 +80,11 @@ public class ForwardingSegmenter implements Segmenter {
 	}
 
 	@Override
+	public void setUseGpu(boolean useGpu) {
+		source.setUseGpu(useGpu);
+	}
+
+	@Override
 	public boolean isTrained() {
 		return source.isTrained();
 	}

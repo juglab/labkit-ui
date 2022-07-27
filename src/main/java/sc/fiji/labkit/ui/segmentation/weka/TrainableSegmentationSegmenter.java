@@ -180,6 +180,7 @@ public class TrainableSegmentationSegmenter implements Segmenter {
 		}
 	}
 
+	@Override
 	public void setUseGpu(boolean useGpu) {
 		this.useGpu = useGpu;
 		if (segmenter != null)

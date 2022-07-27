@@ -90,6 +90,8 @@ public interface Segmenter {
 	void predict(ImgPlus<?> image,
 		RandomAccessibleInterval<? extends RealType<?>> outputProbabilityMap);
 
+	default void setUseGpu(boolean useGpu) {}
+
 	/**
 	 * Return true if the model is trained.
 	 */

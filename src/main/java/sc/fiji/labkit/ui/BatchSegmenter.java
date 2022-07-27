@@ -43,10 +43,13 @@ import net.imglib2.util.Intervals;
 import java.io.File;
 
 /**
- * Helper class for segmenting multiple image files.
- *
+ * @deprecated Use {@link sc.fiji.labkit.ui.segmentation.SegmentationTool}
+ *             instead.
+ *             <p>
+ *             Helper class for segmenting multiple image files.
  * @author Matthias Arzt
  */
+@Deprecated
 public class BatchSegmenter {
 
 	private final ImgSaver saver = new ImgSaver();

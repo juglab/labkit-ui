@@ -29,23 +29,17 @@
 
 package sc.fiji.labkit.ui.plugin;
 
-import bdv.export.ProgressWriterConsole;
 import net.imagej.Dataset;
 import net.imagej.DatasetService;
-import net.imagej.ImgPlus;
-import net.imglib2.img.Img;
-import sc.fiji.labkit.ui.inputimage.DatasetInputImage;
-import sc.fiji.labkit.ui.segmentation.SegmentationUtils;
-import sc.fiji.labkit.ui.segmentation.weka.TrainableSegmentationSegmenter;
-import sc.fiji.labkit.ui.utils.ParallelUtils;
-import net.imglib2.type.numeric.integer.ShortType;
-import net.imglib2.util.Intervals;
+import org.scijava.app.StatusService;
+import sc.fiji.labkit.ui.segmentation.SegmentationTool;
 import org.scijava.Cancelable;
 import org.scijava.Context;
 import org.scijava.ItemIO;
 import org.scijava.command.Command;
 import org.scijava.plugin.Parameter;
 import org.scijava.plugin.Plugin;
+import sc.fiji.labkit.ui.utils.progress.StatusServiceProgressWriter;
 
 import java.io.File;
 
@@ -64,6 +58,9 @@ public class SegmentImageWithLabkitPlugin implements Command, Cancelable {
 	private DatasetService datasetService;
 
 	@Parameter
+	private StatusService statusService;
+
+	@Parameter
 	private Dataset input;
 
 	@Parameter
@@ -77,25 +74,13 @@ public class SegmentImageWithLabkitPlugin implements Command, Cancelable {
 
 	@Override
 	public void run() {
-		TrainableSegmentationSegmenter segmenter = new TrainableSegmentationSegmenter(context);
+		SegmentationTool segmenter = new SegmentationTool();
+		segmenter.setContext(context);
 		segmenter.setUseGpu(use_gpu);
+		segmenter.setProgressWriter(new StatusServiceProgressWriter(statusService));
 		segmenter.openModel(segmenter_file.getAbsolutePath());
-		ImgPlus<?> imgPlus = new DatasetInputImage(input).imageForSegmentation();
-		Img<ShortType> outputImg = useCache(imgPlus) ? calculateOnCachedImg(segmenter, imgPlus)
-			: SegmentationUtils.calculateSegmentation(segmenter, imgPlus);
-		output = datasetService.create(outputImg);
-	}
-
-	private boolean useCache(ImgPlus<?> imgPlus) {
-		return Intervals.numElements(imgPlus) > 100_000_000;
-	}
-
-	private Img<ShortType> calculateOnCachedImg(TrainableSegmentationSegmenter segmenter,
-		ImgPlus<?> imgPlus)
-	{
-		Img<ShortType> outputImg = SegmentationUtils.createCachedSegmentation(segmenter, imgPlus, null);
-		ParallelUtils.populateCachedImg(outputImg, new ProgressWriterConsole());
-		return outputImg;
+		segmenter.setProgressWriter(new StatusServiceProgressWriter(statusService));
+		output = datasetService.create(segmenter.segment(input.getImgPlus()));
 	}
 
 	@Override

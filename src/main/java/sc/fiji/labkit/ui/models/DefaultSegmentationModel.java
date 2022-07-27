@@ -31,17 +31,17 @@ package sc.fiji.labkit.ui.models;
 
 import net.imagej.ImgPlus;
 import net.imglib2.RandomAccessibleInterval;
-import net.imglib2.img.cell.CellImgFactory;
 import sc.fiji.labkit.ui.inputimage.InputImage;
 import sc.fiji.labkit.ui.labeling.Labeling;
+import sc.fiji.labkit.ui.segmentation.SegmentationTool;
 import sc.fiji.labkit.ui.segmentation.Segmenter;
-import sc.fiji.labkit.ui.utils.DimensionUtils;
 import net.imglib2.type.NativeType;
 import net.imglib2.type.numeric.IntegerType;
 import net.imglib2.type.numeric.real.FloatType;
 import net.imglib2.util.Pair;
 import net.imglib2.util.ValuePair;
 import org.scijava.Context;
+import sc.fiji.labkit.ui.utils.progress.DummyProgressWriter;
 
 import java.util.AbstractList;
 import java.util.List;
@@ -84,30 +84,32 @@ public class DefaultSegmentationModel implements SegmentationModel {
 		return extensionPoints;
 	}
 
+	@Deprecated
 	public <T extends IntegerType<T> & NativeType<T>>
 		List<RandomAccessibleInterval<T>> getSegmentations(T type)
 	{
 		ImgPlus<?> image = imageLabelingModel().imageForSegmentation().get();
 		Stream<Segmenter> trainedSegmenters = getTrainedSegmenters();
-		return trainedSegmenters.map(segmenter -> {
-			RandomAccessibleInterval<T> labels = new CellImgFactory<>(type).create(
-				image);
-			segmenter.segment(image, labels);
-			return labels;
-		}).collect(Collectors.toList());
+		return trainedSegmenters
+			.map(segmenter -> {
+				SegmentationTool segmentationTool = new SegmentationTool(segmenter);
+				segmentationTool.setProgressWriter(new DummyProgressWriter());
+				return segmentationTool.segment(image, type);
+			})
+			.collect(Collectors.toList());
 	}
 
+	@Deprecated
 	public List<RandomAccessibleInterval<FloatType>> getPredictions() {
 		ImgPlus<?> image = imageLabelingModel().imageForSegmentation().get();
 		Stream<Segmenter> trainedSegmenters = getTrainedSegmenters();
-		return trainedSegmenters.map(segmenter -> {
-			int numberOfClasses = segmenter.classNames().size();
-			RandomAccessibleInterval<FloatType> prediction = new CellImgFactory<>(
-				new FloatType()).create(DimensionUtils.appendDimensionToInterval(image,
-					0, numberOfClasses - 1));
-			segmenter.predict(image, prediction);
-			return prediction;
-		}).collect(Collectors.toList());
+		return trainedSegmenters
+			.map(segmenter -> {
+				SegmentationTool segmentationTool = new SegmentationTool(segmenter);
+				segmentationTool.setProgressWriter(new DummyProgressWriter());
+				return segmentationTool.probabilityMap(image);
+			})
+			.collect(Collectors.toList());
 	}
 
 	public boolean isTrained() {

@@ -38,6 +38,7 @@ import net.imglib2.RandomAccessibleInterval;
 import net.imglib2.img.Img;
 import net.imglib2.img.array.ArrayImgs;
 import net.imglib2.img.cell.CellGrid;
+import net.imglib2.type.numeric.IntegerType;
 import org.apache.commons.lang3.ArrayUtils;
 import sc.fiji.labkit.ui.inputimage.ImgPlusViewsOld;
 import sc.fiji.labkit.ui.models.CachedImageFactory;
@@ -78,6 +79,13 @@ public class SegmentationUtils {
 	public static Img<ShortType> createCachedSegmentation(Segmenter segmenter, ImgPlus<?> image,
 		CachedImageFactory cachedImageFactory)
 	{
+		return createCachedSegmentation(segmenter, image, cachedImageFactory, new ShortType());
+	}
+
+	public static <T extends IntegerType<T> & NativeType<T>> Img<T> createCachedSegmentation(
+		Segmenter segmenter, ImgPlus<?> image, CachedImageFactory cachedImageFactory,
+		T type)
+	{
 		if (cachedImageFactory == null)
 			cachedImageFactory = DefaultCachedImageFactory.getInstance();
 		int[] cellSize = segmenter.suggestCellSize(image);
@@ -85,29 +93,7 @@ public class SegmentationUtils {
 		CellGrid grid = new CellGrid(Intervals.dimensionsAsLongArray(interval), cellSize);
 		return cachedImageFactory.setupCachedImage(segmenter,
 			target -> segmenter.segment(image, ensureCellSize(segmenter, cellSize, target)),
-			grid, new ShortType());
-	}
-
-	public static Img<FloatType> calculateProbabilityMap(Segmenter segmenter, ImgPlus<?> imgPlus) {
-		int numberOfChannels = segmenter.classNames().size();
-		long[] imageSize = ArrayUtils.add(Intervals.dimensionsAsLongArray(intervalNoChannels(imgPlus)),
-			numberOfChannels);
-		int[] cellSize = ArrayUtils.add(segmenter.suggestCellSize(imgPlus), numberOfChannels);
-		Img<FloatType> outputImg = ArrayImgs.floats(imageSize);
-		ParallelUtils.applyOperationOnCells(outputImg, cellSize,
-			outputCell -> segmenter.predict(imgPlus, outputCell), new ProgressWriterConsole());
-		return outputImg;
-	}
-
-	public static Img<ShortType> calculateSegmentation(TrainableSegmentationSegmenter segmenter,
-		ImgPlus<?> imgPlus)
-	{
-		Interval outputInterval = intervalNoChannels(imgPlus);
-		int[] cellSize = segmenter.suggestCellSize(imgPlus);
-		Img<ShortType> outputImg = ArrayImgs.shorts(Intervals.dimensionsAsLongArray(outputInterval));
-		ParallelUtils.applyOperationOnCells(outputImg, cellSize,
-			outputCell -> segmenter.segment(imgPlus, outputCell), new ProgressWriterConsole());
-		return outputImg;
+			grid, type);
 	}
 
 	private static CellGrid addDimensionToGrid(int size, CellGrid grid) {

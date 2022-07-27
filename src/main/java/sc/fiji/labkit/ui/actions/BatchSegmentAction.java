@@ -29,11 +29,17 @@
 
 package sc.fiji.labkit.ui.actions;
 
-import sc.fiji.labkit.ui.BatchSegmenter;
+import ij.ImagePlus;
+import io.scif.img.ImgSaver;
+import net.imagej.ImgPlus;
+import net.imglib2.img.VirtualStackAdapter;
+import net.imglib2.type.numeric.integer.UnsignedByteType;
+import org.scijava.Context;
 import sc.fiji.labkit.ui.Extensible;
 import sc.fiji.labkit.ui.MenuBar;
 import sc.fiji.labkit.ui.models.Holder;
 import sc.fiji.labkit.ui.models.SegmentationItem;
+import sc.fiji.labkit.ui.segmentation.SegmentationTool;
 import sc.fiji.labkit.ui.segmentation.Segmenter;
 import sc.fiji.labkit.ui.utils.progress.StatusServiceProgressWriter;
 import org.scijava.Cancelable;
@@ -71,6 +77,12 @@ public class BatchSegmentAction {
 
 	public static class BatchSegment implements Command, Cancelable {
 
+		@Parameter
+		private Context context;
+
+		@Parameter
+		private StatusService statusService;
+
 		@Parameter(label = "input directory", style = FileWidget.DIRECTORY_STYLE)
 		private File inputDirectory;
 
@@ -78,28 +90,29 @@ public class BatchSegmentAction {
 		private File outputDirectory;
 
 		@Parameter
-		private StatusService statusService;
-
-		@Parameter
 		private Segmenter segmenter;
 
-		public void setSegmenter(Segmenter segmenter) {
-			this.segmenter = segmenter;
-		}
+		@Parameter
+		private boolean useGpu = false;
 
 		@Override
 		public void run() {
-			BatchSegmenter batchSegmenter = new BatchSegmenter(segmenter,
-				new StatusServiceProgressWriter(statusService));
-			for (File file : inputDirectory.listFiles())
-				if (file.isFile()) processFile(batchSegmenter, file);
+			SegmentationTool tool = new SegmentationTool();
+			tool.setProgressWriter(new StatusServiceProgressWriter(statusService));
+			tool.setSegmenter(segmenter);
+			tool.setUseGpu(useGpu);
+			for (File file : inputDirectory.listFiles()) {
+				if (file.isFile())
+					processFile(tool, file);
+			}
 		}
 
-		private void processFile(BatchSegmenter batchSegmenter, File file) {
+		private void processFile(SegmentationTool tool, File file) {
 			File outputFile = new File(outputDirectory, file.getName());
 			try {
-				batchSegmenter.segment(file.getAbsoluteFile(), outputFile
-					.getAbsoluteFile());
+				ImgPlus<?> image = VirtualStackAdapter.wrap(new ImagePlus(file.getAbsolutePath()));
+				ImgPlus<UnsignedByteType> segmentation = tool.segment(image);
+				new ImgSaver().saveImg(outputFile.getAbsolutePath(), segmentation);
 			}
 			catch (Exception e) {
 				System.err.print(e);
