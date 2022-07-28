@@ -29,71 +29,29 @@
 
 package sc.fiji.labkit.ui.plugin;
 
-import net.imagej.Dataset;
-import net.imagej.DatasetService;
-import org.scijava.app.StatusService;
-import sc.fiji.labkit.ui.segmentation.SegmentationTool;
-import org.scijava.Cancelable;
-import org.scijava.Context;
-import org.scijava.ItemIO;
+import net.imagej.ImgPlus;
 import org.scijava.command.Command;
-import org.scijava.plugin.Parameter;
 import org.scijava.plugin.Plugin;
-import sc.fiji.labkit.ui.utils.progress.StatusServiceProgressWriter;
+import sc.fiji.labkit.ui.segmentation.SegmentationTool;
 
-import java.io.File;
-
-/**
- * @author Robert Haase
- * @author Matthias Arzt
- */
 @Plugin(type = Command.class,
-	menuPath = "Plugins > Labkit > Macro Recordable > Segment Image With Labkit")
-public class SegmentImageWithLabkitPlugin implements Command, Cancelable {
-
-	@Parameter
-	private Context context;
-
-	@Parameter
-	private DatasetService datasetService;
-
-	@Parameter
-	private StatusService statusService;
-
-	@Parameter
-	private Dataset input;
-
-	@Parameter
-	private File segmenter_file;
-
-	@Parameter(type = ItemIO.OUTPUT)
-	private Dataset output;
-
-	@Parameter(required = false)
-	private Boolean use_gpu = false;
+	menuPath = "Plugins > Labkit > Macro Recordable > Segment Images in Directory with Labkit")
+public class LabkitSegmentImagesInDirectoryPlugin extends
+	AbstractProcessFilesInDirectoryPlugin
+{
 
 	@Override
-	public void run() {
-		SegmentationTool segmenter = new SegmentationTool();
-		segmenter.setContext(context);
-		segmenter.setUseGpu(use_gpu);
-		segmenter.setProgressWriter(new StatusServiceProgressWriter(statusService));
-		segmenter.openModel(segmenter_file.getAbsolutePath());
-		output = datasetService.create(segmenter.segment(input.getImgPlus()));
+	protected ImgPlus<?> processImage(SegmentationTool segmenter, ImgPlus<?> inputImage) {
+		return segmenter.segment(inputImage);
 	}
 
 	@Override
-	public boolean isCanceled() {
-		return false;
+	protected String getDescription() {
+		return "segmenting";
 	}
 
 	@Override
-	public void cancel(String reason) {
-
-	}
-
-	@Override
-	public String getCancelReason() {
-		return null;
+	protected String defaultOutputFileSuffix() {
+		return "_segmentation.tif";
 	}
 }

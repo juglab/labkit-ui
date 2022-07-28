@@ -99,7 +99,7 @@ public class MeasureConnectedComponents implements Command {
 			extensible.context().service(UIService.class).show(table);
 		};
 		extensible.addMenuItem(MenuBar.OTHERS_MENU,
-			"Measure Connected Components ...", 0, ignore -> action.run(), null, "");
+			"Measure Connected Components ...", 3, ignore -> action.run(), null, "");
 	}
 
 	private static Table<?, ?> createTable(Labeling labeling,
