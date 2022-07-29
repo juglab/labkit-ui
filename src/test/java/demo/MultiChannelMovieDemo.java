@@ -125,9 +125,8 @@ public class MultiChannelMovieDemo {
 		segmentationModel.imageLabelingModel().labeling().set(labeling1);
 		segmenter.train(Collections.singletonList(new ValuePair<>(inputImage
 			.imageForSegmentation(), labeling1)));
-		RandomAccessibleInterval<ShortType> result = segmenter.results(segmentationModel
-			.imageLabelingModel())
-			.segmentation();
+		RandomAccessibleInterval<UnsignedByteType> result =
+			segmenter.results(segmentationModel.imageLabelingModel()).segmentation();
 		Labeling labeling = labeling5d();
 		LoopBuilder.setImages(labeling, result).forEachPixel((l, r) -> {
 			if (l.contains("foreground")) assertEquals(1, r.get());

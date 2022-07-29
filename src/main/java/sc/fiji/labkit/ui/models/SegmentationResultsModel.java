@@ -39,7 +39,7 @@ import sc.fiji.labkit.ui.segmentation.SegmentationUtils;
 import sc.fiji.labkit.ui.segmentation.Segmenter;
 import sc.fiji.labkit.ui.utils.Notifier;
 import net.imglib2.type.numeric.ARGBType;
-import net.imglib2.type.numeric.integer.ShortType;
+import net.imglib2.type.numeric.integer.UnsignedByteType;
 import net.imglib2.type.numeric.real.FloatType;
 import net.imglib2.util.ConstantUtils;
 import net.imglib2.util.Intervals;
@@ -60,7 +60,7 @@ public class SegmentationResultsModel {
 	private final ImageLabelingModel model;
 	private final Segmenter segmenter;
 	private boolean hasResults = false;
-	private RandomAccessibleInterval<ShortType> segmentation;
+	private RandomAccessibleInterval<UnsignedByteType> segmentation;
 	private RandomAccessibleInterval<FloatType> prediction;
 	private List<String> labels = Collections.emptyList();
 	private List<ARGBType> colors = Collections.emptyList();
@@ -73,7 +73,7 @@ public class SegmentationResultsModel {
 		this.model = model;
 		this.extensionPoints = extensionPoints;
 		this.segmenter = segmenter;
-		segmentation = dummy(new ShortType());
+		segmentation = dummy(new UnsignedByteType());
 		prediction = dummy(new FloatType());
 		model.imageForSegmentation().notifier().addListener(this::update);
 		update();
@@ -110,13 +110,13 @@ public class SegmentationResultsModel {
 	}
 
 	public void clear() {
-		segmentation = dummy(new ShortType());
+		segmentation = dummy(new UnsignedByteType());
 		prediction = dummy(new FloatType());
 		hasResults = false;
 		listeners.notifyListeners();
 	}
 
-	public RandomAccessibleInterval<ShortType> segmentation() {
+	public RandomAccessibleInterval<UnsignedByteType> segmentation() {
 		return segmentation;
 	}
 

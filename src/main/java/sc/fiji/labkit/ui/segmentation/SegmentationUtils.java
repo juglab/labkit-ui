@@ -39,18 +39,16 @@ import net.imglib2.img.Img;
 import net.imglib2.img.array.ArrayImgs;
 import net.imglib2.img.cell.CellGrid;
 import net.imglib2.type.numeric.IntegerType;
+import net.imglib2.type.numeric.integer.UnsignedByteType;
 import org.apache.commons.lang3.ArrayUtils;
 import sc.fiji.labkit.ui.inputimage.ImgPlusViewsOld;
 import sc.fiji.labkit.ui.models.CachedImageFactory;
 import sc.fiji.labkit.ui.models.DefaultCachedImageFactory;
 import net.imglib2.type.NativeType;
 import net.imglib2.type.numeric.NumericType;
-import net.imglib2.type.numeric.integer.ShortType;
 import net.imglib2.type.numeric.real.FloatType;
 import net.imglib2.util.Intervals;
 import net.imglib2.view.Views;
-import sc.fiji.labkit.ui.segmentation.weka.TrainableSegmentationSegmenter;
-import sc.fiji.labkit.ui.utils.ParallelUtils;
 
 import java.util.Arrays;
 
@@ -76,10 +74,11 @@ public class SegmentationUtils {
 			gridWithChannel, new FloatType());
 	}
 
-	public static Img<ShortType> createCachedSegmentation(Segmenter segmenter, ImgPlus<?> image,
+	public static Img<UnsignedByteType> createCachedSegmentation(Segmenter segmenter,
+		ImgPlus<?> image,
 		CachedImageFactory cachedImageFactory)
 	{
-		return createCachedSegmentation(segmenter, image, cachedImageFactory, new ShortType());
+		return createCachedSegmentation(segmenter, image, cachedImageFactory, new UnsignedByteType());
 	}
 
 	public static <T extends IntegerType<T> & NativeType<T>> Img<T> createCachedSegmentation(

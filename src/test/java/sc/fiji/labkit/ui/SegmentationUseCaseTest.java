@@ -38,6 +38,7 @@ import net.imglib2.RandomAccess;
 import net.imglib2.RandomAccessibleInterval;
 import net.imglib2.img.Img;
 import net.imglib2.img.array.ArrayImgs;
+import net.imglib2.type.numeric.IntegerType;
 import sc.fiji.labkit.ui.bdv.BdvShowable;
 import sc.fiji.labkit.ui.inputimage.DatasetInputImage;
 import sc.fiji.labkit.ui.inputimage.InputImage;
@@ -81,9 +82,8 @@ public class SegmentationUseCaseTest {
 		SegmentationItem segmenter = segmentationModel.segmenterList().addSegmenter(plugin);
 		segmenter.train(Collections.singletonList(new ValuePair<>(image,
 			segmentationModel.imageLabelingModel().labeling().get())));
-		RandomAccessibleInterval<ShortType> result = segmenter.results(segmentationModel
-			.imageLabelingModel())
-			.segmentation();
+		RandomAccessibleInterval<? extends IntegerType<?>> result =
+			segmenter.results(segmentationModel.imageLabelingModel()).segmentation();
 		List<Integer> list = new ArrayList<>();
 		Views.iterable(result).forEach(x -> list.add(x.getInteger()));
 		assertEquals(Arrays.asList(1, 1, 0, 0), list);
@@ -116,13 +116,13 @@ public class SegmentationUseCaseTest {
 			PixelClassificationPlugin.create());
 		segmenter.train(Collections.singletonList(new ValuePair<>(imgPlus,
 			imageLabelingModel.labeling().get())));
-		RandomAccessibleInterval<ShortType> result = segmenter.results(imageLabelingModel)
-			.segmentation();
-		Iterator<ShortType> it = Views.iterable(result).iterator();
-		assertEquals(1, it.next().get());
-		assertEquals(0, it.next().get());
-		assertEquals(0, it.next().get());
-		assertEquals(0, it.next().get());
+		RandomAccessibleInterval<? extends IntegerType<?>> result =
+			segmenter.results(imageLabelingModel).segmentation();
+		Iterator<? extends IntegerType<?>> it = Views.iterable(result).iterator();
+		assertEquals(1, it.next().getInteger());
+		assertEquals(0, it.next().getInteger());
+		assertEquals(0, it.next().getInteger());
+		assertEquals(0, it.next().getInteger());
 		assertTrue(Intervals.equals(new FinalInterval(2, 2), result));
 	}
 

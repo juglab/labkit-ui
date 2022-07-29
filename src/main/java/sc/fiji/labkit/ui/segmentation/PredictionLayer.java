@@ -35,6 +35,7 @@ import net.imglib2.Interval;
 import net.imglib2.RandomAccessibleInterval;
 import net.imglib2.converter.Converter;
 import net.imglib2.converter.Converters;
+import net.imglib2.type.numeric.integer.UnsignedByteType;
 import sc.fiji.labkit.ui.bdv.BdvLayer;
 import sc.fiji.labkit.ui.bdv.BdvShowable;
 import sc.fiji.labkit.ui.models.DefaultHolder;
@@ -46,9 +47,8 @@ import sc.fiji.labkit.ui.models.SegmentationResultsModel;
 import sc.fiji.labkit.ui.utils.ParametricNotifier;
 import net.imglib2.realtransform.AffineTransform3D;
 import net.imglib2.type.numeric.ARGBType;
-import net.imglib2.type.numeric.integer.ShortType;
 import net.imglib2.type.volatiles.VolatileARGBType;
-import net.imglib2.type.volatiles.VolatileShortType;
+import net.imglib2.type.volatiles.VolatileUnsignedByteType;
 
 /**
  * A {@link BdvLayer} that lazily shows the result of a {@link Segmenter}.
@@ -130,22 +130,22 @@ public class PredictionLayer implements BdvLayer {
 		return mapColors(colors, wrapAsVolatile(selected.segmentation()));
 	}
 
-	private RandomAccessibleInterval<VolatileShortType> wrapAsVolatile(
-		RandomAccessibleInterval<ShortType> image)
+	private RandomAccessibleInterval<VolatileUnsignedByteType> wrapAsVolatile(
+		RandomAccessibleInterval<UnsignedByteType> image)
 	{
 		try {
 			return VolatileViews.wrapAsVolatile(image, queue);
 		}
 		catch (IllegalArgumentException e) {
 			// This happens when image isn't some sort of CachedCellImg.
-			return Converters.convert(image, (i, o) -> o.set(i.get()), new VolatileShortType());
+			return Converters.convert(image, (i, o) -> o.set(i.get()), new VolatileUnsignedByteType());
 		}
 	}
 
 	private RandomAccessibleInterval<VolatileARGBType> mapColors(
-		ARGBType[] colors, RandomAccessibleInterval<VolatileShortType> source)
+		ARGBType[] colors, RandomAccessibleInterval<VolatileUnsignedByteType> source)
 	{
-		final Converter<VolatileShortType, VolatileARGBType> conv = (input,
+		final Converter<VolatileUnsignedByteType, VolatileARGBType> conv = (input,
 			output) -> {
 			final boolean isValid = input.isValid();
 			output.setValid(isValid);
