@@ -29,27 +29,16 @@
 
 package sc.fiji.labkit.ui.actions;
 
-import ij.ImagePlus;
-import io.scif.img.ImgSaver;
-import net.imagej.ImgPlus;
-import net.imglib2.img.VirtualStackAdapter;
-import net.imglib2.type.numeric.integer.UnsignedByteType;
-import org.scijava.Context;
 import sc.fiji.labkit.ui.Extensible;
 import sc.fiji.labkit.ui.MenuBar;
 import sc.fiji.labkit.ui.models.Holder;
 import sc.fiji.labkit.ui.models.SegmentationItem;
-import sc.fiji.labkit.ui.segmentation.SegmentationTool;
-import sc.fiji.labkit.ui.segmentation.Segmenter;
-import sc.fiji.labkit.ui.utils.progress.StatusServiceProgressWriter;
-import org.scijava.Cancelable;
-import org.scijava.app.StatusService;
-import org.scijava.command.Command;
+import sc.fiji.labkit.ui.plugin.LabkitProbabilityMapForImagesInDirectoryPlugin;
+import sc.fiji.labkit.ui.plugin.LabkitSegmentImagesInDirectoryPlugin;
 import org.scijava.command.CommandService;
-import org.scijava.plugin.Parameter;
-import org.scijava.widget.FileWidget;
 
-import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
 
 /**
  * Implements the "Batch Segment Images ..." menu item.
@@ -68,70 +57,34 @@ public class BatchSegmentAction {
 		this.selectedSegmenter = selectedSegmenter;
 		extensible.addMenuItem(MenuBar.OTHERS_MENU, "Batch Segment Images ...", 0,
 			ignore -> segmentImages(), null, "");
+		extensible.addMenuItem(MenuBar.OTHERS_MENU, "Batch Calculate Probability Maps for Images ...",
+			1, ignore -> calculateProbibilityMaps(), null, "");
 	}
 
 	private void segmentImages() {
 		CommandService command = extensible.context().service(CommandService.class);
-		command.run(BatchSegment.class, true, "segmenter", selectedSegmenter.get());
+		command.run(LabkitSegmentImagesInDirectoryPlugin.class, true,
+			"segmenter_file", createClassifierFile());
 	}
 
-	public static class BatchSegment implements Command, Cancelable {
+	private void calculateProbibilityMaps() {
+		CommandService command = extensible.context().service(CommandService.class);
+		command.run(LabkitProbabilityMapForImagesInDirectoryPlugin.class, true,
+			"segmenter_file", createClassifierFile());
+	}
 
-		@Parameter
-		private Context context;
-
-		@Parameter
-		private StatusService statusService;
-
-		@Parameter(label = "input directory", style = FileWidget.DIRECTORY_STYLE)
-		private File inputDirectory;
-
-		@Parameter(label = "output directory", style = FileWidget.DIRECTORY_STYLE)
-		private File outputDirectory;
-
-		@Parameter
-		private Segmenter segmenter;
-
-		@Parameter
-		private boolean useGpu = false;
-
-		@Override
-		public void run() {
-			SegmentationTool tool = new SegmentationTool();
-			tool.setProgressWriter(new StatusServiceProgressWriter(statusService));
-			tool.setSegmenter(segmenter);
-			tool.setUseGpu(useGpu);
-			for (File file : inputDirectory.listFiles()) {
-				if (file.isFile())
-					processFile(tool, file);
-			}
+	private String createClassifierFile() {
+		try {
+			SegmentationItem segmenter = selectedSegmenter.get();
+			if (!segmenter.isModified())
+				return segmenter.getFileName();
+			String tmp = Files.createTempFile("labkit-pixel-classifier", ".classifier").toFile()
+				.toString();
+			segmenter.saveModel(tmp);
+			return tmp;
 		}
-
-		private void processFile(SegmentationTool tool, File file) {
-			File outputFile = new File(outputDirectory, file.getName());
-			try {
-				ImgPlus<?> image = VirtualStackAdapter.wrap(new ImagePlus(file.getAbsolutePath()));
-				ImgPlus<UnsignedByteType> segmentation = tool.segment(image);
-				new ImgSaver().saveImg(outputFile.getAbsolutePath(), segmentation);
-			}
-			catch (Exception e) {
-				System.err.print(e);
-			}
-		}
-
-		@Override
-		public boolean isCanceled() {
-			return false;
-		}
-
-		@Override
-		public void cancel(String reason) {
-
-		}
-
-		@Override
-		public String getCancelReason() {
-			return null;
+		catch (IOException e) {
+			throw new RuntimeException(e);
 		}
 	}
 }
