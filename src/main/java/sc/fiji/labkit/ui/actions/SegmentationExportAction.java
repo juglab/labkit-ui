@@ -46,6 +46,7 @@ import net.imglib2.type.Type;
 import net.imglib2.type.numeric.NumericType;
 
 import javax.swing.*;
+
 import java.util.function.Function;
 
 /**
@@ -64,33 +65,42 @@ public class SegmentationExportAction extends AbstractFileIoAction {
 		super(extensible, AbstractFileIoAction.TIFF_FILTER,
 			AbstractFileIoAction.HDF5_FILTER);
 		this.labelingModel = labelingModel;
-		addMenuItems(SegmentationResultsModel::segmentation, "Segmentation Result");
-		addMenuItems(SegmentationResultsModel::prediction, "Probability Map");
+		addMenuItems("Segmentation Result",
+			SegmentationResultsModel::segmentation,
+			segmenter -> segmenter.classNames().size() - 1.0);
+		addMenuItems("Probability Map",
+			SegmentationResultsModel::prediction,
+			ignore -> 1.0);
 	}
 
-	private <T extends NumericType<T> & NativeType<T>> void addMenuItems(
+	private <T extends NumericType<T> & NativeType<T>> void addMenuItems(String title,
 		Function<SegmentationResultsModel, RandomAccessibleInterval<T>> getResultsImage,
-		String title)
+		Function<SegmentationItem, Double> maxResultIntensity)
 	{
-		initSaveAction(SegmentationItem.SEGMENTER_MENU, "Save " + title +
-			" as TIF / HDF5 ...", 200, (item, filename) -> saveImage(filename,
-				getResultsImage.apply(item.results(labelingModel))), "");
-		extensible.addMenuItem(SegmentationItem.SEGMENTER_MENU, "Show " + title +
-			" in ImageJ", 201, item -> onShowResultInImageJClicked(getResultsImage, item), null,
+		initSaveAction(SegmentationItem.SEGMENTER_MENU,
+			"Save " + title + " as TIF / HDF5 ...", 200,
+			(item, filename) -> saveImage(filename, getResultsImage.apply(item.results(labelingModel))),
 			"");
 		extensible.addMenuItem(SegmentationItem.SEGMENTER_MENU,
-			"Calculate entire " + title, 300, item -> {
-				onCalculateEntireResultClicked(getResultsImage, item);
-			}, null, "");
+			"Show " + title + " in ImageJ", 201,
+			item -> onShowResultInImageJClicked(item, getResultsImage, maxResultIntensity),
+			null, "");
+		extensible.addMenuItem(SegmentationItem.SEGMENTER_MENU,
+			"Calculate entire " + title, 300,
+			item -> onCalculateEntireResultClicked(getResultsImage, item),
+			null, "");
 	}
 
 	private <T extends NumericType<T> & NativeType<T>> void onShowResultInImageJClicked(
+		SegmentationItem item,
 		Function<SegmentationResultsModel, RandomAccessibleInterval<T>> getResultsImage,
-		SegmentationItem item)
+		Function<SegmentationItem, Double> maxResultIntensity)
 	{
-		RandomAccessibleInterval<T> result = getResultsImage.apply(item.results(labelingModel));
+		SegmentationResultsModel results = item.results(labelingModel);
+		RandomAccessibleInterval<T> result = getResultsImage.apply(results);
+		double max = maxResultIntensity.apply(item);
 		ParallelUtils.runInOtherThread(() -> populate(result));
-		ParallelUtils.runInOtherThread(() -> ImageJFunctions.show(result));
+		ParallelUtils.runInOtherThread(() -> ImageJFunctions.show(result).setDisplayRange(0, max));
 	}
 
 	private <T extends NumericType<T> & NativeType<T>> void onCalculateEntireResultClicked(
@@ -125,8 +135,8 @@ public class SegmentationExportAction extends AbstractFileIoAction {
 				saver.saveImg(filename, ImgView.wrap(image, null));
 			}
 			catch (io.scif.img.ImgIOException e) {
-				if (e.getCause() instanceof io.scif.FormatException) JOptionPane
-					.showMessageDialog(null, "File format not supported:\n" + filename);
+				if (e.getCause() instanceof io.scif.FormatException)
+					JOptionPane.showMessageDialog(null, "File format not supported:\n" + filename);
 				else throw e;
 			}
 		}
