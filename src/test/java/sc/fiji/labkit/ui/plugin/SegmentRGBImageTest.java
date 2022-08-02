@@ -90,6 +90,7 @@ public class SegmentRGBImageTest {
 		segmentationModel.imageLabelingModel().labeling().set(labeling);
 		SegmentationPlugin plugin = PixelClassificationPlugin.create();
 		SegmentationItem segmenter = segmentationModel.segmenterList().addSegmenter(plugin);
+		segmenter.setUseGpu(false);
 		segmenter.train(Collections.singletonList(new ValuePair<>(segmentationModel.imageLabelingModel()
 			.imageForSegmentation().get(),
 			segmentationModel.imageLabelingModel().labeling().get())));
