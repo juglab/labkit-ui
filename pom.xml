@@ -100,7 +100,8 @@
 
 		<jackson-dataformat-yaml.version>2.11.1</jackson-dataformat-yaml.version>
 
-		<labkit-pixel-classification.version>0.1.13</labkit-pixel-classification.version>
+		<imglib2-algorithm.version>0.12.1</imglib2-algorithm.version>
+		<labkit-pixel-classification.version>0.1.14</labkit-pixel-classification.version>
 	</properties>
 
 	<build>
@@ -119,6 +120,11 @@
 	</build>
 
 	<dependencies>
+		<dependency>
+			<groupId>net.imglib2</groupId>
+			<artifactId>imglib2-algorithm</artifactId>
+			<version>${imglib2-algorithm.version}</version>
+		</dependency>
 		<dependency>
 			<groupId>net.imagej</groupId>
 			<artifactId>imagej</artifactId>
