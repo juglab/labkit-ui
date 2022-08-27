@@ -18,7 +18,7 @@
 	<inceptionYear>2017</inceptionYear>
 	<organization>
 		<name>CSBD</name>
-		<url>http://csbdresden.de/</url>
+		<url>https://www.csbdresden.de/</url>
 	</organization>
 	<licenses>
 		<license>
@@ -38,7 +38,7 @@
 		<developer>
 			<id>maarzt</id>
 			<name>Matthias Arzt</name>
-			<url>https://imagej.net/people/Maarzt</url>
+			<url>https://imagej.net/people/maarzt</url>
 			<roles>
 				<role>lead</role>
 				<role>developer</role>
