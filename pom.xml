@@ -95,12 +95,9 @@
 		<package-name>sc.fiji.labkit.ui</package-name>
 		<license.licenseName>bsd_2</license.licenseName>
 		<license.copyrightOwners>Matthias Arzt</license.copyrightOwners>
+
 		<!-- NB: Deploy releases to the SciJava Maven repository. -->
 		<releaseProfiles>sign,deploy-to-scijava</releaseProfiles>
-
-		<jackson-dataformat-yaml.version>2.11.1</jackson-dataformat-yaml.version>
-
-		<labkit-pixel-classification.version>0.1.15</labkit-pixel-classification.version>
 	</properties>
 
 	<build>
@@ -207,7 +204,6 @@
 		<dependency>
 			<groupId>sc.fiji</groupId>
 			<artifactId>labkit-pixel-classification</artifactId>
-			<version>${labkit-pixel-classification.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>net.imagej</groupId>
@@ -246,7 +242,6 @@
 		<dependency>
 			<groupId>com.fasterxml.jackson.dataformat</groupId>
 			<artifactId>jackson-dataformat-yaml</artifactId>
-			<version>${jackson-dataformat-yaml.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>com.fasterxml.jackson.core</groupId>
