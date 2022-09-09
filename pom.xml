@@ -121,13 +121,73 @@
 
 	<dependencies>
 		<dependency>
-			<groupId>net.imglib2</groupId>
-			<artifactId>imglib2-algorithm</artifactId>
-			<version>${imglib2-algorithm.version}</version>
+			<groupId>com.google.code.gson</groupId>
+			<artifactId>gson</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.scijava</groupId>
+			<artifactId>ui-behaviour</artifactId>
 		</dependency>
 		<dependency>
 			<groupId>net.imagej</groupId>
-			<artifactId>imagej</artifactId>
+			<artifactId>ij</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.openmicroscopy</groupId>
+			<artifactId>ome-xml</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.apache.commons</groupId>
+			<artifactId>commons-lang3</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>sc.fiji</groupId>
+			<artifactId>spim_data</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.scijava</groupId>
+			<artifactId>scijava-common</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>net.imglib2</groupId>
+			<artifactId>imglib2-roi</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>sc.fiji</groupId>
+			<artifactId>Trainable_Segmentation</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.scijava</groupId>
+			<artifactId>scijava-table</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>ome</groupId>
+			<artifactId>formats-api</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>com.miglayout</groupId>
+			<artifactId>miglayout-swing</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.scijava</groupId>
+			<artifactId>scijava-listeners</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>ome</groupId>
+			<artifactId>formats-bsd</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>net.sf.trove4j</groupId>
+			<artifactId>trove4j</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>nz.ac.waikato.cms.weka</groupId>
+			<artifactId>weka-dev</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>net.imglib2</groupId>
+			<artifactId>imglib2-algorithm</artifactId>
+			<version>${imglib2-algorithm.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>net.imagej</groupId>
@@ -177,6 +237,10 @@
 			</exclusions>
 		</dependency>
 		<dependency>
+			<groupId>commons-io</groupId>
+			<artifactId>commons-io</artifactId>
+		</dependency>
+		<dependency>
 			<groupId>io.scif</groupId>
 			<artifactId>scifio</artifactId>
 		</dependency>
@@ -203,6 +267,21 @@
 		<dependency>
 			<groupId>org.openjdk.jmh</groupId>
 			<artifactId>jmh-generator-annprocess</artifactId>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>net.imagej</groupId>
+			<artifactId>imagej</artifactId>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>com.google.guava</groupId>
+			<artifactId>guava</artifactId>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>net.imagej</groupId>
+			<artifactId>ij1-patcher</artifactId>
 			<scope>test</scope>
 		</dependency>
 	</dependencies>

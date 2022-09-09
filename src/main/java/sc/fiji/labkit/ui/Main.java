@@ -29,7 +29,8 @@
 
 package sc.fiji.labkit.ui;
 
-import net.imagej.ImageJ;
+import org.scijava.Context;
+import org.scijava.ui.UIService;
 import sc.fiji.labkit.ui.actions.AbstractFileIoAction;
 
 import javax.swing.*;
@@ -73,8 +74,8 @@ public class Main {
 	}
 
 	public static void start(String filename) {
-		ImageJ imageJ = new ImageJ();
-		imageJ.ui().showUI();
-		LabkitFrame.showForFile(imageJ.context(), filename);
+		Context context = new Context();
+		context.service(UIService.class).showUI();
+		LabkitFrame.showForFile(context, filename);
 	}
 }
