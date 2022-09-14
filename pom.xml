@@ -5,7 +5,7 @@
 	<parent>
 		<groupId>org.scijava</groupId>
 		<artifactId>pom-scijava</artifactId>
-		<version>31.1.0</version>
+		<version>33.1.0</version>
 	</parent>
 
 	<groupId>sc.fiji</groupId>
@@ -100,8 +100,7 @@
 
 		<jackson-dataformat-yaml.version>2.11.1</jackson-dataformat-yaml.version>
 
-		<imglib2-algorithm.version>0.12.1</imglib2-algorithm.version>
-		<labkit-pixel-classification.version>0.1.14</labkit-pixel-classification.version>
+		<labkit-pixel-classification.version>0.1.15</labkit-pixel-classification.version>
 	</properties>
 
 	<build>
