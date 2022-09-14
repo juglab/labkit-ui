@@ -284,5 +284,16 @@
 			<artifactId>ij1-patcher</artifactId>
 			<scope>test</scope>
 		</dependency>
+		<dependency>
+			<groupId>net.haesleinhuepf</groupId>
+			<artifactId>clij2_</artifactId>
+			<exclusions>
+				<exclusion>
+					<groupId>com.google.android.tools</groupId>
+					<artifactId>dx</artifactId>
+				</exclusion>
+			</exclusions>
+			<scope>test</scope>
+		</dependency>
 	</dependencies>
 </project>
