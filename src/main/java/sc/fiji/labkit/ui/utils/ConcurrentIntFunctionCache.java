@@ -33,28 +33,27 @@ import java.util.Arrays;
 import java.util.Objects;
 import java.util.function.IntFunction;
 
+// @formatter:off
 /**
  * A simple cache, that allows to cache the values returned by an
  * {@code IntFunction<T>}.
  * <p>
  * Here is an example. The following code will print "Hello number 42" twice.
- * But the function "helloFunction" is only executed once.
- * 
+ * But the function "helloFunction" is only run once:
  * <pre>
- * 
- * {
- * 	&#64;code
- * 	IntFunction<String> helloFunction = i -> "Hello number " + i;
- * 	IntFunction<String> cachedFunction = new ConcurrentIntFunctionCache(helloFunction);
- * 	System.out.println(cachedFunction.apply(42));
- * 	System.out.println(cachedFunction.apply(42));
+ * {@code
+ * IntFunction<String> helloFunction = i -> "Hello number " + i;
+ * IntFunction<String> cachedFunction = new ConcurrentIntFunctionCache(helloFunction);
+ * System.out.println(cachedFunction.apply(42));
+ * System.out.println(cachedFunction.apply(42));
  * }
  * </pre>
  * <p>
- * Thread safety: Lets consider the example above. It the function
+ * Thread safety: Lets consider the example above. If the function
  * "helloFunction" is thread safe, then the "cachedFunction" is also thread
  * safe.
  */
+// @formatter:on
 public class ConcurrentIntFunctionCache<T> implements IntFunction<T> {
 
 	private final IntFunction<T> function;
