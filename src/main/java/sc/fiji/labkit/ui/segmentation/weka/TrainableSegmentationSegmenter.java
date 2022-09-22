@@ -29,6 +29,7 @@
 
 package sc.fiji.labkit.ui.segmentation.weka;
 
+import gnu.trove.list.array.TLongArrayList;
 import hr.irb.fastRandomForest.FastRandomForest;
 import net.imagej.ImgPlus;
 import net.imagej.axis.Axes;
@@ -74,6 +75,7 @@ import weka.core.WekaException;
 
 import javax.swing.*;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -167,7 +169,7 @@ public class TrainableSegmentationSegmenter implements Segmenter {
 			segmenter.setUseGpu(useGpu);
 			Training training = segmenter.training();
 			for (Pair<ImgPlus<?>, Labeling> pair : trainingData)
-				trainStack(training, classes, pair.getB(), pair.getA(), segmenter.features());
+				trainPair(training, classes, pair, segmenter);
 			training.train();
 			this.segmenter = segmenter;
 		}
@@ -178,6 +180,39 @@ public class TrainableSegmentationSegmenter implements Segmenter {
 					"The training requires some labeled regions.");
 			throw e;
 		}
+	}
+
+	private void trainPair(Training training, List<String> classes, Pair<ImgPlus<?>, Labeling> pair,
+		sc.fiji.labkit.pixel_classification.classification.Segmenter segmenter)
+	{
+		ImgPlus<?> image = pair.getA();
+		Labeling labeling = pair.getB();
+		checkMatchingSize(image, labeling);
+		trainStack(training, classes, labeling, image, segmenter.features());
+	}
+
+	private void checkMatchingSize(ImgPlus<?> image, Labeling labeling) {
+		long[] labelingSize = labeling.interval().dimensionsAsLongArray();
+		long[] imageSize = getImageSizeXYZTnoChannel(image);
+		boolean sizeMatches = !Arrays.equals(labelingSize, imageSize);
+		if (sizeMatches) {
+			String message = "Error: Pixel classifier cannot be trained.\n" +
+				"The size of the image and the labeling don't match:\n" +
+				"- image size: " + Arrays.toString(imageSize) + "\n" +
+				"- labeling size: " + Arrays.toString(labelingSize);
+			throw new CancellationException(message);
+		}
+	}
+
+	private long[] getImageSizeXYZTnoChannel(ImgPlus<?> image) {
+		TLongArrayList size = new TLongArrayList();
+		size.add(ImgPlusViewsOld.getDimension(image, Axes.X));
+		size.add(ImgPlusViewsOld.getDimension(image, Axes.Y));
+		if (ImgPlusViewsOld.hasAxis(image, Axes.Z))
+			size.add(ImgPlusViewsOld.getDimension(image, Axes.Z));
+		if (ImgPlusViewsOld.hasAxis(image, Axes.TIME))
+			size.add(ImgPlusViewsOld.getDimension(image, Axes.TIME));
+		return size.toArray();
 	}
 
 	@Override
