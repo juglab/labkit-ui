@@ -29,8 +29,6 @@
 
 package sc.fiji.labkit.ui.labeling;
 
-import gnu.trove.map.TIntObjectMap;
-import gnu.trove.map.hash.TIntObjectHashMap;
 import net.imglib2.Interval;
 import net.imglib2.RandomAccessibleInterval;
 import net.imglib2.converter.Converters;
@@ -40,11 +38,13 @@ import sc.fiji.labkit.ui.models.DefaultHolder;
 import sc.fiji.labkit.ui.models.Holder;
 import sc.fiji.labkit.ui.models.LabelingModel;
 import sc.fiji.labkit.ui.utils.ARGBVector;
+import sc.fiji.labkit.ui.utils.ConcurrentIntFunctionCache;
 import sc.fiji.labkit.ui.utils.ParametricNotifier;
 import net.imglib2.type.numeric.ARGBType;
 
 import java.util.List;
 import java.util.Set;
+import java.util.function.IntFunction;
 import java.util.stream.Collectors;
 
 /**
@@ -78,18 +78,10 @@ public class LabelsLayer implements BdvLayer {
 	private RandomAccessibleInterval<ARGBType> colorView() {
 		Labeling labeling = model.labeling().get();
 		List<Set<Label>> labelSets = labeling.getLabelSets();
-		TIntObjectMap<ARGBType> colors = new TIntObjectHashMap<>();
-
+		IntFunction<ARGBType> getColor = i -> getColor(labelSets.get(i));
+		IntFunction<ARGBType> cachedGetColor = new ConcurrentIntFunctionCache<>(getColor);
 		return Converters.convert(labeling.getIndexImg(), (in, out) -> {
-			int i = in.getInteger();
-			ARGBType c = colors.get(i);
-			if (c == null) {
-				c = getColor(labelSets.get(i));
-				synchronized (colors) {
-					colors.put(i, c);
-				}
-			}
-			out.set(c);
+			out.set(cachedGetColor.apply(in.getInteger()));
 		}, new ARGBType());
 	}
 
