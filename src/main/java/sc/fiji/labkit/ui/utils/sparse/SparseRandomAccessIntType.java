@@ -95,10 +95,16 @@ public class SparseRandomAccessIntType extends AbstractWrappedInterval<Interval>
 	private int get(MyRandomAccess position) {
 		long index = indexer.positionToIndex(position);
 		while (true) {
-			long readId = lock.startRead();
-			int value = values.get(index);
-			if (lock.isReadValid(readId))
-				return value;
+			try {
+				long readId = lock.startRead();
+				int value = values.get(index);
+				if (lock.isReadValid(readId))
+					return value;
+			}
+			catch (ArrayIndexOutOfBoundsException ignore) {
+				// NB: TLongInHashMap.get(long) sometimes throws an
+				// ArrayIndexOutOfBoundsException, if it is rehashed.
+			}
 		}
 	}
 
