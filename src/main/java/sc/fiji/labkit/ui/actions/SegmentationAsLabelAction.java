@@ -66,16 +66,9 @@ public class SegmentationAsLabelAction {
 	{
 		this.labelingModel = segmentationModel.imageLabelingModel();
 		this.selectedSegmenter = segmentationModel.segmenterList().selectedSegmenter();
-		extensible.addMenuItem(MenuBar.SEGMENTER_MENU,
-			"Create Label from Segmentation ...", 400,
-			ignore -> addSegmentationAsLabels(), null, "");
 		extensible.addMenuItem(SegmentationItem.SEGMENTER_MENU,
 			"Create Label from Segmentation ...", 400, this::addSegmentationAsLabel,
 			null, null);
-	}
-
-	private void addSegmentationAsLabels() {
-		addSegmentationAsLabel(selectedSegmenter.get());
 	}
 
 	private void addSegmentationAsLabel(SegmentationItem segmentationItem) {
