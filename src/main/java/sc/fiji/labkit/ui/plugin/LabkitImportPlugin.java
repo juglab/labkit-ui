@@ -96,7 +96,9 @@ public class LabkitImportPlugin implements Command {
 			return SpimDataInputImage.openWithGuiForLevelSelection(filename);
 		try {
 			Dataset dataset = context.service(DatasetIOService.class).open(new FileLocation(file));
-			return new DatasetInputImage(dataset);
+			DatasetInputImage datasetInputImage = new DatasetInputImage(dataset);
+			datasetInputImage.setDefaultLabelingFilename(filename + ".labeling");
+			return datasetInputImage;
 		}
 		catch (IOException e) {
 			throw new UnsupportedOperationException(
