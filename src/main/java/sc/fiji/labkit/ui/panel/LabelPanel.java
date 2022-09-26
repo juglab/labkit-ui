@@ -107,14 +107,23 @@ public class LabelPanel {
 			buttonsPanel.setBackground(UIManager.getColor("List.background"));
 			buttonsPanel.setLayout(new MigLayout("insets 4pt, gap 4pt", "[grow]",
 				""));
-			buttonsPanel.add(GuiUtils.createActionIconButton("Add label",
-				new RunnableAction("Add label", this::addLabel), "add.png"), "");
+			buttonsPanel.add(initializeAddLabelButton(), "");
 			buttonsPanel.add(GuiUtils.createActionIconButton("Remove all",
 				new RunnableAction("Remove all", this::removeAllLabels), "remove.png"),
 				"gapbefore push");
 			panel.add(buttonsPanel, "grow, span");
 		}
 		return panel;
+	}
+
+	private JButton initializeAddLabelButton() {
+		RunnableAction addLabelAction = new RunnableAction("Add label", this::addLabel);
+		JButton button = GuiUtils.createActionIconButton("Add label", addLabelAction, "add.png");
+		button.getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW)
+			.put(KeyStroke.getKeyStroke("ctrl A"), "create new label");
+		button.getActionMap().put("create new label", addLabelAction);
+		button.setToolTipText("<html><small>Keyboard shortcut:</small></html>");
+		return button;
 	}
 
 	private void changeSelectedLabel() {
