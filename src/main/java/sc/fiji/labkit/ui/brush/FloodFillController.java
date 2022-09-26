@@ -155,9 +155,23 @@ public class FloodFillController {
 					frame = Views.hyperSlice(frame, 2, z);
 				}
 				Point seed = roundAndReduceDimension(imageCoordinates, frame.numDimensions());
-				FloodFill.doFloodFillOnActiveLabels(frame, seed, operationFactory
-					.get());
+				Consumer<Set<Label>> operation = operationFactory.get();
+				if (askUser(frame, seed, operation))
+					FloodFill.doFloodFillOnActiveLabels(frame, seed, operation);
 			}
+		}
+
+		private boolean askUser(RandomAccessibleInterval<LabelingType<Label>> frame, Point seed,
+			Consumer<Set<Label>> operation)
+		{
+			if (seed.numDimensions() == 3 && FloodFill.isBackgroundFloodFill(frame, seed, operation)) {
+				String message = "Are you sure to flood fill the background of this 3d image?" +
+					"\n(This may take a while to compute.)";
+				int result = JOptionPane.showConfirmDialog(viewer, message, "Flood Fill 3D Image",
+					JOptionPane.OK_CANCEL_OPTION, JOptionPane.QUESTION_MESSAGE);
+				return result == JOptionPane.OK_OPTION;
+			}
+			return true;
 		}
 
 		private Point roundAndReduceDimension(final RealLocalizable realLocalizable,

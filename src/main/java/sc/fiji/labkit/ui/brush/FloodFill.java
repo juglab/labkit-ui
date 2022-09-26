@@ -119,6 +119,19 @@ class FloodFill {
 		return ra.get();
 	}
 
+	public static boolean isBackgroundFloodFill(RandomAccessibleInterval<LabelingType<Label>> frame,
+		Point seed, Consumer<Set<Label>> operation)
+	{
+		LabelingType<Label> seedValue = frame.randomAccess().setPositionAndGet(seed);
+		LabelingType<Label> changedSeedValue = seedValue.copy();
+		operation.accept(changedSeedValue);
+		long numberOfActiveLabelsBefore = seedValue.stream().filter(Label::isVisible).count();
+		long numberOfActiveLabelsAfter = changedSeedValue.stream().filter(Label::isVisible).count();
+		boolean isBackgroundFill = numberOfActiveLabelsBefore == 0;
+		boolean operationHasEffect = numberOfActiveLabelsAfter > 0;
+		return isBackgroundFill && operationHasEffect;
+	}
+
 	private static class CacheForPredicateLabelingType<T> implements
 		Predicate<LabelingType<T>>
 	{
