@@ -29,6 +29,7 @@
 
 package sc.fiji.labkit.ui.panel;
 
+import org.scijava.ui.behaviour.util.RunnableAction;
 import sc.fiji.labkit.ui.brush.FloodFillController;
 import sc.fiji.labkit.ui.brush.LabelBrushController;
 import sc.fiji.labkit.ui.brush.PlanarModeController;
@@ -38,6 +39,7 @@ import net.miginfocom.swing.MigLayout;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ItemEvent;
+import java.awt.event.ItemListener;
 
 /**
  * Panel with the tool buttons for brush, flood fill, etc... Activates and
@@ -47,6 +49,36 @@ public class LabelToolsPanel extends JPanel {
 
 	private static final Color OPTIONS_BORDER = new Color(220, 220, 220);
 	private static final Color OPTIONS_BACKGROUND = new Color(230, 230, 230);
+
+	private static final String MOVE_TOOL_TIP = "<html><b>Move</b><br>" +
+		"<small>Keyboard shortcuts:<br>" +
+		"- <b>Left Click</b> on the image and drag, to rotate the image.<br>" +
+		"- <b>Right Click</b> on the image, to move around.<br>" +
+		"- <b>Ctrl + Shift + Mouse Wheel</b> to zoom in and out.<br>" +
+		"- <b>Mouse Wheel</b> only, to scroll through a 3d image.<br>" +
+		"- Press <b>Ctrl + G</b> to deactivate drawing tools and activate this mode.</small></html>";
+	private static final String DRAW_TOOL_TIP = "<html><b>Draw</b><br>" +
+		"<small>Keyboard shortcuts:<br>" +
+		"- Hold down the <b>D</b> key and <b>Left Click</b> on the image to draw.<br>" +
+		"- Hold down the <b>D</b> key and use the <b>Mouse Wheel</b> to change the brush diameter.<br>" +
+		"- Or press <b>Ctrl + D</b> to activate the drawing tool.</small></html>";
+	private static final String ERASE_TOOL_TIP = "<html><b>Erase</b><br>" +
+		"<small>Keyboard shortcuts:<br>" +
+		"- Hold down the <b>E</b> key and <b>Left Click</b> on the image to erase.<br>" +
+		"- Hold down the <b>E</b> key and use the <b>Mouse Wheel</b> to change the brush diameter.<br>" +
+		"- Or press <b>Ctrl + E</b> to activate the eraser tool.</small></html>";
+	private static final String FLOOD_FILL_TOOL_TIP = "<html><b>Flood Fill</b><br>" +
+		"<small>Keyboard shortcuts:<br>" +
+		"- Hold down the <b>F</b> key and <b>Left Click</b> on the image to flood fill.<br>" +
+		"- Or press <b>Ctrl + F</b> to activate the flood fill tool.</small></html>";
+	private static final String FLOOD_ERASE_TOOL_TIP = "<html><b>Remove Connected Component</b><br>" +
+		"<small>Keyboard shortcuts:<br>" +
+		"- Hold down the <b>R</b> key and <b>Left Click</b> on the image to remove connected component.<br>" +
+		"- Or press <b>Ctrl + R</b> to activate the remove connected component tool.</small></html>";
+	private static final String SELECT_LABEL_TOOL_TIP = "<html><b>Select Label</b><br>" +
+		"<small>Keyboard shortcuts:<br>" +
+		"- Hold down the <b>Shift</b> key and <b>Left Click</b> on the image<br>" +
+		"  to select the label under the cursor.</small></html>";
 
 	private final FloodFillController floodFillController;
 	private final LabelBrushController brushController;
@@ -86,21 +118,21 @@ public class LabelToolsPanel extends JPanel {
 	}
 
 	private void initActionButtons() {
-		JToggleButton moveBtn = addActionButton("Move", ignore -> {}, false,
-			"/images/move.png");
-		addActionButton("Draw (D)",
+		JToggleButton moveBtn = addActionButton(MOVE_TOOL_TIP, ignore -> {}, false,
+			"/images/move.png", "MOVE_TOOL", "ctrl G");
+		addActionButton(DRAW_TOOL_TIP,
 			brushController::setBrushActive, true,
-			"/images/draw.png");
-		addActionButton("Flood Fill (F)\nThis only works properly on 2D images",
+			"/images/draw.png", "DRAW_TOOL", "ctrl D");
+		addActionButton(FLOOD_FILL_TOOL_TIP,
 			floodFillController::setFloodFillActive, false,
-			"/images/fill.png");
-		addActionButton("Erase (E)",
+			"/images/fill.png", "FILL_TOOL", "ctrl F");
+		addActionButton(ERASE_TOOL_TIP,
 			brushController::setEraserActive, true,
-			"/images/erase.png");
-		addActionButton("Remove Blob (R)",
+			"/images/erase.png", "ERASE_TOOL", "ctrl E");
+		addActionButton(FLOOD_ERASE_TOOL_TIP,
 			floodFillController::setRemoveBlobActive, false,
-			"/images/flooderase.png");
-		addActionButton("Select Label (Shift)",
+			"/images/flooderase.png", "FLOOD_ERASE_TOOL", "ctrl R");
+		addActionButton(SELECT_LABEL_TOOL_TIP,
 			selectLabelController::setActive, false,
 			"/images/pipette.png");
 		moveBtn.doClick();
@@ -133,6 +165,16 @@ public class LabelToolsPanel extends JPanel {
 			brushController.setPlanarMode(selected);
 		});
 		button.setToolTipText(ENABLE_TEXT);
+		return button;
+	}
+
+	private JToggleButton addActionButton(String toolTipText, Mode mode, boolean visibility,
+		String iconPath, String activationKey, String key)
+	{
+		JToggleButton button = addActionButton(toolTipText, mode, visibility, iconPath);
+		button.getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW).put(KeyStroke.getKeyStroke(key),
+			activationKey);
+		button.getActionMap().put(activationKey, new RunnableAction(activationKey, button::doClick));
 		return button;
 	}
 
