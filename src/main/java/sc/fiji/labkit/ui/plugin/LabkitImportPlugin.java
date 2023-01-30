@@ -29,7 +29,6 @@
 
 package sc.fiji.labkit.ui.plugin;
 
-import bdv.img.imaris.Imaris;
 import io.scif.services.DatasetIOService;
 import net.imagej.Dataset;
 import sc.fiji.labkit.ui.LabkitFrame;
@@ -46,12 +45,10 @@ import org.scijava.command.CommandService;
 import org.scijava.io.location.FileLocation;
 import org.scijava.plugin.Parameter;
 import org.scijava.plugin.Plugin;
-import org.scijava.util.FileUtils;
 
 import javax.swing.JOptionPane;
 import java.io.File;
 import java.io.IOException;
-import java.util.concurrent.CancellationException;
 
 /**
  * @author Matthias Arzt
