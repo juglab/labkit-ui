@@ -30,15 +30,15 @@
 package sc.fiji.labkit.ui;
 
 import net.imagej.ImgPlus;
-import net.imglib2.img.array.ArrayImg;
+import net.imagej.axis.Axes;
+import net.imagej.axis.EnumeratedAxis;
+import net.imglib2.img.Img;
 import net.imglib2.img.array.ArrayImgs;
-import net.imglib2.img.basictypeaccess.array.ByteArray;
+import sc.fiji.labkit.pixel_classification.utils.SingletonContext;
 import sc.fiji.labkit.ui.inputimage.DatasetInputImage;
-import sc.fiji.labkit.ui.inputimage.ImgPlusViewsOld;
 import sc.fiji.labkit.ui.labeling.Labeling;
 import net.imglib2.type.numeric.integer.UnsignedByteType;
 import org.junit.Test;
-import org.scijava.Context;
 
 import java.io.File;
 import java.io.IOException;
@@ -50,21 +50,32 @@ import static org.junit.Assert.assertNotNull;
 public class InitialLabelingTest {
 
 	@Test
-	public void testInitialLabeling() throws IOException {
+	public void testDoNotCrashWhenLabelingFileIsEmpty() throws IOException {
 		File empty = File.createTempFile("labkit-InitialLabelingTest-",
 			".czi.labeling");
 		try {
 			ImgPlus<UnsignedByteType> image = ImgPlus.wrap(ArrayImgs.unsignedBytes(2, 3));
 			image.setSource(empty.getAbsolutePath().replace(".labeling", ""));
 			DatasetInputImage inputImage = new DatasetInputImage(image);
-			Context context = new Context();
 			List<String> defaultLabels = Collections.emptyList();
-			Labeling result = InitialLabeling.initLabeling(inputImage, context,
+			Labeling result = InitialLabeling.initLabeling(inputImage,
+				SingletonContext.getInstance(),
 				defaultLabels);
 			assertNotNull(result);
 		}
 		finally {
 			empty.delete();
 		}
+	}
+
+	@Test
+	public void testEnumeratedAxis() {
+		Img<UnsignedByteType> img = ArrayImgs.unsignedBytes(2, 3);
+		EnumeratedAxis xAxis = new EnumeratedAxis(Axes.X, "mm", new double[] { 0, 0.7 });
+		EnumeratedAxis yAxis = new EnumeratedAxis(Axes.Y, "mm", new double[] { 0, 0.3 });
+		ImgPlus<UnsignedByteType> image = new ImgPlus<>(img, "test", xAxis, yAxis);
+		DatasetInputImage inputImage = new DatasetInputImage(image);
+		Labeling result = InitialLabeling.initialLabeling(SingletonContext.getInstance(), inputImage);
+		assertNotNull(result);
 	}
 }

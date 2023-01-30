@@ -156,6 +156,8 @@ public class InitialLabeling {
 	private static List<CalibratedAxis> scaledAxes(double factor,
 		List<CalibratedAxis> imageAxes)
 	{
+		if (factor == 1)
+			return imageAxes;
 		return imageAxes.stream().map(axis -> scaledAxes(factor,
 			(DefaultLinearAxis) axis)).collect(Collectors.toList());
 	}
