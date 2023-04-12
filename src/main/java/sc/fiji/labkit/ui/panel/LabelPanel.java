@@ -138,7 +138,7 @@ public class LabelPanel {
 
 	private void removeAllLabels() {
 		List<Label> items = new ArrayList<>(model.items());
-		items.forEach(model::removeLabel);
+		model.removeAllLabels(items);
 	}
 
 	private void renameLabel(Label label) {
