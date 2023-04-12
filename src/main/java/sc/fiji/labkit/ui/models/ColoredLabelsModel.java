@@ -92,6 +92,11 @@ public class ColoredLabelsModel {
 		fireLabelsChanged();
 	}
 
+	public void removeAllLabels(List<Label> items) {
+		items.forEach(label -> model.labeling().get().removeLabel(label));
+		fireLabelsChanged();
+	}
+
 	public void removeLabel(Label label) {
 		model.labeling().get().removeLabel(label);
 		fireLabelsChanged();
