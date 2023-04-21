@@ -5,7 +5,7 @@
 	<parent>
 		<groupId>org.scijava</groupId>
 		<artifactId>pom-scijava</artifactId>
-		<version>33.2.0</version>
+		<version>34.1.0</version>
 	</parent>
 
 	<groupId>sc.fiji</groupId>
@@ -85,6 +85,11 @@
 		<license.licenseName>bsd_2</license.licenseName>
 		<license.copyrightOwners>Matthias Arzt</license.copyrightOwners>
 
+		<imglib2.version>6.1.0</imglib2.version>
+		<imglib2-cache.version>1.0.0-beta-17</imglib2-cache.version>
+		<bigdataviewer-core.version>10.4.6</bigdataviewer-core.version>
+		<bigdataviewer-vistools.version>1.0.0-beta-32</bigdataviewer-vistools.version>
+
 		<!-- NB: Deploy releases to the SciJava Maven repository. -->
 		<releaseProfiles>sign,deploy-to-scijava</releaseProfiles>
 	</properties>
@@ -157,7 +162,6 @@
 		<dependency>
 			<groupId>net.imglib2</groupId>
 			<artifactId>imglib2-algorithm</artifactId>
-			<version>${imglib2-algorithm.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>net.imagej</groupId>

@@ -32,7 +32,6 @@ package sc.fiji.labkit.ui.brush.neighborhood;
 import net.imglib2.AbstractEuclideanSpace;
 import net.imglib2.Cursor;
 import net.imglib2.RandomAccess;
-import net.imglib2.Sampler;
 
 public final class MappingCursor<T> extends AbstractEuclideanSpace implements
 	Cursor<T>
@@ -147,12 +146,7 @@ public final class MappingCursor<T> extends AbstractEuclideanSpace implements
 	}
 
 	@Override
-	public Sampler<T> copy() {
-		return source.copy();
-	}
-
-	@Override
-	public MappingCursor<T> copyCursor() {
+	public MappingCursor<T> copy() {
 		return new MappingCursor<>(this);
 	}
 }

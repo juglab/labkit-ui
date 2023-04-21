@@ -38,7 +38,6 @@ import net.imglib2.Interval;
 import net.imglib2.Localizable;
 import net.imglib2.Point;
 import net.imglib2.RandomAccess;
-import net.imglib2.Sampler;
 import net.imglib2.img.basictypeaccess.array.LongArray;
 import net.imglib2.roi.IterableRegion;
 import net.imglib2.type.logic.BitType;
@@ -206,18 +205,13 @@ public class SparseIterableRegion extends AbstractWrappedInterval<Interval>
 		}
 
 		@Override
-		public RandomAccess<BitType> copyRandomAccess() {
+		public RandomAccess<BitType> copy() {
 			return new SparseRoiRandomAccess(this);
 		}
 
 		@Override
 		public BitType get() {
 			return value;
-		}
-
-		@Override
-		public Sampler<BitType> copy() {
-			throw new UnsupportedOperationException();
 		}
 	}
 }

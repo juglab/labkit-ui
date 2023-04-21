@@ -38,7 +38,6 @@ import net.imglib2.Localizable;
 import net.imglib2.Point;
 import net.imglib2.RandomAccess;
 import net.imglib2.RandomAccessibleInterval;
-import net.imglib2.Sampler;
 import net.imglib2.img.basictypeaccess.IntAccess;
 import net.imglib2.roi.IterableRegion;
 import net.imglib2.type.BooleanType;
@@ -151,18 +150,13 @@ public class SparseRandomAccessIntType extends AbstractWrappedInterval<Interval>
 		}
 
 		@Override
-		public RandomAccess<IntType> copyRandomAccess() {
+		public RandomAccess<IntType> copy() {
 			return new MyRandomAccess(this);
 		}
 
 		@Override
 		public IntType get() {
 			return value;
-		}
-
-		@Override
-		public Sampler<IntType> copy() {
-			throw new UnsupportedOperationException();
 		}
 	}
 }
