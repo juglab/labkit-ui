@@ -29,13 +29,8 @@
 
 package sc.fiji.labkit.ui.plugin;
 
-import bdv.export.ProgressWriterConsole;
 import net.imagej.Dataset;
 import net.imagej.DatasetService;
-import net.imagej.ImgPlus;
-import net.imglib2.img.Img;
-import net.imglib2.type.numeric.real.FloatType;
-import net.imglib2.util.Intervals;
 import org.scijava.Cancelable;
 import org.scijava.Context;
 import org.scijava.ItemIO;
@@ -43,12 +38,7 @@ import org.scijava.app.StatusService;
 import org.scijava.command.Command;
 import org.scijava.plugin.Parameter;
 import org.scijava.plugin.Plugin;
-import sc.fiji.labkit.ui.inputimage.DatasetInputImage;
 import sc.fiji.labkit.ui.segmentation.SegmentationTool;
-import sc.fiji.labkit.ui.segmentation.SegmentationUtils;
-import sc.fiji.labkit.ui.segmentation.Segmenter;
-import sc.fiji.labkit.ui.segmentation.weka.TrainableSegmentationSegmenter;
-import sc.fiji.labkit.ui.utils.ParallelUtils;
 import sc.fiji.labkit.ui.utils.progress.StatusServiceProgressWriter;
 
 import java.io.File;
