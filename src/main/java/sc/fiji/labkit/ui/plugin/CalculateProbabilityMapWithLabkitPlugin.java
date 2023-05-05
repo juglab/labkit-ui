@@ -29,8 +29,11 @@
 
 package sc.fiji.labkit.ui.plugin;
 
+import ij.ImagePlus;
 import net.imagej.Dataset;
-import net.imagej.DatasetService;
+import net.imagej.ImgPlus;
+import net.imglib2.img.display.imagej.ImageJFunctions;
+import net.imglib2.type.numeric.real.FloatType;
 import org.scijava.Cancelable;
 import org.scijava.Context;
 import org.scijava.ItemIO;
@@ -55,9 +58,6 @@ public class CalculateProbabilityMapWithLabkitPlugin implements Command, Cancela
 	private Context context;
 
 	@Parameter
-	private DatasetService datasetService;
-
-	@Parameter
 	private StatusService statusService;
 
 	@Parameter
@@ -67,7 +67,7 @@ public class CalculateProbabilityMapWithLabkitPlugin implements Command, Cancela
 	private File segmenter_file;
 
 	@Parameter(type = ItemIO.OUTPUT)
-	private Dataset output;
+	private ImagePlus output_ij1;
 
 	@Parameter(required = false)
 	private Boolean use_gpu = false;
@@ -79,7 +79,10 @@ public class CalculateProbabilityMapWithLabkitPlugin implements Command, Cancela
 		segmenter.openModel(segmenter_file.getAbsolutePath());
 		segmenter.setUseGpu(use_gpu);
 		segmenter.setProgressWriter(new StatusServiceProgressWriter(statusService));
-		output = datasetService.create(segmenter.probabilityMap(input.getImgPlus()));
+		final ImgPlus<FloatType> baselineImage = segmenter.probabilityMap(input.getImgPlus());
+		output_ij1 = ImageJFunctions.wrap(baselineImage, baselineImage.getName());
+		output_ij1.show();
+		//NB: this makes the created image accessible even in the headless mode of ImageJ
 	}
 
 	@Override
