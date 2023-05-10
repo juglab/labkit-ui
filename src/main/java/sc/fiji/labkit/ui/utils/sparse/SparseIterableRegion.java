@@ -142,12 +142,7 @@ public class SparseIterableRegion extends AbstractWrappedInterval<Interval>
 		}
 
 		@Override
-		public AbstractCursor<Void> copy() {
-			throw new UnsupportedOperationException();
-		}
-
-		@Override
-		public AbstractCursor<Void> copyCursor() {
+		public SparseRoiCursor copy() {
 			throw new UnsupportedOperationException();
 		}
 

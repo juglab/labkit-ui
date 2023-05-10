@@ -47,7 +47,7 @@ public class MappingCursor<T> implements Cursor<T> {
 	}
 
 	@Override
-	public Cursor<T> copy() {
+	public MappingCursor<T> copy() {
 		return new MappingCursor<>(cursor.copyCursor(), randomAccess
 			.copy());
 	}

@@ -54,8 +54,8 @@ public final class MappingCursor<T> extends AbstractEuclideanSpace implements
 	}
 
 	public MappingCursor(MappingCursor<T> mappingCursor) {
-		this(mappingCursor.offset, mappingCursor.cursor.copyCursor(),
-			mappingCursor.source.copyRandomAccess());
+		this(mappingCursor.offset, mappingCursor.cursor.copy(),
+			mappingCursor.source.copy());
 	}
 
 	@Override
