@@ -110,9 +110,6 @@ public class SegmentationComponent extends JPanel implements AutoCloseable {
 			dialogBoxOwner);
 		this.unmodifiableLabels = unmodifiableLabels;
 		this.segmentationModel = segmentationModel;
-		ImageLabelingModel imageLabelingModel = segmentationModel.imageLabelingModel();
-		labelingComponent = new BasicLabelingComponent(dialogBoxOwner, imageLabelingModel);
-		labelingComponent.addBdvLayer(PredictionLayer.createPredictionLayer(segmentationModel));
 
 		keybindings = new InputActionBindings();
 		SwingUtilities.replaceUIActionMap( this, keybindings.getConcatenatedActionMap() );
@@ -123,6 +120,10 @@ public class SegmentationComponent extends JPanel implements AutoCloseable {
 		actions.install( keybindings, "labkit" );
 		final UpdateListener updateListener = () -> actions.updateKeyConfig( keymap.getConfig() );
 		keymap.updateListeners().add( updateListener );
+
+		ImageLabelingModel imageLabelingModel = segmentationModel.imageLabelingModel();
+		labelingComponent = new BasicLabelingComponent(dialogBoxOwner, imageLabelingModel, keymapManager);
+		labelingComponent.addBdvLayer(PredictionLayer.createPredictionLayer(segmentationModel));
 
 		initActions();
 		setLayout(new BorderLayout());
