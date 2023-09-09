@@ -5,6 +5,7 @@ import org.scijava.plugin.PluginService;
 import org.scijava.ui.behaviour.io.gui.CommandDescriptionProvider.Scope;
 import org.scijava.ui.behaviour.io.gui.CommandDescriptionsBuilder;
 
+import bdv.KeyConfigScopes;
 import bdv.ui.keymap.KeymapManager;
 
 public class LabKitKeymapManager extends KeymapManager
@@ -33,7 +34,7 @@ public class LabKitKeymapManager extends KeymapManager
 		try (final Context context = new Context( PluginService.class ))
 		{
 			context.inject( builder );
-			builder.discoverProviders( LABKIT_SCOPE );
+			builder.discoverProviders(LABKIT_SCOPE, KeyConfigScopes.BIGDATAVIEWER);
 			context.dispose();
 			setCommandDescriptions( builder.build() );
 		}
