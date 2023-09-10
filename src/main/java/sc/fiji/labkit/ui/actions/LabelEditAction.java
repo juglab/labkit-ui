@@ -29,11 +29,17 @@
 
 package sc.fiji.labkit.ui.actions;
 
+import javax.swing.JOptionPane;
+
+import org.scijava.plugin.Plugin;
+import org.scijava.ui.behaviour.io.gui.CommandDescriptionProvider;
+import org.scijava.ui.behaviour.io.gui.CommandDescriptions;
+import org.scijava.ui.behaviour.util.Actions;
+
 import sc.fiji.labkit.ui.Extensible;
+import sc.fiji.labkit.ui.LabKitKeymapManager;
 import sc.fiji.labkit.ui.labeling.Label;
 import sc.fiji.labkit.ui.models.ColoredLabelsModel;
-
-import javax.swing.*;
 
 /**
  * Implements menu items for renaming and removing individual labels. Also
@@ -41,11 +47,16 @@ import javax.swing.*;
  */
 public class LabelEditAction {
 
+
 	private final Extensible extensible;
 
 	private final ColoredLabelsModel model;
 
-	public LabelEditAction(Extensible extensible, boolean fixedLabels,
+	public LabelEditAction(Extensible extensible, boolean fixedLabels, ColoredLabelsModel model) {
+		this(null, extensible, fixedLabels, model);
+	}
+
+	public LabelEditAction(Actions actions, Extensible extensible, boolean fixedLabels,
 		ColoredLabelsModel model)
 	{
 		this.extensible = extensible;
@@ -60,6 +71,23 @@ public class LabelEditAction {
 			null, null);
 		if (!fixedLabels) extensible.addMenuItem(Label.LABEL_MENU, "Remove", 201,
 			model::removeLabel, null, null);
+
+		// Actions.
+		if (actions != null) {
+			if (!fixedLabels) {
+				actions.runnableAction(() -> renameLabel(model.selected().get()), RENAME_LABEL_ACTION,
+						RENAME_LABEL_KEYS);
+				actions.runnableAction(() -> model.moveLabel(model.selected().get(), -1), MOVE_LABEL_UP_ACTION,
+						MOVE_LABEL_UP_KEYS);
+				actions.runnableAction(() -> model.moveLabel(model.selected().get(), 1), MOVE_LABEL_DOWN_ACTION,
+						MOVE_LABEL_DOWN_KEYS);
+				actions.runnableAction(() -> model.removeLabel(model.selected().get()), REMOVE_LABEL_ACTION,
+						REMOVE_LABEL_KEYS);
+			}
+			actions.runnableAction(() -> model.clearLabel(model.selected().get()), CLEAR_LABEL_ACTION,
+					CLEAR_LABEL_KEYS);
+		}
+
 	}
 
 	private void renameLabel(Label label) {
@@ -69,4 +97,42 @@ public class LabelEditAction {
 		if (newName == null) return;
 		model.renameLabel(label, newName);
 	}
+
+	@Plugin(type = CommandDescriptionProvider.class)
+	public static class Descriptions extends CommandDescriptionProvider {
+
+		public Descriptions() {
+			super(LabKitKeymapManager.LABKIT_SCOPE, LabKitKeymapManager.LABKIT_CONTEXT);
+		}
+
+		@Override
+		public void getCommandDescriptions(final CommandDescriptions descriptions) {
+			descriptions.add(RENAME_LABEL_ACTION, RENAME_LABEL_KEYS, RENAME_LABEL_DESCRIPTION);
+			descriptions.add(MOVE_LABEL_UP_ACTION, MOVE_LABEL_UP_KEYS, MOVE_LABEL_UP_DESCRIPTION);
+			descriptions.add(MOVE_LABEL_DOWN_ACTION, MOVE_LABEL_DOWN_KEYS, MOVE_LABEL_DOWN_DESCRIPTION);
+			descriptions.add(REMOVE_LABEL_ACTION, REMOVE_LABEL_KEYS, REMOVE_LABEL_DESCRIPTION);
+			descriptions.add(CLEAR_LABEL_ACTION, CLEAR_LABEL_KEYS, CLEAR_LABEL_DESCRIPTION);
+		}
+	}
+
+	private static final String RENAME_LABEL_ACTION = "rename current label";
+	private static final String MOVE_LABEL_UP_ACTION = "move selected label up";
+	private static final String MOVE_LABEL_DOWN_ACTION = "move selected label down";
+	private static final String REMOVE_LABEL_ACTION = "remove selected label";
+	private static final String CLEAR_LABEL_ACTION = "clear selected label";
+
+	private static final String[] RENAME_LABEL_KEYS = new String[] { "not mapped" };
+	private static final String[] MOVE_LABEL_UP_KEYS = new String[] { "not mapped" };
+	private static final String[] MOVE_LABEL_DOWN_KEYS = new String[] { "not mapped" };
+	private static final String[] REMOVE_LABEL_KEYS = new String[] { "not mapped" };
+	private static final String[] CLEAR_LABEL_KEYS = new String[] { "not mapped" };
+
+	private static final String RENAME_LABEL_DESCRIPTION = "Rename the label currently selected.";
+	private static final String MOVE_LABEL_UP_DESCRIPTION = "Move the label currently selected up in the list.";
+	private static final String MOVE_LABEL_DOWN_DESCRIPTION = "Move the label currently selected down in the list.";
+	private static final String REMOVE_LABEL_DESCRIPTION = "Remove the label currently selected.";
+	private static final String CLEAR_LABEL_DESCRIPTION = "Clear the annotations for the label currently selected.";
+
+
+
 }

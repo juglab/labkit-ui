@@ -40,6 +40,9 @@ import javax.swing.JPanel;
 import javax.swing.JSplitPane;
 import javax.swing.SwingUtilities;
 
+import org.scijava.plugin.Plugin;
+import org.scijava.ui.behaviour.io.gui.CommandDescriptionProvider;
+import org.scijava.ui.behaviour.io.gui.CommandDescriptions;
 import org.scijava.ui.behaviour.util.Actions;
 import org.scijava.ui.behaviour.util.InputActionBindings;
 
@@ -145,12 +148,13 @@ public class SegmentationComponent extends JPanel implements AutoCloseable {
 		new BatchSegmentAction(extensible, selectedSegmenter);
 		new SegmentationAsLabelAction(extensible, segmentationModel);
 		new BitmapImportExportAction(extensible, labelingModel);
-		new LabelEditAction(extensible, unmodifiableLabels, new ColoredLabelsModel(
+		new LabelEditAction(actions, extensible, unmodifiableLabels, new ColoredLabelsModel(
 			labelingModel));
 		MeasureConnectedComponents.addAction(extensible, labelingModel);
 		new ShowHelpAction(extensible);
 		ShowPreferencesDialogAction.install(actions, extensible, keymapManager, dialogBoxOwner);
 		ExampleAction.install(actions);
+		actions.runnableAction(() -> labelingComponent.autoContrast(), AUTO_CONTRAST_ACTION, AUTO_CONTRAST_KEYS);
 		labelingComponent.addShortcuts(extensible.getShortCuts());
 	}
 
@@ -201,5 +205,21 @@ public class SegmentationComponent extends JPanel implements AutoCloseable {
 
 	public void autoContrast() {
 		labelingComponent.autoContrast();
+	}
+
+	private static final String AUTO_CONTRAST_ACTION = "auto contrast";
+	private static final String[] AUTO_CONTRAST_KEYS = new String[] { "not mapped" };
+	private static final String AUTO_CONTRAST_DESCRIPTION = "Perform auto-contrast on the current image.";
+
+	@Plugin(type = CommandDescriptionProvider.class)
+	public static class Descriptions extends CommandDescriptionProvider {
+		public Descriptions() {
+			super(LabKitKeymapManager.LABKIT_SCOPE, LabKitKeymapManager.LABKIT_CONTEXT);
+		}
+
+		@Override
+		public void getCommandDescriptions(final CommandDescriptions descriptions) {
+			descriptions.add(AUTO_CONTRAST_ACTION, AUTO_CONTRAST_KEYS, AUTO_CONTRAST_DESCRIPTION);
+		}
 	}
 }
