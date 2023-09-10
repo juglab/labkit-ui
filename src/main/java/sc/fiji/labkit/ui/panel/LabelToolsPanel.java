@@ -29,17 +29,35 @@
 
 package sc.fiji.labkit.ui.panel;
 
+import java.awt.Color;
+import java.awt.Insets;
+import java.awt.event.ActionEvent;
+import java.awt.event.ItemEvent;
+
+import javax.swing.BorderFactory;
+import javax.swing.ButtonGroup;
+import javax.swing.ImageIcon;
+import javax.swing.JCheckBox;
+import javax.swing.JComponent;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
+import javax.swing.JSlider;
+import javax.swing.JToggleButton;
+import javax.swing.KeyStroke;
+
+import org.scijava.plugin.Plugin;
+import org.scijava.ui.behaviour.io.gui.CommandDescriptionProvider;
+import org.scijava.ui.behaviour.io.gui.CommandDescriptions;
+import org.scijava.ui.behaviour.util.AbstractNamedAction;
+import org.scijava.ui.behaviour.util.Actions;
 import org.scijava.ui.behaviour.util.RunnableAction;
+
+import net.miginfocom.swing.MigLayout;
+import sc.fiji.labkit.ui.LabKitKeymapManager;
 import sc.fiji.labkit.ui.brush.FloodFillController;
 import sc.fiji.labkit.ui.brush.LabelBrushController;
 import sc.fiji.labkit.ui.brush.PlanarModeController;
 import sc.fiji.labkit.ui.brush.SelectLabelController;
-import net.miginfocom.swing.MigLayout;
-
-import javax.swing.*;
-import java.awt.*;
-import java.awt.event.ItemEvent;
-import java.awt.event.ItemListener;
 
 /**
  * Panel with the tool buttons for brush, flood fill, etc... Activates and
@@ -80,6 +98,10 @@ public class LabelToolsPanel extends JPanel {
 		"- Hold down the <b>Shift</b> key and <b>Left Click</b> on the image<br>" +
 		"  to select the label under the cursor.</small></html>";
 
+	private static final String TOGGLE_PLANAR_MODE_ACTION = "toggle planar mode";
+	private static final String[] TOGGLE_PLANAR_MODE_KEYS = new String[] { "not mapped" };
+	private static final String TOGGLE_PLANAR_MODE_DESCRIPTION = "Toggle between slice-by-slice editing and 3d editing.";
+
 	private final FloodFillController floodFillController;
 	private final LabelBrushController brushController;
 	private final SelectLabelController selectLabelController;
@@ -89,6 +111,7 @@ public class LabelToolsPanel extends JPanel {
 	private final ButtonGroup group = new ButtonGroup();
 
 	private Mode mode = ignore -> {};
+	private AbstractNamedAction togglePlanarModeAction;
 
 	public LabelToolsPanel(LabelBrushController brushController,
 		FloodFillController floodFillController, SelectLabelController selectLabelController,
@@ -150,13 +173,14 @@ public class LabelToolsPanel extends JPanel {
 
 	private JToggleButton initPlanarModeButton() {
 		JToggleButton button = new JToggleButton();
+		this.togglePlanarModeAction = createTogglePlanarModeAction(button);
 		ImageIcon rotateIcon = getIcon("/images/rotate.png");
 		ImageIcon planarIcon = getIcon("/images/planes.png");
 		button.setIcon(rotateIcon);
 		button.setFocusable(false);
 		String ENABLE_TEXT = "Click to: Enable slice by slice editing of 3d images.";
 		String DISABLE_TEXT = "Click to: Disable slice by slice editing and freely rotate 3d images.";
-		button.addActionListener(ignore -> {
+		button.addItemListener(ignore -> {
 			boolean selected = button.isSelected();
 			button.setIcon(selected ? planarIcon : rotateIcon);
 			button.setToolTipText(selected ? DISABLE_TEXT : ENABLE_TEXT);
@@ -166,6 +190,18 @@ public class LabelToolsPanel extends JPanel {
 		});
 		button.setToolTipText(ENABLE_TEXT);
 		return button;
+	}
+
+	private AbstractNamedAction createTogglePlanarModeAction(JToggleButton button) {
+		return new AbstractNamedAction(TOGGLE_PLANAR_MODE_ACTION) {
+
+			private static final long serialVersionUID = 1L;
+
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				button.setSelected(!button.isSelected());
+			}
+		};
 	}
 
 	private JToggleButton addActionButton(String toolTipText, Mode mode, boolean visibility,
@@ -251,4 +287,21 @@ public class LabelToolsPanel extends JPanel {
 
 		void setActive(boolean active);
 	}
+
+	public void install(Actions actions) {
+		actions.namedAction(togglePlanarModeAction, TOGGLE_PLANAR_MODE_KEYS);
+	}
+
+	@Plugin(type = CommandDescriptionProvider.class)
+	public static class Descriptions extends CommandDescriptionProvider {
+		public Descriptions() {
+			super(LabKitKeymapManager.LABKIT_SCOPE, LabKitKeymapManager.LABKIT_CONTEXT);
+		}
+
+		@Override
+		public void getCommandDescriptions(final CommandDescriptions descriptions) {
+			descriptions.add(TOGGLE_PLANAR_MODE_ACTION, TOGGLE_PLANAR_MODE_KEYS, TOGGLE_PLANAR_MODE_DESCRIPTION);
+		}
+	}
+
 }

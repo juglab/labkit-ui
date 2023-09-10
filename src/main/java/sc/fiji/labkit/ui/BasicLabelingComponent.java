@@ -165,6 +165,7 @@ public class BasicLabelingComponent extends JPanel implements AutoCloseable {
 	}
 
 	private JPanel initToolsPanel() {
+
 		final PlanarModeController planarModeController = new PlanarModeController(
 			bdvHandle, model, zSlider);
 		final LabelBrushController brushController = new LabelBrushController(
@@ -173,9 +174,29 @@ public class BasicLabelingComponent extends JPanel implements AutoCloseable {
 			bdvHandle, model, actionsAndBehaviours);
 		final SelectLabelController selectLabelController =
 			new SelectLabelController(bdvHandle, model, actionsAndBehaviours);
-		final JPanel toolsPanel = new LabelToolsPanel(brushController,
+		final LabelToolsPanel toolsPanel = new LabelToolsPanel(brushController,
 			floodFillController, selectLabelController, planarModeController);
 		actionsAndBehaviours.addAction(new ChangeLabel(model));
+		
+		if (keymapManager != null) {
+			InputActionBindings keybindings = bdvHandle.getKeybindings();
+			TriggerBehaviourBindings triggerbindings = bdvHandle.getTriggerbindings();
+			
+			Keymap keymap = keymapManager.getForwardSelectedKeymap();
+			
+			final Actions actions = new Actions(keymap.getConfig(), "labkit");
+			actions.install(keybindings, "annotating");
+			
+			Behaviours behaviours = new Behaviours(keymap.getConfig(), "labkit");
+			behaviours.install(triggerbindings, "annotating");
+			
+			keymap.updateListeners().add(() -> {
+				actions.updateKeyConfig(keymap.getConfig());
+				behaviours.updateKeyConfig(keymap.getConfig());
+			});
+
+			toolsPanel.install(actions);
+		}
 		return toolsPanel;
 	}
 
