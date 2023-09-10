@@ -29,7 +29,13 @@
 
 package sc.fiji.labkit.ui.actions;
 
+import org.scijava.plugin.Plugin;
+import org.scijava.ui.behaviour.io.gui.CommandDescriptionProvider;
+import org.scijava.ui.behaviour.io.gui.CommandDescriptions;
+import org.scijava.ui.behaviour.util.Actions;
+
 import sc.fiji.labkit.ui.Extensible;
+import sc.fiji.labkit.ui.LabKitKeymapManager;
 import sc.fiji.labkit.ui.MenuBar;
 import sc.fiji.labkit.ui.models.ImageLabelingModel;
 import sc.fiji.labkit.ui.models.TransformationModel;
@@ -41,7 +47,12 @@ import sc.fiji.labkit.ui.models.TransformationModel;
  */
 public class ResetViewAction {
 
+
 	public ResetViewAction(Extensible extensible, ImageLabelingModel model) {
+		this(null, extensible, model);
+	}
+	
+	public ResetViewAction(Actions actions, Extensible extensible, ImageLabelingModel model) {
 		Runnable action = () -> {
 			TransformationModel transformationModel = model.transformationModel();
 			transformationModel.transformToShowInterval(model.labeling().get()
@@ -49,5 +60,25 @@ public class ResetViewAction {
 		};
 		extensible.addMenuItem(MenuBar.VIEW_MENU, "Reset View", 100,
 			ignore -> action.run(), null, "");
+
+		if (actions != null) {
+			actions.runnableAction(() -> action.run(), RESET_VIEW_ACTION, RESET_VIEW_KEYS);
+		}
+	}
+
+	private static final String RESET_VIEW_ACTION = "reset view";
+	private static final String[] RESET_VIEW_KEYS = new String[] { "not mapped" };
+	private static final String RESET_VIEW_DESCRIPTION = "Reset the current image position, zoom and rotation.";
+
+	@Plugin(type = CommandDescriptionProvider.class)
+	public static class Descriptions extends CommandDescriptionProvider {
+		public Descriptions() {
+			super(LabKitKeymapManager.LABKIT_SCOPE, LabKitKeymapManager.LABKIT_CONTEXT);
+		}
+
+		@Override
+		public void getCommandDescriptions(final CommandDescriptions descriptions) {
+			descriptions.add(RESET_VIEW_ACTION, RESET_VIEW_KEYS, RESET_VIEW_DESCRIPTION);
+		}
 	}
 }

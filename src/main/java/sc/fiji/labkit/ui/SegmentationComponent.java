@@ -144,7 +144,7 @@ public class SegmentationComponent extends JPanel implements AutoCloseable {
 		new LabelingIoAction(extensible, labelingModel);
 		new AddLabelingIoAction(extensible, labelingModel.labeling());
 		new SegmentationExportAction(extensible, labelingModel);
-		new ResetViewAction(extensible, labelingModel);
+		new ResetViewAction(actions, extensible, labelingModel);
 		new BatchSegmentAction(extensible, selectedSegmenter);
 		new SegmentationAsLabelAction(extensible, segmentationModel);
 		new BitmapImportExportAction(extensible, labelingModel);
