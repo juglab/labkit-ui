@@ -54,18 +54,14 @@ public class ShowPreferencesDialogAction
 
 	public static final String ACTION_DESCRIPTION = "Shows the preferences dialog.";
 
-	public ShowPreferencesDialogAction(
-			final Extensible extensible,
-			final Actions actions,
-			final KeymapManager keymapManager,
-			final Frame owner )
-	{
+	public static void install(Actions actions, Extensible extensible, KeymapManager keymapManager, Frame owner) {
 		final Keymap keymap = keymapManager.getForwardSelectedKeymap();
-		final PreferencesDialog preferencesDialog = new PreferencesDialog( owner, keymap, new String[] { LabKitKeymapManager.LABKIT_CONTEXT } );
-		preferencesDialog.addPage( new KeymapSettingsPage( "Keymap", keymapManager, keymapManager.getCommandDescriptions() ) );
-		final ToggleDialogAction action = new ToggleDialogAction( ACTION_NAME, preferencesDialog );
-		actions.namedAction( action, ACTION_DEFAULT_KEYS );
-
+		final PreferencesDialog preferencesDialog = new PreferencesDialog(owner, keymap,
+				new String[] { LabKitKeymapManager.LABKIT_CONTEXT });
+		preferencesDialog
+				.addPage(new KeymapSettingsPage("Keymap", keymapManager, keymapManager.getCommandDescriptions()));
+		final ToggleDialogAction action = new ToggleDialogAction(ACTION_NAME, preferencesDialog);
+		actions.namedAction(action, ACTION_DEFAULT_KEYS);
 		extensible.addMenuItem( MenuBar.HELP_MENU,
 				"Preferences",
 				99,

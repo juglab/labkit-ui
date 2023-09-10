@@ -149,8 +149,8 @@ public class SegmentationComponent extends JPanel implements AutoCloseable {
 			labelingModel));
 		MeasureConnectedComponents.addAction(extensible, labelingModel);
 		new ShowHelpAction(extensible);
-		new ShowPreferencesDialogAction( extensible, actions, keymapManager, dialogBoxOwner );
-		new ExampleAction( actions );
+		ShowPreferencesDialogAction.install(actions, extensible, keymapManager, dialogBoxOwner);
+		ExampleAction.install(actions);
 		labelingComponent.addShortcuts(extensible.getShortCuts());
 	}
 
