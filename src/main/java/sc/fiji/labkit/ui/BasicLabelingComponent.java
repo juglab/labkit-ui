@@ -176,7 +176,8 @@ public class BasicLabelingComponent extends JPanel implements AutoCloseable {
 			new SelectLabelController(bdvHandle, model, actionsAndBehaviours);
 		final LabelToolsPanel toolsPanel = new LabelToolsPanel(brushController,
 			floodFillController, selectLabelController, planarModeController);
-		actionsAndBehaviours.addAction(new ChangeLabel(model));
+		ChangeLabel changeLabel = new ChangeLabel(model);
+		actionsAndBehaviours.addAction(changeLabel);
 		
 		if (keymapManager != null) {
 			InputActionBindings keybindings = bdvHandle.getKeybindings();
@@ -196,6 +197,7 @@ public class BasicLabelingComponent extends JPanel implements AutoCloseable {
 			});
 
 			toolsPanel.install(actions);
+			changeLabel.install(actions);
 		}
 		return toolsPanel;
 	}
