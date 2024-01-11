@@ -29,7 +29,6 @@
 
 package sc.fiji.labkit.ui.segmentation;
 
-import bdv.export.ProgressWriterConsole;
 import io.scif.services.DatasetIOService;
 import net.imagej.ImgPlus;
 import net.imagej.axis.Axes;
@@ -39,6 +38,7 @@ import net.imglib2.type.numeric.real.FloatType;
 import net.imglib2.util.Cast;
 import org.junit.Test;
 import sc.fiji.labkit.pixel_classification.utils.SingletonContext;
+import sc.fiji.labkit.ui.utils.TestResources;
 
 import java.io.IOException;
 
@@ -54,7 +54,7 @@ public class SegmentationToolTest {
 	public void testSegment() {
 		SegmentationTool tool = new SegmentationTool();
 		tool.setUseGpu(false);
-		tool.openModel(fullPath("/leaf.classifier"));
+		tool.openModel(TestResources.fullPath("/leaf.classifier"));
 		((DefaultLinearAxis) image.axis(0)).setScale(0.7);
 		((DefaultLinearAxis) image.axis(1)).setScale(0.7);
 		ImgPlus<UnsignedByteType> segmentation = tool.segment(image);
@@ -70,7 +70,7 @@ public class SegmentationToolTest {
 	public void testProbabilityMap() {
 		SegmentationTool tool = new SegmentationTool();
 		tool.setUseGpu(false);
-		tool.openModel(fullPath("/leaf.classifier"));
+		tool.openModel(TestResources.fullPath("/leaf.classifier"));
 		ImgPlus<FloatType> probabilityMap = tool.probabilityMap(image);
 		ImgPlus<?> expectedProbabilityMap = Cast.unchecked(openImage("/leaf_probability_map.tif"));
 		assertImageEqualsRealType(Cast.unchecked(expectedProbabilityMap), probabilityMap, 0.0001);
@@ -78,15 +78,12 @@ public class SegmentationToolTest {
 
 	private ImgPlus<?> openImage(String file) {
 		try {
-			return SingletonContext.getInstance().service(DatasetIOService.class).open(fullPath(file))
+			return SingletonContext.getInstance().service(DatasetIOService.class).open(
+					TestResources.fullPath(file))
 				.getImgPlus();
 		}
 		catch (IOException e) {
 			throw new RuntimeException(e);
 		}
-	}
-
-	private String fullPath(String name) {
-		return this.getClass().getResource(name).getFile();
 	}
 }

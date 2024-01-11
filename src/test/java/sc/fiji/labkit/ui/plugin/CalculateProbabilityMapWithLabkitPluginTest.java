@@ -34,6 +34,7 @@ import net.imagej.ImageJ;
 import net.imglib2.test.ImgLib2Assert;
 import org.junit.Test;
 import sc.fiji.labkit.pixel_classification.utils.SingletonContext;
+import sc.fiji.labkit.ui.utils.TestResources;
 
 public class CalculateProbabilityMapWithLabkitPluginTest {
 
@@ -41,9 +42,9 @@ public class CalculateProbabilityMapWithLabkitPluginTest {
 	public void test() throws Exception {
 		// setup
 		ImageJ imageJ = new ImageJ(SingletonContext.getInstance());
-		Dataset image = imageJ.scifio().datasetIO().open(fullPath("/blobs.tif"));
-		String blobsModel = fullPath("/blobs.classifier");
-		Dataset expectedImage = imageJ.scifio().datasetIO().open(fullPath(
+		Dataset image = imageJ.scifio().datasetIO().open(TestResources.fullPath("/blobs.tif"));
+		String blobsModel = TestResources.fullPath("/blobs.classifier");
+		Dataset expectedImage = imageJ.scifio().datasetIO().open(TestResources.fullPath(
 			"/blobs_probability_map.tif"));
 		// process
 		Dataset output = (Dataset) imageJ.command().run(CalculateProbabilityMapWithLabkitPlugin.class,
@@ -54,10 +55,5 @@ public class CalculateProbabilityMapWithLabkitPluginTest {
 			.get().getOutput("output");
 		// test
 		ImgLib2Assert.assertImageEqualsRealType(expectedImage, output, 0.0);
-	}
-
-	private String fullPath(String name) {
-		return CalculateProbabilityMapWithLabkitPluginTest.class.getResource(
-			name).getFile();
 	}
 }

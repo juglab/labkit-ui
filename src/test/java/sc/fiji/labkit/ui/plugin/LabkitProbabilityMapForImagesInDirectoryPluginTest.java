@@ -43,6 +43,7 @@ import org.scijava.command.CommandService;
 import org.scijava.io.location.FileLocation;
 import org.scijava.plugin.Parameter;
 import sc.fiji.labkit.pixel_classification.utils.SingletonContext;
+import sc.fiji.labkit.ui.utils.TestResources;
 
 import java.io.File;
 import java.io.IOException;
@@ -81,7 +82,7 @@ public class LabkitProbabilityMapForImagesInDirectoryPluginTest {
 			"file_filter", "*.tif",
 			"output_directory", outputDirectory,
 			"output_file_suffix", "_probability_map.tif",
-			"segmenter_file", fullPath("/leaf.classifier"),
+			"segmenter_file", TestResources.fullPath("/leaf.classifier"),
 			"use_gpu", false).get();
 		testOutputDirectory(outputDirectory);
 	}
@@ -89,7 +90,7 @@ public class LabkitProbabilityMapForImagesInDirectoryPluginTest {
 	private File createTestInputDirectory() throws IOException {
 		File folder = Files.createTempDirectory("labkit-test-input").toFile();
 		RandomAccessibleInterval<UnsignedByteType> image =
-			Cast.unchecked(io.open(fullPath("/leaf.tif")));
+			Cast.unchecked(io.open(TestResources.fullPath("/leaf.tif")));
 		for (int i = 0; i < 4; i++) {
 			File file = new File(folder, "image" + i + ".tif");
 			saveImage(image, file);
@@ -99,8 +100,8 @@ public class LabkitProbabilityMapForImagesInDirectoryPluginTest {
 	}
 
 	private void testOutputDirectory(File folder) throws IOException {
-		RandomAccessibleInterval<? extends RealType<?>> expected = io.open(fullPath(
-			"/leaf_probability_map.tif"));
+		RandomAccessibleInterval<? extends RealType<?>> expected = io.open(
+			TestResources.fullPath("/leaf_probability_map.tif"));
 		for (int i = 0; i < 4; i++) {
 			File file = new File(folder, "image" + i + "_probability_map.tif");
 			assertTrue("Expected output file is missing: " + file, file.exists());
@@ -121,9 +122,4 @@ public class LabkitProbabilityMapForImagesInDirectoryPluginTest {
 		dataset.axis(2).setType(Axes.CHANNEL);
 		io.save(dataset, new FileLocation(file));
 	}
-
-	private String fullPath(String name) {
-		return this.getClass().getResource(name).getFile();
-	}
-
 }

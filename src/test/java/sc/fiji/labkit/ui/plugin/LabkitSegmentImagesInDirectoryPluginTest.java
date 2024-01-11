@@ -46,6 +46,7 @@ import org.scijava.command.CommandService;
 import org.scijava.io.location.FileLocation;
 import org.scijava.plugin.Parameter;
 import sc.fiji.labkit.pixel_classification.utils.SingletonContext;
+import sc.fiji.labkit.ui.utils.TestResources;
 
 import java.io.File;
 import java.io.IOException;
@@ -83,7 +84,7 @@ public class LabkitSegmentImagesInDirectoryPluginTest {
 			"file_filter", "*.tif",
 			"output_directory", outputDirectory,
 			"output_file_suffix", "_segmentation.tif",
-			"segmenter_file", fullPath("/leaf.classifier"),
+			"segmenter_file", TestResources.fullPath("/leaf.classifier"),
 			"use_gpu", false).get();
 		testOutputDirectory(outputDirectory);
 	}
@@ -91,7 +92,7 @@ public class LabkitSegmentImagesInDirectoryPluginTest {
 	private File createTestInputDirectory() throws IOException {
 		File folder = Files.createTempDirectory("labkit-test-input").toFile();
 		RandomAccessibleInterval<UnsignedByteType> image =
-			Cast.unchecked(io.open(fullPath("/leaf.tif")));
+			Cast.unchecked(io.open(TestResources.fullPath("/leaf.tif")));
 		for (int i = 0; i < 4; i++) {
 			File file = new File(folder, "image" + i + ".tif");
 			saveImage(image, file);
@@ -101,7 +102,7 @@ public class LabkitSegmentImagesInDirectoryPluginTest {
 	}
 
 	private void testOutputDirectory(File folder) throws IOException {
-		RandomAccessibleInterval<? extends RealType<?>> expected = io.open(fullPath(
+		RandomAccessibleInterval<? extends RealType<?>> expected = io.open(TestResources.fullPath(
 			"/leaf_segmentation.tif"));
 		for (int i = 0; i < 4; i++) {
 			File file = new File(folder, "image" + i + "_segmentation.tif");
@@ -134,9 +135,4 @@ public class LabkitSegmentImagesInDirectoryPluginTest {
 		});
 		assertTrue(count[0] < 10);
 	}
-
-	private String fullPath(String name) {
-		return this.getClass().getResource(name).getFile();
-	}
-
 }

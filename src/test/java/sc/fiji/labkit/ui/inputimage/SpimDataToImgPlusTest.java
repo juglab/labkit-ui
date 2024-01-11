@@ -40,6 +40,7 @@ import net.imglib2.type.numeric.integer.IntType;
 import net.imglib2.type.numeric.integer.UnsignedShortType;
 import net.imglib2.util.Cast;
 import org.junit.Test;
+import sc.fiji.labkit.ui.utils.TestResources;
 
 import java.util.Arrays;
 import java.util.stream.IntStream;
@@ -50,7 +51,7 @@ public class SpimDataToImgPlusTest {
 
 	@Test
 	public void testOpen() {
-		String filename = SpimDataToImgPlusTest.class.getResource("/export.xml").getPath();
+		String filename = TestResources.fullPath("/export.xml");
 		ImgPlus<UnsignedShortType> result = Cast.unchecked(SpimDataToImgPlus.open(filename, 0));
 		assertEquals(Arrays.asList(Axes.X, Axes.Y, Axes.Z, Axes.CHANNEL, Axes.TIME), ImgPlusViewsOld
 			.getAxes(result));
@@ -60,14 +61,13 @@ public class SpimDataToImgPlusTest {
 
 	@Test(expected = SpimDataInputException.class)
 	public void testExceptionForMultipleAngles() {
-		String filename = SpimDataToImgPlusTest.class.getResource("/multi-angle-dataset.xml").getPath();
+		String filename = TestResources.fullPath("/multi-angle-dataset.xml");
 		SpimDataToImgPlus.open(filename, 0);
 	}
 
 	@Test(expected = SpimDataInputException.class)
 	public void testExceptionForSizeMismatch() {
-		String filename = SpimDataToImgPlusTest.class.getResource("/size-mismatch-dataset.xml")
-			.getPath();
+		String filename = TestResources.fullPath("/size-mismatch-dataset.xml");
 		SpimDataToImgPlus.open(filename, 0);
 	}
 

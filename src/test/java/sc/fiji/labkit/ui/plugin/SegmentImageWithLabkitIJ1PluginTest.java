@@ -12,15 +12,16 @@ import net.imglib2.img.VirtualStackAdapter;
 import net.imglib2.test.ImgLib2Assert;
 import org.junit.Test;
 import sc.fiji.labkit.pixel_classification.utils.SingletonContext;
+import sc.fiji.labkit.ui.utils.TestResources;
 
 public class SegmentImageWithLabkitIJ1PluginTest {
 
 	@Test
 	public void test() throws IOException {
 		SingletonContext.getInstance();
-		String inputImage = fullPath("/blobs.tif");
-		String blobsModel = fullPath("/blobs.classifier");
-		String source = fullPath("/blobs_segmentation.tif");
+		String inputImage = TestResources.fullPath("/blobs.tif");
+		String blobsModel = TestResources.fullPath("/blobs.classifier");
+		String source = TestResources.fullPath("/blobs_segmentation.tif");
 		File outputImage = File.createTempFile("labkit-segmentation-test", ".tif");
 		String macroTemplate = "close('*');\n" +
 			"open('INPUT_TIF');\n" +
@@ -37,11 +38,7 @@ public class SegmentImageWithLabkitIJ1PluginTest {
 		assertTrue(outputImage.exists());
 		ImagePlus expected = IJ.openImage(source);
 		ImagePlus result = IJ.openImage(outputImage.getAbsolutePath());
-		ImgLib2Assert.assertImageEquals(VirtualStackAdapter.wrap(expected), VirtualStackAdapter.wrap(result), Object::equals);
-	}
-
-	private String fullPath(String name) {
-		return SegmentImageWithLabkitPluginTest.class.getResource(
-			name).getFile();
+		ImgLib2Assert.assertImageEquals(VirtualStackAdapter.wrap(expected),
+			VirtualStackAdapter.wrap(result), Object::equals);
 	}
 }
