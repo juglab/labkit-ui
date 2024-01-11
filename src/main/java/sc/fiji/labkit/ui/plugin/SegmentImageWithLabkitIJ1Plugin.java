@@ -29,8 +29,11 @@
 
 package sc.fiji.labkit.ui.plugin;
 
-import net.imagej.Dataset;
-import net.imagej.DatasetService;
+import java.io.File;
+
+import ij.ImagePlus;
+import net.imglib2.img.VirtualStackAdapter;
+import net.imglib2.img.display.imagej.ImageJFunctions;
 import org.scijava.Cancelable;
 import org.scijava.Context;
 import org.scijava.ItemIO;
@@ -41,33 +44,27 @@ import org.scijava.plugin.Plugin;
 import sc.fiji.labkit.ui.segmentation.SegmentationTool;
 import sc.fiji.labkit.ui.utils.progress.StatusServiceProgressWriter;
 
-import java.io.File;
-
 /**
- * @author Robert Haase
  * @author Matthias Arzt
  */
 @Plugin(type = Command.class,
-	menuPath = "Plugins > Labkit > Macro Recordable > Calculate Probability Map With Labkit")
-public class CalculateProbabilityMapWithLabkitPlugin implements Command, Cancelable {
+	menuPath = "Plugins > Labkit > Macro Recordable > Segment Image With Labkit (IJ1)")
+public class SegmentImageWithLabkitIJ1Plugin implements Command, Cancelable {
 
 	@Parameter
 	private Context context;
 
 	@Parameter
-	private DatasetService datasetService;
-
-	@Parameter
 	private StatusService statusService;
 
 	@Parameter
-	private Dataset input;
+	private ImagePlus input;
 
 	@Parameter
 	private File segmenter_file;
 
 	@Parameter(type = ItemIO.OUTPUT)
-	private Dataset output;
+	private ImagePlus output;
 
 	@Parameter(required = false)
 	private Boolean use_gpu = false;
@@ -76,10 +73,11 @@ public class CalculateProbabilityMapWithLabkitPlugin implements Command, Cancela
 	public void run() {
 		SegmentationTool segmenter = new SegmentationTool();
 		segmenter.setContext(context);
-		segmenter.openModel(segmenter_file.getAbsolutePath());
 		segmenter.setUseGpu(use_gpu);
 		segmenter.setProgressWriter(new StatusServiceProgressWriter(statusService));
-		output = datasetService.create(segmenter.probabilityMap(input.getImgPlus()));
+		segmenter.openModel(segmenter_file.getAbsolutePath());
+		output = ImageJFunctions.wrap(segmenter.segment(VirtualStackAdapter.wrap(input)), "");
+		output.show();
 	}
 
 	@Override
