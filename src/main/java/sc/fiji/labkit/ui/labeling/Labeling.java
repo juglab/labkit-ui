@@ -142,7 +142,7 @@ public class Labeling extends AbstractWrappedInterval<Interval> implements
 			new SparseRandomAccessIntType(interval));
 		RandomAccess<LabelingType<Label>> ra = imgLabeling.randomAccess();
 		regions.forEach((label, region) -> {
-			Cursor<Void> cursor = region.cursor();
+			Cursor<Void> cursor = region.inside().cursor();
 			while (cursor.hasNext()) {
 				cursor.fwd();
 				ra.setPosition(cursor);

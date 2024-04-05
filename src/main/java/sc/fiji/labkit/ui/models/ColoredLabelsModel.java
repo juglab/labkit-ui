@@ -141,7 +141,7 @@ public class ColoredLabelsModel {
 
 	private static Interval getBoundingBox(IterableRegion<BitType> region) {
 		int numDimensions = region.numDimensions();
-		Cursor<?> cursor = region.cursor();
+		Cursor<?> cursor = region.inside().cursor();
 		if (!cursor.hasNext()) return null;
 		long[] min = new long[numDimensions];
 		long[] max = new long[numDimensions];

@@ -49,6 +49,6 @@ public class SparseRandomAccessIntTypeTest {
 			noEntryValue);
 		Views.iterable(image).forEach(x -> x.setInteger(noEntryValue));
 		// test
-		assertFalse(image.sparsityPattern().cursor().hasNext());
+		assertFalse(image.sparsityPattern().inside().cursor().hasNext());
 	}
 }

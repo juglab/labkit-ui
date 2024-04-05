@@ -84,7 +84,7 @@ public class AddLabelingIoAction extends AbstractFileIoAction {
 			.stream().map(Label::name).collect(Collectors.toList()));
 		if (newLabelName == null) return;
 		Label newLabel = labeling.addLabel(newLabelName);
-		Cursor<Void> cursor = region.cursor();
+		Cursor<Void> cursor = region.inside().cursor();
 		RandomAccess<LabelingType<Label>> ra = labeling.randomAccess();
 		while (cursor.hasNext()) {
 			cursor.fwd();
