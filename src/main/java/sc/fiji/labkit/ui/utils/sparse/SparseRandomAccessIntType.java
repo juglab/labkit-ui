@@ -124,6 +124,12 @@ public class SparseRandomAccessIntType extends AbstractWrappedInterval<Interval>
 		}
 	}
 
+	@Override
+	public IntType getType()
+	{
+		return new IntType();
+	}
+
 	// -- Helper classes --
 
 	private class MyRandomAccess extends Point implements RandomAccess<IntType> {

@@ -303,6 +303,12 @@ public class Labeling extends AbstractWrappedInterval<Interval> implements
 		labels.sort(comparator);
 	}
 
+	@Override
+	public LabelingType< Label > getType()
+	{
+		return randomAccess().getType();
+	}
+
 	public static class SetEntryAsBitType<T> extends BitType {
 
 		private Set<T> set = null;
