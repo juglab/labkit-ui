@@ -142,7 +142,7 @@ public class Labeling extends AbstractWrappedInterval<Interval> implements
 			new SparseRandomAccessIntType(interval));
 		RandomAccess<LabelingType<Label>> ra = imgLabeling.randomAccess();
 		regions.forEach((label, region) -> {
-			Cursor<Void> cursor = region.cursor();
+			Cursor<Void> cursor = region.inside().cursor();
 			while (cursor.hasNext()) {
 				cursor.fwd();
 				ra.setPosition(cursor);
@@ -301,6 +301,12 @@ public class Labeling extends AbstractWrappedInterval<Interval> implements
 
 	public void setLabelOrder(Comparator<? super Label> comparator) {
 		labels.sort(comparator);
+	}
+
+	@Override
+	public LabelingType< Label > getType()
+	{
+		return randomAccess().getType();
 	}
 
 	public static class SetEntryAsBitType<T> extends BitType {

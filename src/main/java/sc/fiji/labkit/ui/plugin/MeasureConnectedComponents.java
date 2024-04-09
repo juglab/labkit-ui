@@ -114,7 +114,7 @@ public class MeasureConnectedComponents implements Command {
 
 	static List<Long> connectedComponetsSizes(IterableRegion<BitType> region) {
 		List<Long> sizes = new ArrayList<>();
-		Cursor<Void> cursor = region.cursor();
+		Cursor<Void> cursor = region.inside().cursor();
 		SparseRandomAccessIntType visitedImage = new SparseRandomAccessIntType(
 			region);
 		RandomAccess<IntType> visited = visitedImage.randomAccess();
@@ -124,12 +124,12 @@ public class MeasureConnectedComponents implements Command {
 			visited.setPosition(cursor);
 			if (visited.get().get() == 0) {
 				currentIndex++;
-				long countBefore = visitedImage.sparsityPattern().size();
+				long countBefore = visitedImage.sparsityPattern().inside().size();
 				Filter<Pair<BitType, IntType>, Pair<BitType, IntType>> filter = (
 					current, seed) -> current.getA().get() && current.getB().get() == 0;
 				FloodFill.fill(region, visitedImage, cursor, new IntType(currentIndex),
 					new DiamondShape(1), filter);
-				long countAfter = visitedImage.sparsityPattern().size();
+				long countAfter = visitedImage.sparsityPattern().inside().size();
 				sizes.add(countAfter - countBefore);
 			}
 		}

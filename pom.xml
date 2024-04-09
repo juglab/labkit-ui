@@ -5,7 +5,7 @@
 	<parent>
 		<groupId>org.scijava</groupId>
 		<artifactId>pom-scijava</artifactId>
-		<version>34.1.0</version>
+		<version>37.0.0</version>
 	</parent>
 
 	<groupId>sc.fiji</groupId>
@@ -85,24 +85,20 @@
 		<license.licenseName>bsd_2</license.licenseName>
 		<license.copyrightOwners>Matthias Arzt</license.copyrightOwners>
 
-		<imglib2.version>6.1.0</imglib2.version>
-		<imglib2-cache.version>1.0.0-beta-17</imglib2-cache.version>
-		<bigdataviewer-core.version>10.4.6</bigdataviewer-core.version>
-		<bigdataviewer-vistools.version>1.0.0-beta-32</bigdataviewer-vistools.version>
-
 		<!-- NB: Deploy releases to the SciJava Maven repository. -->
 		<releaseProfiles>sign,deploy-to-scijava</releaseProfiles>
 
-		<bigdataviewer-core.version>10.4.6</bigdataviewer-core.version>
-		<imagej-deprecated.version>0.2.0</imagej-deprecated.version>
-		<imagej-ops.version>2.0.0</imagej-ops.version>
-		<imglib2.version>6.1.0</imglib2.version>
-		<imglib2-algorithm.version>0.13.2</imglib2-algorithm.version>
-		<imglib2-algorithm-gpl.version>0.3.1</imglib2-algorithm-gpl.version>
-		<imglib2-cache.version>1.0.0-beta-17</imglib2-cache.version>
-		<imglib2-realtransform.version>4.0.1</imglib2-realtransform.version>
-		<imglib2-roi.version>0.14.0</imglib2-roi.version>
-		<scifio.version>0.45.0</scifio.version>
+		<imglib2.version>7.0.0-SNAPSHOT</imglib2.version>
+		<imglib2-realtransform.version>4.0.3-SNAPSHOT</imglib2-realtransform.version>
+		<imglib2-roi.version>0.15.0-SNAPSHOT</imglib2-roi.version>
+		<imglib2-cache.version>1.0.0-beta-18-SNAPSHOT</imglib2-cache.version>
+		<imglib2-algorithm.version>0.14.1-SNAPSHOT</imglib2-algorithm.version>
+		<bigdataviewer-core.version>10.4.15-SNAPSHOT</bigdataviewer-core.version>
+		<bigdataviewer-vistools.version>1.0.0-beta-35-SNAPSHOT</bigdataviewer-vistools.version>
+		<imagej-common.version>2.0.6-SNAPSHOT</imagej-common.version>
+		<imagej-ops.version>2.0.1-SNAPSHOT</imagej-ops.version>
+		<enforcer.skip>true</enforcer.skip>
+
 	</properties>
 
 	<dependencies>

@@ -260,7 +260,7 @@ public class TrainableSegmentationSegmenter implements Segmenter {
 		ImgPlus<?> image, FeatureCalculator featuresCalculator)
 	{
 		SparseRandomAccessIntType classIndices = getClassIndices(labeling, classes);
-		if (classIndices.sparsityPattern().size() == 0)
+		if (classIndices.sparsityPattern().inside().size() == 0)
 			return;
 		DiskCachedCellImg<FloatType, ?> cachedFeatureBlock = cachedFeatureBlock(featuresCalculator,
 			image);

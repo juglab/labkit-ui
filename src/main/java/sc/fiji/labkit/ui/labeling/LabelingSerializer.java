@@ -266,7 +266,7 @@ public class LabelingSerializer {
 			IterableRegion<BitType> region)
 		{
 			JsonArray result = new JsonArray();
-			Cursor<Void> cursor = region.cursor();
+			Cursor<Void> cursor = region.inside().cursor();
 			long[] coords = new long[cursor.numDimensions()];
 			while (cursor.hasNext()) {
 				cursor.fwd();
