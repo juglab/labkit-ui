@@ -66,9 +66,7 @@ public class SwingProgressWriter implements ProgressWriter {
 
 	@Override
 	public void setProgress(double completionRatio) {
-		SwingUtilities.invokeLater(() -> {
-			dialog.setProgress(completionRatio);
-		});
+		SwingUtilities.invokeLater(() -> dialog.setProgress(completionRatio));
 		if (dialog.isCanceled()) throw new CancellationException();
 	}
 

@@ -163,9 +163,9 @@ public class ProgressDialog {
 			scrollPane.setVisible(false);
 			setLayout(new MigLayout("insets 0", "[grow]", "[][grow]"));
 			final JCheckBox show_details = new JCheckBox("show Details");
-			show_details.addItemListener(event -> {
-				scrollPane.setVisible(event.getStateChange() == ItemEvent.SELECTED);
-			});
+			show_details.addItemListener(event ->
+				scrollPane.setVisible(event.getStateChange() == ItemEvent.SELECTED)
+			);
 			add(show_details, "wrap");
 			add(scrollPane, "grow");
 		}

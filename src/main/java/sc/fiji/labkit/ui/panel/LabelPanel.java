@@ -93,7 +93,7 @@ public class LabelPanel {
 	private void update() {
 		list.clear();
 		List<Label> items = model.items();
-		items.forEach((label) -> list.add(label, new EntryPanel(label)));
+		items.forEach(label -> list.add(label, new EntryPanel(label)));
 	}
 
 	private JPanel initPanel(boolean fixedLabels) {
@@ -184,9 +184,7 @@ public class LabelPanel {
 		private JCheckBox initVisibilityCheckbox() {
 			JCheckBox checkBox = GuiUtils.styleCheckboxUsingEye(new JCheckBox());
 			checkBox.setSelected(label.isVisible());
-			checkBox.addItemListener(event -> {
-				model.setActive(label, event.getStateChange() == ItemEvent.SELECTED);
-			});
+			checkBox.addItemListener(event -> model.setActive(label, event.getStateChange() == ItemEvent.SELECTED));
 			checkBox.setOpaque(false);
 			return checkBox;
 		}
@@ -194,9 +192,7 @@ public class LabelPanel {
 		private JButton initPopupMenuButton(JPopupMenu menu) {
 			JButton button = new BasicArrowButton(BasicArrowButton.SOUTH);
 			button.setFocusable(false);
-			button.addActionListener(actionEvent -> {
-				menu.show(button, 0, button.getHeight());
-			});
+			button.addActionListener(actionEvent -> menu.show(button, 0, button.getHeight()));
 			return button;
 		}
 
