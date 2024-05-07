@@ -39,7 +39,6 @@ import java.awt.event.ItemEvent;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.beans.PropertyChangeEvent;
-import java.time.Duration;
 
 /**
  * A dialog the shows a progress bar.
