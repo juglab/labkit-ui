@@ -195,7 +195,7 @@ public class ImageLabelingModel implements LabelingModel {
 	private long[] get3dDimensions(Interval interval) {
 		long[] result = new long[3];
 		int n = interval.numDimensions();
-		for (int i = 0; i < n & i < 3; i++)
+		for (int i = 0; i < n && i < 3; i++)
 			result[i] = interval.dimension(i);
 		for (int i = n; i < 3; i++)
 			result[i] = 1;

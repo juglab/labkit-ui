@@ -280,6 +280,6 @@ public class SpimDataToImgPlus {
 				max_difference = Math.max(max_difference, Math.abs(va - vb));
 			}
 		}
-		return max_difference == 0.0 | max_difference < max_abs_value * 1e-6;
+		return max_difference == 0.0 || max_difference < max_abs_value * 1e-6;
 	}
 }

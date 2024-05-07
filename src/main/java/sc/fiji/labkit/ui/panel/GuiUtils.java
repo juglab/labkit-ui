@@ -55,7 +55,7 @@ public class GuiUtils {
 	{
 		JButton button = new JButton(action);
 		button.setText(name);
-		if (icon != "") {
+		if (icon.isEmpty()) {
 			button.setIcon(loadIcon(icon));
 			button.setIconTextGap(5);
 			button.setMargin(new Insets(button.getMargin().top, 3, button
