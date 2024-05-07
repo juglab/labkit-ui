@@ -34,7 +34,6 @@ import net.imglib2.Localizable;
 import net.imglib2.Positionable;
 import net.imglib2.util.Intervals;
 
-import java.util.stream.IntStream;
 import java.util.stream.LongStream;
 
 /**

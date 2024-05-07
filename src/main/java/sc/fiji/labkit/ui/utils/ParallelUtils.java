@@ -126,9 +126,9 @@ public class ParallelUtils {
 		RandomAccessibleInterval<?> img, ProgressWriter progressWriter)
 	{
 		if (img instanceof CachedCellImg) {
-			Parallelization.runWithNumThreads(Runtime.getRuntime().availableProcessors(), () -> {
-				internPopulateCachedImg(Cast.unchecked(img), progressWriter);
-			});
+			Parallelization.runWithNumThreads(Runtime.getRuntime().availableProcessors(), () ->
+				internPopulateCachedImg(Cast.unchecked(img), progressWriter)
+			);
 		}
 	}
 

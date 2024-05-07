@@ -60,9 +60,7 @@ public class AddSegmenterPanel extends JPanel {
 		SegmentationPluginService pluginService = context.service(SegmentationPluginService.class);
 		for (SegmentationPlugin sp : pluginService.getSegmentationPlugins()) {
 			JButton button = new JButton(sp.getTitle());
-			button.addActionListener(ignore -> {
-				segmenterListModel.addSegmenter(sp);
-			});
+			button.addActionListener(ignore -> segmenterListModel.addSegmenter(sp));
 			list.add(button, "grow, wrap");
 		}
 	}

@@ -140,7 +140,7 @@ public class ComponentList<K, C extends JComponent> {
 		Random random = new Random();
 		frame.add(panelList.getComponent(), "grow, wrap");
 		frame.add(new JButton(new RunnableAction("add", () -> addItem(panelList, counter))), "split");
-		frame.add(new JButton(new RunnableAction("clear", () -> panelList.clear())));
+		frame.add(new JButton(new RunnableAction("clear", panelList::clear)));
 		frame.add(new JButton(new RunnableAction("jump", () -> panelList.setSelected(random.nextInt(
 			counter.get())))));
 		frame.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);

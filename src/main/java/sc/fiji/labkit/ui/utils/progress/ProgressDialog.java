@@ -39,7 +39,6 @@ import java.awt.event.ItemEvent;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.beans.PropertyChangeEvent;
-import java.time.Duration;
 
 /**
  * A dialog the shows a progress bar.
@@ -164,9 +163,9 @@ public class ProgressDialog {
 			scrollPane.setVisible(false);
 			setLayout(new MigLayout("insets 0", "[grow]", "[][grow]"));
 			final JCheckBox show_details = new JCheckBox("show Details");
-			show_details.addItemListener(event -> {
-				scrollPane.setVisible(event.getStateChange() == ItemEvent.SELECTED);
-			});
+			show_details.addItemListener(event ->
+				scrollPane.setVisible(event.getStateChange() == ItemEvent.SELECTED)
+			);
 			add(show_details, "wrap");
 			add(scrollPane, "grow");
 		}
