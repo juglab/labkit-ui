@@ -33,6 +33,8 @@ import io.scif.services.DatasetIOService;
 import net.imagej.Dataset;
 import net.imagej.DatasetService;
 import net.imagej.ImgPlus;
+import net.imglib2.parallel.TaskExecutor;
+import net.imglib2.parallel.TaskExecutors;
 import net.imglib2.type.Type;
 import net.imglib2.util.Cast;
 import org.apache.commons.io.FilenameUtils;
@@ -42,6 +44,7 @@ import org.scijava.app.StatusService;
 import org.scijava.command.Command;
 import org.scijava.log.Logger;
 import org.scijava.plugin.Parameter;
+import sc.fiji.labkit.pixel_classification.gpu.api.GpuPool;
 import sc.fiji.labkit.ui.segmentation.SegmentationTool;
 import sc.fiji.labkit.ui.utils.progress.StatusServiceProgressWriter;
 
@@ -49,6 +52,11 @@ import java.io.File;
 import java.io.FileFilter;
 import java.io.IOException;
 import java.util.Arrays;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ThreadFactory;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.function.Supplier;
 
 abstract class AbstractProcessFilesInDirectoryPlugin implements Command, Cancelable {
 
@@ -90,15 +98,38 @@ abstract class AbstractProcessFilesInDirectoryPlugin implements Command, Cancela
 		segmenter.setProgressWriter(new StatusServiceProgressWriter(statusService));
 		FileFilter wildcardFileFilter = new WildcardFileFilter(file_filter);
 		File[] files = input_directory.listFiles(wildcardFileFilter);
-		Arrays.sort(files);
-		for (int i = 0; i < files.length; i++) {
+		AtomicInteger counter = new AtomicInteger();
+		TaskExecutor taskExecutor = getTaskExecutor();
+		taskExecutor.forEach(Arrays.asList(files), file -> {
 			try {
-				processFile(segmenter, files, i);
+				processFile(segmenter, files, counter.getAndIncrement());
 			}
 			catch (Exception e) {
 				logger.error(e);
 			}
+		});
+	}
+
+	private TaskExecutor getTaskExecutor() {
+		if (use_gpu) {
+			TaskExecutor blocksTaskExecutor = fixedNumThreadsTaskExecuter(GpuPool.size(),
+				TaskExecutors::multiThreaded);
+			TaskExecutor imagesTaskExecutor = fixedNumThreadsTaskExecuter(2, () -> blocksTaskExecutor);
+			return imagesTaskExecutor;
 		}
+		else {
+			return fixedNumThreadsTaskExecuter(1, TaskExecutors::multiThreaded);
+//			return TaskExecutors.nestedFixedThreadPool( 2, (Runtime.getRuntime().availableProcessors() + 1)/ 2 );
+		}
+	}
+
+	private TaskExecutor fixedNumThreadsTaskExecuter(int numThreads,
+		Supplier<TaskExecutor> multiThreaded)
+	{
+		ThreadFactory threadFactory = TaskExecutors.threadFactory(multiThreaded);
+		ExecutorService executorService = Executors.newFixedThreadPool(numThreads, threadFactory);
+		TaskExecutor taskExecutor = TaskExecutors.forExecutorService(executorService);
+		return taskExecutor;
 	}
 
 	private <T extends Type<T>> void processFile(SegmentationTool segmenter, File[] files, int i)
