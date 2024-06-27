@@ -348,6 +348,10 @@ public class TrainableSegmentationSegmenter implements Segmenter {
 		featureSettings = segmenter.features().settings();
 	}
 
+	public sc.fiji.labkit.pixel_classification.classification.Segmenter getSegmenter() {
+		return segmenter;
+	}
+
 	@Override
 	public int[] suggestCellSize(ImgPlus<?> image) {
 		if (ImgPlusViewsOld.hasAxis(image, Axes.CHANNEL))
