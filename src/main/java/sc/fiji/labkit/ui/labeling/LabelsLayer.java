@@ -80,9 +80,8 @@ public class LabelsLayer implements BdvLayer {
 		List<Set<Label>> labelSets = labeling.getLabelSets();
 		IntFunction<ARGBType> getColor = i -> getColor(labelSets.get(i));
 		IntFunction<ARGBType> cachedGetColor = new ConcurrentIntFunctionCache<>(getColor);
-		return Converters.convert(labeling.getIndexImg(), (in, out) -> {
-			out.set(cachedGetColor.apply(in.getInteger()));
-		}, new ARGBType());
+		return Converters.convert(labeling.getIndexImg(), (in, out) ->
+			out.set(cachedGetColor.apply(in.getInteger())), new ARGBType());
 	}
 
 	private ARGBType getColor(Set<Label> set) {

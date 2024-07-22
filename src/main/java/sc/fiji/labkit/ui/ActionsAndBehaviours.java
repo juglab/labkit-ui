@@ -31,7 +31,6 @@ package sc.fiji.labkit.ui;
 
 import bdv.util.BdvHandle;
 import org.scijava.ui.behaviour.Behaviour;
-import org.scijava.ui.behaviour.InputTrigger;
 import org.scijava.ui.behaviour.io.InputTriggerConfig;
 import org.scijava.ui.behaviour.util.AbstractNamedAction;
 import org.scijava.ui.behaviour.util.Actions;

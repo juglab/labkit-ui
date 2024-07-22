@@ -30,11 +30,6 @@
 package sc.fiji.labkit.ui.brush.neighborhood;
 
 import net.imglib2.RealLocalizable;
-import net.imglib2.RealPoint;
-import net.imglib2.realtransform.AffineTransform3D;
-
-import java.util.List;
-import java.util.stream.Collectors;
 
 public class RealPoints {
 

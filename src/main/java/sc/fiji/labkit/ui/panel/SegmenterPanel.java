@@ -159,9 +159,7 @@ public class SegmenterPanel extends JPanel {
 		private JButton initPopupMenuButton() {
 			JPopupMenu menu = initPopupMenu();
 			JButton button = new BasicArrowButton(SwingConstants.SOUTH);
-			button.addActionListener(actionEvent -> {
-				menu.show(button, 0, button.getHeight());
-			});
+			button.addActionListener(actionEvent -> menu.show(button, 0, button.getHeight()));
 			return button;
 		}
 

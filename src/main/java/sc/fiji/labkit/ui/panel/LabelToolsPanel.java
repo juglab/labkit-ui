@@ -228,9 +228,7 @@ public class LabelToolsPanel extends JPanel {
 			.getBrushDiameter());
 		brushSize.setFocusable(false);
 		brushSize.setPaintTrack(true);
-		brushSize.addChangeListener(e -> {
-			brushController.setBrushDiameter(brushSize.getValue());
-		});
+		brushSize.addChangeListener(e -> brushController.setBrushDiameter(brushSize.getValue()));
 		brushSize.setOpaque(false);
 		brushController.brushDiameterListeners().addListener(() -> {
 			double diameter = brushController.getBrushDiameter();
@@ -241,9 +239,7 @@ public class LabelToolsPanel extends JPanel {
 
 	private JLabel initSliderValueLabel(JSlider brushSize) {
 		JLabel valLabel = new JLabel(String.valueOf(brushSize.getValue()));
-		brushSize.addChangeListener(e -> {
-			valLabel.setText(String.valueOf(brushSize.getValue()));
-		});
+		brushSize.addChangeListener(e -> valLabel.setText(String.valueOf(brushSize.getValue())));
 		return valLabel;
 	}
 
