@@ -29,23 +29,35 @@
 
 package sc.fiji.labkit.ui.brush;
 
-import sc.fiji.labkit.ui.labeling.Label;
-import sc.fiji.labkit.ui.models.LabelingModel;
-import org.scijava.ui.behaviour.util.AbstractNamedAction;
-
-import javax.swing.*;
 import java.awt.event.ActionEvent;
 import java.util.List;
+
+import javax.swing.AbstractAction;
+import javax.swing.KeyStroke;
+
+import org.scijava.plugin.Plugin;
+import org.scijava.ui.behaviour.io.gui.CommandDescriptionProvider;
+import org.scijava.ui.behaviour.io.gui.CommandDescriptions;
+import org.scijava.ui.behaviour.util.AbstractNamedAction;
+import org.scijava.ui.behaviour.util.Actions;
+
+import sc.fiji.labkit.ui.LabKitKeymapManager;
+import sc.fiji.labkit.ui.labeling.Label;
+import sc.fiji.labkit.ui.models.LabelingModel;
 
 /**
  * {@link AbstractAction} that goes to the next label when "N" is pressed.
  */
 public class ChangeLabel extends AbstractNamedAction {
 
+	private static final String CHANGE_LABEL_ACTION = "next Label";
+	private static final String[] CHANGE_LABEL_KEYS = new String[] { "N" };
+	private static final String CHANGE_LABEL_DESCRIPTION = "Select the next label in the list.";
+
 	private final LabelingModel model;
 
 	public ChangeLabel(LabelingModel model) {
-		super("Next Label");
+		super(CHANGE_LABEL_ACTION);
 		this.model = model;
 		super.putValue(ACCELERATOR_KEY, KeyStroke.getKeyStroke("N"));
 	}
@@ -62,5 +74,21 @@ public class ChangeLabel extends AbstractNamedAction {
 		int index = labels.indexOf(currentLabel) + 1;
 		if (index >= labels.size()) index = 0;
 		return labels.get(index);
+	}
+
+	public void install(Actions actions) {
+		actions.namedAction(this, CHANGE_LABEL_KEYS);
+	}
+
+	@Plugin(type = CommandDescriptionProvider.class)
+	public static class Descriptions extends CommandDescriptionProvider {
+		public Descriptions() {
+			super(LabKitKeymapManager.LABKIT_SCOPE, LabKitKeymapManager.LABKIT_CONTEXT);
+		}
+
+		@Override
+		public void getCommandDescriptions(final CommandDescriptions descriptions) {
+			descriptions.add(CHANGE_LABEL_ACTION, CHANGE_LABEL_KEYS, CHANGE_LABEL_DESCRIPTION);
+		}
 	}
 }
