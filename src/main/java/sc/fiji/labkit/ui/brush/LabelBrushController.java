@@ -40,6 +40,7 @@ import net.imglib2.RealPoint;
 import net.imglib2.roi.IterableRegion;
 import net.imglib2.roi.Regions;
 import net.imglib2.type.logic.BitType;
+import net.imglib2.util.Intervals;
 import org.scijava.ui.behaviour.*;
 import sc.fiji.labkit.ui.ActionsAndBehaviours;
 import sc.fiji.labkit.ui.brush.neighborhood.Ellipsoid;
@@ -248,8 +249,8 @@ public class LabelBrushController {
 		private RandomAccessible<LabelingType<Label>> extendLabelingType(
 			RandomAccessibleInterval<LabelingType<Label>> slice)
 		{
-			LabelingType<Label> variable = Util.getTypeFromInterval(slice)
-				.createVariable();
+			LabelingType<Label> variable = slice.randomAccess()
+				.setPositionAndGet(Intervals.minAsLongArray(slice)).createVariable();
 			variable.clear();
 			return Views.extendValue(slice, variable);
 		}
