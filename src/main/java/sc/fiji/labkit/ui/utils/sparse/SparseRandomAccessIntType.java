@@ -78,7 +78,7 @@ public class SparseRandomAccessIntType extends AbstractWrappedInterval<Interval>
 	}
 
 	public Cursor<IntType> sparseCursor() {
-		return new MappingCursor<>(sparsityPattern().cursor(), randomAccess());
+		return new MappingCursor<>(sparsityPattern().inside().cursor(), randomAccess());
 	}
 
 	public IterableRegion<? extends BooleanType<?>> sparsityPattern() {
@@ -122,6 +122,12 @@ public class SparseRandomAccessIntType extends AbstractWrappedInterval<Interval>
 				lock.writeUnlock();
 			}
 		}
+	}
+
+	@Override
+	public IntType getType()
+	{
+		return new IntType();
 	}
 
 	// -- Helper classes --

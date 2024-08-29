@@ -35,6 +35,7 @@ import net.imglib2.AbstractCursor;
 import net.imglib2.AbstractWrappedInterval;
 import net.imglib2.Cursor;
 import net.imglib2.Interval;
+import net.imglib2.IterableInterval;
 import net.imglib2.Localizable;
 import net.imglib2.Point;
 import net.imglib2.RandomAccess;
@@ -56,6 +57,8 @@ public class SparseIterableRegion extends AbstractWrappedInterval<Interval>
 
 	final private IntervalIndexer2 indexer;
 
+	private final InsideIterable inside;
+
 	public SparseIterableRegion(Interval interval) {
 		this(interval, new TLongHashSet());
 	}
@@ -64,6 +67,7 @@ public class SparseIterableRegion extends AbstractWrappedInterval<Interval>
 		super(interval);
 		this.codes = positions;
 		this.indexer = new IntervalIndexer2(interval);
+		this.inside = new InsideIterable();
 	}
 
 	public void add(Localizable position) {
@@ -79,36 +83,6 @@ public class SparseIterableRegion extends AbstractWrappedInterval<Interval>
 	}
 
 	@Override
-	public Cursor<Void> cursor() {
-		return new SparseRoiCursor();
-	}
-
-	@Override
-	public Cursor<Void> localizingCursor() {
-		return cursor();
-	}
-
-	@Override
-	public long size() {
-		return codes.size();
-	}
-
-	@Override
-	public Void firstElement() {
-		return null;
-	}
-
-	@Override
-	public Object iterationOrder() {
-		return null;
-	}
-
-	@Override
-	public Iterator<Void> iterator() {
-		return cursor();
-	}
-
-	@Override
 	public RandomAccess<BitType> randomAccess() {
 		return new SparseRoiRandomAccess();
 	}
@@ -116,6 +90,51 @@ public class SparseIterableRegion extends AbstractWrappedInterval<Interval>
 	@Override
 	public RandomAccess<BitType> randomAccess(Interval interval) {
 		return randomAccess();
+	}
+
+	@Override
+	public IterableInterval< Void > inside()
+	{
+		return inside;
+	}
+
+	private class InsideIterable extends AbstractWrappedInterval< Interval > implements IterableInterval< Void >
+	{
+		InsideIterable()
+		{
+			super( SparseIterableRegion.this );
+		}
+
+		@Override
+		public Cursor<Void> cursor() {
+			return new SparseRoiCursor();
+		}
+
+		@Override
+		public Cursor<Void> localizingCursor() {
+			return cursor();
+		}
+
+		@Override
+		public long size() {
+			return codes.size();
+		}
+
+		@Override
+		public Void firstElement() {
+			return null;
+		}
+
+		@Override
+		public Object iterationOrder() {
+			return this;
+		}
+	}
+
+	@Override
+	public BitType getType()
+	{
+		return new BitType();
 	}
 
 	private class SparseRoiCursor extends AbstractCursor<Void> implements

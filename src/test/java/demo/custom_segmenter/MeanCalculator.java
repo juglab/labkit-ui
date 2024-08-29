@@ -45,7 +45,7 @@ class MeanCalculator {
 	public void addSample(RandomAccessibleInterval<?> image,
 		IterableRegion<BitType> region)
 	{
-		Cursor<Void> cursor = region.cursor();
+		Cursor<Void> cursor = region.inside().cursor();
 		RandomAccess<RealType<?>> randomAccess = Cast.unchecked(image.randomAccess());
 		while (cursor.hasNext()) {
 			cursor.fwd();

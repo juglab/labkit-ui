@@ -69,7 +69,7 @@ public class SparseIterableRegionTest {
 		RandomAccess<BitType> ra = roi.randomAccess();
 		ra.setPosition(positionA);
 		ra.get().set(true);
-		assertEquals(1, roi.size());
+		assertEquals(1, roi.inside().size());
 	}
 
 	@Test
@@ -78,7 +78,7 @@ public class SparseIterableRegionTest {
 		RandomAccess<BitType> ra = roi.randomAccess();
 		ra.setPosition(positionA);
 		ra.get().set(true);
-		Cursor<Void> cursor = roi.cursor();
+		Cursor<Void> cursor = roi.inside().cursor();
 		assertTrue(cursor.hasNext());
 		cursor.fwd();
 		assertEquals(positionA[1], cursor.getLongPosition(1));
