@@ -6,13 +6,13 @@
  * %%
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
- * 
+ *
  * 1. Redistributions of source code must retain the above copyright notice,
  *    this list of conditions and the following disclaimer.
  * 2. Redistributions in binary form must reproduce the above copyright notice,
  *    this list of conditions and the following disclaimer in the documentation
  *    and/or other materials provided with the distribution.
- * 
+ *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
  * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
  * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
@@ -29,7 +29,40 @@
 
 package sc.fiji.labkit.ui;
 
-import sc.fiji.labkit.ui.actions.*;
+import java.awt.BorderLayout;
+
+import javax.swing.BorderFactory;
+import javax.swing.JComponent;
+import javax.swing.JFrame;
+import javax.swing.JMenu;
+import javax.swing.JMenuBar;
+import javax.swing.JPanel;
+import javax.swing.JSplitPane;
+import javax.swing.SwingUtilities;
+
+import org.scijava.plugin.Plugin;
+import org.scijava.ui.behaviour.io.gui.CommandDescriptionProvider;
+import org.scijava.ui.behaviour.io.gui.CommandDescriptions;
+import org.scijava.ui.behaviour.util.Actions;
+import org.scijava.ui.behaviour.util.InputActionBindings;
+
+import bdv.ui.keymap.Keymap;
+import bdv.ui.keymap.Keymap.UpdateListener;
+import bdv.ui.keymap.KeymapManager;
+import net.miginfocom.swing.MigLayout;
+import sc.fiji.labkit.ui.actions.AddLabelingIoAction;
+import sc.fiji.labkit.ui.actions.BatchSegmentAction;
+import sc.fiji.labkit.ui.actions.BitmapImportExportAction;
+import sc.fiji.labkit.ui.actions.ClassifierIoAction;
+import sc.fiji.labkit.ui.actions.ClassifierSettingsAction;
+import sc.fiji.labkit.ui.actions.ExampleAction;
+import sc.fiji.labkit.ui.actions.LabelEditAction;
+import sc.fiji.labkit.ui.actions.LabelingIoAction;
+import sc.fiji.labkit.ui.actions.ResetViewAction;
+import sc.fiji.labkit.ui.actions.SegmentationAsLabelAction;
+import sc.fiji.labkit.ui.actions.SegmentationExportAction;
+import sc.fiji.labkit.ui.actions.ShowHelpAction;
+import sc.fiji.labkit.ui.actions.ShowPreferencesDialogAction;
 import sc.fiji.labkit.ui.menu.MenuKey;
 import sc.fiji.labkit.ui.models.ColoredLabelsModel;
 import sc.fiji.labkit.ui.models.Holder;
@@ -42,10 +75,6 @@ import sc.fiji.labkit.ui.panel.SegmenterPanel;
 import sc.fiji.labkit.ui.plugin.MeasureConnectedComponents;
 import sc.fiji.labkit.ui.segmentation.PredictionLayer;
 import sc.fiji.labkit.ui.segmentation.TrainClassifier;
-import net.miginfocom.swing.MigLayout;
-
-import javax.swing.*;
-import java.awt.*;
 
 /**
  * {@link SegmentationComponent} is the central Labkit UI component. Provides UI
@@ -67,16 +96,38 @@ public class SegmentationComponent extends JPanel implements AutoCloseable {
 
 	private final SegmentationModel segmentationModel;
 
+	private final KeymapManager keymapManager;
+
+	private final Actions actions;
+
+	private final InputActionBindings keybindings;
+
+	private final JFrame dialogBoxOwner;
+
+
 	public SegmentationComponent(JFrame dialogBoxOwner,
 		SegmentationModel segmentationModel, boolean unmodifiableLabels)
 	{
+		this.dialogBoxOwner = dialogBoxOwner;
 		this.extensible = new DefaultExtensible(segmentationModel.context(),
 			dialogBoxOwner);
 		this.unmodifiableLabels = unmodifiableLabels;
 		this.segmentationModel = segmentationModel;
+
+		keybindings = new InputActionBindings();
+		SwingUtilities.replaceUIActionMap( this, keybindings.getConcatenatedActionMap() );
+		SwingUtilities.replaceUIInputMap( this, JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT, keybindings.getConcatenatedInputMap() );
+		keymapManager = new LabKitKeymapManager();
+		final Keymap keymap = keymapManager.getForwardSelectedKeymap();
+		actions = new Actions( keymap.getConfig(), new String[] { LabKitKeymapManager.LABKIT_CONTEXT } );
+		actions.install( keybindings, "labkit" );
+		final UpdateListener updateListener = () -> actions.updateKeyConfig( keymap.getConfig() );
+		keymap.updateListeners().add( updateListener );
+
 		ImageLabelingModel imageLabelingModel = segmentationModel.imageLabelingModel();
-		labelingComponent = new BasicLabelingComponent(dialogBoxOwner, imageLabelingModel);
+		labelingComponent = new BasicLabelingComponent(dialogBoxOwner, imageLabelingModel, keymapManager);
 		labelingComponent.addBdvLayer(PredictionLayer.createPredictionLayer(segmentationModel));
+
 		initActions();
 		setLayout(new BorderLayout());
 		add(initGui());
@@ -93,14 +144,17 @@ public class SegmentationComponent extends JPanel implements AutoCloseable {
 		new LabelingIoAction(extensible, labelingModel);
 		new AddLabelingIoAction(extensible, labelingModel.labeling());
 		new SegmentationExportAction(extensible, labelingModel);
-		new ResetViewAction(extensible, labelingModel);
+		new ResetViewAction(actions, extensible, labelingModel);
 		new BatchSegmentAction(extensible, selectedSegmenter);
 		new SegmentationAsLabelAction(extensible, segmentationModel);
 		new BitmapImportExportAction(extensible, labelingModel);
-		new LabelEditAction(extensible, unmodifiableLabels, new ColoredLabelsModel(
+		new LabelEditAction(actions, extensible, unmodifiableLabels, new ColoredLabelsModel(
 			labelingModel));
 		MeasureConnectedComponents.addAction(extensible, labelingModel);
 		new ShowHelpAction(extensible);
+		ShowPreferencesDialogAction.install(actions, extensible, keymapManager, dialogBoxOwner);
+		ExampleAction.install(actions);
+		actions.runnableAction(() -> labelingComponent.autoContrast(), AUTO_CONTRAST_ACTION, AUTO_CONTRAST_KEYS);
 		labelingComponent.addShortcuts(extensible.getShortCuts());
 	}
 
@@ -151,5 +205,21 @@ public class SegmentationComponent extends JPanel implements AutoCloseable {
 
 	public void autoContrast() {
 		labelingComponent.autoContrast();
+	}
+
+	private static final String AUTO_CONTRAST_ACTION = "auto contrast";
+	private static final String[] AUTO_CONTRAST_KEYS = new String[] { "not mapped" };
+	private static final String AUTO_CONTRAST_DESCRIPTION = "Perform auto-contrast on the current image.";
+
+	@Plugin(type = CommandDescriptionProvider.class)
+	public static class Descriptions extends CommandDescriptionProvider {
+		public Descriptions() {
+			super(LabKitKeymapManager.LABKIT_SCOPE, LabKitKeymapManager.LABKIT_CONTEXT);
+		}
+
+		@Override
+		public void getCommandDescriptions(final CommandDescriptions descriptions) {
+			descriptions.add(AUTO_CONTRAST_ACTION, AUTO_CONTRAST_KEYS, AUTO_CONTRAST_DESCRIPTION);
+		}
 	}
 }

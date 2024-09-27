@@ -29,17 +29,36 @@
 
 package sc.fiji.labkit.ui.panel;
 
+import java.awt.Color;
+import java.awt.Insets;
+import java.awt.event.ActionEvent;
+import java.awt.event.ItemEvent;
+
+import javax.swing.AbstractButton;
+import javax.swing.BorderFactory;
+import javax.swing.ButtonGroup;
+import javax.swing.ImageIcon;
+import javax.swing.JCheckBox;
+import javax.swing.JComponent;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
+import javax.swing.JSlider;
+import javax.swing.JToggleButton;
+import javax.swing.KeyStroke;
+
+import org.scijava.plugin.Plugin;
+import org.scijava.ui.behaviour.io.gui.CommandDescriptionProvider;
+import org.scijava.ui.behaviour.io.gui.CommandDescriptions;
+import org.scijava.ui.behaviour.util.AbstractNamedAction;
+import org.scijava.ui.behaviour.util.Actions;
 import org.scijava.ui.behaviour.util.RunnableAction;
+
+import net.miginfocom.swing.MigLayout;
+import sc.fiji.labkit.ui.LabKitKeymapManager;
 import sc.fiji.labkit.ui.brush.FloodFillController;
 import sc.fiji.labkit.ui.brush.LabelBrushController;
 import sc.fiji.labkit.ui.brush.PlanarModeController;
 import sc.fiji.labkit.ui.brush.SelectLabelController;
-import net.miginfocom.swing.MigLayout;
-
-import javax.swing.*;
-import java.awt.*;
-import java.awt.event.ItemEvent;
-import java.awt.event.ItemListener;
 
 /**
  * Panel with the tool buttons for brush, flood fill, etc... Activates and
@@ -80,6 +99,30 @@ public class LabelToolsPanel extends JPanel {
 		"- Hold down the <b>Shift</b> key and <b>Left Click</b> on the image<br>" +
 		"  to select the label under the cursor.</small></html>";
 
+	private static final String TOGGLE_PLANAR_MODE_ACTION = "toggle planar mode";
+	private static final String TOGGLE_MOVE_MODE_ACTION = "move mode";
+	private static final String TOGGLE_DRAW_MODE_ACTION = "draw mode";
+	private static final String TOGGLE_FLOOD_FILL_MODE_ACTION = "flood fill mode";
+	private static final String TOGGLE_ERASE_MODE_ACTION = "erase mode";
+	private static final String TOGGLE_FLOOD_ERASE_MODE_ACTION = "remove connected component mode";
+	private static final String TOGGLE_SELECT_LABEL_MODE_ACTION = "select label mode";
+
+	private static final String[] TOGGLE_PLANAR_MODE_KEYS = new String[] { "not mapped" };
+	private static final String[] TOGGLE_MOVE_MODE_KEYS = new String[] { "ctrl G" };
+	private static final String[] TOGGLE_DRAW_MODE_KEYS = new String[] { "ctrl D" };
+	private static final String[] TOGGLE_FLOOD_FILL_MODE_KEYS = new String[] { "ctrl F" };
+	private static final String[] TOGGLE_ERASE_MODE_KEYS = new String[] { "ctrl E" };
+	private static final String[] TOGGLE_FLOOD_ERASE_MODE_KEYS = new String[] { "ctrl R" };
+	private static final String[] TOGGLE_SELECT_LABEL_MODE_KEYS = new String[] { "not mapped" };
+
+	private static final String TOGGLE_PLANAR_MODE_DESCRIPTION = "Toggle between slice-by-slice editing and 3d editing.";
+	private static final String TOGGLE_MOVE_MODE_DESCRIPTION = "Activate the move mode. Clicking and dragging will move the view.";
+	private static final String TOGGLE_DRAW_MODE_DESCRIPTION = "Activate the draw mode. Clicking and dragging will draw the currently selected label on the annotation layer.";
+	private static final String TOGGLE_FLOOD_FILL_MODE_DESCRIPTION = "Activate the flood-fill mode. Clicking inside a connected component or in a closed region in the background will repaint it with the currently selected label.";
+	private static final String TOGGLE_ERASE_MODE_DESCRIPTION = "Activate the eraser mode. Clicking and dragging will erase any label under the mouse.";
+	private static final String TOGGLE_FLOOD_ERASE_MODE_DESCRIPTION = "Activate the remove-connected-component mode. Clicking inside a connected component will erase its label.";
+	private static final String TOGGLE_SELECT_LABEL_MODE_DESCRIPTION = "Activate the select-label mode. Clicking on a pixel will select the label it has, if any.";
+
 	private final FloodFillController floodFillController;
 	private final LabelBrushController brushController;
 	private final SelectLabelController selectLabelController;
@@ -89,6 +132,13 @@ public class LabelToolsPanel extends JPanel {
 	private final ButtonGroup group = new ButtonGroup();
 
 	private Mode mode = ignore -> {};
+	private AbstractNamedAction togglePlanarModeAction;
+	private DoClickButtonAction toggleMoveMode;
+	private DoClickButtonAction toggleDrawMode;
+	private DoClickButtonAction toggleFloodFillMode;
+	private DoClickButtonAction toggleEraseMode;
+	private DoClickButtonAction toggleFloodEraseMode;
+	private DoClickButtonAction toggleSelectLabelMode;
 
 	public LabelToolsPanel(LabelBrushController brushController,
 		FloodFillController floodFillController, SelectLabelController selectLabelController,
@@ -120,22 +170,29 @@ public class LabelToolsPanel extends JPanel {
 	private void initActionButtons() {
 		JToggleButton moveBtn = addActionButton(MOVE_TOOL_TIP, ignore -> {}, false,
 			"/images/move.png", "MOVE_TOOL", "ctrl G");
-		addActionButton(DRAW_TOOL_TIP,
+		JToggleButton drawBtn = addActionButton(DRAW_TOOL_TIP,
 			brushController::setBrushActive, true,
 			"/images/draw.png", "DRAW_TOOL", "ctrl D");
-		addActionButton(FLOOD_FILL_TOOL_TIP,
+		JToggleButton floodFillBtn = addActionButton(FLOOD_FILL_TOOL_TIP,
 			floodFillController::setFloodFillActive, false,
 			"/images/fill.png", "FILL_TOOL", "ctrl F");
-		addActionButton(ERASE_TOOL_TIP,
+		JToggleButton eraseBtn = addActionButton(ERASE_TOOL_TIP,
 			brushController::setEraserActive, true,
 			"/images/erase.png", "ERASE_TOOL", "ctrl E");
-		addActionButton(FLOOD_ERASE_TOOL_TIP,
+		JToggleButton floodEraseBtn = addActionButton(FLOOD_ERASE_TOOL_TIP,
 			floodFillController::setRemoveBlobActive, false,
 			"/images/flooderase.png", "FLOOD_ERASE_TOOL", "ctrl R");
-		addActionButton(SELECT_LABEL_TOOL_TIP,
+		JToggleButton selectLabelBtn = addActionButton(SELECT_LABEL_TOOL_TIP,
 			selectLabelController::setActive, false,
 			"/images/pipette.png");
 		moveBtn.doClick();
+		
+		this.toggleMoveMode = new DoClickButtonAction(moveBtn, TOGGLE_MOVE_MODE_ACTION);
+		this.toggleDrawMode = new DoClickButtonAction(drawBtn, TOGGLE_DRAW_MODE_ACTION);
+		this.toggleFloodFillMode = new DoClickButtonAction(floodFillBtn, TOGGLE_FLOOD_FILL_MODE_ACTION);
+		this.toggleEraseMode = new DoClickButtonAction(eraseBtn, TOGGLE_ERASE_MODE_ACTION);
+		this.toggleFloodEraseMode = new DoClickButtonAction(floodEraseBtn, TOGGLE_FLOOD_ERASE_MODE_ACTION);
+		this.toggleSelectLabelMode = new DoClickButtonAction(selectLabelBtn, TOGGLE_SELECT_LABEL_MODE_ACTION);
 	}
 
 	private JPanel initOptionPanel() {
@@ -150,13 +207,14 @@ public class LabelToolsPanel extends JPanel {
 
 	private JToggleButton initPlanarModeButton() {
 		JToggleButton button = new JToggleButton();
+		this.togglePlanarModeAction = createTogglePlanarModeAction(button);
 		ImageIcon rotateIcon = getIcon("/images/rotate.png");
 		ImageIcon planarIcon = getIcon("/images/planes.png");
 		button.setIcon(rotateIcon);
 		button.setFocusable(false);
 		String ENABLE_TEXT = "Click to: Enable slice by slice editing of 3d images.";
 		String DISABLE_TEXT = "Click to: Disable slice by slice editing and freely rotate 3d images.";
-		button.addActionListener(ignore -> {
+		button.addItemListener(ignore -> {
 			boolean selected = button.isSelected();
 			button.setIcon(selected ? planarIcon : rotateIcon);
 			button.setToolTipText(selected ? DISABLE_TEXT : ENABLE_TEXT);
@@ -166,6 +224,18 @@ public class LabelToolsPanel extends JPanel {
 		});
 		button.setToolTipText(ENABLE_TEXT);
 		return button;
+	}
+
+	private AbstractNamedAction createTogglePlanarModeAction(JToggleButton button) {
+		return new AbstractNamedAction(TOGGLE_PLANAR_MODE_ACTION) {
+
+			private static final long serialVersionUID = 1L;
+
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				button.setSelected(!button.isSelected());
+			}
+		};
 	}
 
 	private JToggleButton addActionButton(String toolTipText, Mode mode, boolean visibility,
@@ -250,5 +320,55 @@ public class LabelToolsPanel extends JPanel {
 	private interface Mode {
 
 		void setActive(boolean active);
+	}
+
+	public void install(Actions actions) {
+		actions.namedAction(togglePlanarModeAction, TOGGLE_PLANAR_MODE_KEYS);
+		actions.namedAction(toggleMoveMode, TOGGLE_MOVE_MODE_KEYS);
+		actions.namedAction(toggleDrawMode, TOGGLE_DRAW_MODE_KEYS);
+		actions.namedAction(toggleEraseMode, TOGGLE_ERASE_MODE_KEYS);
+		actions.namedAction(toggleFloodFillMode, TOGGLE_FLOOD_FILL_MODE_KEYS);
+		actions.namedAction(toggleFloodEraseMode, TOGGLE_FLOOD_ERASE_MODE_KEYS);
+		actions.namedAction(toggleSelectLabelMode, TOGGLE_SELECT_LABEL_MODE_KEYS);
+	}
+
+	/**
+	 * Named action that simply clicks on a specified button.
+	 */
+	private final static class DoClickButtonAction extends AbstractNamedAction {
+
+		private static final long serialVersionUID = 1L;
+		private AbstractButton button;
+
+		public DoClickButtonAction(AbstractButton button, String name) {
+			super(name);
+			this.button = button;
+		}
+
+		@Override
+		public void actionPerformed(ActionEvent e) {
+			button.doClick();
+		}
+	}
+
+	@Plugin(type = CommandDescriptionProvider.class)
+	public static class Descriptions extends CommandDescriptionProvider {
+		public Descriptions() {
+			super(LabKitKeymapManager.LABKIT_SCOPE, LabKitKeymapManager.LABKIT_CONTEXT);
+		}
+
+		@Override
+		public void getCommandDescriptions(final CommandDescriptions descriptions) {
+			descriptions.add(TOGGLE_PLANAR_MODE_ACTION, TOGGLE_PLANAR_MODE_KEYS, TOGGLE_PLANAR_MODE_DESCRIPTION);
+			descriptions.add(TOGGLE_MOVE_MODE_ACTION, TOGGLE_MOVE_MODE_KEYS, TOGGLE_MOVE_MODE_DESCRIPTION);
+			descriptions.add(TOGGLE_DRAW_MODE_ACTION, TOGGLE_DRAW_MODE_KEYS, TOGGLE_DRAW_MODE_DESCRIPTION);
+			descriptions.add(TOGGLE_ERASE_MODE_ACTION, TOGGLE_ERASE_MODE_KEYS, TOGGLE_ERASE_MODE_DESCRIPTION);
+			descriptions.add(TOGGLE_FLOOD_FILL_MODE_ACTION, TOGGLE_FLOOD_FILL_MODE_KEYS,
+					TOGGLE_FLOOD_FILL_MODE_DESCRIPTION);
+			descriptions.add(TOGGLE_FLOOD_ERASE_MODE_ACTION, TOGGLE_FLOOD_ERASE_MODE_KEYS,
+					TOGGLE_FLOOD_ERASE_MODE_DESCRIPTION);
+			descriptions.add(TOGGLE_SELECT_LABEL_MODE_ACTION, TOGGLE_SELECT_LABEL_MODE_KEYS,
+					TOGGLE_SELECT_LABEL_MODE_DESCRIPTION);
+		}
 	}
 }

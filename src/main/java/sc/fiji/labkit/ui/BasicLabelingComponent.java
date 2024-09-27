@@ -29,26 +29,43 @@
 
 package sc.fiji.labkit.ui;
 
+import java.awt.Adjustable;
+import java.awt.BorderLayout;
+import java.util.Collection;
+
+import javax.swing.JFrame;
+import javax.swing.JPanel;
+import javax.swing.JSlider;
+
+import org.scijava.ui.behaviour.util.AbstractNamedAction;
+import org.scijava.ui.behaviour.util.Actions;
+import org.scijava.ui.behaviour.util.Behaviours;
+import org.scijava.ui.behaviour.util.InputActionBindings;
+import org.scijava.ui.behaviour.util.TriggerBehaviourBindings;
+
+import bdv.ui.keymap.Keymap;
+import bdv.ui.keymap.KeymapManager;
 import bdv.ui.splitpanel.SplitPanel;
 import bdv.util.BdvHandle;
 import bdv.util.BdvHandlePanel;
 import bdv.util.BdvOptions;
 import bdv.util.BdvStackSource;
 import bdv.viewer.DisplayMode;
+import bdv.viewer.NavigationActions;
+import bdv.viewer.ViewerPanel;
+import net.miginfocom.swing.MigLayout;
 import sc.fiji.labkit.ui.bdv.BdvAutoContrast;
 import sc.fiji.labkit.ui.bdv.BdvLayer;
 import sc.fiji.labkit.ui.bdv.BdvLayerLink;
-import sc.fiji.labkit.ui.brush.*;
+import sc.fiji.labkit.ui.brush.ChangeLabel;
+import sc.fiji.labkit.ui.brush.FloodFillController;
+import sc.fiji.labkit.ui.brush.LabelBrushController;
+import sc.fiji.labkit.ui.brush.PlanarModeController;
+import sc.fiji.labkit.ui.brush.SelectLabelController;
 import sc.fiji.labkit.ui.labeling.LabelsLayer;
 import sc.fiji.labkit.ui.models.Holder;
 import sc.fiji.labkit.ui.models.ImageLabelingModel;
 import sc.fiji.labkit.ui.panel.LabelToolsPanel;
-import net.miginfocom.swing.MigLayout;
-import org.scijava.ui.behaviour.util.AbstractNamedAction;
-
-import javax.swing.*;
-import java.awt.*;
-import java.util.Collection;
 
 /**
  * A swing UI component that shows a Big Data Viewer panel and a tool bar for
@@ -68,11 +85,19 @@ public class BasicLabelingComponent extends JPanel implements AutoCloseable {
 
 	private JSlider zSlider;
 
+	private KeymapManager keymapManager;
+
 	public BasicLabelingComponent(final JFrame dialogBoxOwner,
 		final ImageLabelingModel model)
 	{
+		this(dialogBoxOwner, model, null);
+	}
+
+	public BasicLabelingComponent(final JFrame dialogBoxOwner, final ImageLabelingModel model,
+			KeymapManager keymapManager) {
 		this.model = model;
 		this.dialogBoxOwner = dialogBoxOwner;
+		this.keymapManager = keymapManager;
 
 		initBdv(model.spatialDimensions().numDimensions() < 3);
 		actionsAndBehaviours = new ActionsAndBehaviours(bdvHandle);
@@ -85,8 +110,33 @@ public class BasicLabelingComponent extends JPanel implements AutoCloseable {
 	private void initBdv(boolean is2D) {
 		final BdvOptions options = BdvOptions.options();
 		if (is2D) options.is2D();
+		if (keymapManager != null) options.keymapManager(keymapManager);
+
 		bdvHandle = new BdvHandlePanel(dialogBoxOwner, options);
 		bdvHandle.getViewerPanel().setDisplayMode(DisplayMode.FUSED);
+
+		if (keymapManager != null) {
+			ViewerPanel viewer = bdvHandle.getViewerPanel();
+
+			InputActionBindings keybindings = bdvHandle.getKeybindings();
+			TriggerBehaviourBindings triggerbindings = bdvHandle.getTriggerbindings();
+
+			Keymap keymap = keymapManager.getForwardSelectedKeymap();
+
+			final Actions actions = new Actions(keymap.getConfig(), "bdv");
+			actions.install(keybindings, "view");
+
+			Behaviours behaviours = new Behaviours(keymap.getConfig(), "bdv");
+			behaviours.install(triggerbindings, "view");
+
+			viewer.getTransformEventHandler().install(behaviours);
+			NavigationActions.install(actions, viewer, is2D);
+
+			keymap.updateListeners().add(() -> {
+				actions.updateKeyConfig(keymap.getConfig());
+				behaviours.updateKeyConfig(keymap.getConfig());
+			});
+		}
 	}
 
 	private void initPanel() {
@@ -115,6 +165,7 @@ public class BasicLabelingComponent extends JPanel implements AutoCloseable {
 	}
 
 	private JPanel initToolsPanel() {
+
 		final PlanarModeController planarModeController = new PlanarModeController(
 			bdvHandle, model, zSlider);
 		final LabelBrushController brushController = new LabelBrushController(
@@ -123,9 +174,31 @@ public class BasicLabelingComponent extends JPanel implements AutoCloseable {
 			bdvHandle, model, actionsAndBehaviours);
 		final SelectLabelController selectLabelController =
 			new SelectLabelController(bdvHandle, model, actionsAndBehaviours);
-		final JPanel toolsPanel = new LabelToolsPanel(brushController,
+		final LabelToolsPanel toolsPanel = new LabelToolsPanel(brushController,
 			floodFillController, selectLabelController, planarModeController);
-		actionsAndBehaviours.addAction(new ChangeLabel(model));
+		ChangeLabel changeLabel = new ChangeLabel(model);
+		actionsAndBehaviours.addAction(changeLabel);
+		
+		if (keymapManager != null) {
+			InputActionBindings keybindings = bdvHandle.getKeybindings();
+			TriggerBehaviourBindings triggerbindings = bdvHandle.getTriggerbindings();
+			
+			Keymap keymap = keymapManager.getForwardSelectedKeymap();
+			
+			final Actions actions = new Actions(keymap.getConfig(), "labkit");
+			actions.install(keybindings, "annotating");
+			
+			Behaviours behaviours = new Behaviours(keymap.getConfig(), "labkit");
+			behaviours.install(triggerbindings, "annotating");
+			
+			keymap.updateListeners().add(() -> {
+				actions.updateKeyConfig(keymap.getConfig());
+				behaviours.updateKeyConfig(keymap.getConfig());
+			});
+
+			toolsPanel.install(actions);
+			changeLabel.install(actions);
+		}
 		return toolsPanel;
 	}
 

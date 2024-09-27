@@ -2,17 +2,17 @@
  * #%L
  * The Labkit image segmentation tool for Fiji.
  * %%
- * Copyright (C) 2017 - 2024 Matthias Arzt
+ * Copyright (C) 2017 - 2023 Matthias Arzt
  * %%
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
- * 
+ *
  * 1. Redistributions of source code must retain the above copyright notice,
  *    this list of conditions and the following disclaimer.
  * 2. Redistributions in binary form must reproduce the above copyright notice,
  *    this list of conditions and the following disclaimer in the documentation
  *    and/or other materials provided with the distribution.
- * 
+ *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
  * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
  * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
@@ -29,56 +29,59 @@
 
 package sc.fiji.labkit.ui.actions;
 
+import java.awt.Frame;
+
 import org.scijava.plugin.Plugin;
 import org.scijava.ui.behaviour.io.gui.CommandDescriptionProvider;
 import org.scijava.ui.behaviour.io.gui.CommandDescriptions;
 import org.scijava.ui.behaviour.util.Actions;
 
+import bdv.tools.PreferencesDialog;
+import bdv.tools.ToggleDialogAction;
+import bdv.ui.keymap.Keymap;
+import bdv.ui.keymap.KeymapManager;
+import bdv.ui.keymap.KeymapSettingsPage;
 import sc.fiji.labkit.ui.Extensible;
 import sc.fiji.labkit.ui.LabKitKeymapManager;
 import sc.fiji.labkit.ui.MenuBar;
-import sc.fiji.labkit.ui.models.ImageLabelingModel;
-import sc.fiji.labkit.ui.models.TransformationModel;
 
-/**
- * Implements the reset view menu item.
- *
- * @author Matthias Arzt
- */
-public class ResetViewAction {
+public class ShowPreferencesDialogAction
+{
 
+	public static final String ACTION_NAME = "show preferences dialog";
 
-	public ResetViewAction(Extensible extensible, ImageLabelingModel model) {
-		this(null, extensible, model);
-	}
-	
-	public ResetViewAction(Actions actions, Extensible extensible, ImageLabelingModel model) {
-		Runnable action = () -> {
-			TransformationModel transformationModel = model.transformationModel();
-			transformationModel.transformToShowInterval(model.labeling().get()
-				.interval(), model.labelTransformation());
-		};
-		extensible.addMenuItem(MenuBar.VIEW_MENU, "Reset View", 100,
-			ignore -> action.run(), null, "");
+	public static final String[] ACTION_DEFAULT_KEYS = new String[] { "control P" };
 
-		if (actions != null) {
-			actions.runnableAction(() -> action.run(), RESET_VIEW_ACTION, RESET_VIEW_KEYS);
-		}
+	public static final String ACTION_DESCRIPTION = "Shows the preferences dialog.";
+
+	public static void install(Actions actions, Extensible extensible, KeymapManager keymapManager, Frame owner) {
+		final Keymap keymap = keymapManager.getForwardSelectedKeymap();
+		final PreferencesDialog preferencesDialog = new PreferencesDialog(owner, keymap,
+				new String[] { LabKitKeymapManager.LABKIT_CONTEXT });
+		preferencesDialog
+				.addPage(new KeymapSettingsPage("Keymap", keymapManager, keymapManager.getCommandDescriptions()));
+		final ToggleDialogAction action = new ToggleDialogAction(ACTION_NAME, preferencesDialog);
+		actions.namedAction(action, ACTION_DEFAULT_KEYS);
+		extensible.addMenuItem( MenuBar.HELP_MENU,
+				"Preferences",
+				99,
+				ignore -> action.actionPerformed( null ),
+				null, null );
 	}
 
-	private static final String RESET_VIEW_ACTION = "reset view";
-	private static final String[] RESET_VIEW_KEYS = new String[] { "not mapped" };
-	private static final String RESET_VIEW_DESCRIPTION = "Reset the current image position, zoom and rotation.";
-
-	@Plugin(type = CommandDescriptionProvider.class)
-	public static class Descriptions extends CommandDescriptionProvider {
-		public Descriptions() {
-			super(LabKitKeymapManager.LABKIT_SCOPE, LabKitKeymapManager.LABKIT_CONTEXT);
+	@Plugin( type = CommandDescriptionProvider.class )
+	public static class Descriptions extends CommandDescriptionProvider
+	{
+		public Descriptions()
+		{
+			super( LabKitKeymapManager.LABKIT_SCOPE, LabKitKeymapManager.LABKIT_CONTEXT );
 		}
 
 		@Override
-		public void getCommandDescriptions(final CommandDescriptions descriptions) {
-			descriptions.add(RESET_VIEW_ACTION, RESET_VIEW_KEYS, RESET_VIEW_DESCRIPTION);
+		public void getCommandDescriptions( final CommandDescriptions descriptions )
+		{
+			descriptions.add( ACTION_NAME, ACTION_DEFAULT_KEYS, ACTION_DESCRIPTION );
+			descriptions.add( "close dialog window", new String[] { "control W" }, "Closes the preferences dialog." );
 		}
 	}
 }
