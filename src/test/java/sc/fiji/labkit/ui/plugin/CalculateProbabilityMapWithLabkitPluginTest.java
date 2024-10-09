@@ -29,11 +29,13 @@
 
 package sc.fiji.labkit.ui.plugin;
 
+import io.scif.services.DatasetIOService;
 import net.imagej.Dataset;
 import net.imagej.ImageJ;
 import net.imglib2.test.ImgLib2Assert;
 import org.junit.Test;
-import sc.fiji.labkit.pixel_classification.utils.SingletonContext;
+import org.scijava.Context;
+import org.scijava.command.CommandService;
 import sc.fiji.labkit.ui.utils.TestResources;
 
 public class CalculateProbabilityMapWithLabkitPluginTest {
@@ -41,19 +43,22 @@ public class CalculateProbabilityMapWithLabkitPluginTest {
 	@Test
 	public void test() throws Exception {
 		// setup
-		ImageJ imageJ = new ImageJ(SingletonContext.getInstance());
-		Dataset image = imageJ.scifio().datasetIO().open(TestResources.fullPath("/blobs.tif"));
-		String blobsModel = TestResources.fullPath("/blobs.classifier");
-		Dataset expectedImage = imageJ.scifio().datasetIO().open(TestResources.fullPath(
-			"/blobs_probability_map.tif"));
-		// process
-		Dataset output = (Dataset) imageJ.command().run(CalculateProbabilityMapWithLabkitPlugin.class,
-			true,
-			"input", image,
-			"segmenter_file", blobsModel,
-			"use_gpu", false)
-			.get().getOutput("output");
-		// test
-		ImgLib2Assert.assertImageEqualsRealType(expectedImage, output, 0.0);
+		try (Context context = new Context()) {
+			DatasetIOService io = context.service(DatasetIOService.class);
+			CommandService cs = context.service(CommandService.class);
+			Dataset image = io.open(TestResources.fullPath("/blobs.tif"));
+			String blobsModel = TestResources.fullPath("/blobs.classifier");
+			Dataset expectedImage = io.open(TestResources.fullPath(
+				"/blobs_probability_map.tif"));
+			// process
+			Dataset output = (Dataset) cs.run(CalculateProbabilityMapWithLabkitPlugin.class,
+				true,
+				"input", image,
+				"segmenter_file", blobsModel,
+				"use_gpu", false)
+				.get().getOutput("output");
+			// test
+			ImgLib2Assert.assertImageEqualsRealType(expectedImage, output, 0.0);
+		}
 	}
 }

@@ -34,7 +34,9 @@ import net.imagej.axis.Axes;
 import net.imagej.axis.EnumeratedAxis;
 import net.imglib2.img.Img;
 import net.imglib2.img.array.ArrayImgs;
-import sc.fiji.labkit.pixel_classification.utils.SingletonContext;
+import org.junit.AfterClass;
+import org.junit.BeforeClass;
+import org.scijava.Context;
 import sc.fiji.labkit.ui.inputimage.DatasetInputImage;
 import sc.fiji.labkit.ui.labeling.Labeling;
 import net.imglib2.type.numeric.integer.UnsignedByteType;
@@ -49,6 +51,18 @@ import static org.junit.Assert.assertNotNull;
 
 public class InitialLabelingTest {
 
+	private static Context context;
+
+	@BeforeClass
+	public static void setUp() {
+		context = new Context();
+	}
+
+	@AfterClass
+	public static void tearDown() {
+		context.dispose();
+	}
+
 	@Test
 	public void testDoNotCrashWhenLabelingFileIsEmpty() throws IOException {
 		File empty = File.createTempFile("labkit-InitialLabelingTest-",
@@ -59,7 +73,7 @@ public class InitialLabelingTest {
 			DatasetInputImage inputImage = new DatasetInputImage(image);
 			List<String> defaultLabels = Collections.emptyList();
 			Labeling result = InitialLabeling.initLabeling(inputImage,
-				SingletonContext.getInstance(),
+				context,
 				defaultLabels);
 			assertNotNull(result);
 		}
@@ -75,7 +89,7 @@ public class InitialLabelingTest {
 		EnumeratedAxis yAxis = new EnumeratedAxis(Axes.Y, "mm", new double[] { 0, 0.3 });
 		ImgPlus<UnsignedByteType> image = new ImgPlus<>(img, "test", xAxis, yAxis);
 		DatasetInputImage inputImage = new DatasetInputImage(image);
-		Labeling result = InitialLabeling.initialLabeling(SingletonContext.getInstance(), inputImage);
+		Labeling result = InitialLabeling.initialLabeling(context, inputImage);
 		assertNotNull(result);
 	}
 }

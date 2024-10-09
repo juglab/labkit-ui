@@ -91,8 +91,8 @@ public class ProjectSegmentationModel implements SegmentationModel {
 		SegmenterListModel segmenterListModel = new SegmenterListModel(context, new ExtensionPoints());
 		segmenterListModel.trainingData().set(new TrainingData());
 		for (String filename : segmenters) {
-			SegmentationItem segmentationItem = segmenterListModel.addSegmenter(PixelClassificationPlugin
-				.create());
+			SegmentationItem segmentationItem = segmenterListModel.addSegmenter(
+				PixelClassificationPlugin.create(context));
 			segmentationItem.openModel(filename);
 		}
 		return segmenterListModel;

@@ -31,7 +31,6 @@ package sc.fiji.labkit.ui.segmentation.weka;
 
 import sc.fiji.labkit.ui.segmentation.SegmentationPlugin;
 import sc.fiji.labkit.ui.segmentation.Segmenter;
-import sc.fiji.labkit.pixel_classification.utils.SingletonContext;
 import org.scijava.Context;
 import org.scijava.plugin.Parameter;
 import org.scijava.plugin.Plugin;
@@ -66,8 +65,7 @@ public class PixelClassificationPlugin implements SegmentationPlugin {
 		}
 	}
 
-	public static SegmentationPlugin create() {
-		Context context = SingletonContext.getInstance();
+	public static SegmentationPlugin create(Context context) {
 		PixelClassificationPlugin plugin = new PixelClassificationPlugin();
 		context.inject(plugin);
 		return plugin;

@@ -47,7 +47,6 @@ import net.imglib2.util.Cast;
 import net.imglib2.util.Intervals;
 import org.apache.commons.lang3.ArrayUtils;
 import org.scijava.Context;
-import sc.fiji.labkit.pixel_classification.utils.SingletonContext;
 import sc.fiji.labkit.ui.inputimage.DatasetInputImage;
 import sc.fiji.labkit.ui.inputimage.ImgPlusViewsOld;
 import sc.fiji.labkit.ui.models.CachedImageFactory;
@@ -71,16 +70,16 @@ public class SegmentationTool {
 
 	private final CachedImageFactory cachedImageFactory = DefaultCachedImageFactory.getInstance();
 
-	public SegmentationTool() {
-
+	public SegmentationTool(Context context) {
+		this(context, null);
 	}
 
-	public SegmentationTool(Segmenter segmenter) {
+	public SegmentationTool(Context context, Segmenter segmenter) {
+		this.context = Objects.requireNonNull(context);
 		this.segmenter = segmenter;
 	}
 
 	public void openModel(String classifierFile) {
-		Context context = this.context != null ? this.context : SingletonContext.getInstance();
 		Segmenter segmenter = new TrainableSegmentationSegmenter(context);
 		segmenter.openModel(classifierFile);
 		setSegmenter(segmenter);
@@ -92,10 +91,6 @@ public class SegmentationTool {
 		this.segmenter = segmenter;
 		if (useGpu != null)
 			this.segmenter.setUseGpu(useGpu);
-	}
-
-	public void setContext(Context context) {
-		this.context = Objects.requireNonNull(context);
 	}
 
 	public void setProgressWriter(ProgressWriter progressWriter) {

@@ -39,34 +39,35 @@ import ij.macro.Interpreter;
 import net.imglib2.img.VirtualStackAdapter;
 import net.imglib2.test.ImgLib2Assert;
 import org.junit.Test;
-import sc.fiji.labkit.pixel_classification.utils.SingletonContext;
+import org.scijava.Context;
 import sc.fiji.labkit.ui.utils.TestResources;
 
 public class SegmentImageWithLabkitIJ1PluginTest {
 
 	@Test
 	public void test() throws IOException {
-		SingletonContext.getInstance();
-		String inputImage = TestResources.fullPath("/blobs.tif");
-		String blobsModel = TestResources.fullPath("/blobs.classifier");
-		String source = TestResources.fullPath("/blobs_segmentation.tif");
-		File outputImage = File.createTempFile("labkit-segmentation-test", ".tif");
-		String macroTemplate = "close('*');\n" +
-			"open('INPUT_TIF');\n" +
-			"run('Segment Image With Labkit (IJ1)', 'segmenter_file=SEGMENTER_FILE use_gpu=false');\n" +
-			"selectImage('segmentation of blobs.tif');\n" +
-			"saveAs('Tiff', 'OUTPUT_TIF');\n" +
-			"close('*');\n";
-		String macro = macroTemplate
-			.replace('\'', '"')
-			.replace("INPUT_TIF", inputImage)
-			.replace("SEGMENTER_FILE", blobsModel)
-			.replace("OUTPUT_TIF", outputImage.getAbsolutePath());
-		new Interpreter().run(macro);
-		assertTrue(outputImage.exists());
-		ImagePlus expected = IJ.openImage(source);
-		ImagePlus result = IJ.openImage(outputImage.getAbsolutePath());
-		ImgLib2Assert.assertImageEquals(VirtualStackAdapter.wrap(expected),
-			VirtualStackAdapter.wrap(result), Object::equals);
+		try (Context context = new Context()) {
+			String inputImage = TestResources.fullPath("/blobs.tif");
+			String blobsModel = TestResources.fullPath("/blobs.classifier");
+			String source = TestResources.fullPath("/blobs_segmentation.tif");
+			File outputImage = File.createTempFile("labkit-segmentation-test", ".tif");
+			String macroTemplate = "close('*');\n" +
+				"open('INPUT_TIF');\n" +
+				"run('Segment Image With Labkit (IJ1)', 'segmenter_file=SEGMENTER_FILE use_gpu=false');\n" +
+				"selectImage('segmentation of blobs.tif');\n" +
+				"saveAs('Tiff', 'OUTPUT_TIF');\n" +
+				"close('*');\n";
+			String macro = macroTemplate
+				.replace('\'', '"')
+				.replace("INPUT_TIF", inputImage)
+				.replace("SEGMENTER_FILE", blobsModel)
+				.replace("OUTPUT_TIF", outputImage.getAbsolutePath().replaceAll("\\\\", "\\\\\\\\"));
+			new Interpreter().run(macro);
+			assertTrue(outputImage.exists());
+			ImagePlus expected = IJ.openImage(source);
+			ImagePlus result = IJ.openImage(outputImage.getAbsolutePath());
+			ImgLib2Assert.assertImageEquals(VirtualStackAdapter.wrap(expected),
+				VirtualStackAdapter.wrap(result), Object::equals);
+		}
 	}
 }

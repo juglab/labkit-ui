@@ -29,9 +29,11 @@
 
 package sc.fiji.labkit.ui.project;
 
-import sc.fiji.labkit.pixel_classification.utils.SingletonContext;
 import org.apache.commons.io.FileUtils;
+import org.junit.AfterClass;
+import org.junit.BeforeClass;
 import org.junit.Test;
+import org.scijava.Context;
 
 import java.io.File;
 import java.io.IOException;
@@ -41,6 +43,18 @@ import java.util.Collections;
 import static org.junit.Assert.assertEquals;
 
 public class LabkitProjectFileSerializerTest {
+
+	private static Context context;
+
+	@BeforeClass
+	public static void setUp() {
+		context = new Context();
+	}
+
+	@AfterClass
+	public static void tearDown() {
+		context.dispose();
+	}
 
 	@Test
 	public void testSave() throws IOException {
@@ -56,8 +70,7 @@ public class LabkitProjectFileSerializerTest {
 	public void testOpen() throws IOException {
 		File file = createTmpFile();
 		FileUtils.writeStringToFile(file, exampleYaml(), StandardCharsets.UTF_8);
-		LabkitProjectModel project = LabkitProjectFileSerializer.open(SingletonContext.getInstance(),
-			file);
+		LabkitProjectModel project = LabkitProjectFileSerializer.open(context, file);
 		LabkitProjectModel expected = exampleProject();
 		assertEquals(expected.labeledImages(), project.labeledImages());
 		assertEquals(expected.segmenterFiles(), project.segmenterFiles());
@@ -81,11 +94,10 @@ public class LabkitProjectFileSerializerTest {
 	}
 
 	private LabkitProjectModel exampleProject() {
-		LabeledImage image = new LabeledImage(SingletonContext.getInstance(), "healthy cells",
+		LabeledImage image = new LabeledImage(context, "healthy cells",
 			"cells.tif", "cells.labeling");
-		LabkitProjectModel project = new LabkitProjectModel(SingletonContext.getInstance(),
-			"/some/path/", Collections
-				.singletonList(image));
+		LabkitProjectModel project = new LabkitProjectModel(context,
+			"/some/path/", Collections.singletonList(image));
 		project.segmenterFiles().add("/Hello/World.classifier");
 		return project;
 	}

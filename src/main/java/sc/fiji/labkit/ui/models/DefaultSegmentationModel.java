@@ -92,7 +92,7 @@ public class DefaultSegmentationModel implements SegmentationModel {
 		Stream<Segmenter> trainedSegmenters = getTrainedSegmenters();
 		return trainedSegmenters
 			.map(segmenter -> {
-				SegmentationTool segmentationTool = new SegmentationTool(segmenter);
+				SegmentationTool segmentationTool = new SegmentationTool(context, segmenter);
 				segmentationTool.setProgressWriter(new DummyProgressWriter());
 				return segmentationTool.segment(image, type);
 			})
@@ -105,7 +105,7 @@ public class DefaultSegmentationModel implements SegmentationModel {
 		Stream<Segmenter> trainedSegmenters = getTrainedSegmenters();
 		return trainedSegmenters
 			.map(segmenter -> {
-				SegmentationTool segmentationTool = new SegmentationTool(segmenter);
+				SegmentationTool segmentationTool = new SegmentationTool(context, segmenter);
 				segmentationTool.setProgressWriter(new DummyProgressWriter());
 				return segmentationTool.probabilityMap(image);
 			})
