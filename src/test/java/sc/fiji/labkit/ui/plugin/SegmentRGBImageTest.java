@@ -29,14 +29,18 @@
 
 package sc.fiji.labkit.ui.plugin;
 
+import io.scif.services.DatasetIOService;
 import net.imagej.Dataset;
 import net.imagej.ImageJ;
 import net.imglib2.RandomAccessibleInterval;
 import net.imglib2.test.ImgLib2Assert;
 import net.imglib2.type.numeric.real.FloatType;
 import net.imglib2.util.ValuePair;
+import org.junit.AfterClass;
+import org.junit.BeforeClass;
 import org.junit.Test;
-import sc.fiji.labkit.pixel_classification.utils.SingletonContext;
+import org.scijava.Context;
+import org.scijava.command.CommandService;
 import sc.fiji.labkit.ui.inputimage.DatasetInputImage;
 import sc.fiji.labkit.ui.inputimage.InputImage;
 import sc.fiji.labkit.ui.labeling.Labeling;
@@ -54,37 +58,52 @@ import java.util.concurrent.ExecutionException;
 
 public class SegmentRGBImageTest {
 
+	private static Context context;
+	private static DatasetIOService io;
+	private static CommandService cs;
+
+	@BeforeClass
+	public static void setUp() {
+		context = new Context();
+		io = context.service(DatasetIOService.class);
+		cs = context.service(CommandService.class);
+	}
+
+	@AfterClass
+	public static void tearDown() {
+		context.dispose();
+	}
+
 	@Test
 	public void testSegmentation()
 		throws IOException, ExecutionException, InterruptedException
 	{
-		ImageJ imageJ = new ImageJ(SingletonContext.getInstance());
-		Dataset image = imageJ.scifio().datasetIO().open(TestResources.fullPath("/leaf.tif"));
+		// setup
+		Dataset image = io.open(TestResources.fullPath("/leaf.tif"));
 		String blobsModel = TestResources.fullPath("/leaf.classifier");
 		// process
-		Dataset output = (Dataset) imageJ.command().run(CalculateProbabilityMapWithLabkitPlugin.class,
+		Dataset output = (Dataset) cs.run(CalculateProbabilityMapWithLabkitPlugin.class,
 			true,
 			"input", image,
 			"segmenter_file", blobsModel,
 			"use_gpu", false)
 			.get().getOutput("output");
 		// test
-		Dataset expectedImage = imageJ.scifio().datasetIO().open(
+		Dataset expectedImage = io.open(
 			TestResources.fullPath("/leaf_probability_map.tif"));
 		ImgLib2Assert.assertImageEqualsRealType(expectedImage, output, 0.0);
 	}
 
 	@Test
 	public void testTraining() throws IOException {
-		ImageJ imageJ = new ImageJ(SingletonContext.getInstance());
-		Dataset image = imageJ.scifio().datasetIO().open(TestResources.fullPath("/leaf.tif"));
+		Dataset image = io.open(TestResources.fullPath("/leaf.tif"));
 		InputImage inputImage = new DatasetInputImage(image);
-		SegmentationModel segmentationModel = new DefaultSegmentationModel(imageJ.context(),
+		SegmentationModel segmentationModel = new DefaultSegmentationModel(context,
 			inputImage);
-		Labeling labeling = new LabelingSerializer(SingletonContext.getInstance()).open(
+		Labeling labeling = new LabelingSerializer(context).open(
 			TestResources.fullPath("/leaf.tif.labeling"));
 		segmentationModel.imageLabelingModel().labeling().set(labeling);
-		SegmentationPlugin plugin = PixelClassificationPlugin.create();
+		SegmentationPlugin plugin = PixelClassificationPlugin.create(context);
 		SegmentationItem segmenter = segmentationModel.segmenterList().addSegmenter(plugin);
 		segmenter.setUseGpu(false);
 		segmenter.train(Collections.singletonList(new ValuePair<>(segmentationModel.imageLabelingModel()
@@ -94,7 +113,7 @@ public class SegmentRGBImageTest {
 			.imageLabelingModel()).prediction();
 
 		// output
-		Dataset expectedImage = imageJ.scifio().datasetIO().open(
+		Dataset expectedImage = io.open(
 			TestResources.fullPath("/leaf_probability_map.tif"));
 		ImgLib2Assert.assertImageEqualsRealType(expectedImage, prediction, 0.0);
 	}

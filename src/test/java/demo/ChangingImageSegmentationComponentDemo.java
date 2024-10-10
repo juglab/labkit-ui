@@ -41,7 +41,6 @@ import sc.fiji.labkit.ui.inputimage.DatasetInputImage;
 import sc.fiji.labkit.ui.models.DefaultSegmentationModel;
 import sc.fiji.labkit.ui.models.ImageLabelingModel;
 import sc.fiji.labkit.ui.models.SegmentationModel;
-import sc.fiji.labkit.pixel_classification.utils.SingletonContext;
 import net.imglib2.type.numeric.integer.UnsignedByteType;
 import net.imglib2.view.Views;
 import net.miginfocom.swing.MigLayout;
@@ -93,8 +92,7 @@ public class ChangingImageSegmentationComponentDemo {
 		DatasetInputImage datasetInputImage = new DatasetInputImage(image);
 		model.showable().set(datasetInputImage.showable());
 		model.imageForSegmentation().set(datasetInputImage.imageForSegmentation());
-		model.labeling().set(InitialLabeling.initialLabeling(SingletonContext.getInstance(),
-			datasetInputImage));
+		model.labeling().set(InitialLabeling.initialLabeling(new Context(), datasetInputImage));
 	}
 
 	private JPanel getBottomPanel() {

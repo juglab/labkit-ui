@@ -39,7 +39,6 @@ import sc.fiji.labkit.ui.inputimage.InputImage;
 import sc.fiji.labkit.ui.models.DefaultSegmentationModel;
 import sc.fiji.labkit.ui.models.SegmentationModel;
 import sc.fiji.labkit.ui.utils.Notifier;
-import sc.fiji.labkit.pixel_classification.utils.SingletonContext;
 import org.scijava.Context;
 
 import javax.swing.*;
@@ -65,8 +64,6 @@ public class LabkitFrame {
 	public static LabkitFrame showForFile(Context context,
 		final String filename)
 	{
-		if (context == null)
-			context = SingletonContext.getInstance();
 		Dataset dataset = openDataset(context, filename);
 		return showForImage(context, new DatasetInputImage(dataset));
 	}
@@ -83,8 +80,6 @@ public class LabkitFrame {
 	public static LabkitFrame showForImage(Context context,
 		final InputImage inputImage)
 	{
-		if (context == null)
-			context = SingletonContext.getInstance();
 		final SegmentationModel model = new DefaultSegmentationModel(context, inputImage);
 		model.imageLabelingModel().labeling().set(InitialLabeling.initialLabeling(context, inputImage));
 		return show(model, inputImage.imageForSegmentation().getName());

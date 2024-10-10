@@ -73,8 +73,12 @@ import static org.junit.Assert.assertEquals;
  */
 public class MultiChannelMovieDemo {
 
+	private static Context context;
+
 	public static void main(String... args) {
+		context = new Context();
 		main2();
+		// TODO: Dispose context when relevant window is closed.
 	}
 
 	private static void main1() {
@@ -120,7 +124,7 @@ public class MultiChannelMovieDemo {
 		SegmentationModel segmentationModel = new DefaultSegmentationModel(
 			new Context(), inputImage);
 		SegmentationItem segmenter = segmentationModel.segmenterList().addSegmenter(
-			PixelClassificationPlugin.create());
+			PixelClassificationPlugin.create(context));
 		Labeling labeling1 = labeling5d();
 		segmentationModel.imageLabelingModel().labeling().set(labeling1);
 		segmenter.train(Collections.singletonList(new ValuePair<>(inputImage

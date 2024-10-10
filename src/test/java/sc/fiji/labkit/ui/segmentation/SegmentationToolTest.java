@@ -36,8 +36,10 @@ import net.imagej.axis.DefaultLinearAxis;
 import net.imglib2.type.numeric.integer.UnsignedByteType;
 import net.imglib2.type.numeric.real.FloatType;
 import net.imglib2.util.Cast;
+import org.junit.AfterClass;
+import org.junit.BeforeClass;
 import org.junit.Test;
-import sc.fiji.labkit.pixel_classification.utils.SingletonContext;
+import org.scijava.Context;
 import sc.fiji.labkit.ui.utils.TestResources;
 
 import java.io.IOException;
@@ -48,11 +50,23 @@ import static org.junit.Assert.assertEquals;
 
 public class SegmentationToolTest {
 
+	private static Context context;
+
+	@BeforeClass
+	public static void setUp() {
+		context = new Context();
+	}
+
+	@AfterClass
+	public static void tearDown() {
+		context.dispose();
+	}
+
 	private final ImgPlus<?> image = openImage("/leaf.tif");
 
 	@Test
 	public void testSegment() {
-		SegmentationTool tool = new SegmentationTool();
+		SegmentationTool tool = new SegmentationTool(context);
 		tool.setUseGpu(false);
 		tool.openModel(TestResources.fullPath("/leaf.classifier"));
 		((DefaultLinearAxis) image.axis(0)).setScale(0.7);
@@ -68,7 +82,7 @@ public class SegmentationToolTest {
 
 	@Test
 	public void testProbabilityMap() {
-		SegmentationTool tool = new SegmentationTool();
+		SegmentationTool tool = new SegmentationTool(context);
 		tool.setUseGpu(false);
 		tool.openModel(TestResources.fullPath("/leaf.classifier"));
 		ImgPlus<FloatType> probabilityMap = tool.probabilityMap(image);
@@ -78,8 +92,8 @@ public class SegmentationToolTest {
 
 	private ImgPlus<?> openImage(String file) {
 		try {
-			return SingletonContext.getInstance().service(DatasetIOService.class).open(
-					TestResources.fullPath(file))
+			return context.service(DatasetIOService.class)
+				.open(TestResources.fullPath(file))
 				.getImgPlus();
 		}
 		catch (IOException e) {

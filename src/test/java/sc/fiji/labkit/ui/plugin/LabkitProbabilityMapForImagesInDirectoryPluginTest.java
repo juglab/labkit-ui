@@ -39,10 +39,10 @@ import net.imglib2.type.numeric.integer.UnsignedByteType;
 import net.imglib2.util.Cast;
 import net.imglib2.view.Views;
 import org.junit.Test;
+import org.scijava.Context;
 import org.scijava.command.CommandService;
 import org.scijava.io.location.FileLocation;
 import org.scijava.plugin.Parameter;
-import sc.fiji.labkit.pixel_classification.utils.SingletonContext;
 import sc.fiji.labkit.ui.utils.TestResources;
 
 import java.io.File;
@@ -58,33 +58,29 @@ import static org.junit.Assert.assertTrue;
  */
 public class LabkitProbabilityMapForImagesInDirectoryPluginTest {
 
-	@Parameter
-	DatasetIOService io;
-
-	@Parameter
-	DatasetService ds;
-
-	@Parameter
-	CommandService cmd;
-
-	public LabkitProbabilityMapForImagesInDirectoryPluginTest() {
-		SingletonContext.getInstance().inject(this);
-	}
+	private DatasetIOService io;
+	private DatasetService ds;
+	private CommandService cmd;
 
 	@Test
 	public void test()
 		throws IOException, ExecutionException, InterruptedException
 	{
-		File inputDirectory = createTestInputDirectory();
-		File outputDirectory = Files.createTempDirectory("labkit-test-output").toFile();
-		cmd.run(LabkitProbabilityMapForImagesInDirectoryPlugin.class, true,
-			"input_directory", inputDirectory,
-			"file_filter", "*.tif",
-			"output_directory", outputDirectory,
-			"output_file_suffix", "_probability_map.tif",
-			"segmenter_file", TestResources.fullPath("/leaf.classifier"),
-			"use_gpu", false).get();
-		testOutputDirectory(outputDirectory);
+		try (Context context = new Context()) {
+			io = context.service(DatasetIOService.class);
+			ds = context.service(DatasetService.class);
+			cmd = context.service(CommandService.class);
+			File inputDirectory = createTestInputDirectory();
+			File outputDirectory = Files.createTempDirectory("labkit-test-output").toFile();
+			cmd.run(LabkitProbabilityMapForImagesInDirectoryPlugin.class, true,
+				"input_directory", inputDirectory,
+				"file_filter", "*.tif",
+				"output_directory", outputDirectory,
+				"output_file_suffix", "_probability_map.tif",
+				"segmenter_file", TestResources.fullPath("/leaf.classifier"),
+				"use_gpu", false).get();
+			testOutputDirectory(outputDirectory);
+		}
 	}
 
 	private File createTestInputDirectory() throws IOException {

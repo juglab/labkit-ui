@@ -72,8 +72,7 @@ public class CalculateProbabilityMapWithLabkitIJ1Plugin implements Command, Canc
 
 	@Override
 	public void run() {
-		SegmentationTool segmenter = new SegmentationTool();
-		segmenter.setContext(context);
+		SegmentationTool segmenter = new SegmentationTool(context);
 		segmenter.openModel(segmenter_file.getAbsolutePath());
 		segmenter.setUseGpu(use_gpu);
 		segmenter.setProgressWriter(new StatusServiceProgressWriter(statusService));

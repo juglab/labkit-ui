@@ -38,6 +38,7 @@ import net.imglib2.util.Cast;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.io.filefilter.WildcardFileFilter;
 import org.scijava.Cancelable;
+import org.scijava.Context;
 import org.scijava.app.StatusService;
 import org.scijava.command.Command;
 import org.scijava.log.Logger;
@@ -51,6 +52,9 @@ import java.io.IOException;
 import java.util.Arrays;
 
 abstract class AbstractProcessFilesInDirectoryPlugin implements Command, Cancelable {
+
+	@Parameter
+	private Context context;
 
 	@Parameter
 	private DatasetIOService io;
@@ -84,7 +88,7 @@ abstract class AbstractProcessFilesInDirectoryPlugin implements Command, Cancela
 
 	@Override
 	public void run() {
-		SegmentationTool segmenter = new SegmentationTool();
+		SegmentationTool segmenter = new SegmentationTool(context);
 		segmenter.setUseGpu(use_gpu);
 		segmenter.openModel(segmenter_file.getAbsolutePath());
 		segmenter.setProgressWriter(new StatusServiceProgressWriter(statusService));

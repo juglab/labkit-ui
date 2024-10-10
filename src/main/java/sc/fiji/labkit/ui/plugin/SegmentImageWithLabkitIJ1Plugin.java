@@ -71,8 +71,7 @@ public class SegmentImageWithLabkitIJ1Plugin implements Command, Cancelable {
 
 	@Override
 	public void run() {
-		SegmentationTool segmenter = new SegmentationTool();
-		segmenter.setContext(context);
+		SegmentationTool segmenter = new SegmentationTool(context);
 		segmenter.setUseGpu(use_gpu);
 		segmenter.setProgressWriter(new StatusServiceProgressWriter(statusService));
 		segmenter.openModel(segmenter_file.getAbsolutePath());

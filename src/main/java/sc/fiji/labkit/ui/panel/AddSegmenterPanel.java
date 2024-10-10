@@ -33,12 +33,13 @@ import sc.fiji.labkit.ui.models.ExtensionPoints;
 import sc.fiji.labkit.ui.models.SegmenterListModel;
 import sc.fiji.labkit.ui.segmentation.SegmentationPlugin;
 import sc.fiji.labkit.ui.segmentation.SegmentationPluginService;
-import sc.fiji.labkit.pixel_classification.utils.SingletonContext;
 import net.miginfocom.swing.MigLayout;
 import org.scijava.Context;
 
 import javax.swing.*;
 import java.awt.*;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
 
 /**
  * Panel that shows a list of available segmentation algorithms. This panel is
@@ -69,10 +70,16 @@ public class AddSegmenterPanel extends JPanel {
 
 	public static void main(String... args) {
 		JFrame frame = new JFrame("Select Segmentation Algorithm");
-		Context context = SingletonContext.getInstance();
+		Context context = new Context();
 		SegmenterListModel slm = new SegmenterListModel(context, new ExtensionPoints());
 		frame.add(new AddSegmenterPanel(slm));
 		frame.setSize(300, 300);
 		frame.setVisible(true);
+		frame.addWindowListener(new WindowAdapter() {
+			@Override
+			public void windowClosed(WindowEvent e) {
+				context.dispose();
+			}
+		});
 	}
 }

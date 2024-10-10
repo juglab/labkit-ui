@@ -38,9 +38,11 @@ import net.imglib2.RandomAccessibleInterval;
 import net.imglib2.img.Img;
 import net.imglib2.img.array.ArrayImgs;
 import net.imglib2.roi.IterableRegion;
+import org.junit.AfterClass;
+import org.junit.BeforeClass;
+import org.scijava.Context;
 import sc.fiji.labkit.ui.utils.sparse.SparseIterableRegion;
 import net.imglib2.test.ImgLib2Assert;
-import sc.fiji.labkit.pixel_classification.utils.SingletonContext;
 import net.imglib2.type.logic.BitType;
 import net.imglib2.type.numeric.ARGBType;
 import net.imglib2.type.numeric.integer.UnsignedByteType;
@@ -65,8 +67,19 @@ import static org.junit.Assert.assertEquals;
  */
 public class LabelingSerializationTest {
 
-	private final LabelingSerializer serializer = new LabelingSerializer(SingletonContext
-		.getInstance());
+	private static Context context;
+
+	@BeforeClass
+	public static void setUp() {
+		context = new Context();
+	}
+
+	@AfterClass
+	public static void tearDown() {
+		context.dispose();
+	}
+
+	private final LabelingSerializer serializer = new LabelingSerializer(context);
 
 	@Test
 	public void testJson() throws IOException {
@@ -155,7 +168,7 @@ public class LabelingSerializationTest {
 	public void testOpenFromTiff() throws IOException {
 		Img<UnsignedByteType> input = ArrayImgs.unsignedBytes(new byte[] { 10, 20, 0, 0 }, 2, 2);
 		Path file = Files.createTempFile("test", ".tif");
-		new ImgSaver(SingletonContext.getInstance()).saveImg(file.toString(), input, new SCIFIOConfig()
+		new ImgSaver(context).saveImg(file.toString(), input, new SCIFIOConfig()
 			.writerSetFailIfOverwriting(false));
 		Labeling labeling = serializer.open(file.toString());
 		assertEquals(Arrays.asList("10", "20"), labeling.getLabels().stream().map(Label::name).collect(
