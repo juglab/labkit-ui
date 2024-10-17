@@ -61,7 +61,7 @@ public class SegmentImageWithLabkitIJ1PluginTest {
 				.replace('\'', '"')
 				.replace("INPUT_TIF", inputImage)
 				.replace("SEGMENTER_FILE", blobsModel)
-				.replace("OUTPUT_TIF", outputImage.getAbsolutePath().replaceAll("\\\\", "\\\\\\\\"));
+				.replace("OUTPUT_TIF", MacroUtils.safePath(outputImage));
 			new Interpreter().run(macro);
 			assertTrue(outputImage.exists());
 			ImagePlus expected = IJ.openImage(source);
