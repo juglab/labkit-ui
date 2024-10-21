@@ -38,6 +38,7 @@ import ij.ImagePlus;
 import ij.macro.Interpreter;
 import net.imglib2.img.VirtualStackAdapter;
 import net.imglib2.test.ImgLib2Assert;
+import org.apache.commons.lang.StringEscapeUtils;
 import org.junit.Test;
 import org.scijava.Context;
 import sc.fiji.labkit.ui.utils.TestResources;
@@ -59,9 +60,9 @@ public class SegmentImageWithLabkitIJ1PluginTest {
 				"close('*');\n";
 			String macro = macroTemplate
 				.replace('\'', '"')
-				.replace("INPUT_TIF", inputImage)
-				.replace("SEGMENTER_FILE", blobsModel)
-				.replace("OUTPUT_TIF", MacroUtils.safePath(outputImage));
+				.replace("INPUT_TIF", StringEscapeUtils.escapeJava(inputImage))
+				.replace("SEGMENTER_FILE", StringEscapeUtils.escapeJava(blobsModel))
+				.replace("OUTPUT_TIF", StringEscapeUtils.escapeJava(outputImage.getAbsolutePath()));
 			new Interpreter().run(macro);
 			assertTrue(outputImage.exists());
 			ImagePlus expected = IJ.openImage(source);
