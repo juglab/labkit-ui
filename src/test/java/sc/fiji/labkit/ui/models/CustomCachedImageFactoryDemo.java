@@ -37,10 +37,10 @@ import net.imglib2.img.Img;
 import net.imglib2.img.VirtualStackAdapter;
 import net.imglib2.img.array.ArrayImgFactory;
 import net.imglib2.img.cell.CellGrid;
+import org.scijava.Context;
 import sc.fiji.labkit.ui.LabkitFrame;
 import sc.fiji.labkit.ui.inputimage.DatasetInputImage;
 import sc.fiji.labkit.ui.segmentation.Segmenter;
-import sc.fiji.labkit.pixel_classification.utils.SingletonContext;
 import net.imglib2.type.NativeType;
 
 import java.util.function.Consumer;
@@ -57,21 +57,19 @@ import java.util.function.Consumer;
  */
 public class CustomCachedImageFactoryDemo {
 
-	static {
-		LegacyInjector.preinit();
-	}
-
 	public static void main(String... args) {
+		Context context = new Context();
 		final ImagePlus imp = new ImagePlus("https://imagej.nih.gov/ij/images/FluorescentCells.jpg");
 		ImgPlus<?> image = VirtualStackAdapter.wrap(imp);
-		DefaultSegmentationModel segmentationModel = new DefaultSegmentationModel(SingletonContext
-			.getInstance(), new DatasetInputImage(image));
+		DefaultSegmentationModel segmentationModel = new DefaultSegmentationModel(context,
+			new DatasetInputImage(image));
 		segmentationModel.extensionPoints().setCachedSegmentationImageFactory(
 			CustomCachedImageFactoryDemo::noCacheFactory);
 		segmentationModel.extensionPoints().setCachedPredictionImageFactory(
 			CustomCachedImageFactoryDemo::noCacheFactory);
 		LabkitFrame.show(segmentationModel,
-			"Custom Cached Image Factory Demo, That actually uses no cahce.");
+			"Custom Cached Image Factory Demo, That actually uses no cache.");
+		// TODO: Dispose context when Labkit frame is closed.
 	}
 
 	private static <T extends NativeType<T>> Img<T> noCacheFactory(Segmenter segmenter,

@@ -43,7 +43,6 @@ import net.imglib2.test.ImgLib2Assert;
 import sc.fiji.labkit.pixel_classification.pixel_feature.filter.SingleFeatures;
 import sc.fiji.labkit.pixel_classification.pixel_feature.settings.FeatureSettings;
 import sc.fiji.labkit.pixel_classification.pixel_feature.settings.GlobalSettings;
-import sc.fiji.labkit.pixel_classification.utils.SingletonContext;
 import net.imglib2.type.numeric.integer.IntType;
 import net.imglib2.util.ValuePair;
 import org.junit.Test;
@@ -56,7 +55,7 @@ public class TrainableSegmentationSegmenterTest {
 
 	@Test
 	public void testClassify3DStackInSlices() {
-		Context context = SingletonContext.getInstance();
+		Context context = new Context();
 		TrainableSegmentationSegmenter segmenter = new TrainableSegmentationSegmenter(context);
 		segmenter.setUseGpu(false);
 		// Settings to 2D
@@ -77,6 +76,7 @@ public class TrainableSegmentationSegmenterTest {
 		Img<IntType> result2d = ArrayImgs.ints(1, 3);
 		segmenter.segment(image2d, result2d);
 		ImgLib2Assert.assertImageEquals(image2d, result2d, Object::equals);
+		context.dispose();
 	}
 
 	private Labeling initLabeling() {

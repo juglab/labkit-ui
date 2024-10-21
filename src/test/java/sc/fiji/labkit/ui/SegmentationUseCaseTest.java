@@ -39,6 +39,8 @@ import net.imglib2.RandomAccessibleInterval;
 import net.imglib2.img.Img;
 import net.imglib2.img.array.ArrayImgs;
 import net.imglib2.type.numeric.IntegerType;
+import org.junit.AfterClass;
+import org.junit.BeforeClass;
 import sc.fiji.labkit.ui.bdv.BdvShowable;
 import sc.fiji.labkit.ui.inputimage.DatasetInputImage;
 import sc.fiji.labkit.ui.inputimage.InputImage;
@@ -51,7 +53,6 @@ import sc.fiji.labkit.ui.models.SegmentationModel;
 import sc.fiji.labkit.ui.segmentation.weka.PixelClassificationPlugin;
 import sc.fiji.labkit.ui.segmentation.SegmentationPlugin;
 import net.imglib2.roi.labeling.LabelingType;
-import net.imglib2.type.numeric.integer.ShortType;
 import net.imglib2.type.numeric.integer.UnsignedByteType;
 import net.imglib2.util.Intervals;
 import net.imglib2.util.ValuePair;
@@ -70,22 +71,34 @@ import static org.junit.Assert.assertTrue;
 
 public class SegmentationUseCaseTest {
 
+	private static Context context;
+
+	@BeforeClass
+	public static void setUp() {
+		context = new Context();
+	}
+
+	@AfterClass
+	public static void tearDown() {
+		context.dispose();
+	}
+
 	@Test
 	public void test() {
 		ImgPlus<UnsignedByteType> image = new ImgPlus<>(ArrayImgs.unsignedBytes(new byte[] { 1, 1, 2,
 			2 }, 2, 2));
 		InputImage inputImage = new DatasetInputImage(image);
 		SegmentationModel segmentationModel = new DefaultSegmentationModel(
-			new Context(), inputImage);
+			context, inputImage);
 		addLabels(segmentationModel.imageLabelingModel());
-		SegmentationPlugin plugin = PixelClassificationPlugin.create();
+		SegmentationPlugin plugin = PixelClassificationPlugin.create(context);
 		SegmentationItem segmenter = segmentationModel.segmenterList().addSegmenter(plugin);
 		segmenter.train(Collections.singletonList(new ValuePair<>(image,
 			segmentationModel.imageLabelingModel().labeling().get())));
 		RandomAccessibleInterval<? extends IntegerType<?>> result =
 			segmenter.results(segmentationModel.imageLabelingModel()).segmentation();
 		List<Integer> list = new ArrayList<>();
-		Views.iterable(result).forEach(x -> list.add(x.getInteger()));
+		result.forEach(x -> list.add(x.getInteger()));
 		assertEquals(Arrays.asList(1, 1, 0, 0), list);
 	}
 
@@ -99,7 +112,7 @@ public class SegmentationUseCaseTest {
 	}
 
 	@Test
-	public void testMultiChannel() throws InterruptedException {
+	public void testMultiChannel() {
 		Img<UnsignedByteType> img = ArrayImgs.unsignedBytes(new byte[] { -1, 0, -1,
 			0, -1, -1, 0, 0 }, 2, 2, 2);
 		ImgPlus<UnsignedByteType> imgPlus = new ImgPlus<>(img, "Image",
@@ -108,17 +121,17 @@ public class SegmentationUseCaseTest {
 			.wrap(Views.hyperSlice(img, 2, 0)));
 
 		Labeling labeling = getLabeling();
-		SegmentationModel segmentationModel = new DefaultSegmentationModel(new Context(),
+		SegmentationModel segmentationModel = new DefaultSegmentationModel(context,
 			inputImage);
 		ImageLabelingModel imageLabelingModel = segmentationModel.imageLabelingModel();
 		imageLabelingModel.labeling().set(labeling);
 		SegmentationItem segmenter = segmentationModel.segmenterList().addSegmenter(
-			PixelClassificationPlugin.create());
+			PixelClassificationPlugin.create(context));
 		segmenter.train(Collections.singletonList(new ValuePair<>(imgPlus,
 			imageLabelingModel.labeling().get())));
 		RandomAccessibleInterval<? extends IntegerType<?>> result =
 			segmenter.results(imageLabelingModel).segmentation();
-		Iterator<? extends IntegerType<?>> it = Views.iterable(result).iterator();
+		Iterator<? extends IntegerType<?>> it = result.iterator();
 		assertEquals(1, it.next().getInteger());
 		assertEquals(0, it.next().getInteger());
 		assertEquals(0, it.next().getInteger());

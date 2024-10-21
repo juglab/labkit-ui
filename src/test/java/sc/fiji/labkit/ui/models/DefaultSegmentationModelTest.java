@@ -30,6 +30,8 @@
 package sc.fiji.labkit.ui.models;
 
 import net.imglib2.img.array.ArrayImgs;
+import org.junit.AfterClass;
+import org.junit.BeforeClass;
 import sc.fiji.labkit.ui.inputimage.DatasetInputImage;
 import sc.fiji.labkit.ui.labeling.Label;
 import sc.fiji.labkit.ui.labeling.Labeling;
@@ -52,6 +54,18 @@ import static org.junit.Assert.assertFalse;
 
 public class DefaultSegmentationModelTest {
 
+	private static Context context;
+
+	@BeforeClass
+	public static void setUp() {
+		context = new Context();
+	}
+
+	@AfterClass
+	public static void tearDown() {
+		context.dispose();
+	}
+
 	@Test
 	public void testListener() {
 		BitType flag = new BitType(false);
@@ -60,7 +74,7 @@ public class DefaultSegmentationModelTest {
 		model.segmenters().notifier().addListener(flag::setOne);
 		assertFalse(flag.get());
 		assertEquals(0, model.segmenters().get().size());
-		model.addSegmenter(PixelClassificationPlugin.create());
+		model.addSegmenter(PixelClassificationPlugin.create(context));
 		assertTrue(flag.get());
 		assertEquals(1, model.segmenters().get().size());
 		flag.set(false);
@@ -84,7 +98,7 @@ public class DefaultSegmentationModelTest {
 		List<Label> labels = labeling.getLabels();
 		Views.iterable(labeling.getRegion(labels.get(0))).forEach(BitType::setOne);
 		TrainableSegmentationSegmenter.setUseGpuPreference(model.context(), false);
-		SegmentationItem item = model.segmenterList().addSegmenter(PixelClassificationPlugin.create());
+		SegmentationItem item = model.segmenterList().addSegmenter(PixelClassificationPlugin.create(context));
 		item.train(Collections.singletonList(new ValuePair<>(image
 			.imageForSegmentation(), labeling)));
 		// save classifier
